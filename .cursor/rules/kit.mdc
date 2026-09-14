@@ -1,0 +1,37 @@
+---
+description: Restless UI language — Strip / Chip / Ink only. No second HUD stack.
+alwaysApply: true
+---
+
+# Kit
+
+`RestlessUi` is the only HUD language. Settings, buffs, minimap, notices, and the hotbar all go through it. Do not invent a second widget set. If a helper exists, call it.
+
+- **Strip** — sliced `row-idle` (`StripBorder`), `RowTint`. Short repeating atoms: rows, buffs, biome bar, toasts. Never a tall plate.
+- **Chip** — same slice, `ChipBorder`, `ChipTint`. Keys, Q/E, switches.
+- **Tray** — solid Nested + Rim. One well that holds atoms (F8 sheet, item inspect). Do not 9-slice `row-idle` over a tall plate.
+- **TrayHead** — F8 title atom. Ink-tinted Strip at `RowWidth` × `BarHeight`. Call `RestlessUi.TrayHead`. Inset (`TrayPad` / `TrayGutter`). Not a roof.
+- **TitleTear** — solid Ink Strip behind a title. May escape the tray at the **top-right** only (`HeadOverhang` / `HeadLift`). Never a full-width lid. Call `RestlessUi.TitleTear`.
+- **Rim** — Unity Outline (`Accent` 0.85, 1.2 / −1.2). Call `RestlessUi.Rim`. Torn atoms skip it except F8 row hover. Tall solids always. Future rarity only retints the inspect Rim.
+- **Well** — generated circle. Do not use on the hotbar; slots are torn-edge Strip squares.
+- **Type** — Jötunn Averia `Text`. Regular body, Bold only at `TitleSize`. Colours: `Text` / `Muted` / `Accent`.
+- **Fade** — `FadeSeconds`. Slide uses the same clock.
+- **HudRow** — one Strip + duration fill (left-anchored `row-idle` in `FillTint`, width follows the clock) + icon + title + meta. Notices (`HudRow.Notice`) and buffs (`HudRow.Buff`). Empty food slots use the vanilla food fork when it exists, else kit `eat-fork` (cream). Do not rebuild this layout in a feature. Call `Notices.Post` to push a line into the drawer.
+- **HudMeter** — thin Ink track (`row-idle`) whose **width follows max** HP/stamina (grows out from the hotbar). Keep it **18px** — a sliced plate here is the wrong shape; thinner is the look. Dark track is always the full max length. Fill is kit `HealthTint` / `StaminaTint` (garnet / amber), clipped to current/max. Averia current is optional. Health docks left of `Bar` and grows left. Stamina docks right and grows right. Do not rebuild this in a feature.
+- **Wear** — vertical torn slit on the **right inside** of the slot, **11px** wide. Graphic is `row-idle`'s ragged left and right stacked, bleached to white, then tinted cream (`Accent`) / red (`HealthTint`). 9-sliced top/bottom. Grows up with remaining durability. Never Mask-fill the plate. Do not keep vanilla `GuiBar` on a Restless slot.
+- **KeyChip** — Chip + Averia. Verb left, bind right (cream mouse glyph or key). Resolve with `RestlessUi.Bind` / `PaintChip` (never dump `MISSING BUTTONDEF` or raw `$button` tokens).
+- **KeyStack** — KeyChip column, or one torn Look **plate**. Features pass rows only. `BottomRight` grows up (combat, fishing, hammer). `Look` is a single Strip with title + bind lines on it (cook, pick up, doors) — not a stack of separate chips.
+- **Dock** — named `HudDock` pins (`TopLeft` for every notice, `Bar` for the item hotbar, equipped-piece helper just above `Bar`, health left of `Bar`, stamina right of `Bar`, `BottomRight` for action hints — pivot on the corner, stack upward, `Look` for world hover under the crosshair). Guardian power and food (including empty Eat rows) live on the buff list. `Dock()` still means hang one rect on another.
+
+Never: TMP / LiberationSans, `hotkey-btn`, `slider.png`, `toggle-on`, `map-compass`, 9-sliced `panel-back` as a card. `panel-back` is a mask only. Never UI-Mask the vanilla map RawImage. M map uses the same off-screen RT + `panel-back` Mask as the HUD minimap. Chrome is Strip plates (biome, pin name, share toggles, icon trays) and a KeyStack for the map binds. The kit's full-width top Hotkeys bar is baked ESC/I text — reconstruct keys as Chip + Averia. Notices all stack **top-left**. Do not pin toasts to the right, center, or onto the hotbar.
+
+## Must
+
+- Call the helper. Do not rebuild Tray, TrayHead, TitleTear, Rim, DressSlot, HudRow, HudMeter, Wear, KeyChip, KeyStack.
+- Torn is an atom. Solid Nested + Rim is a tray. Do not 9-slice `row-idle` over a tall plate.
+- Torn never flush to Rim. F8 title is inset TrayHead. A title may use TitleTear off the top-right corner. Never a roof over the well.
+- Chips and Averia on a Strip sit `PlateInset` in from the torn lip.
+- Hover Rim on torn rows only. Do not Rim a scrollbar.
+- Slots are `DressSlot`. Inspect, Tab, and hotbar share that atom.
+
+New HUD behaviour gets an F8 toggle in the same turn.

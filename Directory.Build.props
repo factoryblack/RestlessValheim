@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <!-- Override in Environment.props if Valheim is not in the default Steam folder. -->
+    <ValheimInstall Condition="'$(ValheimInstall)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimInstall>
+    <VALHEIM_INSTALL>$(ValheimInstall)</VALHEIM_INSTALL>
+    <BEPINEX_PATH Condition="'$(BEPINEX_PATH)' == ''">$(ValheimInstall)\BepInEx</BEPINEX_PATH>
+    <ExecutePrebuild>true</ExecutePrebuild>
+  </PropertyGroup>
+  <Import Project="Environment.props" Condition="Exists('Environment.props')" />
+</Project>

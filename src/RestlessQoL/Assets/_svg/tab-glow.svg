@@ -1,0 +1,27 @@
+<svg width="82" height="54" viewBox="0 0 82 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="82" height="54" fill="#414141"/>
+<g id="Base interface elements">
+<path d="M-1085.34 -736C-1085.34 -753.673 -1071.01 -768 -1053.34 -768H2989.66C3007.34 -768 3021.66 -753.673 3021.66 -736V1069C3021.66 1086.67 3007.34 1101 2989.66 1101H-1053.34C-1071.01 1101 -1085.34 1086.67 -1085.34 1069V-736Z" fill="black" fill-opacity="0.1"/>
+<g id="Glow effect">
+<g id="Rectangle 129" filter="url(#filter0_gf_1229_44030)">
+<path d="M17.9004 35.4824H63.4222L63.4223 18.5073H17.9005L17.9004 35.4824Z" fill="url(#paint0_linear_1229_44030)"/>
+</g>
+</g>
+</g>
+<defs>
+<filter id="filter0_gf_1229_44030" x="0.000391006" y="0.607813" width="81.3215" height="52.7746" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feTurbulence type="fractalNoise" baseFrequency="0.050251256674528122 0.050251256674528122" numOctaves="3" seed="4262" />
+<feDisplacementMap in="shape" scale="8.6000003814697266" xChannelSelector="R" yChannelSelector="G" result="displacedImage" width="100%" height="100%" />
+<feMerge result="effect1_texture_1229_44030">
+<feMergeNode in="displacedImage"/>
+</feMerge>
+<feGaussianBlur stdDeviation="8.95" result="effect2_foregroundBlur_1229_44030"/>
+</filter>
+<linearGradient id="paint0_linear_1229_44030" x1="40.6616" y1="35.4824" x2="40.6616" y2="18.5073" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FFDC99"/>
+<stop offset="1" stop-color="#FFDC99" stop-opacity="0"/>
+</linearGradient>
+</defs>
+</svg>

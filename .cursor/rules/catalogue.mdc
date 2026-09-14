@@ -1,0 +1,23 @@
+---
+description: RestlessCore master catalogue is catalogue.yaml — update it whenever features change.
+alwaysApply: true
+---
+
+# Catalogue
+
+`catalogue.yaml` at the repo root is the **only** feature list. Never invent a second stack, replacement-pass, or Thunderstore shopping list. If a behaviour is not in that file, it is not decided.
+
+Each row is a **behaviour**, not a package. Fields:
+
+- `decision`: `dll` | `loader` | `sidecar` | `vanilla` | `skip`
+- `in_mod`: `n/a` | `none` | `stub` | `partial` | `done`
+- `bite`: `1` papercuts, `2` more of the same, `3` candidate only (not a promised backlog)
+
+`done` means the patch exists and looks complete. It does **not** mean playtested. Keep holes in the `note`. Bump `updated` and `last_audit` in the yaml header when you change rows.
+
+When you add, ship, stub, skip, or change a QoL behaviour:
+
+1. Update that row in `catalogue.yaml` (`in_mod` / `decision` / `note`) in the same turn as the code.
+2. Run `python scripts/sync-catalogue-canvas.py` so the plan canvas matches.
+
+Papercuts belong in the DLL (including eternal fires, dig depth, and the in-game settings panel). PlanBuild, skills, drawers, collectors, portals, Auga, and ValheimPlus are `skip`. Sidecars are only MyLittleUI / EquipmentAndQuickSlots, and only if Jules still wants them. Do not install Azu Config Manager.

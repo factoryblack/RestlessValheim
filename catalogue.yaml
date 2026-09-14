@@ -1,0 +1,573 @@
+# RestlessCore master catalogue
+# One row per behaviour. This is the only list.
+#
+# decision:
+#   dll      — belongs in RestlessCore.dll
+#   loader   — BepInEx / Jötunn (required to load, not QoL)
+#   sidecar  — optional separate mod; only if we still want that product
+#   vanilla  — Valheim 1.0 already covers it
+#   skip     — will not ship (not QoL, deprecated, or a different game)
+# in_mod:
+#   n/a     — not a DLL feature
+#   none    — decided, no code
+#   stub    — module exists, does nothing useful
+#   partial — real patch, known holes or never launched
+#   done    — patch looks complete. Playtest status lives in the note (not this field).
+# bite: 1 papercuts | 2 more of the same | 3 candidate only — not a promised backlog
+#
+# Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
+# ValheimPlus, BetterUI, or MinimalUI beside this plugin.
+#
+# last_audit: 2026-09-14 — TitleTear top-right; inspect layout restored.
+
+updated: 2026-09-14
+
+items:
+  # --- loader ---
+  - id: loader.bepinex
+    name: BepInEx
+    decision: loader
+    in_mod: n/a
+    restless: denikson-BepInExPack_Valheim
+    note: "Required to load anything. Pin 5.4.2350 (1.0-day, 9 Sep 2026)."
+
+  - id: loader.jotunn
+    name: Jötunn
+    decision: loader
+    in_mod: n/a
+    restless: ValheimModding-Jotunn
+    note: "Config sync / admin lock. Pin 2.30.0 (1.0-day). Hard dependency of our plugin."
+
+  - id: core.host_lock
+    name: Host-locked gameplay config
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: (Jötunn SynchronizationMode + IsAdminOnly)
+    note: "Gameplay toggles sync from the server. Hotkeys (` / Shift+`) stay client-local. Untested on a dedicated host."
+
+  # --- bite 1, in the DLL ---
+  - id: storage.craft
+    name: Craft from nearby chests
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuCraftyBoxes
+    note: "Playtested 10 Sep. ConsumeResources + RemoveItem both pulled the chest shortfall — 2× when the bag was short. One RemoveItem shortfall now. Playtest a chest-funded craft."
+
+  - id: storage.build
+    name: Build from nearby chests
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuCraftyBoxes
+    note: "Playtested 10 Sep. Same 2× chest pull as storage.craft. Consume is the RemoveItem shortfall (own prefix so build-only still works). Ghosts still skipped. Playtest."
+
+  - id: storage.quickstack
+    name: Quick stack (`)
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuAutoStore
+    note: "Match-only (empty chests ignored). Skips hotbar row 0, extra Z/X/C / worn cells, and middle-click locked slots. Merge into existing stacks first. No sort/trash."
+
+  - id: storage.restock
+    name: Restock (Shift+`)
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuAutoStore
+    note: "Playtested 10 Sep: works. Existing stacks only; LeaveOne on pull."
+
+  - id: storage.station_pull
+    name: Stations pull ore/fuel from chests
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuCraftyBoxes
+    note: "Playtested 10 Sep: works. Smelter/kiln + cooking + fermenter. Fuel piggybacks on craft HaveItem/RemoveItem."
+
+  - id: building.area_repair
+    name: Area repair
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuAreaRepair
+    note: "Playtested 10 Sep: works. Player-built pieces in a 15 m sphere. No extra hammer-in-hand check."
+
+  - id: building.workbench_range
+    name: Workbench / station range
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuWorkbenchTweaks
+    note: "Playtested 10 Sep: works. GetStationBuildRange forced to 20 m; overwrites vanilla extra-range-per-level."
+
+  - id: player.death_pins
+    name: Clear death pin when tomb is emptied
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-DeathPinRemoval
+    note: "OnTakeAllSuccess + EasyFitInInventory → Minimap.RemovePin(pos, 1 m). Not playtested yet (next pass)."
+
+  - id: player.swim_wield
+    name: Keep tools equipped while swimming
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: blacks7ar-WieldEquipmentWhileSwimming
+    note: "Playtested 10 Sep: works. Wield only — not VikingsDoSwim diving."
+
+  - id: player.friendly_fire
+    name: No friendly fire on tames
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-ImFRIENDLY_DAMMIT
+    note: "Turret ignores tames. Character.RPC_Damage skips tame↔tame, tame→player, player→tame. Player PvP stays vanilla. Playtest."
+
+  - id: player.axe_combo
+    name: Axe combo while chopping
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: blacks7ar-AxeComboWhenChoppingTree
+    note: "Playtested 10 Sep: works. Axes + Tree reset → None."
+
+  - id: player.crossbow
+    name: Keep crossbow loaded on unequip
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-SaveCrossbowState
+    note: "ResetLoadedWeapon skipped only during UnequipItem. Not playtested yet (next pass). 1.0 stores load on the player, not ItemData.m_loaded."
+
+  - id: player.auto_repair
+    name: Repair on station use
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Grantapher-ValheimPlus
+    note: "InventoryGui.Show + CraftingStation.Interact. Loops vanilla RepairOneItem (one worn piece that this station can repair). UpdateRepair skipped so the hammer button stays gone. Forge still will not fix workbench tools. Host-locked F8. Playtest."
+
+  - id: inventory.stack_size
+    name: Stack size multiplier
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-AzuMiscPatches / Grantapher-ValheimPlus
+    note: "ObjectDB shared m_maxStackSize × F8 slider (default 2, 1–10). Remembers vanilla so the slider cannot compound. Max 1 (gear, trophies) stays 1. Existing piles do not split; they can merge further. Host value syncs to clients (F8 no longer says they must match). Weight multiplier is still misc.azu_leftovers. Playtest."
+
+  - id: production.eternal_fire
+    name: Fires stay lit
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Digitalroot-Eternal_Fire
+    note: "Playtested 10 Sep: placed Fireplace.m_infiniteFuel. Held ItemType.Torch skips DrainEquipedItemDurability. Not smelter/kiln fuel. Deep North pieces not specifically checked."
+
+  - id: world.dig_deeper
+    name: Dig deeper / raise higher
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Crystal-DigDeeper
+    note: "Playtested 10 Sep: works. Default 20 m vs vanilla 8. Host-lock syncs the number; a mismatch only happens if lock is off."
+
+  - id: world.floating_items
+    name: Chosen items float or sink
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: VentureValheim-Venture_Floating_Items
+    note: "FloatEverything default on. Sink list BronzeNails,IronNails. ExtraFloat used only if FloatEverything is off. Copies Floating settings from Wood. Grounded piles already spawned keep old buoyancy until pickup/reload. Not playtested."
+
+  - id: net.uncap
+    name: Network uncap
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Smoothbrain-Network / Somni-BetterNetworking_Valheim
+    note: "Do not install those sidecars or ValheimPlus. ZDOMan.SendZDOs window 10240→32768 (second ldc.i4 is a branch target — transpiler must keep labels). Steam SendRateMax 150 KB/s→512 KB/s after RegisterGlobalCallbacks, not Awake. Host-locked F8 toggle. Playtest on listen-host."
+
+  # --- bite 2 ---
+  - id: storage.pet_pantry
+    name: Tames eat from nearby chests
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: Azumatt-PetPantry
+    note: "Hungry tames (IsTamed only — wild still need ground food) pull one matching m_consumeItems stack from chests in Storage.Range. Runs on the AI consume-search tick / owner only. LeaveOne applies. Postfix sets ref __result so vanilla treats the meal as eaten. Not playtested."
+
+  - id: storage.ground_vacuum
+    name: Ground loot into chests
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: Azumatt-AzuAutoStore
+    note: "Routing, not a black hole: ground ItemDrops within Storage.Range go only into chests that already HaveItem that stack. Owner + CanPickup (0.5 s delay). Interval 0.75 s. Quest items skipped. Not playtested."
+
+  - id: inventory.mouse_tweaks
+    name: Shift-click / stack-split inventory
+    decision: vanilla
+    in_mod: n/a
+    bite: 2
+    restless: Azumatt-MouseTweaks
+    note: "1.0 InventoryGui.OnSelectedItem already MoveItemToThis when Modifier.Move (shift) and a container is open. Split is Modifier.Split. Do not write MouseTweaks unless that feels wrong in play."
+
+  # --- bite 3, candidates only ---
+  - id: storage.container_sizes
+    name: Bigger vanilla chests
+    decision: dll
+    in_mod: none
+    bite: 3
+    restless: Azumatt-AzuContainerSizes
+    note: "Candidate, not promised. Needs overflow/migration so existing worlds do not spill items. Azu 1.1.4 is Nov 2025."
+
+  - id: crafting.recycle
+    name: Recycle / reclaim items
+    decision: dll
+    in_mod: none
+    bite: 3
+    restless: Azumatt-Recycle_N_Reclaim
+    note: "Candidate, not promised. Recipe inversion + a UI tab — large. Recycle 1.4.1 is 19 Aug 2026. Do not sidecar their DLL."
+
+  - id: map.player_dots
+    name: Always-visible player map dots
+    decision: dll
+    in_mod: done
+    bite: 3
+    restless: Azumatt-Where_You_At
+    note: "Force public position so peers get coords. Cream kit diamond instead of the vanilla person. Visible toggle removed from the M map. Not shared fog (skip.map_share). Playtest."
+
+  - id: building.armor_stand_stats
+    name: Armor stand shows item stats
+    decision: dll
+    in_mod: none
+    bite: 3
+    restless: Azumatt-BoarderArmorStandStats
+    note: "Candidate, not promised. Tiny hover UI. Boarder 1.1.0 is Jan 2026. Easy skip."
+
+  - id: ui.buffs
+    name: Buff list under the map
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "HudRow.Buff under the map via HangUnder. Hides on M. Slides off with Tab (HudTuck). Tears down on GUI reload. Food uses vanilla slot count + RestlessUi.IconOf / BowlIcon. Playtest."
+
+  - id: ui.minimap
+    name: Quieter minimap chrome
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "HUD minimap (not M). Shared MapStudio (disable source). Recapture when UV/size/player moves or every 0.2s — not a camera blit every frame. Pins on the torn view. Biome bar: title left, cream wind right. Slides off with Tab (HudTuck). Playtest."
+
+  - id: ui.map
+    name: Restless large map
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "M map. Shared flips m_showSharedMapData on the Switch. Filter defaulted to Icon0 (None is 8) so PaintToggles overwrote Shared every frame — Shared rows now start at None. Shout pin face. Visible row removed — map.player_dots. Playtest."
+
+  - id: ui.notices
+    name: Message toasts
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Every MessageHud.ShowMessage overload + leftover queue → one HudRow.Notice drawer. QueueUnlockMsg (first item / recipe) folds into the same drawer; vanilla unlock cards stay hidden. Biome-found stays vanilla. Playtest."
+
+  - id: ui.hotbar
+    name: Restless item hotbar
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Torn-edge squares + Chip keys + 11px wear slit. RestlessUi.DressSlot shared with Tab. TrySpan is the dock for vitals and later extra slots. Playtest."
+
+  - id: ui.inventory
+    name: Restless inventory (Tab)
+    decision: dll
+    in_mod: partial
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Tab dresser. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
+
+  - id: ui.tooltip
+    name: Restless item tooltip
+    decision: dll
+    in_mod: partial
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Tab + chest inspect at the cursor. Nested tray + in-plate title/slot/stats. Solid TitleTear behind the name may escape the top-right corner — not a roof. Slot is DressSlot. Prefix-skips UITooltip LateUpdate/Anchor so vanilla text does not leak. GetTooltip phrases remapped via $item_* tokens. No compare-vs-equipped yet."
+
+  - id: ui.menu
+    name: Pause, logout, and exit
+    decision: dll
+    in_mod: partial
+    bite: 1
+    restless: RandyKnapp-Auga
+    note: "ESC column + logout/quit confirms. Keep darken, hide LeftKnot/RightKnot/ornament. Shelf leftover pause Button_* / OLD_menu only — not ExitConfirm/LogoutConfirm Yes/No. Confirm titles stay live for Averia. Vanilla Settings window stays. Playtest."
+
+  - id: ui.vitals
+    name: Health and stamina on the hotbar
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Thin 18px Ink track grows with max (112 + 1.1px/point, cap 260). Dark track = max; kit garnet HealthTint / amber StaminaTint fill = current (no vanilla steal). Averia current is an F8 child, off by default. Eitr and mount stay vanilla. Playtest."
+
+  - id: ui.equiphint
+    name: Equipped piece helper
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Piece name/icon above the bar. Hide vanilla helper plates on m_buildHud (the leftover transparent box behind Repair) — not a CanvasGroup on that root (1.0 BuildUi lives there). Chest place input is NearbyStorage (ghost Container). Playtest."
+
+  - id: ui.build
+    name: Restless hammer menu
+    decision: dll
+    in_mod: partial
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Dress 1.0 BuildUIV2 in place. Hide wood + scroll-view plates + gold scrollbars. KeepQuiet TMP so Filter/tags do not double-print. Chip tabs (text nudged up), tags, filter, Q/E/F key plates. Hover Selected frames hidden; hovered piece uses DressSlot lit. Playtest."
+
+  - id: ui.hints
+    name: Action hints
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "One KeyStack column for combat, hammer, and Tab. Bottom-right (map east). Baseline = hotbar bottom. Hidden on M. Vanilla KeyHints Quiet while on; clusters come back when the F8 row is off. Playtest."
+
+  - id: ui.look
+    name: World hover prompts
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "One Hud.UpdateCrosshair dresser. Title + binds on a single torn Strip. Guardian ItemStands use SetStory (name, wrapped m_tooltip, duration, Activate). $KEY_Use as E no longer eats Eikthyr. Hidden on M and Tab only — still dresses while placing. Chest ghost input is NearbyStorage, not this. Chest hover strips EMPTY. Playtest."
+
+  - id: ui.overhaul
+    name: Restless inventory / HUD overhaul
+    decision: dll
+    in_mod: partial
+    bite: 3
+    restless: RandyKnapp-Auga
+    note: "Restless is the QoL+UI core. Language: Strip / Chip / Ink / Tray / TrayHead / TitleTear / Rim / HudRow / HudMeter / Wear / KeyChip / KeyStack / HudTuck. TitleTear may escape a tray top-right; never a roof. Toasts top-left (including first-item / recipe unlocks). Hotbar at Bar. Health left of Bar, stamina right. Action hints at BottomRight. World hover at Look. M map is torn mat + plates (terrain unmasked). Hammer helper above the bar. Hammer menu is ui.build. Guardian + food (empty Eat + food fork) on the buff list. Tab dresser in progress (ui.inventory). Item inspect is ui.tooltip. Character counts are player.ledger. ESC pause / logout / exit are ui.menu. Biome-found stays vanilla. Extra armor/quick slots are inventory.equipment_slots. Do not install Auga."
+
+  - id: player.ledger
+    name: Character ledger
+    decision: dll
+    in_mod: partial
+    bite: 2
+    restless: (vanilla PlayerStats)
+    note: "Wraps PlayerProfile.GetStat / per-enemy IncrementStatEnemy store. F8 Character tab is view-only. Extras bag on player.m_customData for later modules. Not a skill tree — no bonuses, XP, or unlocks."
+
+  - id: misc.azu_leftovers
+    name: Cherry-picks from AzuMiscPatches
+    decision: dll
+    in_mod: none
+    bite: 3
+    restless: Azumatt-AzuMiscPatches
+    note: "Candidate, not promised. Stack multiplier is inventory.stack_size. Left in the 1.2.8 bag: longer/no-degrade food, weight multipliers, portal-item teleport, portal name length, mute-in-background, hide 'I have arrived', build in protected zones, ignore piece spacing, skip tuts, honey rate. Most of that is still balance."
+
+  # --- optional sidecars (not the pack) ---
+  - id: ui.mylittleui
+    name: Timers, multicraft, chest names, craft search
+    decision: sidecar
+    in_mod: n/a
+    restless: shudnal-MyLittleUI
+    note: "Optional HUD product. 1.2.16 is 1.0-day. Needs shudnal-ConditionalConfigSync 1.0.5. Do not rewrite timers/multicraft in our DLL unless you drop this sidecar. Conflicts with BetterUI / MinimalUI."
+
+  - id: inventory.slot_lock
+    name: Middle-click lock slots
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: (vanilla has no inventory MMB lock)
+    note: "Player bag only. Persists on the character. Vanilla Stack, quick stack, and restock skip locked cells. No bag sort exists — do not invent one. Cream diamond top-right. F8 toggle."
+
+  - id: inventory.equipment_slots
+    name: Dedicated armor / quick slots
+    decision: dll
+    in_mod: done
+    bite: 2
+    restless: RandyKnapp-EquipmentAndQuickSlots
+    note: "Do not install the sidecar. Hidden player-inventory rows, relocated into three flush columns after the bag (worn 2 + Z/X/C). Death: extra cells come off before CreateTombStone and go into a second tomb to the right (DeathKeepInventory leaves them). Drag onto an occupied worn/ZXC cell moves the occupant to the visible bag (or drops). Worn extras cannot start a drag — unequip is the vanilla action. Playtest the second grave and typed-cell swap."
+
+  - id: tooling.config_manager
+    name: In-game settings panel
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: Azumatt-Azus_UnOfficial_ConfigManager
+    note: "F8 / pause Restless. Nested Tray + Rim; TrayHead is an inset Ink Strip (RowWidth / TrayGutter). Rows stay torn (hover Rim). Gameplay patches always load and read the flag (craft/build spend are separate). Action hints restore vanilla clusters when off. Kit only embeds plates we draw — not Auga toggle-on / hotkey-btn / map-compass / slider. Not Azu Config Manager. Tab/ESC trays not in this pass."
+
+  # --- vanilla 1.0 ---
+  - id: inventory.extra_rows
+    name: Extra inventory rows
+    decision: vanilla
+    in_mod: n/a
+    restless: Azumatt-AzuExtendedPlayerInventory
+    note: "Upgradeable pockets (Wider / Deeper). Launch reports +2 rows; Moder/Queen gating unconfirmed in official notes. Do not absorb EPI rows."
+
+  - id: player.hair_beard
+    name: All hair / beards unlocked
+    decision: vanilla
+    in_mod: n/a
+    restless: ComfyMods-Pseudonym
+    note: "1.0 unlocks all styles at character creation. Pseudonym is stale (Jul 2024)."
+
+  - id: building.hammer_menu
+    name: Searchable / overhauled hammer menu
+    decision: vanilla
+    in_mod: n/a
+    restless: Azumatt-SearchableBuildMenu
+    note: "1.0 already has search and the new BuildUi grid. Chrome is ui.build. SearchableBuildMenu is Dec 2024."
+
+  - id: player.carry_weight
+    name: Carry weight
+    decision: vanilla
+    in_mod: n/a
+    restless: Smoothbrain-PackHorse
+    note: "Megingjord. No carry-weight skill."
+
+  # --- skip ---
+  - id: skip.planbuild
+    name: Blueprints / PlanBuild
+    decision: skip
+    in_mod: n/a
+    restless: MathiasDecrock-PlanBuild
+    note: "Building product, not a papercut. Still 0.18.4 (13 Mar 2026). No verified 1.0 fork."
+
+  - id: skip.portals
+    name: Portal destination picker / instant loads
+    decision: skip
+    in_mod: n/a
+    restless: Smoothbrain-TargetPortal / OdinPlus-QuickTeleport / OdinPlus-XPortal
+    note: "Portal networks stay out. TargetPortal and XPortal are both Feb 2026; XPortal fights ComfyGizmo. QuickTeleport (Nov 2024) makes the world feel cheap."
+
+  - id: skip.farming
+    name: Farming grid / farming skill
+    decision: skip
+    in_mod: n/a
+    restless: Smoothbrain-Farming / Advize-PlantEasily
+    note: "Skills are progression. PlantEasily is a specialist (grid / bulk harvest). Out of this plugin."
+
+  - id: skip.muc
+    name: Multi-user chests / ChestButler
+    decision: skip
+    in_mod: n/a
+    restless: MSchmoecker-MultiUserChest / EK_Solutions-ChestButler
+    note: "Networking product. NearbyStorage must coexist, not clone it. MUC 0.6.1 is Feb 2025; ChestButler needs MUC."
+
+  - id: skip.backpacks
+    name: Backpacks
+    decision: skip
+    in_mod: n/a
+    restless: Smoothbrain-Backpacks
+    note: "Try 1.0 pockets first. Bags are a different fantasy, not a papercut."
+
+  - id: skip.skills
+    name: Mining / lumber / sailing / smart skills
+    decision: skip
+    in_mod: n/a
+    restless: Smoothbrain-Mining / Lumberjacking / Sailing / SmartSkills
+    note: "Progression, not QoL."
+
+  - id: skip.drawers
+    name: Item drawers
+    decision: skip
+    in_mod: n/a
+    restless: KGvalheim-ItemDrawers / BROHEIM_CYBRP-ItemDrawers
+    note: "Deprecated. BROHEIM fork is also deprecated and AI-tagged. Live without drawers."
+
+  - id: skip.collectors
+    name: Crystal / feather / guck / tar collectors
+    decision: skip
+    in_mod: n/a
+    restless: blacks7ar-CrystalCollector / FeatherCollector / GuckCollector / TarCollector
+    note: "Content pieces, not papercuts."
+
+  - id: skip.carts
+    name: Crafty carts
+    decision: skip
+    in_mod: n/a
+    restless: OdinPlus-CraftyCartsRemake
+    note: "Vehicles / content."
+
+  - id: skip.ui_overhaul
+    name: BetterUI / MinimalUI / Auga / ValheimPlus
+    decision: skip
+    in_mod: n/a
+    restless: BetterUI_ForeverMaintained / Azumatt-Minimal_UI / RandyKnapp-Auga / Grantapher-ValheimPlus_Grantapher_Temporary
+    note: "Patch the same inventory/build/HUD surfaces as us. Auga last TS upload 1.3.11 (Nov 2023); PR 243 (Apr 2026) is a Unity 6 compile resurrection, not a 1.0 port. V+ 10.0.2 is 1.0-day but a kitchen sink — do not mix."
+
+  - id: skip.admin
+    name: Server Devcommands
+    decision: skip
+    in_mod: n/a
+    restless: JereKuusela-Server_devcommands
+    note: "Admin console (1.110.0, 10 Sep 2026). Use it on the host if you want; not in this plugin."
+
+  - id: skip.map_share
+    name: Shared map exploration
+    decision: skip
+    in_mod: n/a
+    restless: Mydayyy-ServerSideMap
+    note: "Co-op fog-of-war / shared pins. Not player dots (map.player_dots)."
+
+  - id: skip.gizmo
+    name: Build rotation gizmo
+    decision: skip
+    in_mod: n/a
+    restless: ComfyMods-Gizmo
+    note: "Restless never had it. Building specialist. Conflicts with XPortal."
+
+  - id: skip.content
+    name: Hearthstone, knowledge table, repair station, resin guard
+    decision: skip
+    in_mod: n/a
+    restless: Azumatt-Hearthstone / RustyMods-KnowledgeTable / Azumatt-RepairStation / Azumatt-ResinGuard
+    note: "New items/pieces. Hearthstone and ResinGuard are deprecated."
+
+  - id: skip.currency_pocket
+    name: Off-inventory coin bank
+    decision: skip
+    in_mod: n/a
+    restless: Azumatt-CurrencyPocket
+    note: "Noise on top of 1.0 pockets."
+
+  - id: skip.groups_combat
+    name: Groups / combat owner
+    decision: skip
+    in_mod: n/a
+    restless: Smoothbrain-Groups / Smoothbrain-CombatOwner
+    note: "MP systems, not papercuts. CombatOwner is Jul 2024 / stale."
+
+  - id: skip.balance_worldgen
+    name: Steady regen / max dungeon rooms / max player count
+    decision: skip
+    in_mod: n/a
+    restless: Smoothbrain-SteadyRegeneration / Digitalroot-Max_Dungeon_Rooms / Azumatt-MaxPlayerCount
+    note: "Balance or world-gen. Max Dungeon Rooms did ship a 1.0-day bump — still not QoL. Vanilla dedicated cap is still 1–10."
+
+  - id: skip.dive
+    name: Underwater diving
+    decision: skip
+    in_mod: n/a
+    restless: blacks7ar-VikingsDoSwim
+    note: "New mechanic (1.4.1, Feb 2026). Swim-wield is the papercut we took."
+
+  - id: skip.tooling
+    name: This Goes Here / ShutUp
+    decision: skip
+    in_mod: n/a
+    restless: ASharpPen-This_Goes_Here / Smoothbrain-ShutUp
+    note: "Author utilities. Not gameplay."

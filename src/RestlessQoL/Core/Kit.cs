@@ -1,0 +1,189 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEngine;
+
+namespace RestlessQoL.Core;
+
+internal static class Kit
+{
+    private static readonly string[] Library =
+    {
+        "row-idle", "btn-small", "diamond", "eat-fork",
+        "mouse-left", "mouse-right", "mouse-middle",
+        "tab-glow", "panel-back",
+    };
+
+    private static readonly Dictionary<string, Sprite> Cache = new();
+    private static MethodInfo? _loadImage;
+    private static bool _searched;
+    private static bool _logged;
+
+    public static void Warm()
+    {
+        var ok = 0;
+        foreach (var name in Library)
+        {
+            if (Sprite(name) != null)
+                ok++;
+            else
+                Plugin.Log.LogWarning("kit: missing " + name);
+        }
+
+        Plugin.Log.LogInfo("kit: " + ok + "/" + Library.Length + " sprites ready");
+    }
+
+    public static Sprite? Sprite(string name, Vector4 border = default)
+    {
+        if (name == "wear-slit")
+            return WearSlit();
+
+        var key = name + border;
+        if (Cache.TryGetValue(key, out var sprite) && sprite != null)
+            return sprite;
+
+        var tex = Texture(name);
+        if (tex == null)
+            return null;
+
+        sprite = UnityEngine.Sprite.Create(
+            tex,
+            new Rect(0f, 0f, tex.width, tex.height),
+            new Vector2(0.5f, 0.5f),
+            100f,
+            0,
+            SpriteMeshType.FullRect,
+            border);
+        sprite.name = name;
+        Cache[key] = sprite;
+        return sprite;
+    }
+
+    // Thin vertical ribbon from row-idle's torn left and right so a slit along
+    // the slot's right edge is ragged on every side. Top/bottom still 9-slice.
+    private static Sprite? WearSlit()
+    {
+        const string key = "wear-slit-w";
+        if (Cache.TryGetValue(key, out var sprite) && sprite != null)
+            return sprite;
+
+        var src = Sprite("row-idle")?.texture;
+        if (src == null)
+            return null;
+
+        var edge = Mathf.Max(28, src.width / 40);
+        var tall = src.height;
+        var tex = new Texture2D(edge * 2, tall, TextureFormat.RGBA32, false)
+        {
+            wrapMode = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Bilinear,
+            name = key
+        };
+        tex.SetPixels(0, 0, edge, tall, src.GetPixels(0, 0, edge, tall));
+        tex.SetPixels(edge, 0, edge, tall, src.GetPixels(src.width - edge, 0, edge, tall));
+        var pix = tex.GetPixels();
+        for (var i = 0; i < pix.Length; i++)
+        {
+            var a = pix[i].a;
+            if (a < 0.02f)
+                continue;
+            pix[i] = new Color(1f, 1f, 1f, a);
+        }
+
+        tex.SetPixels(pix);
+        tex.Apply();
+        sprite = UnityEngine.Sprite.Create(
+            tex,
+            new Rect(0f, 0f, tex.width, tex.height),
+            new Vector2(0.5f, 0.5f),
+            100f,
+            0,
+            SpriteMeshType.FullRect,
+            new Vector4(0f, 28f, 0f, 28f));
+        sprite.name = key;
+        Cache[key] = sprite;
+        return sprite;
+    }
+
+    public static Texture2D? Texture(string name)
+    {
+        var stream = typeof(Kit).Assembly.GetManifestResourceStream("RestlessQoL.Assets." + name + ".png");
+        if (stream == null)
+        {
+            Warn("missing " + name);
+            return null;
+        }
+
+        using (stream)
+        {
+            var bytes = new byte[stream.Length];
+            var read = 0;
+            while (read < bytes.Length)
+            {
+                var n = stream.Read(bytes, read, bytes.Length - read);
+                if (n <= 0)
+                    break;
+                read += n;
+            }
+
+            var tex = LoadBytes(bytes);
+            if (tex == null)
+            {
+                Warn("decode failed " + name);
+                return null;
+            }
+
+            tex.name = name;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = FilterMode.Bilinear;
+            return tex;
+        }
+    }
+
+    private static Texture2D? LoadBytes(byte[] bytes)
+    {
+        var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        var load = LoadImage();
+        if (load != null)
+        {
+            try
+            {
+                if ((bool)load.Invoke(null, new object[] { tex, bytes }))
+                    return tex;
+            }
+            catch
+            {
+                // fall through to the local decoder
+            }
+        }
+
+        UnityEngine.Object.Destroy(tex);
+        return Png.Load(bytes);
+    }
+
+    private static MethodInfo? LoadImage()
+    {
+        if (_searched)
+            return _loadImage;
+        _searched = true;
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            var type = assembly.GetType("UnityEngine.ImageConversion");
+            if (type == null)
+                continue;
+            _loadImage = type.GetMethod("LoadImage", new[] { typeof(Texture2D), typeof(byte[]) });
+            if (_loadImage != null)
+                return _loadImage;
+        }
+
+        return null;
+    }
+
+    private static void Warn(string message)
+    {
+        if (_logged)
+            return;
+        _logged = true;
+        Plugin.Log.LogWarning("kit: " + message);
+    }
+}

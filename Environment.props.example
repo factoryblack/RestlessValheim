@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <ValheimInstall>C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimInstall>
+  </PropertyGroup>
+</Project>

@@ -121,7 +121,7 @@ public static class ModConfig
         InventoryScreenEnabled = config.Bind("Hud.Inventory", "Enabled", true,
             "Torn plates and Averia on the Tab inventory. Vanilla grids, drag, and craft stay. Client-local.");
         TooltipEnabled = config.Bind("Hud.Tooltip", "Enabled", true,
-            "Restless item tooltip on Tab and chests. Vanilla GetTooltip parsed onto a kit Card. Client-local.");
+            "Restless item inspect on Tab and chests, with expansion badges and sections. PgUp/PgDn scroll long details. Client-local.");
         LedgerEnabled = config.Bind("Hud.Character", "Enabled", true,
             "Show the F8 Character tab (vanilla PlayerStats). The ledger API stays on. Client-local.");
         MenuScreenEnabled = config.Bind("Hud.Menu", "Enabled", true,

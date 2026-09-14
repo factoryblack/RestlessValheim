@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-14 — TitleTear top-right; inspect layout restored.
+# last_audit: 2026-09-14 — Inspect rebuild and tooltip contribution API; compile/in-game validation pending.
 
 updated: 2026-09-14
 
@@ -303,7 +303,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Tab + chest inspect at the cursor. Nested tray + in-plate title/slot/stats. Solid TitleTear behind the name may escape the top-right corner — not a roof. Slot is DressSlot. Prefix-skips UITooltip LateUpdate/Anchor so vanilla text does not leak. GetTooltip phrases remapped via $item_* tokens. No compare-vs-equipped yet."
+    note: "Tab + chest inspect at the cursor. Shared Tray / TitleTear / DressSlot; measured wrapped text, two-column damage chips, fixed identity header and clipped PgUp/PgDn details. Unknown tooltip lines preserved. Client-side TooltipApi v1 accepts ordered badges, rim tint and sections, with disposable registrations and provider exception isolation. No rarity mechanics or compare-vs-equipped. Keyboard overflow only; controller navigation, compilation and in-game visual/input verification pending."
 
   - id: ui.menu
     name: Pause, logout, and exit

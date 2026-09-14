@@ -2,26 +2,36 @@ using System.Collections.Generic;
 using System.Text;
 using HarmonyLib;
 using Jotunn.Managers;
+using RestlessQoL.Api;
 using RestlessQoL.Core;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace RestlessQoL.HudTweaks;
 
-// Tab + chest inspect. Tray at the cursor. Title sits in the plate; a solid
-// TitleTear may escape the top-right corner. Slot is DressSlot.
-// Vanilla UITooltip LateUpdate is skipped while a bag/chest item is hovered.
+// The inspect surface owns layout; extensions supply data through TooltipApi.
+// Uses the shared Tray / TitleTear / DressSlot / Chip kit, including the F8 toggle.
 public sealed class ItemTooltip : FeatureModule
 {
     public override string Id => "ui.tooltip";
     public override bool Enabled => true;
     public override bool TickInMenus => true;
 
-    private const float CardWidth = 320f;
-    private const float Pad = 16f;
+    private const float CardWidth = 380f;
+    private const float Pad = 18f;
+    private const int CopySize = RestlessUi.MetaSize;
     private static GameObject? _card;
     private static GameObject? _body;
-    private static int _stamp;
+    private static GameObject? _viewport;
+    private static GameObject? _footer;
+    private static ItemDrop.ItemData? _item;
+    private static string _signature = "";
+    private static float _nextRefresh;
+    private static int _revision;
+    private static float _width;
+    private static float _overflow;
+    private static float _scroll;
+    private static bool _warned;
 
     private static readonly string[] DamageWords =
     {
@@ -29,16 +39,12 @@ public sealed class ItemTooltip : FeatureModule
         "lightning", "poison", "spirit"
     };
 
-    protected override void OnLoaded()
-    {
-        GUIManager.OnCustomGUIAvailable += TearDown;
-    }
+    protected override void OnLoaded() => GUIManager.OnCustomGUIAvailable += TearDown;
 
     public override void Tick()
     {
-        if (ModConfig.TooltipEnabled.Value)
-            return;
-        TearDown();
+        if (!ModConfig.TooltipEnabled.Value || !InventoryGui.IsVisible())
+            HideCard();
     }
 
     [HarmonyPatch]
@@ -92,11 +98,11 @@ public sealed class ItemTooltip : FeatureModule
         if (!ModConfig.TooltipEnabled.Value || !InventoryGui.IsVisible())
             return false;
         var gui = InventoryGui.instance;
-        return gui != null && Hovered(gui) != null;
+        return _card != null && _card.activeSelf && gui != null && Hovered(gui) != null;
     }
 
     private static bool Ours(UITooltip tip) =>
-        ModConfig.TooltipEnabled.Value && InventoryGui.IsVisible()
+        Hovering()
         && tip != null && tip.GetComponentInParent<InventoryElement>() != null;
 
     private static void Dress(InventoryGui gui)
@@ -108,11 +114,24 @@ public sealed class ItemTooltip : FeatureModule
             return;
         }
 
-        UITooltip.HideTooltip();
-        if (UITooltip.m_tooltip != null)
-            UITooltip.m_tooltip.SetActive(false);
-        Bind(gui, item);
-        Park();
+        try
+        {
+            Bind(gui, item);
+            Park();
+            if (_card == null || !_card.activeSelf) return;
+            UITooltip.HideTooltip();
+            if (UITooltip.m_tooltip != null)
+                UITooltip.m_tooltip.SetActive(false);
+        }
+        catch (System.Exception error)
+        {
+            HideCard();
+            if (!_warned)
+            {
+                _warned = true;
+                Plugin.Log.LogWarning("item tooltip: " + error);
+            }
+        }
     }
 
     private static ItemDrop.ItemData? Hovered(InventoryGui gui)
@@ -132,283 +151,360 @@ public sealed class ItemTooltip : FeatureModule
         return inv?.GetItemAt(el.Position.x, el.Position.y);
     }
 
+
     private static void Bind(InventoryGui gui, ItemDrop.ItemData item)
     {
         var host = Host(gui);
-        if (host == null)
-            return;
-        if (_card == null || _card.transform.parent != host || _card.transform.Find("edgeTop") != null)
+        var parent = host as RectTransform;
+        if (parent == null) return;
+        if (_card == null || _card.transform.parent != host)
         {
             DropCard();
-            _card = Plate(host);
-            _body = RestlessUi.Node(_card.transform, "body");
-            RestlessUi.Stretch(_body, Vector2.zero, Vector2.one, new Vector2(Pad, Pad), new Vector2(-Pad, -Pad));
-            var layout = _body.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 6f;
-            layout.childAlignment = TextAnchor.UpperLeft;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
-            _body.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            _card = RestlessUi.Tray(host, "RestlessTooltip", false);
+            var input = _card.AddComponent<CanvasGroup>();
+            input.blocksRaycasts = false;
+            input.interactable = false;
         }
 
-        var stamp = Stamp(item);
-        if (stamp != _stamp || !_card.activeSelf)
+        var width = Mathf.Min(CardWidth, Mathf.Max(180f, parent.rect.width - 36f - RestlessUi.HeadOverhang));
+        var maxHeight = Mathf.Max(100f, parent.rect.height - 32f - RestlessUi.HeadLift);
+        var changedItem = !ReferenceEquals(_item, item);
+        if (changedItem || !_card.activeSelf || TooltipApi.Revision != _revision
+            || Time.unscaledTime >= _nextRefresh || !Mathf.Approximately(width, _width))
         {
-            _stamp = stamp;
-            _card.SetActive(true);
-            RestlessUi.Wipe(_body!.transform);
-            var title = Soft(item.m_shared.m_name);
-            if (string.IsNullOrEmpty(title))
-                title = "Item";
-            Fill(_body.transform, item, title);
-            LayoutRebuilder.ForceRebuildLayoutImmediate(_body.GetComponent<RectTransform>());
-            var h = Mathf.Clamp(_body.GetComponent<RectTransform>().rect.height + Pad * 2f, 140f, 560f);
-            RestlessUi.Pin(_card, new Vector2(0.5f, 0.5f), new Vector2(0f, 1f), Vector2.zero,
-                new Vector2(CardWidth, h));
-            var stale = _card.transform.Find("lid");
-            if (stale != null)
-                Object.Destroy(stale.gameObject);
-            var name = _body.transform.Find("head/meta/title") as RectTransform;
-            RestlessUi.TitleTear(_card, name);
+            _nextRefresh = Time.unscaledTime + 0.25f;
+            _revision = TooltipApi.Revision;
+            var raw = item.GetTooltip();
+            var contributions = TooltipApi.Collect(item);
+            var signature = Signature(item, raw, contributions, width, maxHeight);
+            if (changedItem || !_card.activeSelf || signature != _signature)
+            {
+                _signature = signature;
+                _item = item;
+                _width = width;
+                if (changedItem) _scroll = 0f;
+                _card.SetActive(true);
+                RestlessUi.Wipe(_card.transform);
+                RestlessUi.Rim(_card, RimTint(contributions));
+                Rebuild(item, raw, contributions, maxHeight);
+            }
         }
 
+        // The tooltip never intercepts pointer raycasts from the inventory.
+        // Page keys scroll long detail sections without scrolling the bag beneath it.
+        if (_overflow > 0f && _viewport != null)
+        {
+            var page = _viewport.GetComponent<RectTransform>().rect.height * 0.8f;
+            if (Input.GetKeyDown(KeyCode.PageDown)) _scroll += page;
+            if (Input.GetKeyDown(KeyCode.PageUp)) _scroll -= page;
+        }
+        Scroll();
         _card.transform.SetAsLastSibling();
+    }
+
+    private static void Rebuild(ItemDrop.ItemData item, string raw,
+        List<TooltipContribution> contributions, float maxHeight)
+    {
+        var inner = _width - Pad * 2f;
+        var title = Soft(item.m_shared.m_name);
+        var blurb = Soft(item.m_shared.m_description).Trim();
+        Parse(raw, title, blurb, out var stats, out var chips, out var notes);
+
+        RestlessUi.Pin(_card!, new Vector2(0.5f, 0.5f), new Vector2(0f, 1f),
+            Vector2.zero, new Vector2(_width, maxHeight));
+        var header = RestlessUi.Node(_card!.transform, "head");
+        Place(header, Pad, Pad, inner, 100f);
+        var cell = RestlessUi.Node(header.transform, "slot");
+        Place(cell, 0f, 0f, 72f, 72f);
+        var icon = RestlessUi.Graphic(cell.transform, "icon", Color.white, false).GetComponent<Image>();
+        icon.sprite = RestlessUi.IconOf(item);
+        icon.preserveAspect = true;
+        RestlessUi.Pin(icon.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+            Vector2.zero, new Vector2(52f, 52f));
+        var slot = RestlessUi.DressSlot(cell, icon, false, item, null, true, SlotLock.Held(item));
+        RestlessUi.Pin(slot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+            Vector2.zero, new Vector2(72f, 72f));
+
+        var metaWidth = inner - 86f;
+        var name = RestlessUi.Label(header.transform, title, RestlessUi.TitleSize,
+            RestlessUi.Text, TextAnchor.UpperLeft);
+        name.gameObject.name = "title";
+        var nameHeight = Measure(name, metaWidth);
+        Place(name.gameObject, 86f, 0f, metaWidth, nameHeight);
+        var type = RestlessUi.Label(header.transform, TypeName(item.m_shared.m_itemType),
+            CopySize, RestlessUi.Accent, TextAnchor.UpperLeft);
+        var typeHeight = Measure(type, metaWidth);
+        Place(type.gameObject, 86f, nameHeight + 4f, metaWidth, typeHeight);
+        var headerHeight = Mathf.Max(72f, nameHeight + typeHeight + 4f);
+        Place(header, Pad, Pad, inner, headerHeight);
+
+        _viewport = RestlessUi.Node(_card.transform, "viewport");
+        _viewport.AddComponent<RectMask2D>();
+        _body = RestlessUi.Node(_viewport.transform, "body");
+        Place(_body, 0f, 0f, inner, 0f);
+        var layout = _body.AddComponent<VerticalLayoutGroup>();
+        layout.spacing = 7f;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        layout.childAlignment = TextAnchor.UpperLeft;
+
+        // Quality is an actual item upgrade level, never a fabricated rarity.
+        if (item.m_quality > 1)
+            Badge(_body.transform, Soft("$item_quality") + " " + item.m_quality, RestlessUi.Accent, inner);
+        foreach (var contribution in contributions)
+            foreach (var badge in contribution.Badges)
+                if (!string.IsNullOrWhiteSpace(badge.Text))
+                    Badge(_body.transform, Soft(badge.Text), badge.Tint ?? RestlessUi.Accent, inner);
+
+        if (blurb.Length > 0)
+            Paragraph(_body.transform, blurb, inner, RestlessUi.Muted);
+        if (stats.Count > 0)
+        {
+            Divider(_body.transform);
+            foreach (var stat in stats)
+                StatRow(_body.transform, stat.label, stat.value, inner);
+        }
+
+        if (chips.Count > 0)
+        {
+            Divider(_body.transform);
+            // Two generous cells per row; measured text may wrap instead of clipping.
+            var columns = inner >= 280f ? 2 : 1;
+            for (var i = 0; i < chips.Count; i += columns)
+            {
+                var row = RestlessUi.Node(_body.transform, "damage");
+                var cellWidth = (inner - (columns - 1) * 8f) / columns;
+                var leftHeight = DamageChip(row.transform, chips[i].label, chips[i].value, 0f, cellWidth);
+                var rightHeight = columns == 2 && i + 1 < chips.Count
+                    ? DamageChip(row.transform, chips[i + 1].label, chips[i + 1].value, cellWidth + 8f, cellWidth)
+                    : 0f;
+                Hold(row, Mathf.Max(leftHeight, rightHeight));
+            }
+        }
+
+        // Preserve unfamiliar vanilla/mod lines, including short set/effect lines.
+        if (notes.Count > 0)
+        {
+            Divider(_body.transform);
+            Paragraph(_body.transform, string.Join("\n", notes), inner, RestlessUi.Text);
+        }
+        foreach (var contribution in contributions)
+        {
+            foreach (var section in contribution.Sections)
+            {
+                if (string.IsNullOrWhiteSpace(section.Title) && string.IsNullOrWhiteSpace(section.Body)
+                    && section.Rows.Count == 0) continue;
+                Divider(_body.transform);
+                if (!string.IsNullOrWhiteSpace(section.Title))
+                    Paragraph(_body.transform, Soft(section.Title), inner, RestlessUi.Accent);
+                foreach (var stat in section.Rows)
+                    StatRow(_body.transform, Soft(stat.Label), Soft(stat.Value), inner);
+                if (!string.IsNullOrWhiteSpace(section.Body))
+                    Paragraph(_body.transform, Soft(section.Body), inner, RestlessUi.Muted);
+            }
+        }
+
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_body.GetComponent<RectTransform>());
+        var contentHeight = LayoutUtility.GetPreferredHeight(_body.GetComponent<RectTransform>());
+        var top = Pad + headerHeight + 14f;
+        var available = Mathf.Max(32f, maxHeight - top - Pad);
+        var needsScroll = contentHeight > available;
+        var viewportHeight = Mathf.Min(contentHeight, needsScroll ? Mathf.Max(32f, available - 25f) : available);
+        _overflow = Mathf.Max(0f, contentHeight - viewportHeight);
+        Place(_viewport, Pad, top, inner, viewportHeight);
+        Place(_body, 0f, 0f, inner, contentHeight);
+        var height = top + viewportHeight + Pad + (needsScroll ? 25f : 0f);
+        // Extremely small canvases still keep the entire surface within the screen.
+        _card.GetComponent<RectTransform>().sizeDelta = new Vector2(_width, height);
+        _card.transform.localScale = Vector3.one * Mathf.Min(1f, maxHeight / height);
+        if (needsScroll)
+        {
+            _footer = RestlessUi.Node(_card.transform, "paging");
+            Place(_footer, Pad, height - Pad - 18f, inner, 18f);
+            var hint = RestlessUi.Label(_footer.transform, "", RestlessUi.HudMeta,
+                RestlessUi.Muted, TextAnchor.MiddleRight);
+            RestlessUi.Stretch(hint.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        }
+        else _footer = null;
+        RestlessUi.TitleTear(_card, name.rectTransform);
+    }
+
+    private static void Scroll()
+    {
+        if (_body == null) return;
+        _scroll = Mathf.Clamp(_scroll, 0f, _overflow);
+        _body.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, _scroll);
+        if (_footer != null)
+        {
+            var hint = _footer.GetComponentInChildren<Text>();
+            hint.text = "PgUp / PgDn  ·  " + Mathf.RoundToInt(_overflow > 0f ? _scroll / _overflow * 100f : 0f) + "%";
+        }
     }
 
     private static Transform? Host(InventoryGui gui)
     {
         var canvas = gui.GetComponentInParent<Canvas>();
-        if (canvas != null)
-            return canvas.transform;
-        if (gui.m_inventoryRoot != null)
-            return gui.m_inventoryRoot.parent != null ? gui.m_inventoryRoot.parent : gui.m_inventoryRoot;
-        return gui.transform;
+        if (canvas != null) return canvas.transform;
+        return gui.m_inventoryRoot != null ? gui.m_inventoryRoot.parent : gui.transform;
     }
 
     private static void Park()
     {
-        if (_card == null || !_card.activeSelf)
-            return;
+        if (_card == null || !_card.activeSelf) return;
         var plate = _card.GetComponent<RectTransform>();
         var parent = plate.parent as RectTransform;
-        if (parent == null)
-            return;
+        if (parent == null) return;
         var canvas = _card.GetComponentInParent<Canvas>();
-        var cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
-            ? canvas.worldCamera
-            : null;
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, Input.mousePosition, cam, out var local))
-            return;
-
-        var size = plate.sizeDelta;
-        var hang = RestlessUi.HeadOverhang;
-        var lift = RestlessUi.HeadLift;
+        var cam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay ? canvas.worldCamera : null;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, Input.mousePosition, cam, out var local)) return;
+        var size = plate.sizeDelta * plate.localScale.x;
         var box = parent.rect;
+        var hang = RestlessUi.HeadOverhang * plate.localScale.x;
+        var lift = RestlessUi.HeadLift * plate.localScale.x;
         var pos = local + new Vector2(18f, -12f);
-        if (pos.x + size.x + hang > box.xMax - 8f)
-            pos.x = local.x - size.x - 18f;
-        if (pos.y - size.y < box.yMin + 8f)
-            pos.y = local.y + 12f;
-        pos.x = Mathf.Clamp(pos.x, box.xMin + 8f, box.xMax - size.x - 8f - hang);
-        pos.y = Mathf.Clamp(pos.y, box.yMin + size.y + 8f, box.yMax - 8f - lift);
-        plate.anchorMin = plate.anchorMax = new Vector2(0.5f, 0.5f);
+        if (pos.x + size.x + hang > box.xMax - 8f) pos.x = local.x - size.x - 18f;
+        if (pos.y - size.y < box.yMin + 8f) pos.y = local.y + 12f;
+        pos.x = Mathf.Clamp(pos.x, box.xMin + 8f, Mathf.Max(box.xMin + 8f, box.xMax - size.x - 8f - hang));
+        pos.y = Mathf.Clamp(pos.y, box.yMin + size.y + 8f, Mathf.Max(box.yMin + size.y + 8f, box.yMax - 8f - lift));
+        plate.anchorMin = plate.anchorMax = parent.pivot;
         plate.pivot = new Vector2(0f, 1f);
         plate.anchoredPosition = pos;
     }
 
-    private static void Fill(Transform body, ItemDrop.ItemData item, string title)
+    private static float Measure(Text text, float width)
     {
-        Parse(item.GetTooltip(), title, out var stats, out var chips, out var flavor);
-        var blurb = Soft(item.m_shared.m_description);
-        if (blurb.Length > 0)
-            flavor = new List<string> { blurb };
+        text.horizontalOverflow = HorizontalWrapMode.Wrap;
+        text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        return Mathf.Ceil(Mathf.Max(text.fontSize + 3f, text.preferredHeight));
+    }
 
-        var head = RestlessUi.Node(body, "head");
-        var row = head.AddComponent<HorizontalLayoutGroup>();
-        row.spacing = 10f;
-        row.childAlignment = TextAnchor.UpperLeft;
-        row.childControlWidth = true;
-        row.childControlHeight = true;
-        row.childForceExpandWidth = false;
-        row.childForceExpandHeight = false;
-        var headHold = head.AddComponent<LayoutElement>();
-        headHold.minHeight = 72f;
-        headHold.flexibleHeight = 0f;
+    private static void Place(GameObject go, float x, float y, float width, float height) =>
+        RestlessUi.Pin(go, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(x, -y), new Vector2(width, height));
 
-        var cell = RestlessUi.Node(head.transform, "slot");
-        var cellHold = cell.AddComponent<LayoutElement>();
-        cellHold.minWidth = cellHold.preferredWidth = 64f;
-        cellHold.minHeight = cellHold.preferredHeight = 64f;
-        cellHold.flexibleWidth = 0f;
-        var icon = RestlessUi.Graphic(cell.transform, "icon", Color.white, false);
-        var iconImg = icon.GetComponent<Image>();
-        iconImg.sprite = RestlessUi.IconOf(item);
-        iconImg.preserveAspect = true;
-        RestlessUi.Pin(icon, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
-            new Vector2(44f, 44f));
-        var plate = RestlessUi.DressSlot(cell, iconImg, false, item, null, true, SlotLock.Held(item));
-        RestlessUi.Pin(plate, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
-            new Vector2(64f, 64f));
+    private static void Paragraph(Transform parent, string copy, float width, Color tint)
+    {
+        var text = RestlessUi.Label(parent, copy, CopySize, tint, TextAnchor.UpperLeft);
+        Hold(text.gameObject, Measure(text, width));
+    }
 
-        var meta = RestlessUi.Node(head.transform, "meta");
-        var metaHold = meta.AddComponent<LayoutElement>();
-        metaHold.flexibleWidth = 1f;
-        metaHold.minHeight = 64f;
-        var metaCol = meta.AddComponent<VerticalLayoutGroup>();
-        metaCol.spacing = 4f;
-        metaCol.childAlignment = TextAnchor.UpperLeft;
-        metaCol.childControlWidth = true;
-        metaCol.childControlHeight = true;
-        metaCol.childForceExpandWidth = true;
-        metaCol.childForceExpandHeight = false;
+    private static void Divider(Transform parent)
+    {
+        var row = RestlessUi.Node(parent, "divider");
+        Hold(row, 9f);
+        var line = RestlessUi.Graphic(row.transform, "line",
+            new Color(RestlessUi.Accent.r, RestlessUi.Accent.g, RestlessUi.Accent.b, 0.22f), false);
+        RestlessUi.Stretch(line, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f),
+            new Vector2(0f, -0.5f), new Vector2(0f, 0.5f));
+    }
 
-        var name = RestlessUi.Label(meta.transform, title, RestlessUi.TitleSize, RestlessUi.Text,
-            TextAnchor.UpperLeft);
-        name.gameObject.name = "title";
-        name.horizontalOverflow = HorizontalWrapMode.Wrap;
-        name.verticalOverflow = VerticalWrapMode.Overflow;
-        name.lineSpacing = 0.85f;
-        var nameHold = name.gameObject.AddComponent<LayoutElement>();
-        nameHold.minHeight = 36f;
-        nameHold.preferredHeight = title.Length > 16 ? 64f : 36f;
-        nameHold.flexibleWidth = 1f;
+    private static void Badge(Transform parent, string copy, Color tint, float width)
+    {
+        var row = RestlessUi.Node(parent, "badge");
+        var chip = RestlessUi.Chip(row.transform, "chip");
+        chip.GetComponent<Image>().raycastTarget = false;
+        var text = RestlessUi.Label(chip.transform, copy, RestlessUi.HudMeta, tint, TextAnchor.MiddleLeft);
+        var inset = RestlessUi.PlateInset;
+        var chipWidth = Mathf.Min(width, Mathf.Max(72f, text.preferredWidth + inset * 2f));
+        var height = Measure(text, chipWidth - inset * 2f) + 8f;
+        Place(chip, 0f, 0f, chipWidth, height);
+        RestlessUi.Stretch(text.gameObject, Vector2.zero, Vector2.one, new Vector2(inset, 4f), new Vector2(-inset, -4f));
+        Hold(row, height);
+    }
 
-        var line = RestlessUi.Node(meta.transform, "line");
-        Hold(line, 26f);
-        var lineRow = line.AddComponent<HorizontalLayoutGroup>();
-        lineRow.spacing = 6f;
-        lineRow.childAlignment = TextAnchor.MiddleLeft;
-        lineRow.childControlWidth = true;
-        lineRow.childControlHeight = true;
-        lineRow.childForceExpandWidth = false;
-        lineRow.childForceExpandHeight = false;
-        TypeChip(line.transform, TypeName(item.m_shared.m_itemType));
+    private static void StatRow(Transform parent, string label, string value, float width)
+    {
+        var row = RestlessUi.Node(parent, "stat");
+        var labelWidth = (width - 14f) * 0.52f;
+        var valueWidth = width - 14f - labelWidth;
+        var left = RestlessUi.Label(row.transform, label, CopySize, RestlessUi.Muted, TextAnchor.UpperLeft);
+        var right = RestlessUi.Label(row.transform, value, CopySize, RestlessUi.Accent, TextAnchor.UpperRight);
+        var height = Mathf.Max(Measure(left, labelWidth), Measure(right, valueWidth));
+        Place(left.gameObject, 0f, 0f, labelWidth, height);
+        Place(right.gameObject, labelWidth + 14f, 0f, valueWidth, height);
+        Hold(row, height);
+    }
 
-        foreach (var stat in stats)
-            StatRow(body, stat.label, stat.value);
+    private static float DamageChip(Transform parent, string label, string value, float x, float width)
+    {
+        var chip = RestlessUi.Chip(parent, "damageChip");
+        chip.GetComponent<Image>().raycastTarget = false;
+        chip.GetComponent<Image>().color = Color.Lerp(RestlessUi.ChipTint, RestlessUi.StaminaTint, 0.16f);
+        var face = RestlessUi.Label(chip.transform, label + " " + value, CopySize,
+            RestlessUi.Accent, TextAnchor.MiddleCenter);
+        var inset = RestlessUi.PlateInset;
+        var height = Measure(face, width - inset * 2f) + 14f;
+        Place(chip, x, 0f, width, height);
+        RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(inset, 7f), new Vector2(-inset, -7f));
+        return height;
+    }
 
-        if (chips.Count > 0)
+    private static Color? RimTint(List<TooltipContribution> contributions)
+    {
+        foreach (var contribution in contributions)
+            if (contribution.RimTint.HasValue) return contribution.RimTint;
+        return null;
+    }
+
+    private static string Signature(ItemDrop.ItemData item, string raw,
+        List<TooltipContribution> contributions, float width, float maxHeight)
+    {
+        var text = new StringBuilder();
+        // Length-prefix fields so arbitrary extension text cannot collide at separators.
+        void Add(string value) { text.Append(value.Length).Append(':').Append(value); }
+        Add(raw); Add(Soft(item.m_shared.m_name)); Add(Soft(item.m_shared.m_description));
+        Add(item.m_quality.ToString()); Add(item.m_stack.ToString()); Add(item.m_durability.ToString("R"));
+        Add(SlotLock.Held(item).ToString()); Add(width.ToString("R")); Add(maxHeight.ToString("R"));
+        Add(RestlessUi.IconOf(item)?.GetInstanceID().ToString() ?? "");
+        foreach (var contribution in contributions)
         {
-            var tray = RestlessUi.Node(body, "chips");
-            var grid = tray.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(88f, 24f);
-            grid.spacing = new Vector2(6f, 4f);
-            grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
-            grid.startAxis = GridLayoutGroup.Axis.Horizontal;
-            grid.childAlignment = TextAnchor.UpperLeft;
-            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 3;
-            Hold(tray, ((chips.Count + 2) / 3) * 28f);
-            foreach (var chip in chips)
-                DamageChip(tray.transform, chip.label, chip.value);
+            Add("contribution"); Add(contribution.RimTint?.ToString() ?? "");
+            foreach (var badge in contribution.Badges) { Add("badge"); Add(Soft(badge.Text)); Add(badge.Tint?.ToString() ?? ""); }
+            foreach (var section in contribution.Sections)
+            {
+                Add("section"); Add(Soft(section.Title)); Add(Soft(section.Body));
+                foreach (var row in section.Rows) { Add("row"); Add(Soft(row.Label)); Add(Soft(row.Value)); }
+            }
         }
-
-        if (flavor.Count == 0)
-            return;
-        var note = RestlessUi.Label(body, string.Join("\n", flavor), RestlessUi.HudSize, RestlessUi.Muted,
-            TextAnchor.UpperLeft);
-        note.horizontalOverflow = HorizontalWrapMode.Wrap;
-        note.verticalOverflow = VerticalWrapMode.Overflow;
-        var noteHold = note.gameObject.AddComponent<LayoutElement>();
-        noteHold.minHeight = 18f;
-        noteHold.preferredHeight = 20f + flavor.Count * 16f;
-        noteHold.flexibleWidth = 1f;
+        return text.ToString();
     }
 
-    private static void TypeChip(Transform parent, string copy)
-    {
-        if (string.IsNullOrEmpty(copy))
-            return;
-        var chip = RestlessUi.Chip(parent, "type");
-        var hold = chip.AddComponent<LayoutElement>();
-        hold.preferredWidth = Mathf.Clamp(copy.Length * 8f + 20f, 72f, 140f);
-        hold.preferredHeight = 24f;
-        hold.flexibleWidth = 0f;
-        var face = RestlessUi.Label(chip.transform, copy, RestlessUi.HudMeta, RestlessUi.Accent,
-            TextAnchor.MiddleCenter);
-        RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 0f), new Vector2(-8f, 0f));
-    }
-
-    private static void StatRow(Transform parent, string label, string value)
-    {
-        var go = RestlessUi.Node(parent, "stat");
-        Hold(go, 18f);
-        var left = RestlessUi.Label(go.transform, label, RestlessUi.HudSize, RestlessUi.Muted,
-            TextAnchor.MiddleLeft);
-        RestlessUi.Stretch(left.gameObject, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-100f, 0f));
-        var right = RestlessUi.Label(go.transform, value, RestlessUi.HudSize, RestlessUi.Accent,
-            TextAnchor.MiddleRight);
-        RestlessUi.Stretch(right.gameObject, Vector2.zero, Vector2.one, new Vector2(120f, 0f), Vector2.zero);
-    }
-
-    private static void DamageChip(Transform parent, string label, string value)
-    {
-        var chip = RestlessUi.Chip(parent, "dmg");
-        chip.GetComponent<Image>().color = DamageTint(label);
-        var copy = string.IsNullOrEmpty(value) ? label : label + " " + value;
-        var face = RestlessUi.Label(chip.transform, copy, RestlessUi.HudMeta, RestlessUi.Text,
-            TextAnchor.MiddleCenter);
-        RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(4f, 0f), new Vector2(-4f, 0f));
-    }
-
-    private static Color DamageTint(string label)
-    {
-        var n = label.ToLowerInvariant();
-        if (n.Contains("fire") || n.Contains("poison"))
-            return Color.Lerp(RestlessUi.ChipTint, RestlessUi.HealthTint, 0.55f);
-        if (n.Contains("frost"))
-            return Color.Lerp(RestlessUi.ChipTint, RestlessUi.Muted, 0.4f);
-        if (n.Contains("lightning") || n.Contains("spirit"))
-            return Color.Lerp(RestlessUi.ChipTint, RestlessUi.Accent, 0.45f);
-        if (n.Contains("slash") || n.Contains("pierce") || n.Contains("blunt")
-            || n.Contains("chop") || n.Contains("pickaxe"))
-            return Color.Lerp(RestlessUi.ChipTint, RestlessUi.StaminaTint, 0.25f);
-        return RestlessUi.ChipTint;
-    }
-
-    private static void Parse(string raw, string title, out List<(string label, string value)> stats,
-        out List<(string label, string value)> chips, out List<string> flavor)
+    private static void Parse(string raw, string title, string description, out List<(string label, string value)> stats,
+        out List<(string label, string value)> chips, out List<string> notes)
     {
         stats = new List<(string, string)>();
         chips = new List<(string, string)>();
-        flavor = new List<string>();
-        if (string.IsNullOrWhiteSpace(raw))
-            return;
-
+        notes = new List<string>();
+        if (string.IsNullOrWhiteSpace(raw)) return;
         var seen = new HashSet<string>();
-        foreach (var chunk in raw.Replace("\r", "").Split('\n'))
+        foreach (var line in description.Replace("\r", "").Split('\n')) seen.Add(line.Trim());
+        foreach (var chunk in Soft(raw).Replace("\r", "").Split('\n'))
         {
-            var line = Soft(chunk).Trim();
-            if (line.Length == 0)
-                continue;
-            if (title.Length > 0 && string.Equals(line, title, System.StringComparison.OrdinalIgnoreCase))
-                continue;
+            var line = chunk.Trim();
+            if (line.Length == 0 || line == title || !seen.Add(line)) continue;
             var colon = line.IndexOf(':');
             if (colon > 0 && colon < line.Length - 1)
             {
                 var label = Phrase(line.Substring(0, colon).Trim());
                 var value = line.Substring(colon + 1).Trim();
-                if (label.Length == 0 || value.Length == 0)
-                    continue;
-                var key = label.ToLowerInvariant();
-                if (key.Contains("quality") || key.Contains("upgrade"))
-                    continue;
-                if (!seen.Add(key + "=" + value))
-                    continue;
-                if (IsDamage(key))
-                    chips.Add((label, value));
-                else
-                    stats.Add((label, value));
-                continue;
+                if (IsDamage(label)) chips.Add((label, value));
+                else stats.Add((label, value));
             }
-
-            if (line.Length < 12 || IsDamage(line.ToLowerInvariant()))
-                continue;
-            if (seen.Add("f:" + line))
-                flavor.Add(Phrase(line));
+            else notes.Add(line);
         }
+    }
+
+    private static bool IsDamage(string label)
+    {
+        // Exact localised labels: "fire resistance" must never become fire damage.
+        foreach (var word in DamageWords)
+            if (string.Equals(label, word, System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(label, Soft("$inventory_" + word), System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(label, Soft("$item_" + word), System.StringComparison.OrdinalIgnoreCase))
+                return true;
+        return false;
     }
 
     // Localize each line, then strip tags. Bare() on the whole blob was
@@ -436,6 +532,12 @@ public sealed class ItemTooltip : FeatureModule
             {
                 hide = false;
                 var name = tag.ToString();
+                if (name.TrimEnd('/').Trim().Equals("br", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    sb.Append('\n');
+                    afterTag = false;
+                    continue;
+                }
                 if (name.StartsWith("space", System.StringComparison.OrdinalIgnoreCase)
                     || name.StartsWith("/space", System.StringComparison.OrdinalIgnoreCase))
                 {
@@ -498,7 +600,7 @@ public sealed class ItemTooltip : FeatureModule
         foreach (var token in ItemTokens)
         {
             var loc = Soft("$" + token);
-            if (!GoodPhrase(loc) || Compact(loc) != compact && !Near(compact, Compact(loc)))
+            if (!GoodPhrase(loc) || Compact(loc) != compact)
                 continue;
             return loc;
         }
@@ -508,32 +610,6 @@ public sealed class ItemTooltip : FeatureModule
 
     private static bool GoodPhrase(string loc) =>
         loc.Length > 0 && loc.IndexOf('$') < 0;
-
-    private static bool Near(string a, string b)
-    {
-        if (a.Length < 4 || b.Length < 4 || Mathf.Abs(a.Length - b.Length) > 2)
-            return false;
-        if (a.Contains(b) || b.Contains(a))
-            return true;
-        var longer = a.Length >= b.Length ? a : b;
-        var shorter = a.Length >= b.Length ? b : a;
-        var j = 0;
-        var skip = 0;
-        for (var i = 0; i < longer.Length; i++)
-        {
-            if (j < shorter.Length && longer[i] == shorter[j])
-            {
-                j++;
-                continue;
-            }
-
-            skip++;
-            if (skip > 2)
-                return false;
-        }
-
-        return j == shorter.Length;
-    }
 
     private static string Compact(string raw)
     {
@@ -545,22 +621,6 @@ public sealed class ItemTooltip : FeatureModule
         }
 
         return sb.ToString();
-    }
-
-    private static GameObject Plate(Transform host)
-    {
-        return RestlessUi.Tray(host, "RestlessTooltip", false);
-    }
-
-    private static bool IsDamage(string label)
-    {
-        foreach (var word in DamageWords)
-        {
-            if (label == word || label.Contains(word))
-                return true;
-        }
-
-        return false;
     }
 
     private static string TypeName(ItemDrop.ItemData.ItemType type)
@@ -597,40 +657,30 @@ public sealed class ItemTooltip : FeatureModule
         return sb.ToString();
     }
 
-    private static int Stamp(ItemDrop.ItemData item) =>
-        item.m_shared.m_name.GetHashCode() * 31
-        + item.m_quality * 17
-        + item.m_stack * 13
-        + (int)item.m_durability
-        + item.m_gridPos.x
-        + item.m_gridPos.y * 100;
 
     private static void Hold(GameObject go, float height)
     {
-        var le = go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>();
-        le.minHeight = height;
-        le.preferredHeight = height;
-        le.flexibleHeight = 0f;
+        var hold = go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>();
+        hold.minHeight = hold.preferredHeight = height;
+        hold.flexibleHeight = 0f;
     }
 
     private static void HideCard()
     {
-        if (_card != null)
-            _card.SetActive(false);
-        _stamp = 0;
+        if (_card != null) _card.SetActive(false);
+        _item = null;
+        _signature = "";
+        _scroll = 0f;
     }
 
     private static void DropCard()
     {
-        if (_card != null)
-            Object.Destroy(_card);
-        _card = null;
-        _body = null;
-        _stamp = 0;
+        if (_card != null) Object.Destroy(_card);
+        _card = _body = _viewport = _footer = null;
+        _item = null;
+        _signature = "";
+        _scroll = 0f;
     }
 
-    private static void TearDown()
-    {
-        DropCard();
-    }
+    private static void TearDown() => DropCard();
 }

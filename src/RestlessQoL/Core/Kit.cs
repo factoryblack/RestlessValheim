@@ -14,6 +14,10 @@ internal static class Kit
         "tab-glow", "panel-back",
         "paper-panel", "paper-panel-rim", "paper-chip", "paper-chip-rim",
         "paper-corner", "paper-tree", "paper-knot",
+        "forged-badge", "forged-action", "quality-gem", "category-ribbon",
+        "station-medallion", "tab-inset", "tab-marker", "scroll-thumb",
+        "glyph-blunt", "glyph-slash", "glyph-pierce", "glyph-fire", "glyph-frost",
+        "glyph-poison", "glyph-lightning", "glyph-spirit", "glyph-chop", "glyph-pickaxe", "glyph-station",
     };
 
     private static readonly Dictionary<string, Sprite> Cache = new();

@@ -251,6 +251,9 @@ public sealed partial class InventoryScreen : FeatureModule
         unchecked
         {
             var h = 17;
+            h = h * 31 + Screen.width;
+            h = h * 31 + Screen.height;
+            if (gui.m_inventoryRoot != null) h = h * 31 + gui.m_inventoryRoot.transform.lossyScale.GetHashCode();
             h = h * 31 + (gui.InCraftTab() ? 1 : 0);
             h = h * 31 + (gui.InUpradeTab() ? 1 : 0);
             h = h * 31 + gui.GetSelectedRecipeIndex(false);

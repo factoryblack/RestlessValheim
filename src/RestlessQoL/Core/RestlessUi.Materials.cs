@@ -50,22 +50,9 @@ internal static partial class RestlessUi
         Pin(tree, Vector2.one, Vector2.one, new Vector2(-18f, -24f), new Vector2(24f, 48f));
     }
 
-    // Geometric diamonds do not depend on a font glyph or optional sprite asset.
+    // Compatibility entry point; the forged mark asset is shared by both families.
     public static void PaperQuality(Transform parent, int quality, string caption, float width)
-    {
-        var face = Label(parent, caption + " " + quality, HudMeta, Accent, TextAnchor.MiddleLeft);
-        var labelWidth = Mathf.Min(width * 0.6f, face.preferredWidth + 12f);
-        Pin(face.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-            Vector2.zero, new Vector2(labelWidth, 24f));
-        var count = Mathf.Min(Mathf.Max(quality, 0), Mathf.Max(0, Mathf.FloorToInt((width - labelWidth) / 13f)));
-        for (var i = 0; i < count; i++)
-        {
-            var diamond = Graphic(parent, "qualityDiamond-" + i, Accent, false);
-            Pin(diamond, new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f),
-                new Vector2(labelWidth + 5f + i * 13f, 0f), new Vector2(6f, 6f));
-            diamond.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        }
-    }
+        => QualityMarks(parent, quality, width);
 
     public static void PaperDivider(GameObject row)
     {

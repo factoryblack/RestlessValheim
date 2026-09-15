@@ -212,7 +212,7 @@ public sealed class ItemTooltip : FeatureModule
         Parse(raw, title, blurb, out var stats, out var chips, out var notes);
         var category = TypeName(item.m_shared.m_itemType);
         if (category == title) category = "";
-        notes.RemoveAll(line => line == category);
+        notes.RemoveAll(line => line == category || Handedness(line));
         stats.RemoveAll(stat => stat.label == Phrase(Soft("$item_quality")));
         var supporting = stats.FindAll(stat => SupportingLabel(stat.label));
         stats.RemoveAll(stat => SupportingLabel(stat.label));
@@ -240,17 +240,23 @@ public sealed class ItemTooltip : FeatureModule
         name.gameObject.name = "title";
         var nameHeight = Measure(name, metaWidth);
         Place(name.gameObject, 86f, 0f, metaWidth, nameHeight);
-        var type = RestlessUi.Label(header.transform, category,
-            CopySize, RestlessUi.Accent, TextAnchor.UpperLeft);
-        var typeHeight = Measure(type, metaWidth);
-        Place(type.gameObject, 86f, nameHeight + 4f, metaWidth, typeHeight);
+        var hasQuality = item.m_shared.m_maxQuality > 1 || item.m_quality > 1;
+        var qualityWidth = hasQuality ? (item.m_quality > 5 ? 107f : item.m_quality * 15f) : 0f;
+        var typeWidth = Mathf.Max(56f, metaWidth - qualityWidth - (hasQuality ? 8f : 0f));
+        var ribbon = RestlessUi.Picture(header.transform, "category", "category-ribbon");
+        var type = RestlessUi.Label(ribbon.transform, category,
+            RestlessUi.HudMeta, RestlessUi.Accent, TextAnchor.MiddleLeft);
+        var typeHeight = Mathf.Max(24f, Measure(type, typeWidth - 16f) + 8f);
+        Place(ribbon, 86f, nameHeight + 4f, typeWidth, typeHeight);
+        RestlessUi.Stretch(type.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 4f), new Vector2(-8f, -4f));
+        ribbon.GetComponent<Image>().raycastTarget = false;
+        ribbon.SetActive(category.Length > 0);
         var headerHeight = Mathf.Max(72f, nameHeight + typeHeight + 4f);
-        if (item.m_shared.m_maxQuality > 1 || item.m_quality > 1)
+        if (hasQuality)
         {
             var quality = RestlessUi.Node(header.transform, "quality");
-            Place(quality, 86f, nameHeight + typeHeight + 8f, metaWidth, 24f);
-            RestlessUi.PaperQuality(quality.transform, item.m_quality, Soft("$item_quality"), metaWidth);
-            headerHeight = Mathf.Max(headerHeight, nameHeight + typeHeight + 32f);
+            Place(quality, 86f + typeWidth + 8f, nameHeight + 4f, qualityWidth, typeHeight);
+            RestlessUi.QualityMarks(quality.transform, item.m_quality, qualityWidth);
         }
         Place(header, Pad, Pad, inner, headerHeight);
 
@@ -422,7 +428,7 @@ public sealed class ItemTooltip : FeatureModule
     {
         var row = RestlessUi.Node(parent, "badge");
         var chip = RestlessUi.Chip(row.transform, "chip");
-        RestlessUi.PaperSurface(chip, small: true, accent: tint);
+        RestlessUi.ForgedSurface(chip);
         chip.GetComponent<Image>().raycastTarget = false;
         var text = RestlessUi.Label(chip.transform, copy, RestlessUi.HudMeta, tint, TextAnchor.MiddleLeft);
         var inset = RestlessUi.PlateInset;
@@ -452,14 +458,19 @@ public sealed class ItemTooltip : FeatureModule
     {
         var chip = RestlessUi.Chip(parent, "damageChip");
         var tint = DamageTint(label);
-        RestlessUi.PaperSurface(chip, small: true, accent: tint);
+        RestlessUi.ForgedSurface(chip);
+        chip.GetComponent<Image>().color = Color.Lerp(Color.white, tint, 0.2f);
         chip.GetComponent<Image>().raycastTarget = false;
         var face = RestlessUi.Label(chip.transform, label + " " + value, CopySize,
-            tint, TextAnchor.MiddleCenter);
-        var inset = RestlessUi.PlateInset;
-        var height = Measure(face, width - inset * 2f) + 14f;
+            tint, TextAnchor.MiddleLeft);
+        const float inset = 14f;
+        var height = Mathf.Max(38f, Measure(face, width - inset * 2f - 26f) + 16f);
         Place(chip, x, 0f, width, height);
-        RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(inset, 7f), new Vector2(-inset, -7f));
+        var glyph = RestlessUi.Picture(chip.transform, "glyph", "glyph-" + DamageKey(label));
+        glyph.GetComponent<Image>().color = tint;
+        glyph.GetComponent<Image>().raycastTarget = false;
+        RestlessUi.Pin(glyph, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(inset, 0f), new Vector2(21f, 24f));
+        RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(inset + 26f, 8f), new Vector2(-inset, -8f));
         return height;
     }
 
@@ -509,6 +520,8 @@ public sealed class ItemTooltip : FeatureModule
             }
         }
     }
+
+    internal static string RecipeCopy(string raw) => Soft(raw);
 
     private static string Signature(ItemDrop.ItemData item, string raw,
         List<TooltipContribution> contributions, float width, float maxHeight)
@@ -568,6 +581,18 @@ public sealed class ItemTooltip : FeatureModule
                 return true;
         return false;
     }
+
+    private static string DamageKey(string label)
+    {
+        foreach (var word in DamageWords)
+            if (string.Equals(label, word, System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(label, Soft("$inventory_" + word), System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(label, Soft("$item_" + word), System.StringComparison.OrdinalIgnoreCase)) return word;
+        return "blunt";
+    }
+
+    private static bool Handedness(string line) => line == "One-handed" || line == "Two-handed"
+        || line == Soft("$item_onehanded") || line == Soft("$item_twohanded");
 
     // Localize each line, then strip tags. Bare() on the whole blob was
     // gluing "Crafted by" into "Craftedby" and hiding spaces in (4 parts).

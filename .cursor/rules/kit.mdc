@@ -69,3 +69,13 @@ wear/equipment overlays. Idle paper rims mask baked gold; selected/elemental acc
 are deliberate. Settings switch tracks are capsules. Crafting shares inspect's text
 parser and measured rows, with unknown lines retained in a clipped scroll area.
 See docs/ui-playtest-refinements.md for the remaining runtime checks.
+
+## Forged component expansion
+
+User authorised new reusable artwork for badges, quality, tabs and actions.
+Use ForgedSurface/ForgedTab/QualityMarks/ForgedScrollbar and RestlessHint from the
+shared kit. Quality gems sit beside category without a Quality caption; PaperQuality
+delegates to those assets. Text/glyph/tint layers remain independent from backing art.
+The crafted detail viewport must be inset within its owned plate, never copied from
+the vanilla TMP rectangle. RestlessScrollRect provides direct wheel movement without
+inertia; same-recipe refreshes retain scroll position. See docs/forged-kit.md.

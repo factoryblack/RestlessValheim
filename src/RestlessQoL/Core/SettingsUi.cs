@@ -298,7 +298,8 @@ public sealed class SettingsUi : FeatureModule
             tabLe.preferredHeight = 28f;
 
             var glow = RestlessUi.Chip(tab.transform, "selected");
-            RestlessUi.PaperSurface(glow, small: true, accent: RestlessUi.Accent);
+            RestlessUi.ForgedTab(glow, true);
+            glow.GetComponent<Image>().raycastTarget = false;
             RestlessUi.Stretch(glow, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             glow.SetActive(false);
             TabGlows.Add(glow);

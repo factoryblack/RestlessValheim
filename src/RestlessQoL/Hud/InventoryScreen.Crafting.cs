@@ -22,6 +22,7 @@ public sealed partial class InventoryScreen
     private static readonly Dictionary<RectTransform, Vector3> CraftTabPositions = new();
     private static readonly Dictionary<RectTransform, Vector3> CraftIconScales = new();
     private static string _recipeCopy = "";
+    private static string _recipeIdentity = "";
     private static float _recipeWidth;
 
     private static void DressCraftMaterials(InventoryGui gui)
@@ -67,6 +68,9 @@ public sealed partial class InventoryScreen
                 var node = gui.m_info.Find(name) ?? RestlessUi.Deep(gui.m_info, name);
                 var button = node != null ? node.GetComponent<Button>() : null;
                 if (button == null) continue;
+                var icon = RestlessUi.Deep<Image>(node, "Icon") ?? RestlessUi.Deep<Image>(node, "Image")
+                    ?? RestlessUi.Deep<Image>(node, "Checked");
+                CompactStationIcon(icon, 42f);
                 var plate = node!.Find("RestlessNavPaper");
                 if (plate == null)
                 {
@@ -76,13 +80,20 @@ public sealed partial class InventoryScreen
                     RestlessUi.Stretch(go, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
                     plate.SetAsFirstSibling();
                 }
-                RestlessUi.PaperControl(plate.gameObject);
+                RestlessUi.ForgedTab(plate.gameObject, false);
                 BindCraftControl(button, plate.GetComponent<Image>(), null, false);
             }
 
         PaperCraftButton(gui.m_tabCraft, gui.InCraftTab());
         PaperCraftButton(gui.m_tabUpgrade, gui.InUpradeTab());
         PaperCraftButton(gui.m_craftButton, true);
+        var action = gui.m_craftButton != null ? gui.m_craftButton.transform.Find("RestlessChip") : null;
+        if (action != null)
+        {
+            RestlessUi.ForgedSurface(action.gameObject, action: true, interactive: true);
+            var marker = action.Find("RestlessTabMarker");
+            if (marker != null) marker.gameObject.SetActive(false);
+        }
         PaperCraftButton(RestlessUi.Deep<Button>(craft, "CraftCancelButton"), false);
         var upgrade = RestlessUi.Deep(craft, "UpgradePanel");
         if (upgrade != null)
@@ -101,48 +112,66 @@ public sealed partial class InventoryScreen
         RestlessUi.PaperDivider(rule);
     }
 
-    private static void CompactStationIcon(Image? icon)
+    private static void CompactStationIcon(Image? icon, float limit = 56f)
     {
         if (icon == null || CraftIconScales.ContainsKey(icon.rectTransform)) return;
         var size = Mathf.Max(icon.rectTransform.rect.width, icon.rectTransform.rect.height);
         // Only scale an isolated icon, never a panel if a prefab uses different nesting.
-        if (size <= 56f || size > 128f) return;
+        if (size <= limit || size > 128f) return;
         CraftIconScales.Add(icon.rectTransform, icon.rectTransform.localScale);
-        icon.rectTransform.localScale *= 56f / size;
+        icon.rectTransform.localScale *= limit / size;
     }
 
     private static void DressStructuredRecipe(InventoryGui gui)
     {
         var source = gui.m_recipeDecription;
         if (source == null || source.transform.parent == null) return;
-        var host = source.transform.parent;
-        var oldFace = host.Find("Restless_recipeBody");
+        var oldFace = source.transform.parent.Find("Restless_recipeBody");
         if (oldFace != null) oldFace.gameObject.SetActive(false);
+        var desc = RestlessUi.Deep(gui.m_crafting, "Decription");
+        var host = desc != null ? desc.Find("RestlessRecipe") : null;
+        if (host == null || !WorldBox(host, out var x0, out var y0, out var x1, out var y1)) return;
+        var scale = host.lossyScale;
+        var sx = Mathf.Abs(scale.x);
+        var sy = Mathf.Abs(scale.y);
+        var identityBottom = y1 - 78f * sy;
+        if (WorldBox(gui.m_recipeIcon != null ? gui.m_recipeIcon.transform : null, out _, out var iconBottom, out _, out _))
+            identityBottom = Mathf.Min(identityBottom, iconBottom - 8f * sy);
+        if (WorldBox(gui.m_recipeName != null ? gui.m_recipeName.transform : null, out _, out var nameBottom, out _, out _))
+            identityBottom = Mathf.Min(identityBottom, nameBottom - 8f * sy);
         var view = host.Find("RestlessRecipeBody")?.gameObject;
         if (view == null)
         {
             view = RestlessUi.Graphic(host, "RestlessRecipeBody", Color.clear, true);
-            Ours.Add(view);
             view.AddComponent<RectMask2D>();
-            var scroll = view.AddComponent<ScrollRect>();
+            var scroll = view.AddComponent<RestlessScrollRect>();
             scroll.horizontal = false;
+            scroll.inertia = false;
             scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 24f;
             scroll.viewport = view.GetComponent<RectTransform>();
+            var bar = RestlessUi.ForgedScrollbar(host);
+            RestlessUi.Stretch(bar.gameObject, new Vector2(1f, 0f), Vector2.one,
+                new Vector2(-13f, 18f), new Vector2(-6f, -92f));
+            scroll.verticalScrollbar = bar;
+            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
         }
         view.SetActive(source.gameObject.activeInHierarchy);
-        RestlessUi.CopyRect(view.GetComponent<RectTransform>(), source.rectTransform);
-        var width = Mathf.Max(80f, source.rectTransform.rect.width - 12f);
-        var copy = source.text ?? "";
-        if (view.transform.childCount > 0 && copy == _recipeCopy && Mathf.Abs(width - _recipeWidth) < 0.5f) return;
+        Place(view.GetComponent<RectTransform>(), x0 + 18f * sx, y0 + 18f * sy,
+            x1 - 26f * sx, Mathf.Max(y0 + 50f * sy, identityBottom), 0f, 0f, false);
+        var width = Mathf.Max(80f, view.GetComponent<RectTransform>().rect.width);
+        var copy = ItemTooltip.RecipeCopy(source.text ?? "");
+        var identity = gui.GetSelectedRecipeIndex(false) + ":" + gui.InCraftTab() + ":" + gui.m_recipeName?.text;
+        var scroller = view.GetComponent<RestlessScrollRect>();
+        var changedSelection = identity != _recipeIdentity;
+        if (!changedSelection && scroller.content != null && copy == _recipeCopy && Mathf.Abs(width - _recipeWidth) < 0.5f) return;
+        var offset = !changedSelection && scroller.content != null ? scroller.content.anchoredPosition.y : 0f;
         foreach (Transform child in view.transform)
         {
             child.gameObject.SetActive(false);
             Object.Destroy(child.gameObject);
         }
         var content = RestlessUi.Node(view.transform, "content");
-        RestlessUi.Stretch(content, new Vector2(0f, 1f), Vector2.one,
-            new Vector2(0f, 0f), new Vector2(-12f, 0f));
+        RestlessUi.Stretch(content, new Vector2(0f, 1f), Vector2.one, Vector2.zero, Vector2.zero);
         var rect = content.GetComponent<RectTransform>();
         rect.pivot = new Vector2(0f, 1f);
         var layout = content.AddComponent<VerticalLayoutGroup>();
@@ -152,12 +181,13 @@ public sealed partial class InventoryScreen
         layout.childForceExpandWidth = true;
         content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         ItemTooltip.RecipeBody(content.transform, copy, width);
-        var scroller = view.GetComponent<ScrollRect>();
         scroller.content = rect;
         LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
-        scroller.verticalNormalizedPosition = 1f;
+        scroller.StopMovement();
+        rect.anchoredPosition = new Vector2(0f, Mathf.Clamp(offset, 0f, Mathf.Max(0f, rect.rect.height - scroller.viewport.rect.height)));
         _recipeCopy = copy;
         _recipeWidth = width;
+        _recipeIdentity = identity;
     }
 
     private static void DressStationRequirement(InventoryGui gui)
@@ -168,22 +198,40 @@ public sealed partial class InventoryScreen
         var face = host.Find("Restless_minStation")?.GetComponent<Text>();
         if (face == null) return;
         var copy = RestlessUi.Bare(source.text);
-        face.text = copy.Length == 0 ? "" : "Station\n" + copy;
+        face.text = copy;
         face.fontSize = RestlessUi.HudMeta;
-        face.alignment = TextAnchor.MiddleCenter;
-        face.horizontalOverflow = HorizontalWrapMode.Wrap;
+        face.alignment = TextAnchor.LowerCenter;
+        face.horizontalOverflow = HorizontalWrapMode.Overflow;
         var colour = source.color;
         face.color = colour.r > colour.g * 1.3f && colour.r > colour.b * 1.3f
             ? RestlessUi.HealthTint : RestlessUi.Accent;
-        // Stretch relative to its own cell, not the previous resource count column.
-        RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(2f, 2f), new Vector2(-2f, -2f));
+        if (gui.m_minStationLevelIcon != null) Hide(gui.m_minStationLevelIcon);
+        var oldBackground = host.GetComponent<Image>();
+        if (oldBackground != null && oldBackground.GetComponent<Mask>() == null) Hide(oldBackground);
+        var medal = host.Find("RestlessStationMedal")?.gameObject;
+        if (medal == null)
+        {
+            medal = RestlessUi.Picture(host, "RestlessStationMedal", "station-medallion");
+            Ours.Add(medal);
+            RestlessUi.Pin(medal, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(52f, 52f));
+            medal.GetComponent<Image>().raycastTarget = true;
+            medal.AddComponent<RestlessHint>();
+            var glyph = RestlessUi.Picture(medal.transform, "glyph", "glyph-station");
+            RestlessUi.Pin(glyph, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -7f), new Vector2(24f, 24f));
+            glyph.GetComponent<Image>().color = RestlessUi.PaperMuted;
+            glyph.GetComponent<Image>().raycastTarget = false;
+        }
+        medal.SetActive(copy.Length > 0 && source.gameObject.activeInHierarchy);
+        medal.GetComponent<RestlessHint>().Copy = "Requires station level " + copy;
+        RestlessUi.Pin(face.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -12f), new Vector2(44f, 22f));
+        face.transform.SetAsLastSibling();
     }
 
     private static void PaperCraftButton(Button? button, bool primary)
     {
         var chip = button != null ? button.transform.Find("RestlessChip") : null;
         if (button == null || chip == null) return;
-        RestlessUi.PaperControl(chip.gameObject, primary ? RestlessUi.Accent : null);
+        RestlessUi.ForgedTab(chip.gameObject, primary);
         BindCraftControl(button, chip.GetComponent<Image>(), chip.GetComponentInChildren<Text>(true), primary);
     }
 
@@ -210,7 +258,23 @@ public sealed partial class InventoryScreen
         DressStationRequirement(gui);
         foreach (var pair in CraftControls)
         {
-            if (pair.Key == null || pair.Value.Face == null) continue;
+            if (pair.Key == null) continue;
+            var nav = pair.Key.transform.Find("RestlessNavPaper");
+            if (nav != null)
+            {
+                var selected = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject == pair.Key.gameObject;
+                selected |= pair.Key.name switch
+                {
+                    "Texts" => gui.m_textsDialog != null && gui.m_textsDialog.gameObject.activeInHierarchy,
+                    "Skills" => gui.m_skillsDialog != null && gui.m_skillsDialog.gameObject.activeInHierarchy,
+                    "Trophies" => gui.m_trophiesPanel != null && gui.m_trophiesPanel.activeInHierarchy,
+                    "Achievements" => gui.m_achievementsPanel != null && gui.m_achievementsPanel.gameObject.activeInHierarchy,
+                    _ => false
+                };
+                var marker = nav.Find("RestlessTabMarker");
+                if (marker != null) marker.gameObject.SetActive(selected);
+            }
+            if (pair.Value.Face == null) continue;
             pair.Value.Face.color = !pair.Key.IsInteractable() ? RestlessUi.PaperMuted * 0.65f
                 : pair.Value.Primary ? RestlessUi.Accent : RestlessUi.Text;
         }
@@ -271,6 +335,7 @@ public sealed partial class InventoryScreen
             if (pair.Key != null) pair.Key.localScale = pair.Value;
         CraftIconScales.Clear();
         _recipeCopy = "";
+        _recipeIdentity = "";
         _recipeWidth = 0f;
     }
 }

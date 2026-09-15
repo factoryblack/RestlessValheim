@@ -490,8 +490,8 @@ public sealed partial class InventoryScreen : FeatureModule
             titleBot = titleTop - 30f;
         }
 
-        const float topPad = 40f;
-        const float mid = 24f;
+        const float topPad = 24f;
+        const float mid = 12f;
         const float tabBand = 36f;
         const float botPad = 8f;
         var headerTop = titleTop + topPad;
@@ -519,7 +519,10 @@ public sealed partial class InventoryScreen : FeatureModule
         if (Mathf.Abs(dy) < 0.5f)
             return;
         foreach (var tab in tabs)
+        {
+            if (!CraftTabPositions.ContainsKey(tab)) CraftTabPositions.Add(tab, tab.anchoredPosition3D);
             tab.position = new Vector3(tab.position.x, tab.position.y + dy, tab.position.z);
+        }
     }
 
     private static void DressRecipeChrome(InventoryGui gui)
@@ -1502,14 +1505,18 @@ public sealed partial class InventoryScreen : FeatureModule
             var count = RestlessUi.Bare(amountTmp != null ? amountTmp.text : "");
             var name = RestlessUi.Bare(nameTmp != null ? nameTmp.text : "");
             var live = go.activeSelf && icon != null && icon.sprite != null && icon.enabled
-                && icon.color.a > 0.2f && count.Length > 0 && count != "0"
+                && icon.gameObject.activeInHierarchy && icon.color.a > 0.2f && count.Length > 0 && count != "0"
                 && name.Length > 0;
             if (!live)
             {
                 RestlessUi.Quiet(go);
                 var stale = go.transform.Find("RestlessSlot");
                 if (stale != null)
+                {
+                    var staleCount = stale.Find("RestlessMaterialCount")?.GetComponent<Text>();
+                    if (staleCount != null) staleCount.text = "";
                     stale.gameObject.SetActive(false);
+                }
                 SilenceTmp(amountTmp);
                 SilenceTmp(nameTmp);
                 continue;

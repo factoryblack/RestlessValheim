@@ -618,7 +618,7 @@ public sealed class SettingsUi : FeatureModule
         RestlessUi.Pin(gem, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, -8f),
             new Vector2(8f, 8f));
 
-        var label = RestlessUi.Label(go.transform, title, RestlessUi.HintSize, RestlessUi.Accent,
+        var label = RestlessUi.Label(go.transform, title, RestlessUi.BodySize + 2, RestlessUi.Accent,
             TextAnchor.MiddleLeft);
         RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(30f, 0f), new Vector2(0f, -16f));
     }
@@ -666,7 +666,7 @@ public sealed class SettingsUi : FeatureModule
         {
             if (data is PointerEventData ev && !ev.fullyExited)
                 return;
-            if (edge != null) edge.color = Color.clear;
+            if (edge != null) edge.color = new Color(0.18f, 0.16f, 0.13f, 0.88f);
         });
         trigger.triggers.Add(enter);
         trigger.triggers.Add(exit);

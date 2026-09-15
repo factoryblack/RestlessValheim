@@ -20,7 +20,7 @@ internal static partial class RestlessUi
         image.sprite = sprite;
         image.color = Color.white; // Material already contains its charcoal colour.
         image.type = Image.Type.Tiled;
-        image.pixelsPerUnitMultiplier = 2f;
+        image.pixelsPerUnitMultiplier = 1f;
         image.raycastTarget = false;
         Rim(target, on: false);
 
@@ -30,8 +30,9 @@ internal static partial class RestlessUi
         var overlay = rim.GetComponent<Image>();
         overlay.sprite = Kit.Sprite(name + "-rim", border);
         overlay.type = Image.Type.Tiled;
-        overlay.pixelsPerUnitMultiplier = 2f;
-        overlay.color = accent ?? Color.clear;
+        overlay.pixelsPerUnitMultiplier = 1f;
+        // Cover the baked gold edge on idle surfaces; reserve amber for emphasis.
+        overlay.color = accent ?? new Color(0.18f, 0.16f, 0.13f, 0.88f);
         overlay.raycastTarget = false;
     }
 
@@ -41,12 +42,29 @@ internal static partial class RestlessUi
         var image = corner.GetComponent<Image>();
         image.sprite = Kit.Sprite("paper-corner");
         if (image.sprite == null) { corner.SetActive(false); return; }
-        Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(94f, 118f));
+        Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(126f, 150f));
         // Decoration behind all text; title layout reserves space on the right.
         corner.transform.SetAsFirstSibling();
         var tree = Graphic(corner.transform, "emblem", new Color(0.58f, 0.53f, 0.44f, 0.55f), false);
         tree.GetComponent<Image>().sprite = Kit.Sprite("paper-tree");
-        Pin(tree, Vector2.one, Vector2.one, new Vector2(-9f, -19f), new Vector2(22f, 44f));
+        Pin(tree, Vector2.one, Vector2.one, new Vector2(-18f, -24f), new Vector2(24f, 48f));
+    }
+
+    // Geometric diamonds do not depend on a font glyph or optional sprite asset.
+    public static void PaperQuality(Transform parent, int quality, string caption, float width)
+    {
+        var face = Label(parent, caption + " " + quality, HudMeta, Accent, TextAnchor.MiddleLeft);
+        var labelWidth = Mathf.Min(width * 0.6f, face.preferredWidth + 12f);
+        Pin(face.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+            Vector2.zero, new Vector2(labelWidth, 24f));
+        var count = Mathf.Min(Mathf.Max(quality, 0), Mathf.Max(0, Mathf.FloorToInt((width - labelWidth) / 13f)));
+        for (var i = 0; i < count; i++)
+        {
+            var diamond = Graphic(parent, "qualityDiamond-" + i, Accent, false);
+            Pin(diamond, new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f),
+                new Vector2(labelWidth + 5f + i * 13f, 0f), new Vector2(6f, 6f));
+            diamond.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+        }
     }
 
     public static void PaperDivider(GameObject row)

@@ -210,6 +210,12 @@ public sealed class ItemTooltip : FeatureModule
         var title = Soft(item.m_shared.m_name);
         var blurb = Soft(item.m_shared.m_description).Trim();
         Parse(raw, title, blurb, out var stats, out var chips, out var notes);
+        var category = TypeName(item.m_shared.m_itemType);
+        if (category == title) category = "";
+        notes.RemoveAll(line => line == category);
+        stats.RemoveAll(stat => stat.label == Phrase(Soft("$item_quality")));
+        var supporting = stats.FindAll(stat => SupportingLabel(stat.label));
+        stats.RemoveAll(stat => SupportingLabel(stat.label));
 
         RestlessUi.Pin(_card!, new Vector2(0.5f, 0.5f), new Vector2(0f, 1f),
             Vector2.zero, new Vector2(_width, maxHeight));
@@ -222,22 +228,30 @@ public sealed class ItemTooltip : FeatureModule
         icon.preserveAspect = true;
         RestlessUi.Pin(icon.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
             Vector2.zero, new Vector2(52f, 52f));
-        var slot = RestlessUi.DressSlot(cell, icon, false, item, null, true, SlotLock.Held(item));
+        var slot = RestlessUi.Strip(cell.transform, "portrait");
+        slot.transform.SetAsFirstSibling();
         RestlessUi.PaperSurface(slot, accent: RimTint(contributions));
         RestlessUi.Pin(slot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
             Vector2.zero, new Vector2(72f, 72f));
 
-        var metaWidth = inner - 86f - 32f;
+        var metaWidth = inner - 86f - 56f;
         var name = RestlessUi.Label(header.transform, title, RestlessUi.TitleSize,
             RestlessUi.Text, TextAnchor.UpperLeft);
         name.gameObject.name = "title";
         var nameHeight = Measure(name, metaWidth);
         Place(name.gameObject, 86f, 0f, metaWidth, nameHeight);
-        var type = RestlessUi.Label(header.transform, TypeName(item.m_shared.m_itemType),
+        var type = RestlessUi.Label(header.transform, category,
             CopySize, RestlessUi.Accent, TextAnchor.UpperLeft);
         var typeHeight = Measure(type, metaWidth);
         Place(type.gameObject, 86f, nameHeight + 4f, metaWidth, typeHeight);
         var headerHeight = Mathf.Max(72f, nameHeight + typeHeight + 4f);
+        if (item.m_shared.m_maxQuality > 1 || item.m_quality > 1)
+        {
+            var quality = RestlessUi.Node(header.transform, "quality");
+            Place(quality, 86f, nameHeight + typeHeight + 8f, metaWidth, 24f);
+            RestlessUi.PaperQuality(quality.transform, item.m_quality, Soft("$item_quality"), metaWidth);
+            headerHeight = Mathf.Max(headerHeight, nameHeight + typeHeight + 32f);
+        }
         Place(header, Pad, Pad, inner, headerHeight);
 
         _viewport = RestlessUi.Node(_card.transform, "viewport");
@@ -252,9 +266,7 @@ public sealed class ItemTooltip : FeatureModule
         layout.childForceExpandHeight = false;
         layout.childAlignment = TextAnchor.UpperLeft;
 
-        // Quality is an actual item upgrade level, never a fabricated rarity.
-        if (item.m_quality > 1)
-            Badge(_body.transform, Soft("$item_quality") + " " + item.m_quality, RestlessUi.Accent, inner);
+        // Extensions contribute rarity/set badges; actual quality lives in the fixed header.
         foreach (var contribution in contributions)
             foreach (var badge in contribution.Badges)
                 if (!string.IsNullOrWhiteSpace(badge.Text))
@@ -284,6 +296,13 @@ public sealed class ItemTooltip : FeatureModule
                     : 0f;
                 Hold(row, Mathf.Max(leftHeight, rightHeight));
             }
+        }
+
+        if (supporting.Count > 0)
+        {
+            Divider(_body.transform);
+            foreach (var stat in supporting)
+                StatRow(_body.transform, stat.label, stat.value, inner, true);
         }
 
         // Preserve unfamiliar vanilla/mod lines, including short set/effect lines.
@@ -414,13 +433,15 @@ public sealed class ItemTooltip : FeatureModule
         Hold(row, height);
     }
 
-    private static void StatRow(Transform parent, string label, string value, float width)
+    private static void StatRow(Transform parent, string label, string value, float width, bool supporting = false)
     {
         var row = RestlessUi.Node(parent, "stat");
         var labelWidth = (width - 14f) * 0.52f;
         var valueWidth = width - 14f - labelWidth;
         var left = RestlessUi.Label(row.transform, label, CopySize, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
-        var right = RestlessUi.Label(row.transform, value, CopySize, RestlessUi.Accent, TextAnchor.UpperRight);
+        var right = RestlessUi.Label(row.transform, value, supporting ? RestlessUi.HudMeta : CopySize,
+            supporting ? RestlessUi.PaperMuted : RestlessUi.Accent, TextAnchor.UpperRight);
+        if (supporting) left.fontSize = RestlessUi.HudMeta;
         var height = Mathf.Max(Measure(left, labelWidth), Measure(right, valueWidth));
         Place(left.gameObject, 0f, 0f, labelWidth, height);
         Place(right.gameObject, labelWidth + 14f, 0f, valueWidth, height);
@@ -430,10 +451,11 @@ public sealed class ItemTooltip : FeatureModule
     private static float DamageChip(Transform parent, string label, string value, float x, float width)
     {
         var chip = RestlessUi.Chip(parent, "damageChip");
-        RestlessUi.PaperSurface(chip, small: true);
+        var tint = DamageTint(label);
+        RestlessUi.PaperSurface(chip, small: true, accent: tint);
         chip.GetComponent<Image>().raycastTarget = false;
         var face = RestlessUi.Label(chip.transform, label + " " + value, CopySize,
-            RestlessUi.Accent, TextAnchor.MiddleCenter);
+            tint, TextAnchor.MiddleCenter);
         var inset = RestlessUi.PlateInset;
         var height = Measure(face, width - inset * 2f) + 14f;
         Place(chip, x, 0f, width, height);
@@ -441,11 +463,51 @@ public sealed class ItemTooltip : FeatureModule
         return height;
     }
 
+    private static Color DamageTint(string label)
+    {
+        var words = new[] { "fire", "frost", "poison", "lightning", "spirit" };
+        var colours = new[] { RestlessUi.Hex(0xF4A05E), RestlessUi.Hex(0x9FCFDF),
+            RestlessUi.Hex(0xB2C982), RestlessUi.Hex(0xC2B0E5), RestlessUi.Hex(0xE9DDB0) };
+        for (var i = 0; i < words.Length; i++)
+            if (string.Equals(label, words[i], System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(label, Soft("$inventory_" + words[i]), System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(label, Soft("$item_" + words[i]), System.StringComparison.OrdinalIgnoreCase))
+                return colours[i];
+        return RestlessUi.PaperMuted;
+    }
+
+    private static bool SupportingLabel(string label) =>
+        label == Phrase(Soft("$item_crafter"))
+        || label == Phrase(Soft("$item_repairlevel"))
+        || label == Phrase(Soft("$item_repairstationlevel"));
+
     private static Color? RimTint(List<TooltipContribution> contributions)
     {
         foreach (var contribution in contributions)
             if (contribution.RimTint.HasValue) return contribution.RimTint;
         return null;
+    }
+
+    // Crafting consumes the same text parser and measured rows as inspect.
+    // Unknown mod lines are retained, and the caller supplies a clipped scroll area.
+    internal static void RecipeBody(Transform parent, string raw, float width)
+    {
+        Parse(raw, "", "", out var stats, out var chips, out var notes);
+        if (notes.Count > 0) Paragraph(parent, string.Join("\n", notes), width, RestlessUi.PaperMuted);
+        if (stats.Count > 0)
+        {
+            Divider(parent);
+            foreach (var stat in stats) StatRow(parent, stat.label, stat.value, width);
+        }
+        if (chips.Count > 0)
+        {
+            Divider(parent);
+            foreach (var chip in chips)
+            {
+                var row = RestlessUi.Node(parent, "damage");
+                Hold(row, DamageChip(row.transform, chip.label, chip.value, 0f, width));
+            }
+        }
     }
 
     private static string Signature(ItemDrop.ItemData item, string raw,
@@ -628,6 +690,8 @@ public sealed class ItemTooltip : FeatureModule
         var raw = type.ToString();
         switch (raw)
         {
+            case "Torch":
+                return "Utility";
             case "OneHandedWeapon":
                 return "One-handed";
             case "TwoHandedWeapon":

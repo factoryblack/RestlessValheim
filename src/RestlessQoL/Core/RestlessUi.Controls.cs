@@ -5,6 +5,17 @@ namespace RestlessQoL.Core;
 
 internal static partial class RestlessUi
 {
+    private static Sprite? _switchTrack;
+
+    private static Sprite SwitchTrack()
+    {
+        if (_switchTrack != null) return _switchTrack;
+        var circle = Circle();
+        var border = (circle.rect.width - 2f) * 0.5f;
+        _switchTrack = Sprite.Create(circle.texture, circle.rect, new Vector2(0.5f, 0.5f),
+            100f, 0, SpriteMeshType.FullRect, new Vector4(border, border, border, border));
+        return _switchTrack;
+    }
     // Explicitly interactive counterpart to the non-blocking inspect material.
     public static void PaperControl(GameObject target, Color? accent = null)
     {
@@ -27,7 +38,15 @@ internal static partial class RestlessUi
 
     public static void PaperSwitch(Button button, bool on)
     {
-        PaperControl(button.gameObject, on ? Accent : PaperMuted * 0.5f);
+        // A capsule track has a softer silhouette than another torn rectangle.
+        var track = button.GetComponent<Image>();
+        track.sprite = SwitchTrack();
+        track.type = Image.Type.Sliced;
+        track.color = on ? new Color(0.38f, 0.28f, 0.13f) : new Color(0.13f, 0.13f, 0.12f);
+        track.raycastTarget = true;
+        Rim(button.gameObject, on: false);
+        var edge = button.transform.Find("paperAccent");
+        if (edge != null) edge.gameObject.SetActive(false);
         var knob = button.transform.Find("knob");
         if (knob != null)
         {

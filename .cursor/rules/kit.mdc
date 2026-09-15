@@ -57,6 +57,15 @@ Keep configuration, synchronisation and key capture in SettingsUi; shared helper
 
 Crafting and its existing navigation strip also opt into PaperSurface, PaperControl,
 PaperSelectable and PaperDivider. Fit the paper around the live control bounds; retain
-game icons, callbacks and controller navigation. Keep recipe quality diamonds and live
+game icons, callbacks and controller navigation. Keep recipe quality information and live
 material count/shortage feedback. Restore any modified selectable state on undress.
 See docs/crafting-materials.md; this surface still needs Unity validation.
+
+## First playtest follow-up
+
+Use PaperQuality for explicit tooltip quality diamonds; inventory DressQuality is a
+numeric marker, not a diamond renderer. Inspect portraits intentionally omit inventory
+wear/equipment overlays. Idle paper rims mask baked gold; selected/elemental accents
+are deliberate. Settings switch tracks are capsules. Crafting shares inspect's text
+parser and measured rows, with unknown lines retained in a clipped scroll area.
+See docs/ui-playtest-refinements.md for the remaining runtime checks.

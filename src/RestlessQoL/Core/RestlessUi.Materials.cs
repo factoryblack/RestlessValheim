@@ -43,13 +43,13 @@ internal static partial class RestlessUi
         image.sprite = Kit.Sprite("corner-overlay");
         if (image.sprite == null) { corner.SetActive(false); return; }
         image.preserveAspect = true;
-        Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(144f, 144f));
+        Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(112f, 112f));
         // Decoration behind all text; title layout reserves space on the right.
         corner.transform.SetAsFirstSibling();
         var tree = Graphic(corner.transform, "emblem", new Color(1f, 1f, 1f, 0.8f), false);
         tree.GetComponent<Image>().sprite = Kit.Sprite("pine-emblem");
         tree.GetComponent<Image>().preserveAspect = true;
-        Pin(tree, Vector2.one, Vector2.one, new Vector2(-17f, -18f), new Vector2(20f, 58f));
+        Pin(tree, Vector2.one, Vector2.one, new Vector2(-13f, -14f), new Vector2(16f, 48f));
     }
 
     // Compatibility entry point; the forged mark asset is shared by both families.

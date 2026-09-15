@@ -20,13 +20,14 @@ public sealed class SettingsUi : FeatureModule
 
     private static GameObject? _root;
     private static GameObject? _body;
+    private static RectTransform? _sheetCard;
     private static CanvasGroup? _fade;
     private static ScrollRect? _scroll;
     private static RectMask2D? _mask;
     private static Text? _hint;
     private static Text? _lock;
     private static string _hintNow = "";
-    private const int ListFade = 56;
+    private const int ListFade = 18;
     private static readonly List<Text> TabLabels = new();
     private static readonly List<GameObject> TabGlows = new();
     private static int _tab;
@@ -86,7 +87,7 @@ public sealed class SettingsUi : FeatureModule
     {
         if (_capturing)
             PollCapture();
-        else if (!_closing)
+        else if (!_closing && !EditingText())
         {
             if (IsOpen && Input.GetKeyDown(KeyCode.Escape))
                 Close();
@@ -100,7 +101,10 @@ public sealed class SettingsUi : FeatureModule
 
         StepFade();
         if (IsOpen)
+        {
+            FitSheet();
             UpdateListFades();
+        }
     }
 
     private static void OpenFromMenu()
@@ -207,7 +211,7 @@ public sealed class SettingsUi : FeatureModule
         _fade.alpha = 0f;
         _alpha = 0f;
 
-        var dim = RestlessUi.Graphic(_root.transform, "dim", RestlessUi.Dim);
+        var dim = RestlessUi.Graphic(_root.transform, "dim", new Color(0f, 0f, 0f, 0.56f));
         RestlessUi.Stretch(dim, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         dim.AddComponent<Button>().onClick.AddListener(Close);
 
@@ -215,37 +219,54 @@ public sealed class SettingsUi : FeatureModule
         RestlessUi.Pin(card, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
             new Vector2(RestlessUi.PanelWidth, RestlessUi.PanelHeight));
 
+        _sheetCard = card.GetComponent<RectTransform>();
         var tray = RestlessUi.Tray(card.transform, "tray");
+        RestlessUi.PaperSurface(tray);
+        tray.GetComponent<Image>().raycastTarget = true;
         RestlessUi.Stretch(tray, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
         BuildBar(tray.transform);
         BuildList(card.transform);
         BuildHint(card.transform);
+        FitSheet();
+    }
+
+    private static void FitSheet()
+    {
+        if (_sheetCard == null || _root == null) return;
+        var bounds = _root.GetComponent<RectTransform>().rect;
+        var scale = Mathf.Min(1f, Mathf.Min((bounds.width - 32f) / 1120f, (bounds.height - 32f) / 768f));
+        _sheetCard.localScale = Vector3.one * Mathf.Max(0.1f, scale);
+    }
+
+    private static bool EditingText()
+    {
+        var selected = EventSystem.current?.currentSelectedGameObject;
+        return selected != null && selected.GetComponent<InputField>()?.isFocused == true;
     }
 
     private static void BuildBar(Transform tray)
     {
-        var bar = RestlessUi.TrayHead(tray.gameObject, "bar");
-        var inset = RestlessUi.PlateInset;
-
+        var bar = RestlessUi.PaperSettingsHeader(tray.gameObject);
         var title = RestlessUi.Label(bar.transform, "Restless", RestlessUi.TitleSize, RestlessUi.Text, TextAnchor.MiddleLeft);
-        RestlessUi.Pin(title.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(inset, 0f), new Vector2(180f, 40f));
-
-        _lock = RestlessUi.Label(bar.transform, "", RestlessUi.HintSize, RestlessUi.Muted, TextAnchor.MiddleRight);
-        RestlessUi.Pin(_lock.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
-            new Vector2(-(inset + 92f), 0f), new Vector2(160f, 24f));
+        RestlessUi.Pin(title.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+            new Vector2(66f, 0f), new Vector2(190f, 46f));
 
         var esc = RestlessUi.Chip(bar.transform, "esc");
-        RestlessUi.Pin(esc, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-inset, 0f), new Vector2(76f, 34f));
+        RestlessUi.PaperControl(esc);
+        RestlessUi.Pin(esc, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+            new Vector2(-62f, 0f), new Vector2(72f, 36f));
         var escLabel = RestlessUi.Label(esc.transform, "ESC", RestlessUi.HintSize, RestlessUi.Text, TextAnchor.MiddleCenter);
         RestlessUi.Stretch(escLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var escBtn = esc.AddComponent<Button>();
         escBtn.targetGraphic = esc.GetComponent<Image>();
+        RestlessUi.PaperSelectable(escBtn);
         escBtn.onClick.AddListener(Close);
 
         var row = RestlessUi.Node(bar.transform, "tabs");
         _tabRow = row.transform;
-        RestlessUi.Pin(row, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(720f, 36f));
+        RestlessUi.Pin(row, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+            new Vector2(36f, 0f), new Vector2(650f, 38f));
         var layout = row.AddComponent<HorizontalLayoutGroup>();
         layout.childAlignment = TextAnchor.MiddleCenter;
         layout.spacing = 4f;
@@ -269,36 +290,26 @@ public sealed class SettingsUi : FeatureModule
             _tab = Math.Max(0, tabs.Count - 1);
         for (var i = 0; i < tabs.Count; i++)
         {
-            if (i > 0)
-            {
-                var gem = RestlessUi.Picture(_tabRow, "diamond", "diamond");
-                var gemLe = gem.AddComponent<LayoutElement>();
-                gemLe.preferredWidth = 8f;
-                gemLe.minWidth = 8f;
-                gemLe.preferredHeight = 8f;
-                gemLe.flexibleWidth = 0f;
-            }
-
             var index = i;
             var tab = RestlessUi.Graphic(_tabRow, tabs[i].Id, Color.clear);
             var tabLe = tab.AddComponent<LayoutElement>();
-            tabLe.preferredWidth = 74f;
+            tabLe.preferredWidth = tabs[i].Id == "character" ? 98f : 82f;
             tabLe.minWidth = 56f;
             tabLe.preferredHeight = 28f;
 
-            var glow = RestlessUi.Picture(tab.transform, "glow", "tab-glow");
-            glow.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.28f);
-            glow.GetComponent<Image>().preserveAspect = true;
-            RestlessUi.Pin(glow, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(110f, 40f));
+            var glow = RestlessUi.Chip(tab.transform, "selected");
+            RestlessUi.PaperSurface(glow, small: true, accent: RestlessUi.Accent);
+            RestlessUi.Stretch(glow, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             glow.SetActive(false);
             TabGlows.Add(glow);
 
-            var label = RestlessUi.Label(tab.transform, tabs[i].Name, RestlessUi.HintSize, RestlessUi.Muted, TextAnchor.MiddleCenter);
+            var label = RestlessUi.Label(tab.transform, tabs[i].Name, RestlessUi.HintSize, RestlessUi.PaperMuted, TextAnchor.MiddleCenter);
             RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             TabLabels.Add(label);
 
             var button = tab.AddComponent<Button>();
-            button.targetGraphic = tab.GetComponent<Image>();
+            button.targetGraphic = label;
+            RestlessUi.PaperSelectable(button);
             button.onClick.AddListener(() =>
             {
                 _tab = index;
@@ -314,9 +325,13 @@ public sealed class SettingsUi : FeatureModule
     private static void BuildHint(Transform card)
     {
         var inset = RestlessUi.TrayGutter;
-        _hint = RestlessUi.Label(card, "", RestlessUi.HintSize, RestlessUi.Muted, TextAnchor.MiddleLeft);
+        _hint = RestlessUi.Label(card, "", RestlessUi.HintSize, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(_hint.gameObject, new Vector2(0f, 0f), new Vector2(1f, 0f),
-            new Vector2(inset, 8f), new Vector2(-inset, 32f));
+            new Vector2(inset, 12f), new Vector2(-inset - 200f, 56f));
+        _hint.horizontalOverflow = HorizontalWrapMode.Wrap;
+        _lock = RestlessUi.Label(card, "", RestlessUi.HudSize, RestlessUi.Accent, TextAnchor.MiddleRight);
+        RestlessUi.Stretch(_lock.gameObject, Vector2.zero, new Vector2(1f, 0f),
+            new Vector2(740f, 12f), new Vector2(-inset, 56f));
     }
 
     private static void UpdateLock()
@@ -345,6 +360,7 @@ public sealed class SettingsUi : FeatureModule
     private static void Chip(Transform parent, string key)
     {
         var plate = RestlessUi.Chip(parent, "chip-" + key);
+        RestlessUi.PaperControl(plate);
         var le = plate.AddComponent<LayoutElement>();
         le.preferredWidth = 40f;
         le.minWidth = 40f;
@@ -354,16 +370,17 @@ public sealed class SettingsUi : FeatureModule
         RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var button = plate.AddComponent<Button>();
         button.targetGraphic = plate.GetComponent<Image>();
+        RestlessUi.PaperSelectable(button);
         button.onClick.AddListener(() => ShiftTab(key == "Q" ? -1 : 1));
     }
 
     private static void BuildList(Transform card)
     {
         var inset = RestlessUi.TrayGutter;
-        var top = RestlessUi.TrayPad + RestlessUi.BarHeight + RestlessUi.RowGap;
+        var top = 78f;
         var sheet = RestlessUi.Node(card, "sheet");
         RestlessUi.Stretch(sheet, Vector2.zero, Vector2.one,
-            new Vector2(inset, 36f),
+            new Vector2(inset, 70f),
             new Vector2(-inset, -top));
 
         var scroll = RestlessUi.Graphic(sheet.transform, "scroll", Color.clear);
@@ -441,7 +458,7 @@ public sealed class SettingsUi : FeatureModule
     {
         for (var i = 0; i < TabLabels.Count; i++)
         {
-            TabLabels[i].color = i == _tab ? RestlessUi.Accent : RestlessUi.Muted;
+            TabLabels[i].color = i == _tab ? RestlessUi.Accent : RestlessUi.PaperMuted;
             if (i < TabGlows.Count)
                 TabGlows[i].SetActive(i == _tab);
         }
@@ -589,18 +606,21 @@ public sealed class SettingsUi : FeatureModule
     {
         var go = RestlessUi.Node(_body!.transform, "head");
         var le = go.AddComponent<LayoutElement>();
-        le.minHeight = 26f;
-        le.preferredHeight = 26f;
+        le.minHeight = 48f;
+        le.preferredHeight = 48f;
+        var rule = RestlessUi.Node(go.transform, "rule");
+        RestlessUi.Stretch(rule, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, -14f), Vector2.zero);
+        RestlessUi.PaperDivider(rule);
         le.preferredWidth = RestlessUi.RowWidth;
         le.flexibleHeight = 0f;
 
         var gem = RestlessUi.Picture(go.transform, "diamond", "diamond");
-        RestlessUi.Pin(gem, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f),
+        RestlessUi.Pin(gem, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, -8f),
             new Vector2(8f, 8f));
 
         var label = RestlessUi.Label(go.transform, title, RestlessUi.HintSize, RestlessUi.Accent,
             TextAnchor.MiddleLeft);
-        RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(24f, 0f), Vector2.zero);
+        RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(30f, 0f), new Vector2(0f, -16f));
     }
 
     private static void Bunch(params Action<Transform>[] rows)
@@ -625,27 +645,28 @@ public sealed class SettingsUi : FeatureModule
     {
         parent ??= _body!.transform;
         var shell = RestlessUi.Node(parent, "row");
-        var height = nested ? 44f : RestlessUi.RowHeight;
+        var height = nested ? 44f : 48f;
         var le = shell.AddComponent<LayoutElement>();
         le.preferredHeight = height;
         le.minHeight = height;
         le.preferredWidth = RestlessUi.RowWidth;
         le.flexibleHeight = 0f;
         var go = RestlessUi.Strip(shell.transform, "plate", nested ? RestlessUi.Nested : RestlessUi.RowTint, true);
+        RestlessUi.PaperControl(go);
         if (nested)
-            RestlessUi.Stretch(go, Vector2.zero, Vector2.one, new Vector2(36f, 1f), Vector2.zero);
+            RestlessUi.Stretch(go, Vector2.zero, Vector2.one, new Vector2(16f, 1f), Vector2.zero);
         else
             RestlessUi.Stretch(go, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-        var outline = RestlessUi.Rim(go, on: false);
+        var edge = go.transform.Find("paperAccent")?.GetComponent<Image>();
         var trigger = go.AddComponent<EventTrigger>();
         var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-        enter.callback.AddListener(_ => outline.enabled = true);
+        enter.callback.AddListener(_ => { if (edge != null) edge.color = RestlessUi.Accent * new Color(1f, 1f, 1f, 0.6f); });
         var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
         exit.callback.AddListener(data =>
         {
             if (data is PointerEventData ev && !ev.fullyExited)
                 return;
-            outline.enabled = false;
+            if (edge != null) edge.color = Color.clear;
         });
         trigger.triggers.Add(enter);
         trigger.triggers.Add(exit);
@@ -655,8 +676,10 @@ public sealed class SettingsUi : FeatureModule
 
     private static void Titles(GameObject row, string title, string hint, float gutter)
     {
-        var t = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.Muted, TextAnchor.MiddleLeft);
+        var t = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(t.gameObject, Vector2.zero, Vector2.one, new Vector2(20f, 6f), new Vector2(-gutter, -6f));
+        t.horizontalOverflow = HorizontalWrapMode.Wrap;
+        t.verticalOverflow = VerticalWrapMode.Truncate;
         t.gameObject.name = hint;
         var trigger = row.GetComponent<EventTrigger>();
         if (trigger == null)
@@ -682,6 +705,7 @@ public sealed class SettingsUi : FeatureModule
         var row = Row(parent, nested);
         Titles(row, title, Hint(entry), 88f);
         var toggle = RestlessUi.Switch(row.transform, entry.Value);
+        RestlessUi.PaperSwitch(toggle, entry.Value);
         RestlessUi.Pin(toggle.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-14f, 0f),
             new Vector2(RestlessUi.ToggleWidth, RestlessUi.ToggleHeight));
         ScrollRelay.Bind(toggle.gameObject, _scroll);
@@ -689,7 +713,7 @@ public sealed class SettingsUi : FeatureModule
         toggle.onClick.AddListener(() =>
         {
             entry.Value = !entry.Value;
-            RestlessUi.SetSwitch(toggle, entry.Value);
+            RestlessUi.PaperSwitch(toggle, entry.Value);
             after?.Invoke();
         });
     }
@@ -725,7 +749,7 @@ public sealed class SettingsUi : FeatureModule
     private static void Stat(string title, string value)
     {
         var row = Row();
-        var label = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.Muted,
+        var label = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.PaperMuted,
             TextAnchor.MiddleLeft);
         RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(20f, 6f), new Vector2(-160f, -6f));
         var face = RestlessUi.Label(row.transform, value, RestlessUi.BodySize, RestlessUi.Accent,
@@ -754,22 +778,11 @@ public sealed class SettingsUi : FeatureModule
     private static void Step(string title, string unit, ConfigEntry<float> entry, bool locked, Transform? parent = null, bool nested = false)
     {
         var row = Row(parent, nested);
-        Titles(row, title, Hint(entry), 220f);
+        Titles(row, title, Hint(entry), 320f);
         var value = RestlessUi.Label(row.transform, Format(entry.Value, unit, entry), RestlessUi.BodySize, RestlessUi.Accent, TextAnchor.MiddleRight);
-        RestlessUi.Pin(value.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-176f, 0f), new Vector2(72f, 24f));
+        RestlessUi.Pin(value.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f), new Vector2(72f, 24f));
 
-        var track = RestlessUi.Slice(row.transform, "slider", "row-idle", RestlessUi.ChipBorder, true);
-        track.GetComponent<Image>().color = RestlessUi.ChipTint;
-        RestlessUi.Pin(track, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-16f, 0f), new Vector2(140f, 12f));
-        var slide = RestlessUi.Node(track.transform, "slide");
-        RestlessUi.Stretch(slide, Vector2.zero, Vector2.one, new Vector2(8f, 0f), new Vector2(-8f, 0f));
-        var knob = RestlessUi.Picture(slide.transform, "knob", "diamond");
-        RestlessUi.Pin(knob, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(14f, 14f));
-
-        var slider = track.AddComponent<Slider>();
-        slider.direction = Slider.Direction.LeftToRight;
-        slider.handleRect = knob.GetComponent<RectTransform>();
-        slider.targetGraphic = knob.GetComponent<Image>();
+        var slider = RestlessUi.PaperSlider(row.transform);
         slider.interactable = !locked;
         if (entry.Description.AcceptableValues is AcceptableValueRange<float> range)
         {
@@ -782,7 +795,7 @@ public sealed class SettingsUi : FeatureModule
             slider.maxValue = Mathf.Max(entry.Value, 1f);
         }
 
-        ScrollRelay.Bind(track, _scroll);
+        ScrollRelay.Bind(slider.gameObject, _scroll);
         slider.wholeNumbers = StepSize(entry) >= 1f;
         slider.SetValueWithoutNotify(Snap(entry, entry.Value));
         slider.onValueChanged.AddListener(v =>
@@ -799,8 +812,9 @@ public sealed class SettingsUi : FeatureModule
     {
         var row = Row();
         Titles(row, title, Hint(enabled), 250f);
-        AddKey(row.transform, key, locked, -14f - RestlessUi.ToggleWidth - 10f);
+        AddKey(row.transform, key, false, -14f - RestlessUi.ToggleWidth - 10f);
         var toggle = RestlessUi.Switch(row.transform, enabled.Value);
+        RestlessUi.PaperSwitch(toggle, enabled.Value);
         RestlessUi.Pin(toggle.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-14f, 0f),
             new Vector2(RestlessUi.ToggleWidth, RestlessUi.ToggleHeight));
         ScrollRelay.Bind(toggle.gameObject, _scroll);
@@ -808,7 +822,7 @@ public sealed class SettingsUi : FeatureModule
         toggle.onClick.AddListener(() =>
         {
             enabled.Value = !enabled.Value;
-            RestlessUi.SetSwitch(toggle, enabled.Value);
+            RestlessUi.PaperSwitch(toggle, enabled.Value);
         });
     }
 
@@ -826,6 +840,7 @@ public sealed class SettingsUi : FeatureModule
         var row = Row(parent, nested);
         Titles(row, title, Hint(entry), 300f);
         var plate = RestlessUi.Chip(row.transform, "words");
+        RestlessUi.PaperControl(plate);
         RestlessUi.Pin(plate, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-14f, 0f),
             new Vector2(240f, 28f));
         ScrollRelay.Bind(plate, _scroll);
@@ -837,6 +852,7 @@ public sealed class SettingsUi : FeatureModule
         var field = plate.AddComponent<InputField>();
         field.textComponent = label;
         field.text = entry.Value;
+        RestlessUi.PaperSelectable(field);
         field.interactable = !locked;
         field.caretColor = RestlessUi.Accent;
         field.selectionColor = new Color(RestlessUi.Accent.r, RestlessUi.Accent.g, RestlessUi.Accent.b, 0.25f);
@@ -846,6 +862,7 @@ public sealed class SettingsUi : FeatureModule
     private static void AddKey(Transform parent, ConfigEntry<KeyboardShortcut> entry, bool locked, float fromRight = -14f)
     {
         var plate = RestlessUi.Chip(parent, "key");
+        RestlessUi.PaperControl(plate);
         RestlessUi.Pin(plate, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(fromRight, 0f),
             new Vector2(RestlessUi.KeyWidth, RestlessUi.KeyHeight));
         ScrollRelay.Bind(plate, _scroll);
@@ -854,6 +871,7 @@ public sealed class SettingsUi : FeatureModule
         var go = plate;
         var button = go.AddComponent<Button>();
         button.targetGraphic = plate.GetComponent<Image>();
+        RestlessUi.PaperSelectable(button);
         button.interactable = !locked;
         button.onClick.AddListener(() =>
         {
@@ -872,7 +890,7 @@ public sealed class SettingsUi : FeatureModule
             if (_captureLabel != null && _captureEntry != null)
             {
                 _captureLabel.text = Pretty(_captureEntry.Value);
-                _captureLabel.color = RestlessUi.Muted;
+                _captureLabel.color = RestlessUi.PaperMuted;
             }
 
             _capturing = false;
@@ -896,7 +914,7 @@ public sealed class SettingsUi : FeatureModule
             if (_captureLabel != null)
             {
                 _captureLabel.text = Pretty(_captureEntry.Value);
-                _captureLabel.color = RestlessUi.Muted;
+                _captureLabel.color = RestlessUi.PaperMuted;
             }
 
             _capturing = false;

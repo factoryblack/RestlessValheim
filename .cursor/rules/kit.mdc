@@ -44,3 +44,11 @@ The tooltip uses these in place of its solid Tray skin and TitleTear; other surf
 The new paper-panel and paper-chip assets use tiled centres with explicit sprite borders; this does not permit stretching the old row-idle or panel-back over a tall card.
 Keep baked material colour white; use separate paper-*-rim alpha overlays for accents. Text and game icons remain separate. Reuse these helpers rather than duplicating their asset setup.
 See docs/visual-materials.md. This is a proof awaiting Unity validation, not a finished migration of every UI surface.
+
+## Settings material adoption
+
+Jules authorised the reference Settings screen's full-width overhanging header for this surface.
+Use PaperSettingsHeader for that header; the earlier inset-only TrayHead rule continues on other surfaces.
+Settings opts into PaperSurface, PaperControl, PaperSwitch, PaperSlider, PaperSelectable and PaperDivider.
+PaperControl restores interaction after PaperSurface (which deliberately disables raycasts for inspect).
+Keep configuration, synchronisation and key capture in SettingsUi; shared helpers own appearance only.

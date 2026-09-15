@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-15 — Generated material system proof integrated into inspect; compile/in-game validation pending.
+# last_audit: 2026-09-15 — Shared paper materials extended to Settings; compile/in-game validation pending.
 
 updated: 2026-09-15
 
@@ -407,7 +407,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-Azus_UnOfficial_ConfigManager
-    note: "F8 / pause Restless. Nested Tray + Rim; TrayHead is an inset Ink Strip (RowWidth / TrayGutter). Rows stay torn (hover Rim). Gameplay patches always load and read the flag (craft/build spend are separate). Action hints restore vanilla clusters when off. Kit only embeds plates we draw — not Auga toggle-on / hotkey-btn / map-compass / slider. Not Azu Config Manager. Tab/ESC trays not in this pass."
+    note: "F8 / pause Restless. Shared paper materials on panel, overhanging 1120px header, selected tabs, rows, keybinds and inputs. PaperSwitch round knobs; PaperSlider filled track and diamond handle. Six existing tab definitions, config bindings and ScrollRelay retained. Sheet fits canvas; Q/E navigation suspended during text editing; personal keybinds remain editable under gameplay lock. No new gameplay settings. Compilation, Unity appearance, host/client controls and keyboard navigation need validation."
 
   # --- vanilla 1.0 ---
   - id: inventory.extra_rows

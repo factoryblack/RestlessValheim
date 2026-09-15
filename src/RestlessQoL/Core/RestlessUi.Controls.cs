@@ -34,6 +34,7 @@ internal static partial class RestlessUi
         colours.disabledColor = new Color(0.55f, 0.55f, 0.55f, 0.65f);
         colours.fadeDuration = FadeSeconds;
         control.colors = colours;
+        ControlFeedback(control);
     }
 
     public static void PaperSwitch(Button button, bool on)
@@ -71,8 +72,9 @@ internal static partial class RestlessUi
         for (var i = 0; i < 2; i++)
         {
             var tree = Graphic(bar.transform, "tree-" + i,
-                new Color(0.58f, 0.53f, 0.44f, 0.55f), false);
-            tree.GetComponent<Image>().sprite = Kit.Sprite("paper-tree");
+                new Color(1f, 1f, 1f, 0.72f), false);
+            tree.GetComponent<Image>().sprite = Kit.Sprite("pine-emblem");
+            tree.GetComponent<Image>().preserveAspect = true;
             Pin(tree, new Vector2(i, 0.5f), new Vector2(i, 0.5f),
                 new Vector2(i == 0 ? 20f : -20f, 0f), new Vector2(24f, 50f));
         }
@@ -91,7 +93,8 @@ internal static partial class RestlessUi
         Stretch(fill, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var slide = Node(track.transform, "slide");
         Stretch(slide, Vector2.zero, Vector2.one, new Vector2(8f, 0f), new Vector2(-8f, 0f));
-        var knob = Picture(slide.transform, "knob", "diamond");
+        var knob = Picture(slide.transform, "knob", "quality-lozenge");
+        knob.GetComponent<Image>().sprite = QualityLozenge();
         Pin(knob, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(20f, 20f));
         var slider = track.AddComponent<Slider>();
         slider.direction = Slider.Direction.LeftToRight;

@@ -257,7 +257,10 @@ public sealed class SettingsUi : FeatureModule
         RestlessUi.Pin(esc, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
             new Vector2(-62f, 0f), new Vector2(72f, 36f));
         var escLabel = RestlessUi.Label(esc.transform, "ESC", RestlessUi.HintSize, RestlessUi.Text, TextAnchor.MiddleCenter);
-        RestlessUi.Stretch(escLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        RestlessUi.Stretch(escLabel.gameObject, Vector2.zero, Vector2.one, new Vector2(16f, 0f), Vector2.zero);
+        var closeMark = RestlessUi.Picture(esc.transform, "RestlessClose", "utility-close");
+        RestlessUi.Pin(closeMark, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+            new Vector2(5f, 0f), new Vector2(16f, 16f));
         var escBtn = esc.AddComponent<Button>();
         escBtn.targetGraphic = esc.GetComponent<Image>();
         RestlessUi.PaperSelectable(escBtn);
@@ -333,6 +336,10 @@ public sealed class SettingsUi : FeatureModule
         _lock = RestlessUi.Label(card, "", RestlessUi.HudSize, RestlessUi.Accent, TextAnchor.MiddleRight);
         RestlessUi.Stretch(_lock.gameObject, Vector2.zero, new Vector2(1f, 0f),
             new Vector2(740f, 12f), new Vector2(-inset, 56f));
+        var lockIcon = RestlessUi.Picture(_lock.transform, "RestlessLock", "utility-lock");
+        RestlessUi.Pin(lockIcon, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+            new Vector2(-22f, 0f), new Vector2(18f, 18f));
+        lockIcon.GetComponent<Image>().raycastTarget = false;
     }
 
     private static void UpdateLock()
@@ -340,6 +347,8 @@ public sealed class SettingsUi : FeatureModule
         if (_lock == null)
             return;
         _lock.text = CanEditGameplay() ? "" : "Host locked";
+        var icon = _lock.transform.Find("RestlessLock");
+        if (icon != null) icon.gameObject.SetActive(_lock.text.Length > 0);
     }
 
     private static void ShowHint(string text)

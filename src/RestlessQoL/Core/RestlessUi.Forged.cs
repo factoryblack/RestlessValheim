@@ -23,29 +23,31 @@ internal static partial class RestlessUi
     public static void ForgedTab(GameObject target, bool selected)
     {
         var image = target.GetComponent<Image>();
-        image.sprite = Kit.Sprite("tab-inset", new Vector4(12f, 8f, 12f, 8f));
+        image.sprite = Kit.Sprite("category-strip", new Vector4(64f, 12f, 64f, 12f));
         image.type = Image.Type.Sliced;
+        image.pixelsPerUnitMultiplier = 3f;
         image.color = selected ? Color.white : new Color(0.72f, 0.72f, 0.72f, 0.45f);
         image.raycastTarget = true;
         Rim(target, on: false);
         var old = target.transform.Find("paperAccent");
         if (old != null) old.gameObject.SetActive(false);
         var marker = target.transform.Find("RestlessTabMarker")?.gameObject;
-        if (marker == null) marker = Picture(target.transform, "RestlessTabMarker", "tab-marker");
-        Pin(marker, new Vector2(0.5f, 0f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(42f, 8f));
+        if (marker == null) marker = Picture(target.transform, "RestlessTabMarker", "selection-marker");
+        Pin(marker, new Vector2(0.5f, 0f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(42f, 20f));
         marker.GetComponent<Image>().raycastTarget = false;
         marker.SetActive(selected);
     }
 
     public static float QualityMarks(Transform parent, int quality, float width)
     {
-        var space = quality * 15f > width ? width - 32f : width;
-        var count = Mathf.Min(Mathf.Max(0, quality), Mathf.Max(1, Mathf.FloorToInt(space / 15f)));
+        var space = quality * 18f > width ? Mathf.Max(0f, width - 32f) : width;
+        var count = Mathf.Min(Mathf.Max(0, quality), Mathf.Max(0, Mathf.FloorToInt(space / 18f)));
         for (var i = 0; i < count; i++)
         {
-            var gem = Picture(parent, "qualityGem-" + i, "quality-gem");
+            var gem = Picture(parent, "qualityGem-" + i, "quality-lozenge");
+            gem.GetComponent<Image>().sprite = QualityLozenge();
             Pin(gem, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                new Vector2(i * 15f, 0f), new Vector2(14f, 17f));
+                new Vector2(i * 18f, 0f), new Vector2(14f, 20f));
             gem.GetComponent<Image>().raycastTarget = false;
         }
         // Large mod levels must not silently look like a lower level.
@@ -53,9 +55,9 @@ internal static partial class RestlessUi
         {
             var overflow = Label(parent, "+" + (quality - count), HudMeta, Accent, TextAnchor.MiddleLeft);
             Pin(overflow.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                new Vector2(count * 15f, 0f), new Vector2(32f, 20f));
+                new Vector2(count * 18f, 0f), new Vector2(32f, 20f));
         }
-        return count * 15f;
+        return count * 18f + (quality > count ? 32f : 0f);
     }
 
     public static Scrollbar ForgedScrollbar(Transform parent)

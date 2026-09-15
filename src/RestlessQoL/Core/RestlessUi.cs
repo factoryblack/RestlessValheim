@@ -333,7 +333,7 @@ internal static partial class RestlessUi
         }
     }
 
-    // Cream diamond on a locked slot. Opposite corner from quality.
+    // Explicit lock symbol, opposite the quality marker.
     public static void DressLock(Transform host, bool locked)
     {
         var mark = host.Find("RestlessLock");
@@ -345,14 +345,14 @@ internal static partial class RestlessUi
         }
 
         if (mark == null)
-            mark = Picture(host, "RestlessLock", "diamond").transform;
+            mark = Picture(host, "RestlessLock", "utility-lock").transform;
 
         mark.SetAsLastSibling();
         mark.gameObject.SetActive(true);
         Pin(mark.gameObject, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-8f, -8f),
-            new Vector2(12f, 12f));
+            new Vector2(20f, 20f));
         var img = mark.GetComponent<Image>();
-        img.color = Accent;
+        img.color = Color.white;
         img.raycastTarget = false;
     }
 

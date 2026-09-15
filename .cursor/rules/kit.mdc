@@ -81,3 +81,13 @@ the vanilla TMP rectangle. Craft detail uses a clone of the vanilla recipe-list
 scrollbar, not ForgedScrollbar. RestlessScrollRect moves about one viewport per
 wheel notch without inertia; same-recipe refreshes retain scroll position. See
 docs/forged-kit.md.
+
+## Material polish integration
+
+User authorised wiring the asset study into the existing UI. PortraitFrame,
+CategoryStrip, QualityLozenge and ControlFeedback are shared RestlessUi helpers.
+PaperCorner uses the solid corner overlay and separate cast pine; PaperDivider
+keeps its cast knot proportional. Navigation sprite replacements must restore the
+original sprite, colour and aspect on undress. Keep native PVP state presentation.
+Focus and selection are separate visual states. Do not replace main's recipe
+scrolling implementation. See docs/ui-polish-integration.md.

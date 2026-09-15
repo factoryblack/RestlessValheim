@@ -21,6 +21,7 @@ public sealed partial class InventoryScreen
     private static readonly Dictionary<Button, CraftControl> CraftControls = new();
     private static readonly Dictionary<RectTransform, Vector3> CraftTabPositions = new();
     private static readonly Dictionary<RectTransform, Vector3> CraftIconScales = new();
+    private static readonly Dictionary<Image, (Sprite? Sprite, bool Aspect, Color Colour, string Asset)> CraftIconArt = new();
     private static string _recipeCopy = "";
     private static string _recipeIdentity = "";
     private static float _recipeWidth;
@@ -54,12 +55,25 @@ public sealed partial class InventoryScreen
         }
         if (detail != null) RestlessUi.PaperSurface(detail.gameObject);
         DressStructuredRecipe(gui);
+        if (gui.m_recipeIcon != null && gui.m_recipeIcon.transform.Find("RestlessPortrait") == null)
+        {
+            var frame = RestlessUi.Picture(gui.m_recipeIcon.transform, "RestlessPortrait", "portrait-frame");
+            Ours.Add(frame);
+            RestlessUi.PortraitFrame(frame);
+            RestlessUi.Stretch(frame, Vector2.zero, Vector2.one, new Vector2(-4f, -4f), new Vector2(4f, 4f));
+        }
         DressStationRequirement(gui);
+        if (gui.m_repairButton != null)
+            CraftArtwork(RestlessUi.Deep<Image>(gui.m_repairButton.transform, "Icon"), "utility-repair");
         CompactStationIcon(gui.m_craftingStationIcon);
+        CraftArtwork(gui.m_craftingStationIcon, "craft-hammer");
         if (gui.m_craftingStationLevel != null && gui.m_craftingStationLevel.transform.parent != null)
+        {
             CompactStationIcon(gui.m_craftingStationLevel.transform.parent.GetComponent<Image>());
+            CraftArtwork(gui.m_craftingStationLevel.transform.parent.GetComponent<Image>(), "station-socket");
+        }
 
-        // Keep the real navigation icons and their existing controller/click targets.
+        // Replace icon artwork, preserving the native nodes, active states and click targets.
         var navigation = gui.m_info != null ? gui.m_info.Find("RestlessIcons") : null;
         if (navigation != null) RestlessUi.PaperSurface(navigation.gameObject);
         if (gui.m_info != null)
@@ -71,6 +85,20 @@ public sealed partial class InventoryScreen
                 var icon = RestlessUi.Deep<Image>(node, "Icon") ?? RestlessUi.Deep<Image>(node, "Image")
                     ?? RestlessUi.Deep<Image>(node, "Checked");
                 CompactStationIcon(icon, 42f);
+                var asset = name switch
+                {
+                    "Texts" => "nav-raven", "Skills" => "nav-knot",
+                    "Trophies" => "nav-trophy", "Achievements" => "nav-shield", _ => "nav-swords"
+                };
+                CraftArtwork(icon, asset);
+                if (name == "PVP")
+                {
+                    // Both native toggle faces retain their visibility and colour semantics.
+                    CraftArtwork(RestlessUi.Deep<Image>(node, "Checked"), asset);
+                    CraftArtwork(RestlessUi.Deep<Image>(node, "Unchecked"), asset);
+                    CompactStationIcon(RestlessUi.Deep<Image>(node, "Checked"), 42f);
+                    CompactStationIcon(RestlessUi.Deep<Image>(node, "Unchecked"), 42f);
+                }
                 var plate = node!.Find("RestlessNavPaper");
                 if (plate == null)
                 {
@@ -82,6 +110,7 @@ public sealed partial class InventoryScreen
                 }
                 RestlessUi.ForgedTab(plate.gameObject, false);
                 BindCraftControl(button, plate.GetComponent<Image>(), null, false);
+                if (name != "PVP") RestlessUi.ControlFeedback(button).Icon = icon;
             }
 
         PaperCraftButton(gui.m_tabCraft, gui.InCraftTab());
@@ -120,6 +149,17 @@ public sealed partial class InventoryScreen
         if (size <= limit || size > 128f) return;
         CraftIconScales.Add(icon.rectTransform, icon.rectTransform.localScale);
         icon.rectTransform.localScale *= limit / size;
+    }
+
+    private static void CraftArtwork(Image? image, string asset)
+    {
+        if (image == null) return;
+        var sprite = Kit.Sprite(asset);
+        if (sprite == null) return;
+        if (!CraftIconArt.ContainsKey(image))
+            CraftIconArt.Add(image, (image.sprite, image.preserveAspect, image.color, asset));
+        image.sprite = sprite;
+        image.preserveAspect = true;
     }
 
     private static void DressStructuredRecipe(InventoryGui gui)
@@ -235,14 +275,15 @@ public sealed partial class InventoryScreen
         var medal = host.Find("RestlessStationMedal")?.gameObject;
         if (medal == null)
         {
-            medal = RestlessUi.Picture(host, "RestlessStationMedal", "station-medallion");
+            medal = RestlessUi.Picture(host, "RestlessStationMedal", "station-socket");
             Ours.Add(medal);
             RestlessUi.Pin(medal, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(52f, 52f));
             medal.GetComponent<Image>().raycastTarget = true;
             medal.AddComponent<RestlessHint>();
-            var glyph = RestlessUi.Picture(medal.transform, "glyph", "glyph-station");
-            RestlessUi.Pin(glyph, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -7f), new Vector2(24f, 24f));
-            glyph.GetComponent<Image>().color = RestlessUi.PaperMuted;
+            var glyph = RestlessUi.Picture(medal.transform, "glyph", "craft-hammer");
+            RestlessUi.Pin(glyph, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -5f), new Vector2(28f, 28f));
+            glyph.GetComponent<Image>().preserveAspect = true;
+            glyph.GetComponent<Image>().color = Color.white;
             glyph.GetComponent<Image>().raycastTarget = false;
         }
         medal.SetActive(copy.Length > 0 && source.gameObject.activeInHierarchy);
@@ -279,6 +320,8 @@ public sealed partial class InventoryScreen
 
     private static void RefreshCraftFeedback(InventoryGui gui)
     {
+        foreach (var pair in CraftIconArt)
+            if (pair.Key != null) pair.Key.sprite = Kit.Sprite(pair.Value.Asset);
         DressStationRequirement(gui);
         foreach (var pair in CraftControls)
         {
@@ -286,8 +329,7 @@ public sealed partial class InventoryScreen
             var nav = pair.Key.transform.Find("RestlessNavPaper");
             if (nav != null)
             {
-                var selected = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject == pair.Key.gameObject;
-                selected |= pair.Key.name switch
+                var selected = pair.Key.name switch
                 {
                     "Texts" => gui.m_textsDialog != null && gui.m_textsDialog.gameObject.activeInHierarchy,
                     "Skills" => gui.m_skillsDialog != null && gui.m_skillsDialog.gameObject.activeInHierarchy,
@@ -297,6 +339,8 @@ public sealed partial class InventoryScreen
                 };
                 var marker = nav.Find("RestlessTabMarker");
                 if (marker != null) marker.gameObject.SetActive(selected);
+                var feedback = pair.Key.GetComponent<RestlessControlFeedback>();
+                if (feedback != null) feedback.Selected = selected;
             }
             if (pair.Value.Face == null) continue;
             pair.Value.Face.color = !pair.Key.IsInteractable() ? RestlessUi.PaperMuted * 0.65f
@@ -339,6 +383,15 @@ public sealed partial class InventoryScreen
         colour.a = 1f; // TMP alpha was suppressed by the dresser, not by the game state.
         face.color = colour.r > colour.g * 1.3f && colour.r > colour.b * 1.3f
             ? RestlessUi.HealthTint : RestlessUi.Accent;
+        var missing = plate.Find("RestlessMissing")?.gameObject;
+        if (missing == null)
+        {
+            missing = RestlessUi.Picture(plate, "RestlessMissing", "utility-missing");
+            RestlessUi.Pin(missing, Vector2.one, Vector2.one, new Vector2(-3f, -3f), new Vector2(16f, 16f));
+            missing.GetComponent<Image>().raycastTarget = false;
+        }
+        missing.GetComponent<Image>().color = RestlessUi.HealthTint;
+        missing.SetActive(face.gameObject.activeSelf && face.color == RestlessUi.HealthTint);
         face.transform.SetAsLastSibling();
     }
 
@@ -350,8 +403,18 @@ public sealed partial class InventoryScreen
             pair.Key.targetGraphic = pair.Value.Graphic;
             pair.Key.colors = pair.Value.Colours;
             pair.Key.transition = pair.Value.Transition;
+            var feedback = pair.Key.GetComponent<RestlessControlFeedback>();
+            if (feedback != null) { feedback.enabled = false; Object.Destroy(feedback); }
         }
         CraftControls.Clear();
+        foreach (var pair in CraftIconArt)
+        {
+            if (pair.Key == null) continue;
+            pair.Key.sprite = pair.Value.Sprite;
+            pair.Key.preserveAspect = pair.Value.Aspect;
+            pair.Key.color = pair.Value.Colour;
+        }
+        CraftIconArt.Clear();
         foreach (var pair in CraftTabPositions)
             if (pair.Key != null) pair.Key.anchoredPosition3D = pair.Value;
         CraftTabPositions.Clear();

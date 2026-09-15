@@ -40,14 +40,16 @@ internal static partial class RestlessUi
     {
         var corner = Graphic(panel.transform, "paperCorner", Color.white, false);
         var image = corner.GetComponent<Image>();
-        image.sprite = Kit.Sprite("paper-corner");
+        image.sprite = Kit.Sprite("corner-overlay");
         if (image.sprite == null) { corner.SetActive(false); return; }
-        Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(126f, 150f));
+        image.preserveAspect = true;
+        Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(144f, 144f));
         // Decoration behind all text; title layout reserves space on the right.
         corner.transform.SetAsFirstSibling();
-        var tree = Graphic(corner.transform, "emblem", new Color(0.58f, 0.53f, 0.44f, 0.55f), false);
-        tree.GetComponent<Image>().sprite = Kit.Sprite("paper-tree");
-        Pin(tree, Vector2.one, Vector2.one, new Vector2(-18f, -24f), new Vector2(24f, 48f));
+        var tree = Graphic(corner.transform, "emblem", new Color(1f, 1f, 1f, 0.8f), false);
+        tree.GetComponent<Image>().sprite = Kit.Sprite("pine-emblem");
+        tree.GetComponent<Image>().preserveAspect = true;
+        Pin(tree, Vector2.one, Vector2.one, new Vector2(-17f, -18f), new Vector2(20f, 58f));
     }
 
     // Compatibility entry point; the forged mark asset is shared by both families.
@@ -64,7 +66,23 @@ internal static partial class RestlessUi
         Stretch(right, new Vector2(0.5f, 0.5f), new Vector2(1f, 0.5f),
             new Vector2(14f, -0.5f), new Vector2(0f, 0.5f));
         var knot = Graphic(row.transform, "knot", tint, false);
-        knot.GetComponent<Image>().sprite = Kit.Sprite("paper-knot");
-        Pin(knot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(22f, 14f));
+        knot.GetComponent<Image>().sprite = CastKnot();
+        knot.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.75f);
+        knot.GetComponent<Image>().preserveAspect = true;
+        Pin(knot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(32f, 20f));
+    }
+
+    private static Sprite? _castKnot;
+    private static Sprite? CastKnot()
+    {
+        if (_castKnot != null) return _castKnot;
+        var source = Kit.Sprite("knot-divider");
+        if (source == null) return Kit.Sprite("paper-knot");
+        // Keep the knot proportional while the separate rules follow the row width.
+        var width = source.rect.width * 0.20f;
+        _castKnot = Sprite.Create(source.texture,
+            new Rect((source.rect.width - width) * 0.5f, 0f, width, source.rect.height),
+            new Vector2(0.5f, 0.5f), 100f);
+        return _castKnot;
     }
 }

@@ -814,6 +814,17 @@ public sealed partial class InventoryScreen : FeatureModule
 
             if (image.GetComponentInParent<Scrollbar>() != null)
             {
+                var owned = false;
+                for (var t = image.transform; t != null; t = t.parent)
+                {
+                    if (!t.name.StartsWith("RestlessRecipeScroll"))
+                        continue;
+                    owned = true;
+                    break;
+                }
+
+                if (owned)
+                    continue;
                 if (n.Contains("handle"))
                     continue;
                 Hide(image);

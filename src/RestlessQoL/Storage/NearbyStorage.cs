@@ -46,16 +46,22 @@ public static class NearbyStorage
         return view != null && view.IsValid();
     }
 
+    // Chest OnContainerChanged only Save()s when IsOwner(). A client
+    // RemoveItem/AddItem is local theatre; vacuum then Destroy()s the pile
+    // and the host ZDO never saw it. Only mutate chests we already own.
+    internal static bool CanWrite(Container container) =>
+        Ready(container) && container.IsOwner();
+
     public static bool IsLocalPlayerInventory(Inventory inventory)
     {
         var player = Player.m_localPlayer;
         return player != null && inventory != null && player.GetInventory() == inventory;
     }
 
-    public static int CountVanilla(Inventory inventory, string sharedName)
+    public static int CountVanilla(Inventory inventory, string sharedName, int quality = -1, bool worldLevel = false)
     {
         using (SuppressPatches())
-            return inventory.CountItems(sharedName);
+            return inventory.CountItems(sharedName, quality, worldLevel);
     }
 
     public static IEnumerable<Container> ForPlayer(Player player, float range)
@@ -117,24 +123,16 @@ public static class NearbyStorage
         return found;
     }
 
-    public static int TryConsumeAround(Vector3 origin, float range, long playerId, string sharedName, int amount, bool honorLeaveOne = true)
+    public static int TryConsumeAround(Vector3 origin, float range, long playerId, string sharedName, int amount,
+        bool honorLeaveOne = true, int quality = -1, bool worldLevel = false)
     {
         if (amount <= 0)
             return 0;
         var taken = 0;
         foreach (var container in Around(origin, range, playerId))
         {
-            var inventory = container.GetInventory();
-            var have = inventory.CountItems(sharedName);
-            if (have <= 0)
-                continue;
-            var leave = honorLeaveOne && ModConfig.LeaveOne.Value ? 1 : 0;
-            var available = Mathf.Max(0, have - leave);
-            if (available <= 0)
-                continue;
-            var pull = Mathf.Min(available, amount - taken);
-            inventory.RemoveItem(sharedName, pull);
-            taken += pull;
+            taken += StorageSync.RequestPull(container, playerId, sharedName, amount - taken, honorLeaveOne,
+                quality, worldLevel, null);
             if (taken >= amount)
                 break;
         }
@@ -143,15 +141,16 @@ public static class NearbyStorage
     }
 
     // sharedName is ItemData.m_shared.m_name (e.g. $item_wood), not the prefab id.
-    public static int Count(string sharedName)
+    public static int Count(string sharedName, int quality = -1, bool worldLevel = false)
     {
         var total = 0;
         foreach (var container in ForLocalPlayer())
-            total += container.GetInventory().CountItems(sharedName);
+            total += container.GetInventory().CountItems(sharedName, quality, worldLevel);
         return total;
     }
 
-    public static bool Has(string sharedName) => Count(sharedName) > 0;
+    public static bool Has(string sharedName, int quality = -1, bool worldLevel = false) =>
+        Count(sharedName, quality, worldLevel) > 0;
 
     public static bool TryCloneIfPresent(ItemDrop drop, out ItemDrop.ItemData item)
     {
@@ -165,29 +164,36 @@ public static class NearbyStorage
         return true;
     }
 
-    public static int TryConsume(string sharedName, int amount, bool honorLeaveOne = true)
+    public static int TryConsume(string sharedName, int amount, bool honorLeaveOne = true, int quality = -1,
+        bool worldLevel = false)
     {
         if (amount <= 0)
             return 0;
+        var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
         var taken = 0;
         foreach (var container in ForLocalPlayer())
         {
-            var inventory = container.GetInventory();
-            var have = inventory.CountItems(sharedName);
-            if (have <= 0)
-                continue;
-            var leave = honorLeaveOne && ModConfig.LeaveOne.Value ? 1 : 0;
-            var available = Mathf.Max(0, have - leave);
-            if (available <= 0)
-                continue;
-            var pull = Mathf.Min(available, amount - taken);
-            inventory.RemoveItem(sharedName, pull);
-            taken += pull;
+            taken += StorageSync.RequestPull(container, playerId, sharedName, amount - taken, honorLeaveOne,
+                quality, worldLevel, null);
             if (taken >= amount)
                 break;
         }
 
         return taken;
+    }
+
+    public static void RequestConsume(string sharedName, int amount, Action<int> done, bool honorLeaveOne = true,
+        int quality = -1, bool worldLevel = false)
+    {
+        if (amount <= 0)
+        {
+            done(0);
+            return;
+        }
+
+        var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
+        RequestConsumeFrom(new List<Container>(ForLocalPlayer()), playerId, sharedName, amount, honorLeaveOne,
+            quality, worldLevel, 0, done);
     }
 
     public static bool HasRequirements(Player player, Piece.Requirement[] requirements, int qualityLevel, int amount)
@@ -211,14 +217,15 @@ public static class NearbyStorage
     // Vanilla ConsumeResources always ends in RemoveItem(string). One prefix
     // pulls the bag shortfall from chests; a second prefix (craft + build both
     // loaded) sees the reduced amount and no-ops.
-    public static void TakeShortfall(Inventory inventory, string sharedName, ref int amount)
+    public static void TakeShortfall(Inventory inventory, string sharedName, ref int amount, int quality = -1,
+        bool worldLevel = false)
     {
         if (SkipPatches || !IsLocalPlayerInventory(inventory) || amount <= 0)
             return;
-        var inPlayer = CountVanilla(inventory, sharedName);
+        var inPlayer = CountVanilla(inventory, sharedName, quality, worldLevel);
         if (inPlayer >= amount)
             return;
-        amount -= TryConsume(sharedName, amount - inPlayer);
+        amount -= TryConsume(sharedName, amount - inPlayer, true, quality, worldLevel);
     }
 
     public static int TryDeposit(Player player, ItemDrop.ItemData item)
@@ -229,6 +236,8 @@ public static class NearbyStorage
         var moved = 0;
         foreach (var container in ForPlayer(player, ModConfig.StorageRange.Value))
         {
+            if (!CanWrite(container))
+                continue;
             var dest = container.GetInventory();
             if (dest == null || dest == playerInv)
                 continue;
@@ -300,20 +309,143 @@ public static class NearbyStorage
 
     public static int TryDepositDrop(Player player, ItemDrop drop)
     {
-        if (player == null || drop?.m_itemData?.m_shared == null)
+        if (player == null || drop?.m_itemData?.m_shared == null || drop.m_nview == null || !drop.m_nview.IsValid())
             return 0;
         if (!drop.CanPickup(true))
             return 0;
+        var id = drop.m_nview.GetZDO().m_uid;
+        if (!BeginDeposit(id))
+            return 0;
         var item = drop.m_itemData;
         var moved = TryDeposit(player, item);
-        if (moved <= 0)
+        if (item.m_stack <= 0)
+        {
+            FinishDrop(drop, item);
+            EndDeposit(id);
+            return moved;
+        }
+
+        RequestDeposit(player, item, drop, extra =>
+        {
+            if (item.m_stack <= 0 || extra > 0)
+                FinishDrop(drop, item);
+            EndDeposit(id);
+        });
+        return moved;
+    }
+
+    public static void RequestDeposit(Player player, ItemDrop.ItemData item, ItemDrop? drop, Action<int> done)
+    {
+        if (player == null || item?.m_shared == null || item.m_stack <= 0)
+        {
+            done(0);
+            return;
+        }
+
+        var playerId = player.GetPlayerID();
+        var left = new List<Container>();
+        foreach (var container in ForPlayer(player, ModConfig.StorageRange.Value))
+        {
+            if (CanWrite(container))
+                continue;
+            var dest = container.GetInventory();
+            if (dest == null || !dest.HaveItem(item.m_shared.m_name))
+                continue;
+            left.Add(container);
+        }
+
+        PushWalk(left, 0, playerId, item, drop, 0, done);
+    }
+
+    internal static int PullOwned(Container container, string sharedName, int amount, bool honorLeaveOne, int quality,
+        bool worldLevel)
+    {
+        if (!CanWrite(container) || amount <= 0)
             return 0;
+        var inventory = container.GetInventory();
+        if (inventory == null)
+            return 0;
+        var have = inventory.CountItems(sharedName, quality, worldLevel);
+        if (have <= 0)
+            return 0;
+        var leave = honorLeaveOne && ModConfig.LeaveOne.Value ? 1 : 0;
+        var available = Mathf.Max(0, have - leave);
+        var pull = Mathf.Min(available, amount);
+        if (pull <= 0)
+            return 0;
+        inventory.RemoveItem(sharedName, pull, quality, worldLevel);
+        return pull;
+    }
+
+    internal static int PushOwned(Container container, ItemDrop.ItemData item, ItemDrop? drop)
+    {
+        if (!CanWrite(container) || item?.m_shared == null || item.m_stack <= 0)
+            return 0;
+        var dest = container.GetInventory();
+        if (dest == null || !dest.HaveItem(item.m_shared.m_name))
+            return 0;
+        var taken = MergeInto(dest, item, item.m_stack);
+        if (item.m_stack - taken > 0)
+            taken += PlaceNewStacks(dest, item, item.m_stack - taken);
+        if (taken <= 0)
+            return 0;
+        dest.Changed(true, false);
+        item.m_stack -= taken;
+        if (drop != null)
+            FinishDrop(drop, item);
+        return taken;
+    }
+
+    private static readonly HashSet<ZDOID> Depositing = new();
+
+    private static void RequestConsumeFrom(List<Container> chests, long playerId, string sharedName, int amount,
+        bool honorLeaveOne, int quality, bool worldLevel, int moved, Action<int> done)
+    {
+        if (amount <= 0 || chests.Count == 0)
+        {
+            done(moved);
+            return;
+        }
+
+        var chest = chests[0];
+        chests.RemoveAt(0);
+        StorageSync.RequestPull(chest, playerId, sharedName, amount, honorLeaveOne, quality, worldLevel, taken =>
+            RequestConsumeFrom(chests, playerId, sharedName, amount - taken, honorLeaveOne, quality, worldLevel,
+                moved + taken, done));
+    }
+
+    private static void PushWalk(List<Container> chests, int index, long playerId, ItemDrop.ItemData item,
+        ItemDrop? drop, int moved, Action<int> done)
+    {
+        if (item.m_stack <= 0 || index >= chests.Count)
+        {
+            done(moved);
+            return;
+        }
+
+        var chest = chests[index];
+        var local = CanWrite(chest);
+        StorageSync.RequestPush(chest, playerId, item, drop, taken =>
+        {
+            if (taken > 0 && !local)
+                item.m_stack = Mathf.Max(0, item.m_stack - taken);
+            PushWalk(chests, index + 1, playerId, item, drop, moved + taken, done);
+        });
+    }
+
+    private static void FinishDrop(ItemDrop drop, ItemDrop.ItemData item)
+    {
+        if (drop?.m_nview == null || !drop.m_nview.IsValid() || !drop.m_nview.IsOwner())
+            return;
         if (item.m_stack <= 0)
             drop.m_nview.Destroy();
         else
             drop.SetStack(item.m_stack);
-        return moved;
     }
+
+    public static bool BeginDeposit(ZDOID id) => id != ZDOID.None && Depositing.Add(id);
+
+    public static void EndDeposit(ZDOID id) => Depositing.Remove(id);
 
     private sealed class Pop : IDisposable
     {

@@ -149,11 +149,14 @@ public sealed partial class InventoryScreen
             scroll.inertia = false;
             scroll.movementType = ScrollRect.MovementType.Clamped;
             scroll.viewport = view.GetComponent<RectTransform>();
-            var bar = RestlessUi.ForgedScrollbar(host);
-            RestlessUi.Stretch(bar.gameObject, new Vector2(1f, 0f), Vector2.one,
-                new Vector2(-13f, 18f), new Vector2(-6f, -92f));
-            scroll.verticalScrollbar = bar;
-            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+        }
+
+        var scroller = view.GetComponent<RestlessScrollRect>();
+        var bar = RecipeScrollbar(gui, host);
+        if (bar != null)
+        {
+            scroller.verticalScrollbar = bar;
+            scroller.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
         }
         view.SetActive(source.gameObject.activeInHierarchy);
         Place(view.GetComponent<RectTransform>(), x0 + 18f * sx, y0 + 18f * sy,
@@ -161,7 +164,6 @@ public sealed partial class InventoryScreen
         var width = Mathf.Max(80f, view.GetComponent<RectTransform>().rect.width);
         var copy = ItemTooltip.RecipeCopy(source.text ?? "");
         var identity = gui.GetSelectedRecipeIndex(false) + ":" + gui.InCraftTab() + ":" + gui.m_recipeName?.text;
-        var scroller = view.GetComponent<RestlessScrollRect>();
         var changedSelection = identity != _recipeIdentity;
         if (!changedSelection && scroller.content != null && copy == _recipeCopy && Mathf.Abs(width - _recipeWidth) < 0.5f) return;
         var offset = !changedSelection && scroller.content != null ? scroller.content.anchoredPosition.y : 0f;
@@ -188,6 +190,28 @@ public sealed partial class InventoryScreen
         _recipeCopy = copy;
         _recipeWidth = width;
         _recipeIdentity = identity;
+    }
+
+    // Same wood slider as the recipe list — not the forged thumb. Wheel step lives on RestlessScrollRect.
+    private static Scrollbar RecipeScrollbar(InventoryGui gui, Transform host)
+    {
+        var forged = host.Find("RestlessScrollTrack");
+        if (forged != null)
+            Object.Destroy(forged.gameObject);
+        var existing = host.Find("RestlessRecipeScroll")?.GetComponent<Scrollbar>();
+        if (existing != null)
+            return existing;
+        var src = gui.m_recipeListScroll;
+        if (src == null)
+            return null;
+        var go = Object.Instantiate(src.gameObject, host, false);
+        go.name = "RestlessRecipeScroll";
+        Ours.Add(go);
+        var srcRt = src.transform as RectTransform;
+        var width = srcRt != null && srcRt.rect.width > 1f ? srcRt.rect.width : 16f;
+        RestlessUi.Stretch(go, new Vector2(1f, 0f), Vector2.one,
+            new Vector2(-width - 6f, 18f), new Vector2(-4f, -92f));
+        return go.GetComponent<Scrollbar>();
     }
 
     private static void DressStationRequirement(InventoryGui gui)

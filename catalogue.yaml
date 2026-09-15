@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-15 — Shared paper materials extended to Settings; compile/in-game validation pending.
+# last_audit: 2026-09-15 — Forged kit; craft detail uses vanilla recipe-list scrollbar and one-viewport wheel steps. Chest RestlessPull/Push. Extra-slot Load/drag local-only.
 
 updated: 2026-09-15
 
@@ -53,7 +53,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Playtested 10 Sep. ConsumeResources + RemoveItem both pulled the chest shortfall — 2× when the bag was short. One RemoveItem shortfall now. Playtest a chest-funded craft."
+    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Craft shortfall is optimistic. Playtest a joining client at a closed chest."
 
   - id: storage.build
     name: Build from nearby chests
@@ -61,7 +61,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Playtested 10 Sep. Same 2× chest pull as storage.craft. Consume is the RemoveItem shortfall (own prefix so build-only still works). Ghosts still skipped. Playtest."
+    note: "Same RestlessPull as storage.craft. Ghosts still skipped. Playtest a joining client placing a piece from closed chests."
 
   - id: storage.quickstack
     name: Quick stack (`)
@@ -69,7 +69,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuAutoStore
-    note: "Match-only (empty chests ignored). Skips hotbar row 0, extra Z/X/C / worn cells, and middle-click locked slots. Merge into existing stacks first. No sort/trash."
+    note: "Match-only. Local write if we own the chest, else RestlessPush and only then shrink the bag. Skips hotbar row 0, extras, and locks. No sort/trash."
 
   - id: storage.restock
     name: Restock (Shift+`)
@@ -77,7 +77,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuAutoStore
-    note: "Playtested 10 Sep: works. Existing stacks only; LeaveOne on pull."
+    note: "Existing stacks only; LeaveOne. Pull waits for the owner reply before adding to the bag so a failed RPC cannot dupe."
 
   - id: storage.station_pull
     name: Stations pull ore/fuel from chests
@@ -85,7 +85,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Playtested 10 Sep: works. Smelter/kiln + cooking + fermenter. Fuel piggybacks on craft HaveItem/RemoveItem."
+    note: "Smelter/kiln + cooking + fermenter. Chest pull uses RestlessPull when this peer is not the ZDO owner. Clone-from-chest still lights the station; consume is the RemoveOneItem postfix."
 
   - id: building.area_repair
     name: Area repair
@@ -198,7 +198,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-PetPantry
-    note: "Hungry tames (IsTamed only — wild still need ground food) pull one matching m_consumeItems stack from chests in Storage.Range. Runs on the AI consume-search tick / owner only. LeaveOne applies. Postfix sets ref __result so vanilla treats the meal as eaten. Not playtested."
+    note: "Hungry tames pull one matching stack from chests in Storage.Range. AI owner sends RestlessPull if it does not own the chest. LeaveOne applies. Not playtested."
 
   - id: storage.ground_vacuum
     name: Ground loot into chests
@@ -206,7 +206,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-AzuAutoStore
-    note: "Routing, not a black hole: ground ItemDrops within Storage.Range go only into chests that already HaveItem that stack. Owner + CanPickup (0.5 s delay). Interval 0.75 s. Quest items skipped. Not playtested."
+    note: "Ground piles into chests that already HaveItem that stack. Local write if we own the chest; else RestlessPush and the owner also despawns the drop if they own it. Bag/ground source is not destroyed until the owner replies. Interval 0.75 s. Quest items skipped."
 
   - id: inventory.mouse_tweaks
     name: Shift-click / stack-split inventory
@@ -399,7 +399,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-EquipmentAndQuickSlots
-    note: "Do not install the sidecar. Hidden player-inventory rows, relocated into three flush columns after the bag (worn 2 + Z/X/C). Death: extra cells come off before CreateTombStone and go into a second tomb to the right (DeathKeepInventory leaves them). Drag onto an occupied worn/ZXC cell moves the occupant to the visible bag (or drops). Worn extras cannot start a drag — unequip is the vanilla action. Playtest the second grave and typed-cell swap."
+    note: "Do not install the sidecar. Hidden rows, relocated worn + Z/X/C. Player.Load / Seat / Wear only on the owned local player — a friend joining used to reset the static height and shuffle extras. FinishDrag deletes leftover only if it is the same instance (not m_shared). WearExtras skipped while m_craftTimer >= 0. Death: extras into a second tomb. Playtest upgrade + a joining client."
 
   - id: tooling.config_manager
     name: In-game settings panel

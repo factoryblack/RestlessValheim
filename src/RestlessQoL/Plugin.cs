@@ -27,6 +27,7 @@ public class Plugin : BaseUnityPlugin
 
     private readonly FeatureModule[] _modules =
     {
+        new StorageSync(),
         new CraftFromStorage(),
         new BuildFromStorage(),
         new QuickStack(),

@@ -1,3 +1,4 @@
+using System.Linq;
 using HarmonyLib;
 using RestlessQoL.Core;
 using RestlessQoL.HudTweaks;
@@ -17,11 +18,12 @@ public sealed class CraftFromStorage : FeatureModule
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Inventory), nameof(Inventory.CountItems), typeof(string), typeof(int), typeof(bool))]
-        private static void CountItems(Inventory __instance, string name, ref int __result)
+        private static void CountItems(Inventory __instance, string name, int quality, bool matchWorldLevel,
+            ref int __result)
         {
             if (!On || NearbyStorage.SkipPatches || !NearbyStorage.IsLocalPlayerInventory(__instance))
                 return;
-            __result += NearbyStorage.Count(name);
+            __result += NearbyStorage.Count(name, quality, matchWorldLevel);
         }
 
         [HarmonyPostfix]
@@ -35,10 +37,11 @@ public sealed class CraftFromStorage : FeatureModule
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Inventory), nameof(Inventory.RemoveItem), typeof(string), typeof(int), typeof(int), typeof(bool))]
-        private static void RemoveItem(Inventory __instance, string name, ref int amount)
+        private static void RemoveItem(Inventory __instance, string name, ref int amount, int itemQuality,
+            bool worldLevelBased)
         {
             if (On)
-                NearbyStorage.TakeShortfall(__instance, name, ref amount);
+                NearbyStorage.TakeShortfall(__instance, name, ref amount, itemQuality, worldLevelBased);
         }
 
         [HarmonyPostfix]
@@ -76,10 +79,11 @@ public sealed class BuildFromStorage : FeatureModule
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Inventory), nameof(Inventory.RemoveItem), typeof(string), typeof(int), typeof(int), typeof(bool))]
-        private static void RemoveItem(Inventory __instance, string name, ref int amount)
+        private static void RemoveItem(Inventory __instance, string name, ref int amount, int itemQuality,
+            bool worldLevelBased)
         {
             if (On)
-                NearbyStorage.TakeShortfall(__instance, name, ref amount);
+                NearbyStorage.TakeShortfall(__instance, name, ref amount, itemQuality, worldLevelBased);
         }
     }
 }
@@ -102,19 +106,38 @@ public sealed class QuickStack : FeatureModule
     public static void Run(Player player)
     {
         var inventory = player.GetInventory();
+        var items = inventory.GetAllItems().ToArray();
         var moved = 0;
-        foreach (var item in inventory.GetAllItems().ToArray())
+        void Next(int index)
         {
-            if (item == null || item.m_equipped || ExtraSlots.SkipDeposit(item) || SlotLock.Held(item))
-                continue;
-            moved += NearbyStorage.TryDeposit(player, item);
-            if (item.m_stack <= 0)
-                inventory.RemoveItem(item);
+            while (index < items.Length)
+            {
+                var item = items[index++];
+                if (item == null || item.m_equipped || ExtraSlots.SkipDeposit(item) || SlotLock.Held(item))
+                    continue;
+                moved += NearbyStorage.TryDeposit(player, item);
+                if (item.m_stack <= 0)
+                {
+                    inventory.RemoveItem(item);
+                    continue;
+                }
+
+                NearbyStorage.RequestDeposit(player, item, null, extra =>
+                {
+                    moved += extra;
+                    if (item.m_stack <= 0)
+                        inventory.RemoveItem(item);
+                    Next(index);
+                });
+                return;
+            }
+
+            if (moved > 0)
+                inventory.Changed(true, false);
+            player.Message(MessageHud.MessageType.Center, moved > 0 ? $"Stacked {moved}" : "Nothing to stack");
         }
 
-        if (moved > 0)
-            inventory.Changed(true, false);
-        player.Message(MessageHud.MessageType.Center, moved > 0 ? $"Stacked {moved}" : "Nothing to stack");
+        Next(0);
     }
 }
 
@@ -136,23 +159,36 @@ public sealed class Restock : FeatureModule
     public static void Run(Player player)
     {
         var inventory = player.GetInventory();
+        var items = inventory.GetAllItems().ToArray();
         var filled = 0;
-        foreach (var item in inventory.GetAllItems())
+        void Next(int index)
         {
-            if (item == null || SlotLock.Held(item))
-                continue;
-            var max = item.m_shared.m_maxStackSize;
-            if (item.m_stack >= max)
-                continue;
-            var taken = NearbyStorage.TryConsume(item.m_shared.m_name, max - item.m_stack);
-            if (taken <= 0)
-                continue;
-            item.m_stack += taken;
-            filled += taken;
+            while (index < items.Length)
+            {
+                var item = items[index++];
+                if (item == null || SlotLock.Held(item))
+                    continue;
+                var max = item.m_shared.m_maxStackSize;
+                if (item.m_stack >= max)
+                    continue;
+                NearbyStorage.RequestConsume(item.m_shared.m_name, max - item.m_stack, taken =>
+                {
+                    if (taken > 0)
+                    {
+                        item.m_stack += taken;
+                        filled += taken;
+                    }
+
+                    Next(index);
+                });
+                return;
+            }
+
+            if (filled > 0)
+                inventory.Changed(true, false);
+            player.Message(MessageHud.MessageType.Center, filled > 0 ? $"Restocked {filled}" : "Nothing to restock");
         }
 
-        if (filled > 0)
-            inventory.Changed(true, false);
-        player.Message(MessageHud.MessageType.Center, filled > 0 ? $"Restocked {filled}" : "Nothing to restock");
+        Next(0);
     }
 }

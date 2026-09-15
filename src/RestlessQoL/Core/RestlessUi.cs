@@ -98,7 +98,7 @@ internal static partial class RestlessUi
 
     private static Sprite? _circle;
 
-    private static Color Hex(int rgb) =>
+    internal static Color Hex(int rgb) =>
         new(((rgb >> 16) & 255) / 255f, ((rgb >> 8) & 255) / 255f, (rgb & 255) / 255f, 1f);
 
     public static float Toward(float current, float target) =>

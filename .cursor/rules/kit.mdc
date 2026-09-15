@@ -77,5 +77,7 @@ Use ForgedSurface/ForgedTab/QualityMarks/ForgedScrollbar and RestlessHint from t
 shared kit. Quality gems sit beside category without a Quality caption; PaperQuality
 delegates to those assets. Text/glyph/tint layers remain independent from backing art.
 The crafted detail viewport must be inset within its owned plate, never copied from
-the vanilla TMP rectangle. RestlessScrollRect provides direct wheel movement without
-inertia; same-recipe refreshes retain scroll position. See docs/forged-kit.md.
+the vanilla TMP rectangle. Craft detail uses a clone of the vanilla recipe-list
+scrollbar, not ForgedScrollbar. RestlessScrollRect moves about one viewport per
+wheel notch without inertia; same-recipe refreshes retain scroll position. See
+docs/forged-kit.md.

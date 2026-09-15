@@ -323,6 +323,15 @@ public sealed class ExtraSlots : FeatureModule
     private static bool IsLocal(Inventory? inv) =>
         inv != null && Player.m_localPlayer != null && Player.m_localPlayer.GetInventory() == inv;
 
+    private static bool IsOwnedPlayer(Player? player) =>
+        player != null && player.m_nview != null && player.m_nview.IsValid() && player.m_nview.IsOwner();
+
+    private static bool CraftingNow()
+    {
+        var gui = InventoryGui.instance;
+        return gui != null && gui.m_craftTimer >= 0f;
+    }
+
     [HarmonyPatch]
     private static class Patches
     {
@@ -377,6 +386,8 @@ public sealed class ExtraSlots : FeatureModule
         [HarmonyPatch(typeof(Player), nameof(Player.Load))]
         private static void BeforeLoad(Player __instance)
         {
+            if (!IsOwnedPlayer(__instance))
+                return;
             _visibleHeight = -1;
             Grow(__instance.GetInventory(), __instance);
         }
@@ -398,6 +409,8 @@ public sealed class ExtraSlots : FeatureModule
         [HarmonyPatch(typeof(Player), nameof(Player.Load))]
         private static void AfterLoad(Player __instance)
         {
+            if (!IsOwnedPlayer(__instance))
+                return;
             Grow(__instance.GetInventory(), __instance);
             PullLegacy(__instance);
             SeatAllWorn(__instance);
@@ -427,6 +440,8 @@ public sealed class ExtraSlots : FeatureModule
         [HarmonyPatch(typeof(Player), nameof(Player.EquipInventoryItems))]
         private static void AfterEquipAll(Player __instance)
         {
+            if (!IsOwnedPlayer(__instance) || CraftingNow())
+                return;
             SeatAllWorn(__instance);
             WearExtras(__instance);
         }
@@ -511,6 +526,8 @@ public sealed class ExtraSlots : FeatureModule
         {
             if (_doingEquip || !__result || __instance is not Player player || item?.m_shared == null)
                 return;
+            if (!IsOwnedPlayer(player) || CraftingNow())
+                return;
             SeatWorn(player, item);
         }
 
@@ -519,6 +536,8 @@ public sealed class ExtraSlots : FeatureModule
         private static void AfterUnequip(Humanoid __instance, ItemDrop.ItemData item)
         {
             if (_doingEquip || _busy || __instance is not Player player || item?.m_shared == null)
+                return;
+            if (!IsOwnedPlayer(player) || CraftingNow())
                 return;
             UnseatWorn(player, item);
         }
@@ -530,7 +549,8 @@ public sealed class ExtraSlots : FeatureModule
             if (_busy || _doingEquip || !IsLocal(__instance))
                 return;
             FinishDrag();
-            WearExtras(Player.m_localPlayer);
+            if (!CraftingNow())
+                WearExtras(Player.m_localPlayer);
         }
 
         [HarmonyPrefix]
@@ -559,7 +579,7 @@ public sealed class ExtraSlots : FeatureModule
         var src = ExtraPos(inv, _dragExtra);
         if (x == src.x && y == src.y)
             return;
-        if (item == _dragItem || item.m_shared == _dragItem?.m_shared)
+        if (item == _dragItem)
             _dragMoved = true;
     }
 
@@ -578,9 +598,7 @@ public sealed class ExtraSlots : FeatureModule
             return;
         var pos = ExtraPos(inv, extra);
         var left = inv.GetItemAt(pos.x, pos.y);
-        if (left == null)
-            return;
-        if (left != dragged && left.m_shared != dragged.m_shared)
+        if (left == null || left != dragged)
             return;
         _busy = true;
         try
@@ -722,7 +740,7 @@ public sealed class ExtraSlots : FeatureModule
 
     private static void SeatAllWorn(Player? player)
     {
-        if (player == null || _busy)
+        if (player == null || _busy || !IsOwnedPlayer(player))
             return;
         if (Traverse.Create(player).Field("m_isLoading").GetValue<bool>())
             return;
@@ -742,7 +760,7 @@ public sealed class ExtraSlots : FeatureModule
 
     private static void WearExtras(Player? player)
     {
-        if (player == null || _busy)
+        if (player == null || _busy || !IsOwnedPlayer(player) || CraftingNow())
             return;
         if (Traverse.Create(player).Field("m_isLoading").GetValue<bool>())
             return;

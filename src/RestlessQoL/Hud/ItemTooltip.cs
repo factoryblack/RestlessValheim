@@ -186,6 +186,7 @@ public sealed class ItemTooltip : FeatureModule
                 _card.SetActive(true);
                 RestlessUi.Wipe(_card.transform);
                 RestlessUi.Rim(_card, RimTint(contributions));
+                RestlessUi.PaperSurface(_card, accent: RimTint(contributions));
                 Rebuild(item, raw, contributions, maxHeight);
             }
         }
@@ -222,10 +223,11 @@ public sealed class ItemTooltip : FeatureModule
         RestlessUi.Pin(icon.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
             Vector2.zero, new Vector2(52f, 52f));
         var slot = RestlessUi.DressSlot(cell, icon, false, item, null, true, SlotLock.Held(item));
+        RestlessUi.PaperSurface(slot, accent: RimTint(contributions));
         RestlessUi.Pin(slot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
             Vector2.zero, new Vector2(72f, 72f));
 
-        var metaWidth = inner - 86f;
+        var metaWidth = inner - 86f - 32f;
         var name = RestlessUi.Label(header.transform, title, RestlessUi.TitleSize,
             RestlessUi.Text, TextAnchor.UpperLeft);
         name.gameObject.name = "title";
@@ -259,7 +261,7 @@ public sealed class ItemTooltip : FeatureModule
                     Badge(_body.transform, Soft(badge.Text), badge.Tint ?? RestlessUi.Accent, inner);
 
         if (blurb.Length > 0)
-            Paragraph(_body.transform, blurb, inner, RestlessUi.Muted);
+            Paragraph(_body.transform, blurb, inner, RestlessUi.PaperMuted);
         if (stats.Count > 0)
         {
             Divider(_body.transform);
@@ -302,7 +304,7 @@ public sealed class ItemTooltip : FeatureModule
                 foreach (var stat in section.Rows)
                     StatRow(_body.transform, Soft(stat.Label), Soft(stat.Value), inner);
                 if (!string.IsNullOrWhiteSpace(section.Body))
-                    Paragraph(_body.transform, Soft(section.Body), inner, RestlessUi.Muted);
+                    Paragraph(_body.transform, Soft(section.Body), inner, RestlessUi.PaperMuted);
             }
         }
 
@@ -324,11 +326,11 @@ public sealed class ItemTooltip : FeatureModule
             _footer = RestlessUi.Node(_card.transform, "paging");
             Place(_footer, Pad, height - Pad - 18f, inner, 18f);
             var hint = RestlessUi.Label(_footer.transform, "", RestlessUi.HudMeta,
-                RestlessUi.Muted, TextAnchor.MiddleRight);
+                RestlessUi.PaperMuted, TextAnchor.MiddleRight);
             RestlessUi.Stretch(hint.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         }
         else _footer = null;
-        RestlessUi.TitleTear(_card, name.rectTransform);
+        RestlessUi.PaperCorner(_card);
     }
 
     private static void Scroll()
@@ -393,17 +395,15 @@ public sealed class ItemTooltip : FeatureModule
     private static void Divider(Transform parent)
     {
         var row = RestlessUi.Node(parent, "divider");
-        Hold(row, 9f);
-        var line = RestlessUi.Graphic(row.transform, "line",
-            new Color(RestlessUi.Accent.r, RestlessUi.Accent.g, RestlessUi.Accent.b, 0.22f), false);
-        RestlessUi.Stretch(line, new Vector2(0f, 0.5f), new Vector2(1f, 0.5f),
-            new Vector2(0f, -0.5f), new Vector2(0f, 0.5f));
+        Hold(row, 16f);
+        RestlessUi.PaperDivider(row);
     }
 
     private static void Badge(Transform parent, string copy, Color tint, float width)
     {
         var row = RestlessUi.Node(parent, "badge");
         var chip = RestlessUi.Chip(row.transform, "chip");
+        RestlessUi.PaperSurface(chip, small: true, accent: tint);
         chip.GetComponent<Image>().raycastTarget = false;
         var text = RestlessUi.Label(chip.transform, copy, RestlessUi.HudMeta, tint, TextAnchor.MiddleLeft);
         var inset = RestlessUi.PlateInset;
@@ -419,7 +419,7 @@ public sealed class ItemTooltip : FeatureModule
         var row = RestlessUi.Node(parent, "stat");
         var labelWidth = (width - 14f) * 0.52f;
         var valueWidth = width - 14f - labelWidth;
-        var left = RestlessUi.Label(row.transform, label, CopySize, RestlessUi.Muted, TextAnchor.UpperLeft);
+        var left = RestlessUi.Label(row.transform, label, CopySize, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
         var right = RestlessUi.Label(row.transform, value, CopySize, RestlessUi.Accent, TextAnchor.UpperRight);
         var height = Mathf.Max(Measure(left, labelWidth), Measure(right, valueWidth));
         Place(left.gameObject, 0f, 0f, labelWidth, height);
@@ -430,8 +430,8 @@ public sealed class ItemTooltip : FeatureModule
     private static float DamageChip(Transform parent, string label, string value, float x, float width)
     {
         var chip = RestlessUi.Chip(parent, "damageChip");
+        RestlessUi.PaperSurface(chip, small: true);
         chip.GetComponent<Image>().raycastTarget = false;
-        chip.GetComponent<Image>().color = Color.Lerp(RestlessUi.ChipTint, RestlessUi.StaminaTint, 0.16f);
         var face = RestlessUi.Label(chip.transform, label + " " + value, CopySize,
             RestlessUi.Accent, TextAnchor.MiddleCenter);
         var inset = RestlessUi.PlateInset;

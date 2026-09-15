@@ -12,6 +12,8 @@ internal static class Kit
         "row-idle", "btn-small", "diamond", "eat-fork",
         "mouse-left", "mouse-right", "mouse-middle",
         "tab-glow", "panel-back",
+        "paper-panel", "paper-panel-rim", "paper-chip", "paper-chip-rim",
+        "paper-corner", "paper-tree", "paper-knot",
     };
 
     private static readonly Dictionary<string, Sprite> Cache = new();

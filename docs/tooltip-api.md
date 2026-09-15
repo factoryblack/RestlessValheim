@@ -18,9 +18,11 @@ The assembly remains `RestlessCore`; its existing namespace is `RestlessQoL`.
 - The inspect canvas group cannot intercept inventory pointer events.
 - The existing F8 tooltip toggle remains the on/off control.
 
-The reference image guides hierarchy, colour and spacing. The implementation keeps
-the repository's shared solid Tray and top-right TitleTear, rather than introducing
-a separate texture/widget system. No new raster assets are required.
+The reference image now guides actual material assets as well as hierarchy. The
+shared RestlessUi material helpers apply a new torn charcoal panel, separate corner
+plate, textured chips, tintable edge masks and Nordic ornaments. The tooltip opts
+into these helpers; other existing screens retain their original materials.
+See `visual-materials.md` and `material-proof.html` for the asset proof and limits.
 
 ## Register a contribution
 

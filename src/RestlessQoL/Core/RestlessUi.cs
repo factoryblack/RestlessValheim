@@ -36,7 +36,7 @@ namespace RestlessQoL.Core;
 //            No hotkey-btn / slider.png / toggle-on / map-compass / 9-sliced
 //            panel-back as a card.
 //   Mask   — panel-back alpha only (minimap tear). Never UI-Mask the vanilla map RawImage.
-internal static class RestlessUi
+internal static partial class RestlessUi
 {
     public static readonly Color Text = Hex(0xE2D6C0);
     public static readonly Color Muted = Hex(0x8A7F6E);

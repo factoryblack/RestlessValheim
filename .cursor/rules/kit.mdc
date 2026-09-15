@@ -35,3 +35,12 @@ Never: TMP / LiberationSans, `hotkey-btn`, `slider.png`, `toggle-on`, `map-compa
 - Slots are `DressSlot`. Inspect, Tab, and hotbar share that atom.
 
 New HUD behaviour gets an F8 toggle in the same turn.
+
+## Material proof (tooltip first)
+
+Jules has authorised evolving the shared kit to match the proposed Torch treatment.
+`RestlessUi.PaperSurface`, `PaperCorner`, and `PaperDivider` are opt-in shared material helpers.
+The tooltip uses these in place of its solid Tray skin and TitleTear; other surfaces retain their current presentation.
+The new paper-panel and paper-chip assets use tiled centres with explicit sprite borders; this does not permit stretching the old row-idle or panel-back over a tall card.
+Keep baked material colour white; use separate paper-*-rim alpha overlays for accents. Text and game icons remain separate. Reuse these helpers rather than duplicating their asset setup.
+See docs/visual-materials.md. This is a proof awaiting Unity validation, not a finished migration of every UI surface.

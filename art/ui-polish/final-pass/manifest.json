@@ -1,0 +1,140 @@
+{
+  "status": "Asset candidates only, not registered in runtime",
+  "assets": [
+    {
+      "name": "nav-raven",
+      "file": "nav-raven.png",
+      "source": "exec-70931a23-8322-430c-88f0-e7c291a1439d.png",
+      "displayBox": 48,
+      "import": "Preserve aspect; maximum silhouette 44 px in a 48 px box; no slicing",
+      "width": 192,
+      "height": 173
+    },
+    {
+      "name": "nav-knot",
+      "file": "nav-knot.png",
+      "source": "exec-2e916ce0-0835-480f-8296-25b0b7e2a56c.png",
+      "displayBox": 48,
+      "import": "Preserve aspect; maximum silhouette 44 px in a 48 px box; no slicing",
+      "width": 192,
+      "height": 175
+    },
+    {
+      "name": "nav-shield",
+      "file": "nav-shield.png",
+      "source": "exec-7eeefc68-66d2-444d-ab96-7727dd9365d2.png",
+      "displayBox": 48,
+      "import": "Preserve aspect; maximum silhouette 44 px in a 48 px box; no slicing",
+      "width": 148,
+      "height": 192
+    },
+    {
+      "name": "nav-trophy",
+      "file": "nav-trophy.png",
+      "source": "exec-1f9a34d1-0c15-4f55-a1b3-b67346b2e1ee.png",
+      "displayBox": 48,
+      "import": "Preserve aspect; maximum silhouette 44 px in a 48 px box; no slicing",
+      "width": 192,
+      "height": 143
+    },
+    {
+      "name": "nav-swords",
+      "file": "nav-swords.png",
+      "source": "exec-aa961851-db99-48f0-a17b-cc4af20d8ce3.png",
+      "displayBox": 48,
+      "import": "Preserve aspect; maximum silhouette 44 px in a 48 px box; no slicing",
+      "width": 191,
+      "height": 192
+    },
+    {
+      "name": "utility-lock",
+      "file": "utility-lock.png",
+      "source": "svg/utility-lock.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "utility-equipped",
+      "file": "utility-equipped.png",
+      "source": "svg/utility-equipped.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "utility-repair",
+      "file": "utility-repair.png",
+      "source": "svg/utility-repair.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "utility-missing",
+      "file": "utility-missing.png",
+      "source": "svg/utility-missing.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "utility-expand",
+      "file": "utility-expand.png",
+      "source": "svg/utility-expand.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "utility-collapse",
+      "file": "utility-collapse.png",
+      "source": "svg/utility-collapse.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "utility-close",
+      "file": "utility-close.png",
+      "source": "svg/utility-close.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "quality-lozenge",
+      "file": "quality-lozenge.png",
+      "source": "svg/quality-lozenge.svg",
+      "displayBox": 18,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "selection-marker",
+      "file": "selection-marker.png",
+      "source": "svg/selection-marker.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    },
+    {
+      "name": "focus-corners",
+      "file": "focus-corners.png",
+      "source": "svg/focus-corners.svg",
+      "displayBox": 20,
+      "import": "Native vector export; utility marks 20\u201324 px; quality 14 x 20 px; focus overlay sized to target",
+      "width": 64,
+      "height": 64
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "tool": "Built-in image generation",
+  "prompts": [
+    {
+      "name": "nav-raven",
+      "prompt": "One isolated raven emblem for dark Nordic RPG UI, genuinely transparent background. Side profile facing left, proud upright head, thick beak, folded wing and compact tail, two sturdy feet. Shallow cast aged bronze relief, muted brown bronze face, dark recessed edges, worn pale upper-left bevel. Bold simplified planes, only three broad feather cuts. Front-on orthographic icon, centred with ample transparent margin, no medallion or backdrop, no lettering, no glow, no photoreal bird. Strong readable silhouette at 40 pixels. Match hand-forged bronze over charcoal leather aesthetic.",
+      "source": "exec-70931a23-8322-430c-88f0-e7c291a1439d.png"
+    },
+    {
+      "name": "nav-knot",
+      "prompt": "One isolated angular Nordic three-triangle interlocking knot emblem for a dark RPG navigation tab, truly transparent background. Thick continuous triangular bronze bands with three clearly separated triangular openings. Compact balanced triangular silhouette, broad simple geometric planes. Shallow cast aged bronze relief, muted brown bronze face, dark recessed edges, worn pale upper-left bevel. Front-on orthographic, generous margins. Reads at 40 pixels. No medallion, backdrop, lettering, glow or extra symbols. Same hand-forged aged bronze material as a Nordic raven emblem.",
+      "source": "exec-2e916ce0-0835-480f-8296-25b0b7e2a56c.png"
+    },
+    {
+      "name": "nav-shield",
+      "prompt": "One isolated shield emblem for dark Nordic RPG navigation, genuinely transparent background. Symmetrical upright shield with gently shouldered top and pointed bottom, thick aged bronze rim, simple slightly raised central bronze face and subtle central ridge. No heraldry. Shallow cast aged bronze relief, muted brown bronze face, dark recessed edges, pale worn upper-left bevel. Broad simplified planes, compact readable silhouette at 40 pixels. Front-on orthographic centred, generous transparent margins. No medallion, background, letters, glow or elaborate engraving. Same hand-forged bronze family as raven and triangular knot.",
+      "source": "exec-7eeefc68-66d2-444d-ab96-7727dd9365d2.png"
+    },
+    {
+      "name": "nav-trophy",
+      "prompt": "One isolated trophy cup emblem for dark Nordic RPG navigation, genuinely transparent background. Broad simple bowl, two thick angular loop handles, short sturdy stem and solid low trapezoid base. Shallow cast aged bronze relief, muted brown bronze face, dark recessed sides, pale worn upper-left bevel. Broad simplified planes, front-on orthographic symmetrical, compact silhouette readable at 40 pixels. Generous transparent margin. No ornament, lettering, badge backing, glow or background. Same hand-forged bronze material as raven and shield emblems, no shiny yellow gold.",
+      "source": "exec-1f9a34d1-0c15-4f55-a1b3-b67346b2e1ee.png"
+    },
+    {
+      "name": "nav-swords",
+      "prompt": "One isolated crossed-swords emblem for dark Nordic RPG navigation, genuinely transparent background. Two short broad straight Nordic swords crossing in a symmetrical X, tips up, thick simple crossguards and compact pommels below. Clear open gaps, strong silhouette at 40 pixels. Shallow cast aged bronze relief, muted brown bronze face, dark recessed sides, pale worn upper-left bevel. Broad simplified planes, front-on orthographic centred, generous margins. No shield, medallion, letters, decorative runes, glow or background. Same hand-forged bronze material family as raven, shield and trophy emblems.",
+      "source": "exec-aa961851-db99-48f0-a17b-cc4af20d8ce3.png"
+    }
+  ]
+}

@@ -52,3 +52,11 @@ Use PaperSettingsHeader for that header; the earlier inset-only TrayHead rule co
 Settings opts into PaperSurface, PaperControl, PaperSwitch, PaperSlider, PaperSelectable and PaperDivider.
 PaperControl restores interaction after PaperSurface (which deliberately disables raycasts for inspect).
 Keep configuration, synchronisation and key capture in SettingsUi; shared helpers own appearance only.
+
+## Crafting material adoption
+
+Crafting and its existing navigation strip also opt into PaperSurface, PaperControl,
+PaperSelectable and PaperDivider. Fit the paper around the live control bounds; retain
+game icons, callbacks and controller navigation. Keep recipe quality diamonds and live
+material count/shortage feedback. Restore any modified selectable state on undress.
+See docs/crafting-materials.md; this surface still needs Unity validation.

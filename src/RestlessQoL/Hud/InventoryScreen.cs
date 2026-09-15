@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace RestlessQoL.HudTweaks;
 
-public sealed class InventoryScreen : FeatureModule
+public sealed partial class InventoryScreen : FeatureModule
 {
     public override string Id => "ui.inventory";
     public override bool Enabled => true;
@@ -110,6 +110,7 @@ public sealed class InventoryScreen : FeatureModule
             if (NeedsSync(__instance))
                 Sync(__instance);
             KeepQuiet();
+            RefreshCraftFeedback(__instance);
         }
     }
 
@@ -231,6 +232,7 @@ public sealed class InventoryScreen : FeatureModule
         foreach (var row in Readouts)
             PaintReadout(row);
         ParkStationTitle(gui);
+        DressCraftMaterials(gui);
     }
 
     // Vanilla writes TMP / GuiBar / selection back every Update. Re-dress only
@@ -267,6 +269,14 @@ public sealed class InventoryScreen : FeatureModule
             h = MixTmp(h, gui.m_minStationLevelText);
             h = MixTmp(h, gui.m_upgradeItemName);
             h = MixTmp(h, gui.m_upgradeItemQuality);
+            if (gui.m_recipeRequirementList != null)
+                foreach (var requirement in gui.m_recipeRequirementList)
+                {
+                    if (requirement == null) continue;
+                    h = h * 31 + (requirement.activeSelf ? 1 : 0);
+                    h = MixTmp(h, RestlessUi.Deep<TMP_Text>(requirement.transform, "res_amount"));
+                    h = MixTmp(h, RestlessUi.Deep<TMP_Text>(requirement.transform, "res_name"));
+                }
             h = MixOverlay(h, gui);
             var recipes = gui.m_recipeListRoot;
             if (recipes != null)
@@ -1385,7 +1395,7 @@ public sealed class InventoryScreen : FeatureModule
         var plate = row.Find("RestlessSlot");
         if (plate == null)
             return false;
-        RestlessUi.PaintSlot(plate.gameObject, lit);
+        RestlessUi.PaperControl(plate.gameObject, lit ? RestlessUi.Accent : null);
         var nameTmp = row.Find("name")?.GetComponent<TMP_Text>();
         var qualityTmp = row.Find("QualityLevel")?.GetComponent<TMP_Text>();
         var title = RestlessUi.Bare(nameTmp != null ? nameTmp.text : "");
@@ -1461,7 +1471,7 @@ public sealed class InventoryScreen : FeatureModule
         plate.SetAsFirstSibling();
         RestlessUi.Stretch(plate.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         plate.GetComponent<Image>().raycastTarget = true;
-        RestlessUi.PaintSlot(plate.gameObject, lit);
+        RestlessUi.PaperControl(plate.gameObject, lit ? RestlessUi.Accent : null);
 
         var label = plate.Find("label")?.GetComponent<Text>();
         if (label == null)
@@ -1491,9 +1501,8 @@ public sealed class InventoryScreen : FeatureModule
             var nameTmp = RestlessUi.Deep<TMP_Text>(go.transform, "res_name");
             var count = RestlessUi.Bare(amountTmp != null ? amountTmp.text : "");
             var name = RestlessUi.Bare(nameTmp != null ? nameTmp.text : "");
-            var parsed = int.TryParse(count, out var n);
             var live = go.activeSelf && icon != null && icon.sprite != null && icon.enabled
-                && icon.color.a > 0.2f && parsed && n > 0
+                && icon.color.a > 0.2f && count.Length > 0 && count != "0"
                 && name.Length > 0;
             if (!live)
             {
@@ -1517,7 +1526,10 @@ public sealed class InventoryScreen : FeatureModule
             if (nameFace != null)
                 nameFace.gameObject.SetActive(false);
             RestlessUi.HideVanillaSlotText(go);
-            RestlessUi.DressAmount(go.transform, n);
+            RestlessUi.PaperSurface(plate, accent: RestlessUi.PaperMuted * 0.5f);
+            plate.GetComponent<Image>().raycastTarget = true;
+            // Keep the original count format and shortage colour, including mod-provided have/need.
+            PaintRequirement(go, amountTmp);
         }
     }
 
@@ -1792,6 +1804,7 @@ public sealed class InventoryScreen : FeatureModule
 
     private static void Undress(InventoryGui gui)
     {
+        RestoreCraftControls();
         foreach (var go in Ours)
         {
             if (go != null)
@@ -1841,6 +1854,7 @@ public sealed class InventoryScreen : FeatureModule
             Undress(gui);
         else
         {
+            RestoreCraftControls();
             foreach (var go in Ours)
             {
                 if (go != null)

@@ -1,0 +1,34 @@
+{
+  "tool": "Built-in image generation",
+  "processing": "Alpha bounds cropped, proportionally resized, two transparent pixels added on each side. No repainting or colour modification.",
+  "prompts": [
+    {
+      "name": "corner-overlay",
+      "prompt": "ONE isolated game UI sprite on genuinely transparent background. A top RIGHT corner overlay for a dark Nordic RPG tooltip. Front-on flat orthographic view. Roughly triangular silhouette: horizontal torn top edge and vertical torn right edge meet at top right; a deeply torn diagonal runs from upper left to lower right. The triangle is FULL solid charcoal fibrous paper with thin layered edges, not an empty angle frame. Upper right quadrant has broad calm unmarked space for a separate emblem, so the diagonal tear starts low and leaves generous material. Subtle raised torn dark leather/paper layers and a few dull bronze edge flecks. Material feels handworked and weathered, painterly simplified Valheim-inspired game UI art, restrained microdetail, strong readable shapes at 128 pixels. No icon, rune, text, nail, circular hole, glowing edge, orange lava or backdrop. Transparent outside the triangle only. Centred with transparent margins."
+    },
+    {
+      "name": "craft-hammer",
+      "prompt": "ONE isolated game UI emblem on genuinely transparent background. A single short-handled Nordic craftsman's hammer, front-on, leaning diagonally from bottom left to top right, with a clear broad rectangular hammer head transverse to the handle. Forged as one shallow raised aged-bronze relief symbol, subtly faceted with dark bronze recessed sides and pale worn edge highlights. Compact strong silhouette, thick handle, no tiny details. Painterly simplified dark Nordic RPG inventory UI asset, not photorealistic tool photography. Looks physically stamped or cast, warm muted bronze not bright yellow. Must read instantly as a hammer at 24 pixels. No anvil, no star, no medallion, no frame, no text, no decorative runes, no background, no glow. Generous transparent margins around the emblem."
+    },
+    {
+      "name": "station-socket",
+      "prompt": "ONE blank game UI medallion backing on truly transparent background, front-on orthographic. Compact softly irregular eight-sided iron plate with a thin aged-bronze bevel. Dark charcoal leather inset, calm empty broad interior for separate icon and numeral. Hand-forged Nordic craft aesthetic, softly chipped edges, simplified painterly material readable at 48 pixels; not a shiny coin, not a modern flat vector outline. Dark bronze predominantly, pale highlights only on a few upper left corners. Entire plate is solid, outside transparent. No symbol, no hammer, no star, no writing, no number, no runes, no glow, no pedestal, no backdrop. Generous transparent margins."
+    },
+    {
+      "name": "portrait-frame",
+      "prompt": "ONE square empty portrait frame UI sprite on genuinely transparent background. Front-on orthographic dark Nordic RPG inventory frame, square with subtly irregular torn dark leather outside edges and narrow worn bronze inner edging. Four small folded angular bronze corner clasps, restrained and dull, not ornate. Entire central square is genuinely TRANSPARENT to place a game item icon over any panel. Frame band only about 10 percent of total width; broad central opening. Chipped dark bronze, charcoal layered leather, painterly simplified materials, crisp silhouette readable at 72 pixels. No item, no glyph, no text, no glow, no background or painted checkerboard. Avoid large shiny bevels and distracting details. Isolated with transparent margin."
+    },
+    {
+      "name": "knot-divider",
+      "prompt": "ONE horizontal section-divider UI ornament on genuinely transparent background. A small central angular three-loop Nordic knot cast in aged dark bronze, with thin tapered hammered-metal rules extending left and right symmetrically. Wide 8:1 silhouette. Front-on orthographic, no perspective. Subtle worn warm highlights on upper edges, low visual contrast and quiet dark bronze overall. Simplified clear angular knot, no tiny engraving, ends taper to small diamond terminals. Painterly game UI material that complements charcoal torn paper and worn bronze plates. Designed to read at 300x24 pixels and separate information without dominating it. No text, no background, no long shadow, no glow, no flowers. Isolated with transparent margins."
+    },
+    {
+      "name": "category-strip",
+      "prompt": "ONE blank horizontal category-label ribbon sprite for dark Nordic RPG UI, on genuinely transparent background. A slim 5:1 strip of weathered dark umber leather over torn charcoal paper, with irregular ragged left/right ends, a muted bronze stitched-looking top lip and lower edge. Broad calm flat centre for small cream text added later. Much quieter than a button; no thick frame, no corner clasps, no sharp arrow points. Painterly simple material, readable at 120x24 pixels. Front-on flat orthographic view, no perspective. Muted charcoal and brown, tiny restrained bronze highlights, no gold glow. No text, symbols, items, or background. Transparent margin around the silhouette."
+    },
+    {
+      "name": "pine-emblem",
+      "prompt": "ONE narrow upright Nordic pine-tree emblem game UI sprite, genuinely transparent background. A straight central stem with three paired diagonal branches pointing up, forming a simple angular evergreen tree glyph. ONE tree, no roots or circular frame. Raised cast aged bronze with shallow bevel, mostly dark muted bronze with restrained pale worn highlights on upper-left edges. Simplified strong geometric silhouette, broad enough strokes to read at 20x44 pixels, slight hand-forged irregularity. Flat front-on orthographic view, painterly dark Nordic RPG UI material matching charcoal torn paper. No letters, no other runes, no text, no background, no pedestal, no glowing light, no filigree. Tall slim proportions about 1:2.4 and generous transparent margins."
+    }
+  ]
+}

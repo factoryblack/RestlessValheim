@@ -1,0 +1,55 @@
+{
+  "status": "art candidates; not connected to runtime",
+  "base": "e77056da7878ac73e570c74c646c2e98f86a4ddc",
+  "assets": [
+    {
+      "name": "corner-overlay",
+      "file": "corner-overlay.png",
+      "width": 516,
+      "height": 509,
+      "source": "exec-2db37bbd-9411-4def-bb6e-2df23f6d52ba.png"
+    },
+    {
+      "name": "craft-hammer",
+      "file": "craft-hammer.png",
+      "width": 196,
+      "height": 215,
+      "source": "exec-9f367203-9981-492e-8160-4d8c0d9bdeb4.png"
+    },
+    {
+      "name": "station-socket",
+      "file": "station-socket.png",
+      "width": 196,
+      "height": 192,
+      "source": "exec-2b23febf-61e0-4c94-9c69-c081155f4080.png"
+    },
+    {
+      "name": "portrait-frame",
+      "file": "portrait-frame.png",
+      "width": 516,
+      "height": 503,
+      "source": "exec-bf6d2017-2ca4-41c0-971a-a58bdb8e3198.png"
+    },
+    {
+      "name": "knot-divider",
+      "file": "knot-divider.png",
+      "width": 772,
+      "height": 79,
+      "source": "exec-6191f606-366f-418e-9519-76a8e6535ae8.png"
+    },
+    {
+      "name": "category-strip",
+      "file": "category-strip.png",
+      "width": 516,
+      "height": 81,
+      "source": "exec-0322f634-780a-4d25-af25-f0ed5be2d258.png"
+    },
+    {
+      "name": "pine-emblem",
+      "file": "pine-emblem.png",
+      "width": 100,
+      "height": 291,
+      "source": "exec-2ce559fd-7552-4ba4-94d4-cc737d4a85ce.png"
+    }
+  ]
+}

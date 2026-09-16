@@ -426,6 +426,7 @@ public sealed partial class InventoryScreen
         }
         CraftControls.Clear();
         RestoreCraftLayout();
+        RestoreSkillsMaterials();
         foreach (var pair in CraftIconArt)
         {
             if (pair.Key == null) continue;

@@ -729,16 +729,14 @@ public sealed class SettingsUi : FeatureModule
 
     private static void PaintCharacter()
     {
-        Head("This save");
-        Stat("Deaths", Count(PlayerStatType.Deaths));
-        Stat("Jumps", Count(PlayerStatType.Jumps));
-        Stat("Food eaten", Count(PlayerStatType.FoodEaten));
-        Stat("Portals used", Count(PlayerStatType.PortalsUsed));
-        Stat("Walked", Distance(PlayerStatType.DistanceWalk));
-        Stat("Sailed", Distance(PlayerStatType.DistanceSail));
-        Stat("Items crafted", Count(PlayerStatType.Crafts));
-        Stat("Picked up", Count(PlayerStatType.ItemsPickedUp));
+        Head("Journey");
+        MetricPair("Walked", Distance(PlayerStatType.DistanceWalk), "Sailed", Distance(PlayerStatType.DistanceSail));
+        MetricPair("Jumps", Count(PlayerStatType.Jumps), "Portals used", Count(PlayerStatType.PortalsUsed));
+        Head("Survival");
+        MetricPair("Deaths", Count(PlayerStatType.Deaths), "Food eaten", Count(PlayerStatType.FoodEaten));
         Stat("Boss kills", Count(PlayerStatType.BossKills));
+        Head("Craft and gather");
+        MetricPair("Items crafted", Count(PlayerStatType.Crafts), "Picked up", Count(PlayerStatType.ItemsPickedUp));
 
         Head("Hunts");
         var hunts = 0;
@@ -746,26 +744,30 @@ public sealed class SettingsUi : FeatureModule
         {
             Stat(Ledger.EnemyName(pair.Key), CountValue(pair.Value));
             hunts++;
-            if (hunts >= 8)
-                break;
         }
+        if (hunts == 0) Stat("No hunts recorded", "");
 
-        Head("Extras");
+        var extras = false;
         foreach (var pair in Ledger.Extras())
+        {
+            if (!extras) { Head("Additional records"); extras = true; }
             Stat(pair.Key, CountValue(pair.Value));
+        }
+    }
+
+    private static void MetricPair(string left, string leftValue, string right, string rightValue)
+    {
+        var row = Row();
+        RestlessUi.Metric(row.transform, left, leftValue, 0f, 0.5f);
+        RestlessUi.Metric(row.transform, right, rightValue, 0.5f, 1f);
+        var seam = RestlessUi.Graphic(row.transform, "RestlessMetricSeam",
+            new Color(0.64f, 0.56f, 0.42f, 0.25f), false);
+        RestlessUi.Stretch(seam, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+            new Vector2(-0.5f, 12f), new Vector2(0.5f, -12f));
     }
 
     private static void Stat(string title, string value)
-    {
-        var row = Row();
-        var label = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.PaperMuted,
-            TextAnchor.MiddleLeft);
-        RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(20f, 6f), new Vector2(-160f, -6f));
-        var face = RestlessUi.Label(row.transform, value, RestlessUi.BodySize, RestlessUi.Accent,
-            TextAnchor.MiddleRight);
-        RestlessUi.Pin(face.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f),
-            new Vector2(140f, 24f));
-    }
+        => RestlessUi.Metric(Row().transform, title, value);
 
     private static string Count(PlayerStatType stat) => CountValue(Ledger.Get(stat));
 

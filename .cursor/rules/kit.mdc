@@ -107,3 +107,9 @@ reversible control/artwork registries. Fit the frame to native bounds, never mov
 the grid for decoration. Capacity means occupied cells / total cells, not weight.
 BoundedLabel gives compact controls modest best-fit limits; descriptions and
 tooltip/recipe stat rows retain their measured wrapping layout.
+
+Skills uses PaperControl rows and InventorySurface around the native viewport,
+with original icons, bars and hover descriptions. Never resize the frame around
+scrolling content or replace native progress calculations. Restore bar colours
+on undress. Character records use the display-only Metric helper with bounded
+labels/values; data comes from Ledger, not new counters. See docs/character-skills.md.

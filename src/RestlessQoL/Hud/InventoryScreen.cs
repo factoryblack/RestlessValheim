@@ -113,6 +113,7 @@ public sealed partial class InventoryScreen : FeatureModule
             RefreshCraftFeedback(__instance);
             RefreshInventoryMaterials(__instance);
             RefreshContainerMaterials(__instance);
+            RefreshSkillsMaterials(__instance);
         }
     }
 
@@ -889,7 +890,17 @@ public sealed partial class InventoryScreen : FeatureModule
         }
 
         if (gui.m_skillsDialog != null && gui.m_skillsDialog.gameObject.activeInHierarchy)
+        {
             h = h * 31 + 5;
+            var skills = gui.m_skillsDialog;
+            h = MixTmp(h, skills.m_totalSkillText);
+            if (skills.m_listRoot != null)
+            {
+                h = h * 31 + skills.m_listRoot.childCount;
+                foreach (var copy in skills.m_listRoot.GetComponentsInChildren<TMP_Text>(true))
+                    h = MixTmp(h, copy);
+            }
+        }
         if (gui.m_trophiesPanel != null && gui.m_trophiesPanel.activeInHierarchy)
             h = h * 31 + 7;
         var ach = gui.m_achievementsPanel;

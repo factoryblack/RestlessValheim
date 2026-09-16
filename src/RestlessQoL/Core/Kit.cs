@@ -10,6 +10,8 @@ internal static class Kit
     private static readonly string[] Library =
     {
         "row-idle", "btn-small", "diamond", "eat-fork",
+        "inventory-slot", "empty-head", "empty-chest", "empty-legs", "empty-cape",
+        "empty-utility", "empty-trinket", "carry-weight",
         "mouse-left", "mouse-right", "mouse-middle",
         "tab-glow", "panel-back",
         "paper-panel", "paper-panel-rim", "paper-chip", "paper-chip-rim",

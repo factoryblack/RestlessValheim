@@ -91,3 +91,13 @@ keeps its cast knot proportional. Navigation sprite replacements must restore th
 original sprite, colour and aspect on undress. Keep native PVP state presentation.
 Focus and selection are separate visual states. Do not replace main's recipe
 scrolling implementation. See docs/ui-polish-integration.md.
+
+## Inventory material adoption
+
+DressSlot's inventory opt-in uses inventory-slot with quiet focus outlines and an
+equipped underline. HUD slots retain their existing material and wear. Inventory
+wear is 4px wide with clearance for the lock diamond and bottom count/bind strip.
+Use InventoryEmpty/InventoryBinding/InventorySurface; no ornate slot frames or
+padlock replacement. Empty equipment silhouettes disappear when occupied. Fit the
+shared paper to existing grid cells and divide groups with plain rules; do not
+move cells away from native grid hit testing. See docs/inventory-integration.md.

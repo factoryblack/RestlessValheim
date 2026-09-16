@@ -373,6 +373,7 @@ public sealed class ExtraSlots : FeatureModule
             if (gui.m_inventoryRoot == null || !gui.m_inventoryRoot.gameObject.activeInHierarchy)
                 return;
             Relocate(gui.m_playerGrid);
+            InventoryScreen.RefreshInventoryMaterials(gui);
         }
 
         [HarmonyPostfix]
@@ -1086,12 +1087,13 @@ public sealed class ExtraSlots : FeatureModule
             var lit = item is { m_equipped: true };
             var fresh = go.transform.Find("RestlessSlot") == null;
             var locked = SlotLock.Held(pos);
-            var sig = PaintSig(item, lit, locked);
+            var material = ModConfig.InventoryScreenEnabled.Value;
+            var sig = PaintSig(item, lit, locked) * 31 + (material ? 1 : 0);
             GameObject plate;
             if (fresh || ExtraPaint[i] != sig)
             {
                 ExtraPaint[i] = sig;
-                plate = RestlessUi.DressSlot(go, element.m_icon, lit, item, Hidden, true, locked);
+                plate = RestlessUi.DressSlot(go, element.m_icon, lit, item, Hidden, true, locked, inventory: material);
             }
             else
                 plate = go.transform.Find("RestlessSlot")!.gameObject;
@@ -1111,9 +1113,16 @@ public sealed class ExtraSlots : FeatureModule
             var tag = i < EquipCount
                 ? WornName[Mathf.Clamp(i / 2, 0, 2), Mathf.Clamp(i % 2, 0, 1)]
                 : FaceKey(i - EquipCount);
-            Caption(go.transform, "RestlessKind", item == null && i < EquipCount ? tag : "", RestlessUi.Muted);
-            if (i >= EquipCount)
-                Caption(go.transform, "RestlessBind", tag, RestlessUi.Text);
+            Caption(go.transform, "RestlessKind", !material && item == null && i < EquipCount ? tag : "", RestlessUi.Muted);
+            if (i < EquipCount)
+                RestlessUi.InventoryEmpty(plate, "empty-" + WornName[i / 2, i % 2].ToLowerInvariant(), material && item == null);
+            else
+            {
+                Caption(go.transform, "RestlessBind", material ? "" : tag, RestlessUi.Text);
+                RestlessUi.InventoryBinding(go.transform, material ? tag : "");
+                var bind = go.transform.Find("RestlessInventoryBind");
+                if (bind != null) Ours.Add(bind.gameObject);
+            }
         }
 
         PurgeStale(root, inv, elements, w);
@@ -1560,3 +1569,4 @@ public sealed class ExtraSlots : FeatureModule
         Array.Clear(HudSlots, 0, HudSlots.Length);
     }
 }
+

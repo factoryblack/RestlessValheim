@@ -860,7 +860,7 @@ internal static partial class RestlessUi
     // Torn plate + Wear on a vanilla inventory / hotbar cell. Hides GuiBar.
     // Does not add a key chip. Extra Tab / HUD slots call this.
     public static GameObject DressSlot(GameObject cell, Image? icon, bool lit, ItemDrop.ItemData? item,
-        List<Behaviour>? hidden = null, bool fillCell = false, bool locked = false)
+        List<Behaviour>? hidden = null, bool fillCell = false, bool locked = false, bool inventory = false)
     {
         var plate = cell.transform.Find("RestlessSlot");
         if (plate == null)
@@ -893,6 +893,7 @@ internal static partial class RestlessUi
         DressAmount(cell.transform, item?.m_stack ?? 0);
         DressQuality(cell.transform, item?.m_quality ?? 0);
         DressLock(cell.transform, locked);
+        InventorySlot(plate.gameObject, cell, lit, item, inventory);
         return plate.gameObject;
     }
 

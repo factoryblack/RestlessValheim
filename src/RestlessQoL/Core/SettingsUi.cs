@@ -688,8 +688,7 @@ public sealed class SettingsUi : FeatureModule
     {
         var t = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(t.gameObject, Vector2.zero, Vector2.one, new Vector2(20f, 6f), new Vector2(-gutter, -6f));
-        t.horizontalOverflow = HorizontalWrapMode.Wrap;
-        t.verticalOverflow = VerticalWrapMode.Truncate;
+        RestlessUi.BoundedLabel(t, RestlessUi.BodySize, RestlessUi.HintSize);
         t.gameObject.name = hint;
         var trigger = row.GetComponent<EventTrigger>();
         if (trigger == null)
@@ -857,9 +856,10 @@ public sealed class SettingsUi : FeatureModule
         var label = RestlessUi.Label(plate.transform, entry.Value, RestlessUi.MetaSize, RestlessUi.Text,
             TextAnchor.MiddleLeft);
         RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 0f), new Vector2(-8f, 0f));
-        label.horizontalOverflow = HorizontalWrapMode.Wrap;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
         label.verticalOverflow = VerticalWrapMode.Truncate;
         var field = plate.AddComponent<InputField>();
+        field.lineType = InputField.LineType.SingleLine;
         field.textComponent = label;
         field.text = entry.Value;
         RestlessUi.PaperSelectable(field);
@@ -878,6 +878,7 @@ public sealed class SettingsUi : FeatureModule
         ScrollRelay.Bind(plate, _scroll);
         var label = RestlessUi.Label(plate.transform, Pretty(entry.Value), RestlessUi.MetaSize, RestlessUi.Text, TextAnchor.MiddleCenter);
         RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(6f, 0f), new Vector2(-6f, 0f));
+        RestlessUi.BoundedLabel(label, RestlessUi.HintSize, RestlessUi.HudMeta);
         var go = plate;
         var button = go.AddComponent<Button>();
         button.targetGraphic = plate.GetComponent<Image>();
@@ -1017,3 +1018,4 @@ public sealed class SettingsUi : FeatureModule
         }
     }
 }
+

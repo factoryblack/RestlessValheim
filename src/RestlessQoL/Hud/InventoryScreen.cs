@@ -112,6 +112,7 @@ public sealed partial class InventoryScreen : FeatureModule
             KeepQuiet();
             RefreshCraftFeedback(__instance);
             RefreshInventoryMaterials(__instance);
+            RefreshContainerMaterials(__instance);
         }
     }
 

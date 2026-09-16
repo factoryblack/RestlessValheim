@@ -19,7 +19,13 @@ internal static partial class RestlessUi
             if (state != null) plate.GetComponent<Image>().preserveAspect = false;
             var oldAmount = cell.transform.Find("RestlessAmount");
             if (state != null && oldAmount != null)
+            {
                 Stretch(oldAmount.gameObject, Vector2.zero, Vector2.one, new Vector2(4f, 2f), new Vector2(-4f, 2f));
+                var face = oldAmount.GetComponent<Text>();
+                face.resizeTextForBestFit = false;
+                face.fontSize = HudMeta;
+                face.horizontalOverflow = HorizontalWrapMode.Overflow;
+            }
             var empty = plate.transform.Find("RestlessEmptyEquipment");
             if (empty != null) empty.gameObject.SetActive(false);
             return;
@@ -45,8 +51,11 @@ internal static partial class RestlessUi
                 new Vector2(5f, -5f), new Vector2(18f, 18f));
         var amount = cell.transform.Find("RestlessAmount");
         if (amount != null)
+        {
             Stretch(amount.gameObject, Vector2.zero, new Vector2(1f, 0f),
                 new Vector2(22f, 3f), new Vector2(-7f, 22f));
+            BoundedLabel(amount.GetComponent<Text>(), HintSize, HudMeta);
+        }
         var vein = plate.transform.Find("vein") as RectTransform;
         if (vein != null)
         {
@@ -82,7 +91,9 @@ internal static partial class RestlessUi
             mark = label.transform;
         }
         mark.gameObject.SetActive(!string.IsNullOrEmpty(binding));
-        mark.GetComponent<Text>().text = binding;
+        var face = mark.GetComponent<Text>();
+        face.text = binding;
+        BoundedLabel(face, HudMeta, 10);
         Stretch(mark.gameObject, Vector2.zero, new Vector2(1f, 0f),
             new Vector2(6f, 3f), new Vector2(-24f, 22f));
     }
@@ -119,7 +130,7 @@ internal sealed class RestlessInventorySlot : MonoBehaviour, IPointerEnterHandle
         RestlessUi.Stretch(edge, min, max, a, b);
     }
     public void OnPointerEnter(PointerEventData e) => _hover = true;
-    public void OnPointerExit(PointerEventData e) => _hover = false;
+    public void OnPointerExit(PointerEventData e) { if (e.fullyExited) _hover = false; }
     private void LateUpdate()
     {
         var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;

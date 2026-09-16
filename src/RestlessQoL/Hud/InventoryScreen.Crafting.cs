@@ -306,7 +306,7 @@ public sealed partial class InventoryScreen
         var face = chip.GetComponentInChildren<Text>(true);
         if (face != null)
         {
-            face.fontSize = 18;
+            RestlessUi.BoundedLabel(face, RestlessUi.BodySize, RestlessUi.HintSize);
             face.alignment = TextAnchor.MiddleCenter;
             RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one,
                 new Vector2(12f, 4f), new Vector2(-12f, -4f));
@@ -445,3 +445,4 @@ public sealed partial class InventoryScreen
         _recipeWidth = 0f;
     }
 }
+

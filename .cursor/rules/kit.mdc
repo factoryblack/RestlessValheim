@@ -101,3 +101,9 @@ Use InventoryEmpty/InventoryBinding/InventorySurface; no ornate slot frames or
 padlock replacement. Empty equipment silhouettes disappear when occupied. Fit the
 shared paper to existing grid cells and divide groups with plain rules; do not
 move cells away from native grid hit testing. See docs/inventory-integration.md.
+
+Container presentation shares InventorySurface, PaperControl and the existing
+reversible control/artwork registries. Fit the frame to native bounds, never move
+the grid for decoration. Capacity means occupied cells / total cells, not weight.
+BoundedLabel gives compact controls modest best-fit limits; descriptions and
+tooltip/recipe stat rows retain their measured wrapping layout.

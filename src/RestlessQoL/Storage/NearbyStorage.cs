@@ -141,12 +141,23 @@ public static class NearbyStorage
     }
 
     // sharedName is ItemData.m_shared.m_name (e.g. $item_wood), not the prefab id.
+    // LeaveOne reserves one per chest; Count must match PullOwned or a 1-cost
+    // ingredient (tin in bronze) stays "enough" after it can no longer be spent.
     public static int Count(string sharedName, int quality = -1, bool worldLevel = false)
     {
         var total = 0;
         foreach (var container in ForLocalPlayer())
-            total += container.GetInventory().CountItems(sharedName, quality, worldLevel);
+            total += Pullable(container.GetInventory().CountItems(sharedName, quality, worldLevel), true);
         return total;
+    }
+
+    internal static int Pullable(int have, bool honorLeaveOne)
+    {
+        if (have <= 0)
+            return 0;
+        if (honorLeaveOne && ModConfig.LeaveOne.Value)
+            return Mathf.Max(0, have - 1);
+        return have;
     }
 
     public static bool Has(string sharedName, int quality = -1, bool worldLevel = false) =>
@@ -398,11 +409,7 @@ public static class NearbyStorage
         if (inventory == null)
             return 0;
         var have = inventory.CountItems(sharedName, quality, worldLevel);
-        if (have <= 0)
-            return 0;
-        var leave = honorLeaveOne && ModConfig.LeaveOne.Value ? 1 : 0;
-        var available = Mathf.Max(0, have - leave);
-        var pull = Mathf.Min(available, amount);
+        var pull = Mathf.Min(Pullable(have, honorLeaveOne), amount);
         if (pull <= 0)
             return 0;
         inventory.RemoveItem(sharedName, pull, quality, worldLevel);

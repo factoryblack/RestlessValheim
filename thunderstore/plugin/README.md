@@ -7,6 +7,7 @@ Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.0**.
 ## Storage and stations
 
 - Nearby chests count toward craft and build
+- Recipe rows show have/need from the bag and those chests
 - Quick stack (`` ` ``) / restock (`Shift+`` ` ``) — matching stacks only
 - Smelters, kilns, cooking stations, and fermenters pull from those chests
 - Hungry tames eat matching food from those chests
@@ -29,6 +30,6 @@ Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.0**.
 
 ## Interface
 
-HUD, inventory, tooltips, crafting, map chrome, and settings ship in this plugin. The look is still landing: some surfaces use the Restless kit, others are still vanilla or a mix. Tab, inspect, and crafting are the roughest.
+HUD, inventory, tooltips, crafting, map chrome, and settings ship in this plugin. Health and adrenaline sit left of the hotbar; stamina and eitr sit right. The look is still landing: some surfaces use the Restless kit, others are still vanilla or a mix. Tab, inspect, and crafting are the roughest.
 
 F8 toggles the Restless pieces. Vanilla Settings is unchanged.

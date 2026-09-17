@@ -7,6 +7,9 @@ if (-not (Test-Path $dotnet)) { $dotnet = 'dotnet' }
 & $dotnet build (Join-Path $root 'src\RestlessQoL\RestlessQoL.csproj') -c Release
 if ($LASTEXITCODE -ne 0) { throw "build failed" }
 
+& $dotnet build (Join-Path $root 'src\RestlessCook\RestlessCook.csproj') -c Release
+if ($LASTEXITCODE -ne 0) { throw "cook build failed" }
+
 $dll = Join-Path $root 'dist\RestlessCore.dll'
 if (-not (Test-Path $dll)) { throw "missing $dll" }
 
@@ -27,7 +30,7 @@ function Zip-Dir([string]$name, [scriptblock]$stage) {
     Write-Host "wrote $zip"
 }
 
-Zip-Dir 'Restless-RestlessCore-0.1.1' {
+Zip-Dir 'Restless-RestlessCore-0.1.2' {
     param($d)
     Copy-Item $dll $d
     Copy-Item (Join-Path $root 'thunderstore\plugin\manifest.json') $d
@@ -36,10 +39,26 @@ Zip-Dir 'Restless-RestlessCore-0.1.1' {
     Copy-Item $icon (Join-Path $d 'icon.png')
 }
 
-Zip-Dir 'Restless-RestlessCorePack-0.1.1' {
+$packIcon = Join-Path $root 'thunderstore\pack\icon.png'
+if (-not (Test-Path $packIcon)) { throw "missing thunderstore/pack/icon.png (256x256 PNG)" }
+
+Zip-Dir 'Restless-RestlessCorePack-0.1.2' {
     param($d)
     Copy-Item (Join-Path $root 'thunderstore\pack\manifest.json') $d
     Copy-Item (Join-Path $root 'thunderstore\pack\README.md') $d
     Copy-Item (Join-Path $root 'thunderstore\pack\CHANGELOG.md') $d
-    Copy-Item $icon (Join-Path $d 'icon.png')
+    Copy-Item $packIcon (Join-Path $d 'icon.png')
+}
+
+$cookDll = Join-Path $root 'dist\RestlessCook.dll'
+$cookIcon = Join-Path $root 'thunderstore\cook\icon.png'
+if ((Test-Path $cookDll) -and (Test-Path $cookIcon)) {
+    Zip-Dir 'Restless-RestlessCook-0.1.0' {
+        param($d)
+        Copy-Item $cookDll $d
+        Copy-Item (Join-Path $root 'thunderstore\cook\manifest.json') $d
+        Copy-Item (Join-Path $root 'thunderstore\cook\README.md') $d
+        Copy-Item (Join-Path $root 'thunderstore\cook\CHANGELOG.md') $d
+        Copy-Item $cookIcon (Join-Path $d 'icon.png')
+    }
 }

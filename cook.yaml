@@ -1,0 +1,1648 @@
+# RestlessCook recipe graph. This file is the only recipe list.
+# 51 recipe operations live inside these 81 rows. Do not add cook rows to catalogue.yaml.
+#
+# operation: add | rewrite | reference
+# kind: meal | feast | sideboard
+#
+updated: 2026-09-17
+last_audit: 2026-09-17
+version: 0.1.0
+items:
+  - id: hunters_skillet
+    name: "Hunter's Skillet"
+    kind: meal
+    source: custom
+    operation: add
+    tier: meadows
+    prefab: RestlessHuntersSkillet
+    clone_from: CookedMeat
+    feeds:
+      - hunters_hearth_board
+    uses:
+      - item: CookedMeat
+        amount: 1
+      - item: NeckTailGrilled
+        amount: 1
+      - item: Mushroom
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 1
+  - id: herb_roasted_venison
+    name: Herb-Roasted Venison
+    kind: meal
+    source: custom
+    operation: add
+    tier: meadows
+    prefab: RestlessHerbRoastedVenison
+    clone_from: CookedDeerMeat
+    feeds:
+      - hunters_hearth_board
+    uses:
+      - item: CookedDeerMeat
+        amount: 1
+      - item: Mushroom
+        amount: 2
+      - item: Dandelion
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 1
+  - id: honeyed_mushrooms
+    name: Honeyed Mushrooms
+    kind: meal
+    source: custom
+    operation: add
+    tier: meadows
+    prefab: RestlessHoneyedMushrooms
+    clone_from: NeckTailGrilled
+    feeds:
+      - honeyed_foragers_table
+    uses:
+      - item: Mushroom
+        amount: 3
+      - item: Honey
+        amount: 2
+      - item: Dandelion
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 1
+  - id: bear_mushroom_stew
+    name: "Bear & Mushroom Stew"
+    kind: meal
+    source: custom
+    operation: add
+    tier: blackforest
+    prefab: RestlessBearMushroomStew
+    clone_from: DeerStew
+    feeds:
+      - foresters_game_supper
+    uses:
+      - item: CookedBjornMeat
+        amount: 1
+      - item: MushroomYellow
+        amount: 2
+      - item: Carrot
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 2
+  - id: forest_root_medley
+    name: Forest Root Medley
+    kind: meal
+    source: custom
+    operation: add
+    tier: blackforest
+    prefab: RestlessForestRootMedley
+    clone_from: CarrotSoup
+    feeds:
+      - foragers_breakfast_board
+    uses:
+      - item: Carrot
+        amount: 2
+      - item: MushroomYellow
+        amount: 2
+      - item: Thistle
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 2
+  - id: sausage_turnip_bake
+    name: "Sausage & Turnip Bake"
+    kind: meal
+    source: custom
+    operation: add
+    tier: swamp
+    prefab: RestlessSausageTurnipBake
+    clone_from: Sausages
+    feeds:
+      - cryptkeepers_supper
+    uses:
+      - item: Sausages
+        amount: 2
+      - item: Turnip
+        amount: 2
+      - item: Thistle
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: bogroot_mash
+    name: Bogroot Mash
+    kind: meal
+    source: custom
+    operation: add
+    tier: swamp
+    prefab: RestlessBogrootMash
+    clone_from: TurnipStew
+    feeds:
+      - bog_harvesters_table
+    uses:
+      - item: Turnip
+        amount: 3
+      - item: MushroomYellow
+        amount: 1
+      - item: Honey
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: serpent_steak
+    name: Serpent Steak
+    kind: meal
+    source: custom
+    operation: add
+    tier: ocean
+    prefab: RestlessSerpentSteak
+    clone_from: SerpentMeatCooked
+    feeds:
+      - longship_leviathan_spread
+    uses:
+      - item: SerpentMeatCooked
+        amount: 1
+      - item: Thistle
+        amount: 1
+      - item: Honey
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: fishermans_chowder
+    name: "Fisherman's Chowder"
+    kind: meal
+    source: custom
+    operation: add
+    tier: ocean
+    prefab: RestlessFishermansChowder
+    clone_from: FishCooked
+    feeds:
+      - longship_leviathan_spread
+      - deckhands_provision
+    uses:
+      - item: FishCooked
+        amount: 2
+      - item: Turnip
+        amount: 1
+      - item: FreshSeaweed
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: pickled_catch
+    name: Pickled Catch
+    kind: meal
+    source: custom
+    operation: add
+    tier: ocean
+    prefab: RestlessPickledCatch
+    clone_from: FishCooked
+    feeds:
+      - deckhands_provision
+    uses:
+      - item: FishCooked
+        amount: 2
+      - item: FreshSeaweed
+        amount: 1
+      - item: Thistle
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: wolf_roast
+    name: Wolf Roast
+    kind: meal
+    source: custom
+    operation: add
+    tier: mountain
+    prefab: RestlessWolfRoast
+    clone_from: CookedWolfMeat
+    feeds:
+      - wolf_kings_carving_board
+    uses:
+      - item: CookedWolfMeat
+        amount: 1
+      - item: Onion
+        amount: 2
+      - item: Honey
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: frostberry_preserve
+    name: Frostberry Preserve
+    kind: meal
+    source: custom
+    operation: add
+    tier: mountain
+    prefab: RestlessFrostberryPreserve
+    clone_from: Eyescream
+    feeds:
+      - peak_runners_supper
+    uses:
+      - item: Blueberries
+        amount: 3
+      - item: Honey
+        amount: 2
+      - item: FreezeGland
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: lox_rib_roast
+    name: Lox Rib Roast
+    kind: meal
+    source: custom
+    operation: add
+    tier: plains
+    prefab: RestlessLoxRibRoast
+    clone_from: CookedLoxMeat
+    feeds:
+      - jarls_lox_table
+    uses:
+      - item: CookedLoxMeat
+        amount: 1
+      - item: Cloudberry
+        amount: 2
+      - item: Onion
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: barley_root_bake
+    name: Barley Root Bake
+    kind: meal
+    source: custom
+    operation: add
+    tier: plains
+    prefab: RestlessBarleyRootBake
+    clone_from: Bread
+    feeds:
+      - golden_harvest_board
+    uses:
+      - item: BarleyFlour
+        amount: 2
+      - item: Onion
+        amount: 2
+      - item: Carrot
+        amount: 2
+      - item: Cloudberry
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: sap_glazed_garden_medley
+    name: Sap-Glazed Garden Medley
+    kind: meal
+    source: custom
+    operation: add
+    tier: mistlands
+    prefab: RestlessSapGlazedGardenMedley
+    clone_from: Salad
+    feeds:
+      - mistwalkers_garden_table
+    uses:
+      - item: Salad
+        amount: 1
+      - item: sap
+        amount: 2
+      - item: MushroomJotunPuffs
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 5
+  - id: magecap_tart
+    name: Magecap Tart
+    kind: meal
+    source: custom
+    operation: add
+    tier: mistlands
+    prefab: RestlessMagecapTart
+    clone_from: MushroomOmelette
+    feeds:
+      - mistwalkers_garden_table
+    uses:
+      - item: MushroomMagecap
+        amount: 2
+      - item: BarleyFlour
+        amount: 2
+      - item: ChickenEgg
+        amount: 1
+      - item: RoyalJelly
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 5
+  - id: bonemaw_fiddlehead_roast
+    name: "Bonemaw & Fiddlehead Roast"
+    kind: meal
+    source: custom
+    operation: add
+    tier: ashlands
+    prefab: RestlessBonemawFiddleheadRoast
+    clone_from: CookedBoneMawSerpentMeat
+    feeds:
+      - emberlords_carving_table
+    uses:
+      - item: CookedBoneMawSerpentMeat
+        amount: 1
+      - item: Fiddleheadfern
+        amount: 2
+      - item: Vineberry
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 6
+  - id: hunters_hearth_board
+    name: "Hunter's Hearth Board"
+    kind: feast
+    source: custom
+    operation: add
+    tier: meadows
+    prefab: RestlessHuntersHearthBoard
+    clone_from: FeastMeadows
+    feeds: []
+    uses:
+      - item: RestlessHerbRoastedVenison
+        amount: 2
+      - item: RestlessHuntersSkillet
+        amount: 2
+      - item: CookedMeat
+        amount: 2
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: honeyed_foragers_table
+    name: "Honeyed Forager's Table"
+    kind: feast
+    source: custom
+    operation: add
+    tier: meadows
+    prefab: RestlessHoneyedForagersTable
+    clone_from: FeastMeadows
+    feeds: []
+    uses:
+      - item: RestlessHoneyedMushrooms
+        amount: 3
+      - item: Honey
+        amount: 6
+      - item: Raspberry
+        amount: 8
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: foresters_game_supper
+    name: "Forester's Game Supper"
+    kind: feast
+    source: custom
+    operation: add
+    tier: blackforest
+    prefab: RestlessForestersGameSupper
+    clone_from: FeastBlackforest
+    feeds: []
+    uses:
+      - item: RestlessBearMushroomStew
+        amount: 2
+      - item: PulledBear
+        amount: 1
+      - item: MinceMeatSauce
+        amount: 1
+      - item: BoarJerky
+        amount: 2
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: foragers_breakfast_board
+    name: "Forager's Breakfast Board"
+    kind: feast
+    source: custom
+    operation: add
+    tier: blackforest
+    prefab: RestlessForagersBreakfastBoard
+    clone_from: FeastBlackforest
+    feeds: []
+    uses:
+      - item: RestlessForestRootMedley
+        amount: 2
+      - item: CarrotSoup
+        amount: 2
+      - item: QueensJam
+        amount: 4
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: cryptkeepers_supper
+    name: "Cryptkeeper's Supper"
+    kind: feast
+    source: custom
+    operation: add
+    tier: swamp
+    prefab: RestlessCryptkeepersSupper
+    clone_from: FeastSwamps
+    feeds: []
+    uses:
+      - item: RestlessSausageTurnipBake
+        amount: 2
+      - item: BlackSoup
+        amount: 2
+      - item: Sausages
+        amount: 4
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: bog_harvesters_table
+    name: "Bog Harvester's Table"
+    kind: feast
+    source: custom
+    operation: add
+    tier: swamp
+    prefab: RestlessBogHarvestersTable
+    clone_from: FeastSwamps
+    feeds: []
+    uses:
+      - item: RestlessBogrootMash
+        amount: 2
+      - item: TurnipStew
+        amount: 2
+      - item: ShocklateSmoothie
+        amount: 2
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: longship_leviathan_spread
+    name: Longship Leviathan Spread
+    kind: feast
+    source: custom
+    operation: add
+    tier: ocean
+    prefab: RestlessLongshipLeviathanSpread
+    clone_from: FeastOceans
+    feeds: []
+    uses:
+      - item: RestlessSerpentSteak
+        amount: 2
+      - item: SerpentStew
+        amount: 2
+      - item: RestlessFishermansChowder
+        amount: 2
+      - item: SpiceOceans
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: deckhands_provision
+    name: "Deckhand's Provision"
+    kind: feast
+    source: custom
+    operation: add
+    tier: ocean
+    prefab: RestlessDeckhandsProvision
+    clone_from: FeastOceans
+    feeds: []
+    uses:
+      - item: RestlessPickledCatch
+        amount: 2
+      - item: RestlessFishermansChowder
+        amount: 2
+      - item: QueensJam
+        amount: 2
+      - item: SpiceOceans
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: wolf_kings_carving_board
+    name: "Wolf King's Carving Board"
+    kind: feast
+    source: custom
+    operation: add
+    tier: mountain
+    prefab: RestlessWolfKingsCarvingBoard
+    clone_from: FeastMountains
+    feeds: []
+    uses:
+      - item: RestlessWolfRoast
+        amount: 2
+      - item: WolfMeatSkewer
+        amount: 2
+      - item: WolfJerky
+        amount: 4
+      - item: SpiceMountains
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: peak_runners_supper
+    name: "Peak Runner's Supper"
+    kind: feast
+    source: custom
+    operation: add
+    tier: mountain
+    prefab: RestlessPeakRunnersSupper
+    clone_from: FeastMountains
+    feeds: []
+    uses:
+      - item: RestlessFrostberryPreserve
+        amount: 2
+      - item: Eyescream
+        amount: 2
+      - item: OnionSoup
+        amount: 2
+      - item: SpiceMountains
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: jarls_lox_table
+    name: "Jarl's Lox Table"
+    kind: feast
+    source: custom
+    operation: add
+    tier: plains
+    prefab: RestlessJarlsLoxTable
+    clone_from: FeastPlains
+    feeds: []
+    uses:
+      - item: RestlessLoxRibRoast
+        amount: 2
+      - item: LoxPie
+        amount: 2
+      - item: FishWraps
+        amount: 2
+      - item: SpicePlains
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: golden_harvest_board
+    name: Golden Harvest Board
+    kind: feast
+    source: custom
+    operation: add
+    tier: plains
+    prefab: RestlessGoldenHarvestBoard
+    clone_from: FeastPlains
+    feeds: []
+    uses:
+      - item: RestlessBarleyRootBake
+        amount: 2
+      - item: BloodPudding
+        amount: 2
+      - item: Bread
+        amount: 2
+      - item: SpicePlains
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: queens_hunting_table
+    name: "Queen's Hunting Table"
+    kind: feast
+    source: custom
+    operation: add
+    tier: mistlands
+    prefab: RestlessQueensHuntingTable
+    clone_from: FeastMistlands
+    feeds: []
+    uses:
+      - item: MisthareSupreme
+        amount: 2
+      - item: MeatPlatter
+        amount: 2
+      - item: HoneyGlazedChicken
+        amount: 2
+      - item: SpiceMistlands
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: mistwalkers_garden_table
+    name: "Mistwalker's Garden Table"
+    kind: feast
+    source: custom
+    operation: add
+    tier: mistlands
+    prefab: RestlessMistwalkersGardenTable
+    clone_from: FeastMistlands
+    feeds: []
+    uses:
+      - item: RestlessSapGlazedGardenMedley
+        amount: 2
+      - item: RestlessMagecapTart
+        amount: 2
+      - item: MushroomOmelette
+        amount: 2
+      - item: SpiceMistlands
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: emberlords_carving_table
+    name: "Emberlord's Carving Table"
+    kind: feast
+    source: custom
+    operation: add
+    tier: ashlands
+    prefab: RestlessEmberlordsCarvingTable
+    clone_from: FeastAshlands
+    feeds: []
+    uses:
+      - item: RestlessBonemawFiddleheadRoast
+        amount: 2
+      - item: PiquantPie
+        amount: 2
+      - item: MashedMeat
+        amount: 2
+      - item: FierySvinstew
+        amount: 2
+      - item: SpiceAshlands
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: cinder_runners_spread
+    name: "Cinder Runner's Spread"
+    kind: feast
+    source: custom
+    operation: add
+    tier: ashlands
+    prefab: RestlessCinderRunnersSpread
+    clone_from: FeastAshlands
+    feeds: []
+    uses:
+      - item: RoastedCrustPie
+        amount: 2
+      - item: ScorchingMedley
+        amount: 3
+      - item: SparklingShroomshake
+        amount: 2
+      - item: SpiceAshlands
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: hidden_hills_sideboard
+    name: Hidden Hills Sideboard
+    kind: sideboard
+    source: custom
+    operation: add
+    tier: mistlands
+    prefab: RestlessHiddenHillsSideboard
+    clone_from: SpiceMistlands
+    feeds:
+      - mushrooms_galore
+    uses:
+      - item: FishAndBread
+        amount: 1
+      - item: SeekerAspic
+        amount: 2
+      - item: MagicallyStuffedShroom
+        amount: 1
+      - item: YggdrasilPorridge
+        amount: 1
+      - item: CookedEgg
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: cinder_sideboard
+    name: Cinder Sideboard
+    kind: sideboard
+    source: custom
+    operation: add
+    tier: ashlands
+    prefab: RestlessCinderSideboard
+    clone_from: SpiceAshlands
+    feeds:
+      - ashlands_gourmet_bowl
+    uses:
+      - item: SpicyMarmalade
+        amount: 1
+      - item: SizzlingBerryBroth
+        amount: 1
+      - item: MarinatedGreens
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: minced_meat_sauce
+    name: Minced Meat Sauce
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: blackforest
+    prefab: MinceMeatSauce
+    recipe_id: Recipe_MinceMeatSauce
+    feeds:
+      - foresters_game_supper
+    uses:
+      - item: CookedMeat
+        amount: 1
+      - item: NeckTailGrilled
+        amount: 1
+      - item: Carrot
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 2
+  - id: boar_jerky
+    name: Boar Jerky
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: blackforest
+    prefab: BoarJerky
+    recipe_id: Recipe_BoarJerky
+    feeds:
+      - foresters_game_supper
+    uses:
+      - item: CookedMeat
+        amount: 1
+      - item: Honey
+        amount: 1
+    output_amount: 2
+    station: piece_cauldron
+    station_level: 1
+  - id: sausages
+    name: Sausages
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: swamp
+    prefab: Sausages
+    recipe_id: Recipe_Sausages
+    feeds:
+      - cryptkeepers_supper
+      - swamp_dwellers_delight
+    uses:
+      - item: Entrails
+        amount: 4
+      - item: CookedMeat
+        amount: 1
+      - item: Thistle
+        amount: 1
+    output_amount: 4
+    station: piece_cauldron
+    station_level: 2
+  - id: turnip_stew
+    name: Turnip Stew
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: swamp
+    prefab: TurnipStew
+    recipe_id: Recipe_TurnipStew
+    feeds:
+      - bog_harvesters_table
+      - swamp_dwellers_delight
+    uses:
+      - item: CookedMeat
+        amount: 1
+      - item: Turnip
+        amount: 3
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 2
+  - id: wolf_jerky
+    name: Wolf Jerky
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: mountain
+    prefab: WolfJerky
+    recipe_id: Recipe_WolfJerky
+    feeds:
+      - wolf_kings_carving_board
+    uses:
+      - item: CookedWolfMeat
+        amount: 1
+      - item: Honey
+        amount: 1
+    output_amount: 2
+    station: piece_cauldron
+    station_level: 4
+  - id: wolf_skewer
+    name: Wolf Skewer
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: mountain
+    prefab: WolfMeatSkewer
+    recipe_id: Recipe_WolfSkewer
+    feeds:
+      - wolf_kings_carving_board
+      - hearty_mountain_loggers_stew
+    uses:
+      - item: CookedWolfMeat
+        amount: 1
+      - item: Mushroom
+        amount: 2
+      - item: Onion
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: lox_meat_pie
+    name: Lox Meat Pie
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: plains
+    prefab: LoxPie
+    recipe_id: Recipe_LoxPie
+    feeds:
+      - jarls_lox_table
+      - plains_pie_picnic
+    uses:
+      - item: Cloudberry
+        amount: 2
+      - item: CookedLoxMeat
+        amount: 2
+      - item: BarleyFlour
+        amount: 4
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: meat_platter
+    name: Meat Platter
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: mistlands
+    prefab: MeatPlatter
+    recipe_id: Recipe_MeatPlatter
+    feeds:
+      - queens_hunting_table
+    uses:
+      - item: CookedBugMeat
+        amount: 1
+      - item: CookedLoxMeat
+        amount: 1
+      - item: CookedHareMeat
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: honey_glazed_chicken
+    name: Honey Glazed Chicken
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: mistlands
+    prefab: HoneyGlazedChicken
+    recipe_id: Recipe_HoneyGlazedChicken
+    feeds:
+      - queens_hunting_table
+    uses:
+      - item: CookedChickenMeat
+        amount: 1
+      - item: Honey
+        amount: 3
+      - item: MushroomJotunPuffs
+        amount: 2
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: misthare_supreme
+    name: Misthare Supreme
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: mistlands
+    prefab: MisthareSupreme
+    recipe_id: Recipe_MisthareSupreme
+    feeds:
+      - queens_hunting_table
+      - mushrooms_galore
+    uses:
+      - item: CookedHareMeat
+        amount: 1
+      - item: MushroomJotunPuffs
+        amount: 3
+      - item: Carrot
+        amount: 2
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: seeker_aspic
+    name: Seeker Aspic
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: mistlands
+    prefab: SeekerAspic
+    recipe_id: Recipe_SeekerAspic
+    feeds:
+      - hidden_hills_sideboard
+    uses:
+      - item: CookedBugMeat
+        amount: 2
+      - item: MushroomMagecap
+        amount: 2
+      - item: RoyalJelly
+        amount: 2
+    output_amount: 2
+    station: piece_cauldron
+    station_level: 5
+  - id: fiery_svinstew
+    name: Fiery Svinstew
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: ashlands
+    prefab: FierySvinstew
+    recipe_id: Recipe_FierySvinstew
+    feeds:
+      - emberlords_carving_table
+    uses:
+      - item: CookedAsksvinMeat
+        amount: 1
+      - item: Vineberry
+        amount: 2
+      - item: MushroomSmokePuff
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 6
+  - id: mashed_meat
+    name: Mashed Meat
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: ashlands
+    prefab: MashedMeat
+    recipe_id: Recipe_MashedMeat
+    feeds:
+      - emberlords_carving_table
+    uses:
+      - item: CookedAsksvinMeat
+        amount: 1
+      - item: CookedVoltureMeat
+        amount: 1
+      - item: Fiddleheadfern
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 6
+  - id: piquant_pie
+    name: Piquant Pie
+    kind: meal
+    source: vanilla
+    operation: rewrite
+    tier: ashlands
+    prefab: PiquantPie
+    recipe_id: Recipe_PiquantPie
+    feeds:
+      - emberlords_carving_table
+    uses:
+      - item: Vineberry
+        amount: 2
+      - item: CookedAsksvinMeat
+        amount: 2
+      - item: BarleyFlour
+        amount: 4
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: mushrooms_galore
+    name: Mushrooms Galore à la Mistlands
+    kind: feast
+    source: vanilla
+    operation: rewrite
+    tier: mistlands
+    prefab: FeastMistlands_Material
+    recipe_id: Recipe_FeastMistlands
+    feeds: []
+    uses:
+      - item: MisthareSupreme
+        amount: 1
+      - item: CookedBugMeat
+        amount: 3
+      - item: RestlessHiddenHillsSideboard
+        amount: 1
+      - item: SpiceMistlands
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: ashlands_gourmet_bowl
+    name: Ashlands Gourmet Bowl
+    kind: feast
+    source: vanilla
+    operation: rewrite
+    tier: ashlands
+    prefab: FeastAshlands_Material
+    recipe_id: Recipe_FeastAshlands
+    feeds: []
+    uses:
+      - item: CookedAsksvinMeat
+        amount: 3
+      - item: RestlessCinderSideboard
+        amount: 1
+      - item: ScorchingMedley
+        amount: 2
+      - item: SpiceAshlands
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: deer_stew
+    name: Deer Stew
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: blackforest
+    prefab: DeerStew
+    recipe_id: Recipe_DeerStew
+    feeds:
+      - black_forest_buffet_platter
+    uses:
+      - item: CookedDeerMeat
+        amount: 1
+      - item: Blueberries
+        amount: 1
+      - item: Carrot
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 2
+  - id: pulled_bear
+    name: Pulled Bear
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: blackforest
+    prefab: PulledBear
+    recipe_id: Recipe_PulledBear
+    feeds:
+      - foresters_game_supper
+    uses:
+      - item: CookedBjornMeat
+        amount: 1
+      - item: Carrot
+        amount: 2
+      - item: Blueberries
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 2
+  - id: carrot_soup
+    name: Carrot Soup
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: blackforest
+    prefab: CarrotSoup
+    recipe_id: Recipe_CarrotSoup
+    feeds:
+      - foragers_breakfast_board
+    uses:
+      - item: Mushroom
+        amount: 1
+      - item: Carrot
+        amount: 3
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 1
+  - id: queens_jam
+    name: "Queen's Jam"
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: blackforest
+    prefab: QueensJam
+    recipe_id: Recipe_QueensJam
+    feeds:
+      - foragers_breakfast_board
+      - deckhands_provision
+    uses:
+      - item: Raspberry
+        amount: 8
+      - item: Blueberries
+        amount: 6
+    output_amount: 4
+    station: piece_cauldron
+    station_level: 1
+  - id: black_soup
+    name: Black Soup
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: swamp
+    prefab: BlackSoup
+    recipe_id: Recipe_Blacksoup
+    feeds:
+      - cryptkeepers_supper
+    uses:
+      - item: Bloodbag
+        amount: 1
+      - item: Honey
+        amount: 1
+      - item: Turnip
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: muckshake
+    name: Muckshake
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: swamp
+    prefab: ShocklateSmoothie
+    recipe_id: Recipe_ShocklateSmoothie
+    feeds:
+      - bog_harvesters_table
+    uses:
+      - item: Ooze
+        amount: 1
+      - item: Raspberry
+        amount: 2
+      - item: Blueberries
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: serpent_stew
+    name: Serpent Stew
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: ocean
+    prefab: SerpentStew
+    recipe_id: Recipe_SerpentStew
+    feeds:
+      - longship_leviathan_spread
+    uses:
+      - item: Mushroom
+        amount: 1
+      - item: SerpentMeatCooked
+        amount: 1
+      - item: Honey
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 3
+  - id: onion_soup
+    name: Onion Soup
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mountain
+    prefab: OnionSoup
+    recipe_id: Recipe_Onionsoup
+    feeds:
+      - peak_runners_supper
+    uses:
+      - item: Onion
+        amount: 3
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: eyescream
+    name: Eyescream
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mountain
+    prefab: Eyescream
+    recipe_id: Recipe_Eyescream
+    feeds:
+      - peak_runners_supper
+    uses:
+      - item: GreydwarfEye
+        amount: 3
+      - item: FreezeGland
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: fish_wraps
+    name: Fish Wraps
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: plains
+    prefab: FishWraps
+    recipe_id: Recipe_FishWraps
+    feeds:
+      - jarls_lox_table
+    uses:
+      - item: FishCooked
+        amount: 2
+      - item: BarleyFlour
+        amount: 4
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: blood_pudding
+    name: Blood Pudding
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: plains
+    prefab: BloodPudding
+    recipe_id: Recipe_BloodPudding
+    feeds:
+      - golden_harvest_board
+    uses:
+      - item: Thistle
+        amount: 2
+      - item: Bloodbag
+        amount: 2
+      - item: BarleyFlour
+        amount: 4
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 4
+  - id: bread
+    name: Bread
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: plains
+    prefab: Bread
+    recipe_id: Recipe_Bread
+    feeds:
+      - golden_harvest_board
+    uses:
+      - item: BarleyFlour
+        amount: 10
+    output_amount: 2
+    station: piece_cauldron
+    station_level: 4
+  - id: mushroom_omelette
+    name: Mushroom Omelette
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mistlands
+    prefab: MushroomOmelette
+    recipe_id: Recipe_MushroomOmelette
+    feeds:
+      - mistwalkers_garden_table
+    uses:
+      - item: ChickenEgg
+        amount: 3
+      - item: MushroomJotunPuffs
+        amount: 3
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 5
+  - id: salad
+    name: Salad
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mistlands
+    prefab: Salad
+    recipe_id: Recipe_Salad
+    feeds:
+      - sap_glazed_garden_medley
+    uses:
+      - item: MushroomJotunPuffs
+        amount: 3
+      - item: Onion
+        amount: 3
+      - item: Cloudberry
+        amount: 3
+    output_amount: 3
+    station: piece_cauldron
+    station_level: 5
+  - id: fish_n_bread
+    name: "Fish 'n' Bread"
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mistlands
+    prefab: FishAndBread
+    recipe_id: Recipe_FishAndBread
+    feeds:
+      - hidden_hills_sideboard
+    uses:
+      - item: Fish9
+        amount: 1
+      - item: BreadDough
+        amount: 2
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: stuffed_mushroom
+    name: Stuffed Mushroom
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mistlands
+    prefab: MagicallyStuffedShroom
+    recipe_id: Recipe_MagicallyStuffedShroom
+    feeds:
+      - hidden_hills_sideboard
+    uses:
+      - item: MushroomMagecap
+        amount: 3
+      - item: GiantBloodSack
+        amount: 1
+      - item: Turnip
+        amount: 2
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: yggdrasil_porridge
+    name: Yggdrasil Porridge
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mistlands
+    prefab: YggdrasilPorridge
+    recipe_id: Recipe_YggdrasilPorridge
+    feeds:
+      - hidden_hills_sideboard
+    uses:
+      - item: sap
+        amount: 4
+      - item: Barley
+        amount: 3
+      - item: RoyalJelly
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 5
+  - id: cooked_egg
+    name: Cooked Egg
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: mistlands
+    prefab: CookedEgg
+    recipe_id: Recipe_CookedEgg
+    feeds:
+      - hidden_hills_sideboard
+    uses:
+      - item: ChickenEgg
+        amount: 1
+    output_amount: 1
+    station: piece_cookingstation
+    station_level: 1
+  - id: roasted_crust_pie
+    name: Roasted Crust Pie
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: ashlands
+    prefab: RoastedCrustPie
+    recipe_id: Recipe_RoastedCrustPie
+    feeds:
+      - cinder_runners_spread
+    uses:
+      - item: Vineberry
+        amount: 2
+      - item: VoltureEgg
+        amount: 1
+      - item: BarleyFlour
+        amount: 4
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: scorching_medley
+    name: Scorching Medley
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: ashlands
+    prefab: ScorchingMedley
+    recipe_id: Recipe_ScorchingMedley
+    feeds:
+      - cinder_runners_spread
+      - ashlands_gourmet_bowl
+    uses:
+      - item: MushroomJotunPuffs
+        amount: 3
+      - item: Onion
+        amount: 3
+      - item: Fiddleheadfern
+        amount: 3
+    output_amount: 3
+    station: piece_cauldron
+    station_level: 6
+  - id: sparkling_shroomshake
+    name: Sparkling Shroomshake
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: ashlands
+    prefab: SparklingShroomshake
+    recipe_id: Recipe_SparklingShroomshake
+    feeds:
+      - cinder_runners_spread
+    uses:
+      - item: sap
+        amount: 4
+      - item: Vineberry
+        amount: 2
+      - item: MushroomSmokePuff
+        amount: 2
+      - item: MushroomMagecap
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 6
+  - id: spicy_marmalade
+    name: Spicy Marmalade
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: ashlands
+    prefab: SpicyMarmalade
+    recipe_id: Recipe_SpiceInducedMarmalade
+    feeds:
+      - cinder_sideboard
+    uses:
+      - item: Vineberry
+        amount: 3
+      - item: Honey
+        amount: 1
+      - item: Fiddleheadfern
+        amount: 1
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 6
+  - id: sizzling_berry_broth
+    name: Sizzling Berry Broth
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: ashlands
+    prefab: SizzlingBerryBroth
+    recipe_id: Recipe_SizzlingBerryBroth
+    feeds:
+      - cinder_sideboard
+    uses:
+      - item: sap
+        amount: 3
+      - item: Fiddleheadfern
+        amount: 2
+      - item: Vineberry
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 6
+  - id: marinated_greens
+    name: Marinated Greens
+    kind: meal
+    source: vanilla
+    operation: reference
+    tier: ashlands
+    prefab: MarinatedGreens
+    recipe_id: Recipe_MarinatedGreens
+    feeds:
+      - cinder_sideboard
+    uses:
+      - item: sap
+        amount: 3
+      - item: MushroomMagecap
+        amount: 2
+      - item: Fiddleheadfern
+        amount: 2
+      - item: MushroomSmokePuff
+        amount: 2
+    output_amount: 1
+    station: piece_cauldron
+    station_level: 6
+  - id: whole_roasted_meadow_boar
+    name: Whole Roasted Meadow Boar
+    kind: feast
+    source: vanilla
+    operation: reference
+    tier: meadows
+    prefab: FeastMeadows_Material
+    recipe_id: Recipe_FeastMeadows
+    feeds: []
+    uses:
+      - item: CookedDeerMeat
+        amount: 2
+      - item: CookedMeat
+        amount: 5
+      - item: Dandelion
+        amount: 4
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: black_forest_buffet_platter
+    name: Black Forest Buffet Platter
+    kind: feast
+    source: vanilla
+    operation: reference
+    tier: blackforest
+    prefab: FeastBlackforest_Material
+    recipe_id: Recipe_FeastBlackforest
+    feeds: []
+    uses:
+      - item: DeerStew
+        amount: 3
+      - item: Thistle
+        amount: 5
+      - item: QueensJam
+        amount: 4
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: swamp_dwellers_delight
+    name: "Swamp Dweller's Delight"
+    kind: feast
+    source: vanilla
+    operation: reference
+    tier: swamp
+    prefab: FeastSwamps_Material
+    recipe_id: Recipe_FeastSwamps
+    feeds: []
+    uses:
+      - item: Sausages
+        amount: 8
+      - item: Bloodbag
+        amount: 4
+      - item: TurnipStew
+        amount: 2
+      - item: SpiceForests
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: sailors_bounty
+    name: "Sailor's Bounty"
+    kind: feast
+    source: vanilla
+    operation: reference
+    tier: ocean
+    prefab: FeastOceans_Material
+    recipe_id: Recipe_FeastOceans
+    feeds: []
+    uses:
+      - item: FishCooked
+        amount: 5
+      - item: Thistle
+        amount: 4
+      - item: SerpentMeatCooked
+        amount: 2
+      - item: SpiceOceans
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: hearty_mountain_loggers_stew
+    name: "Hearty Mountain Logger's Stew"
+    kind: feast
+    source: vanilla
+    operation: reference
+    tier: mountain
+    prefab: FeastMountains_Material
+    recipe_id: Recipe_FeastMountains
+    feeds: []
+    uses:
+      - item: WolfMeatSkewer
+        amount: 2
+      - item: OnionSoup
+        amount: 3
+      - item: Carrot
+        amount: 4
+      - item: SpiceMountains
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1
+  - id: plains_pie_picnic
+    name: Plains Pie Picnic
+    kind: feast
+    source: vanilla
+    operation: reference
+    tier: plains
+    prefab: FeastPlains_Material
+    recipe_id: Recipe_FeastPlains
+    feeds: []
+    uses:
+      - item: Bread
+        amount: 3
+      - item: LoxPie
+        amount: 2
+      - item: Cloudberry
+        amount: 5
+      - item: SpicePlains
+        amount: 1
+    output_amount: 1
+    station: piece_preptable
+    station_level: 1

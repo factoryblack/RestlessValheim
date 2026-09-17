@@ -3,23 +3,24 @@ schemaVersion = "0.0.1"
 
 [package]
 namespace = "Restless"
-name = "RestlessCore"
-versionNumber = "0.1.2"
-description = "Valheim 1.0 QoL: nearby chests for craft, build and stations; extra armor and Z/X/C slots; F8 host-locked settings. HUD and inventory are mid-migration — vanilla and Restless currently mix."
+name = "RestlessCook"
+versionNumber = "0.1.0"
+description = "Cook the haul, make meals, turn meals into feasts. Meadows through Ashlands. Needs RestlessCore."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
 
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2350"
 ValheimModding-Jotunn = "2.30.0"
+Restless-RestlessCore = "0.1.2"
 
 [build]
-icon = "../icon.png"
+icon = "./icon.png"
 readme = "./README.md"
-outdir = "../../artifacts/tcli-plugin"
+outdir = "../../artifacts/tcli-cook"
 
 [[build.copy]]
-source = "../../dist/RestlessCore.dll"
+source = "../../dist/RestlessCook.dll"
 target = "/"
 
 [[build.copy]]
@@ -31,4 +32,4 @@ repository = "https://thunderstore.io"
 communities = ["valheim"]
 
 [publish.categories]
-valheim = ["client-side", "tweaks"]
+valheim = ["crafting", "tweaks", "mods"]

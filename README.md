@@ -7,10 +7,13 @@ The master list of what is in the DLL, planned, optional, or skipped is [`catalo
 ## Layout
 
 ```
-catalogue.yaml            Master behaviour list (built / planned / skip)
-src/RestlessQoL/          C# BepInEx plugin
-thunderstore/plugin/      Thunderstore package for the DLL
-thunderstore/pack/        Optional one-click install of BepInEx + Jötunn + this DLL
+catalogue.yaml            Master QoL behaviour list (built / planned / skip)
+cook.yaml                 RestlessCook recipe graph (not part of the catalogue)
+src/RestlessQoL/          RestlessCore BepInEx plugin
+src/RestlessCook/         RestlessCook BepInEx plugin (hard-depends on Core)
+thunderstore/plugin/      Thunderstore package for RestlessCore
+thunderstore/pack/        Valheim modpack: BepInEx + Jötunn + Core + Cook
+thunderstore/cook/        Thunderstore package for RestlessCook
 ```
 
 ## Plugin v0.1
@@ -19,9 +22,13 @@ Enabled by default; each feature can fail without taking the others down. The li
 
 HUD, inventory, tooltips, crafting, and settings chrome are **in this DLL** and still landing — vanilla and Restless currently mix.
 
+## Cook v0.1
+
+Second plugin, hard-depends on Core. Recipe graph is [`cook.yaml`](cook.yaml). Ships with Core on a `v*` tag, or alone on `cook-v*`.
+
 ## Pack v0.1
 
-BepInEx + Jötunn + this DLL. One-click install of RestlessCore.
+A Thunderstore **modpack** (not a plugin). One-click install of BepInEx + Jötunn + RestlessCore + RestlessCook. The listing uses the stone R icon.
 
 ## Build
 
@@ -29,9 +36,10 @@ Valheim is expected at `C:\Program Files (x86)\Steam\steamapps\common\Valheim`. 
 
 ```
 dotnet build src/RestlessQoL/RestlessQoL.csproj -c Release
+dotnet build src/RestlessCook/RestlessCook.csproj -c Release
 ```
 
-Output: `dist/RestlessCore.dll`. Drop it into a r2modman profile `BepInEx/plugins/RestlessCore/` along with Jötunn.
+Output: `dist/RestlessCore.dll` and `dist/RestlessCook.dll`. Drop Core into a r2modman profile `BepInEx/plugins/RestlessCore/` along with Jötunn. Cook goes beside it and needs Core.
 
 ```
 powershell -File scripts/test-local.ps1          # build + install into Steam Valheim
@@ -41,26 +49,29 @@ powershell -File scripts/pack.ps1                # zip artifacts/ for Thundersto
 
 This Steam folder is already BepInEx-patched. Launch from Steam, not a vanilla shortcut.
 
-r2modman: BepInEx + Jötunn, then Import local `artifacts/Restless-RestlessCore-0.1.1.zip` from `scripts/pack.ps1`.
+r2modman: install the **RestlessCorePack** modpack, or BepInEx + Jötunn then Import local `artifacts/Restless-RestlessCore-0.1.2.zip` from `scripts/pack.ps1`.
 
 ## GitHub Actions
 
-Pushes and pull requests compile a Release `RestlessCore.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2350`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
+Pushes and pull requests compile Release `RestlessCore.dll` and `RestlessCook.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2350`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
 
-A tag named `v*` is the ship button. It builds the DLL, opens a GitHub Release, then publishes **RestlessCore** and **RestlessCorePack** to Thunderstore under the `Restless` team.
+A tag named `v*` ships **RestlessCore**, **RestlessCook**, and the **RestlessCorePack** modpack. A tag named `cook-v*` ships **RestlessCook** only.
 
 ```
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.2
+git push origin v0.1.2
+
+git tag cook-v0.1.0
+git push origin cook-v0.1.0
 ```
 
 ### Thunderstore token
 
 Do **not** put the API key in git, chat, or the workflow file.
 
-1. On Thunderstore, create a team named exactly `Restless` (the pack already depends on `Restless-RestlessCore`).
+1. On Thunderstore, create a team named exactly `Restless` (the pack depends on `Restless-RestlessCore` and `Restless-RestlessCook`).
 2. Team → **Service Accounts** → add one (name it `github` or similar). Copy the token once.
 3. In this GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**.
 4. Name: `TCLI_AUTH_TOKEN`. Value: that token.
 
-You can also run the compile job by hand from the Actions tab (`workflow_dispatch`). Publish still only happens on a `v*` tag.
+You can also run the compile job by hand from the Actions tab (`workflow_dispatch`). Publish still only happens on a `v*` or `cook-v*` tag.

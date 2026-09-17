@@ -82,9 +82,8 @@ public sealed partial class InventoryScreen
             strip.transform.SetAsFirstSibling();
         }
         RestlessUi.Stretch(strip, Vector2.zero, new Vector2(1f, 0f), new Vector2(4f, 3f), new Vector2(-4f, 27f));
-        face.fontSize = 20;
         face.alignment = TextAnchor.MiddleCenter;
-        face.horizontalOverflow = HorizontalWrapMode.Overflow;
+        RestlessUi.BoundedLabel(face, 20, RestlessUi.HintSize);
         RestlessUi.Stretch(face.gameObject, Vector2.zero, new Vector2(1f, 0f), new Vector2(4f, 3f), new Vector2(-4f, 27f));
     }
 

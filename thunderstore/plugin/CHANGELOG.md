@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Recipe rows show have/need, including nearby chests
+- Craft-from-chests no longer counts a LeaveOne-reserved last unit as available
+- Adrenaline sits above health on the left of the hotbar; eitr sits above stamina on the right
+
 ## 0.1.1
 
 - Listing describes RestlessCore only

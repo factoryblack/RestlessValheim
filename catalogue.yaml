@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-17 — MyLittleUI is skip. Timers/multicraft are not coming back as a sidecar.
+# last_audit: 2026-09-17 — Vitals dress adrenaline left of the bar and eitr right; mount stays vanilla.
 
 updated: 2026-09-17
 
@@ -53,7 +53,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Craft shortfall is optimistic. Playtest a joining client at a closed chest."
+    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Recipe rows show have/need (bag plus spendable chest stock; LeaveOne is reserved per chest in both the have-count and the pull). A 1-cost ingredient no longer stays craftable after the last spendable unit is gone. Craft shortfall is optimistic. Playtest a joining client at a closed chest."
 
   - id: storage.build
     name: Build from nearby chests
@@ -61,7 +61,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Same RestlessPull as storage.craft. Ghosts still skipped. Playtest a joining client placing a piece from closed chests."
+    note: "Same RestlessPull as storage.craft, including LeaveOne reservation in the have-count. Ghosts still skipped. Playtest a joining client placing a piece from closed chests."
 
   - id: storage.quickstack
     name: Quick stack (`)
@@ -314,12 +314,12 @@ items:
     note: "ESC column + logout/quit confirms. Keep darken, hide LeftKnot/RightKnot/ornament. Shelf leftover pause Button_* / OLD_menu only — not ExitConfirm/LogoutConfirm Yes/No. Confirm titles stay live for Averia. Vanilla Settings window stays. Playtest."
 
   - id: ui.vitals
-    name: Health and stamina on the hotbar
+    name: Vitals on the hotbar
     decision: dll
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Thin 18px Ink track grows with max (112 + 1.1px/point, cap 260). Dark track = max; kit garnet HealthTint / amber StaminaTint fill = current (no vanilla steal). Averia current is an F8 child, off by default. Eitr and mount stay vanilla. Playtest."
+    note: "Thin 18px Ink track grows with max (112 + 1.1px/point, cap 260). Dark track = max; kit HealthTint / AdrenalineTint / StaminaTint / EitrTint fill = current (no vanilla steal). Adrenaline stacks above health (left); eitr stacks above stamina (right); each hides until the pool exists. Averia current is an F8 child, off by default. Mount stays vanilla. Playtest."
 
   - id: ui.equiphint
     name: Equipped piece helper

@@ -102,8 +102,7 @@ public sealed class StorageSync : FeatureModule
         if (inventory == null)
             return 0;
         var have = inventory.CountItems(sharedName, quality, worldLevel);
-        var leave = honorLeaveOne && ModConfig.LeaveOne.Value ? 1 : 0;
-        return Mathf.Min(amount, Mathf.Max(0, have - leave));
+        return Mathf.Min(amount, NearbyStorage.Pullable(have, honorLeaveOne));
     }
 
     private static void Finish(int id, int taken)

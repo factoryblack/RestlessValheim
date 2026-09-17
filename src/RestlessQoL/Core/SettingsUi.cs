@@ -592,8 +592,10 @@ public sealed class SettingsUi : FeatureModule
                     t => Bool("Action hints", ModConfig.ActionHintsEnabled, false, t, true),
                     t => Bool("World hover prompts", ModConfig.LookHintsEnabled, false, t, true));
                 Bunch(
-                    t => Bool("Health and stamina on the hotbar", ModConfig.VitalsEnabled, false, t),
+                    t => Bool("Vitals on the hotbar", ModConfig.VitalsEnabled, false, t),
                     t => Bool("Always show stamina", ModConfig.VitalsStaminaAlways, false, t, true),
+                    t => Bool("Adrenaline with health", ModConfig.VitalsAdrenaline, false, t, true),
+                    t => Bool("Eitr with stamina", ModConfig.VitalsEitr, false, t, true),
                     t => Bool("Numbers on the bars", ModConfig.VitalsNumbers, false, t, true));
                 Head("Debug");
                 Bunch(

@@ -3,7 +3,7 @@
 A **Valheim modpack**, not a plugin. r2modman / Thunderstore install this listing and pull the stack:
 
 - BepInExPack 5.4.2350
-- Jötunn 2.30.0
+- Jötunn 2.30.1
 - **RestlessCore** — nearby storage, extra slots, host-locked F8, Restless HUD
 - **RestlessCook** — Meadows through Ashlands meals and feasts
 

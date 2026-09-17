@@ -8,7 +8,7 @@ namespace RestlessCook;
 
 public static class CookYaml
 {
-    public static List<CookRow> LoadEmbedded()
+    public static CookBook LoadEmbedded()
     {
         var asm = Assembly.GetExecutingAssembly();
         using var stream = asm.GetManifestResourceStream("RestlessCook.cook.yaml")
@@ -17,20 +17,43 @@ public static class CookYaml
         return Parse(reader.ReadToEnd());
     }
 
-    public static List<CookRow> Parse(string text)
+    public static CookBook Parse(string text)
     {
-        var items = new List<CookRow>();
+        var book = new CookBook();
         CookRow? cur = null;
         CookUse? use = null;
         string? mode = null;
+        string? section = null;
+
+        void Flush()
+        {
+            if (cur == null)
+                return;
+            if (section == "kit")
+                book.Kit.Add(cur);
+            else if (section == "items")
+                book.Items.Add(cur);
+            cur = null;
+        }
 
         foreach (var raw in text.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None))
         {
             var line = raw.TrimEnd();
+            if (line == "kit:" || line == "items:")
+            {
+                Flush();
+                section = line.TrimEnd(':');
+                use = null;
+                mode = null;
+                continue;
+            }
+
+            if (section == null)
+                continue;
+
             if (line.StartsWith("  - id:", StringComparison.Ordinal))
             {
-                if (cur != null)
-                    items.Add(cur);
+                Flush();
                 cur = new CookRow { Id = Value(line) };
                 use = null;
                 mode = null;
@@ -89,6 +112,11 @@ public static class CookYaml
                     case "prefab": cur.Prefab = val; break;
                     case "recipe_id": cur.RecipeId = val; break;
                     case "clone_from": cur.CloneFrom = val; break;
+                    case "food": cur.Food = int.Parse(val); break;
+                    case "food_stamina": cur.FoodStamina = int.Parse(val); break;
+                    case "food_eitr": cur.FoodEitr = int.Parse(val); break;
+                    case "food_regen": cur.FoodRegen = float.Parse(val, System.Globalization.CultureInfo.InvariantCulture); break;
+                    case "food_minutes": cur.FoodMinutes = int.Parse(val); break;
                     case "output_amount": cur.OutputAmount = int.Parse(val); break;
                     case "station": cur.Station = val; break;
                     case "station_level": cur.StationLevel = int.Parse(val); break;
@@ -96,11 +124,10 @@ public static class CookYaml
             }
         }
 
-        if (cur != null)
-            items.Add(cur);
-
-        Validate(items);
-        return items;
+        Flush();
+        Validate(book.Items);
+        ValidateKit(book.Kit);
+        return book;
     }
 
     public static void Validate(IReadOnlyList<CookRow> items)
@@ -144,6 +171,22 @@ public static class CookYaml
                 throw new InvalidOperationException($"{row.Id}: add requires prefab");
         }
 
+        foreach (var row in items.Where(i => i.IsAdd && (i.IsMeal || i.IsFeast)))
+        {
+            if (row.Food == 0 && row.FoodStamina == 0 && row.FoodEitr == 0)
+                throw new InvalidOperationException($"{row.Id}: custom meal/feast needs food stats");
+            if (row.FoodMinutes <= 0)
+                throw new InvalidOperationException($"{row.Id}: custom meal/feast needs food_minutes");
+            if (row.FoodRegen <= 0f)
+                throw new InvalidOperationException($"{row.Id}: custom meal/feast needs food_regen");
+        }
+
+        foreach (var row in items.Where(i => i.IsSideboard))
+        {
+            if (row.Food != 0 || row.FoodStamina != 0 || row.FoodEitr != 0 || row.FoodMinutes != 0)
+                throw new InvalidOperationException($"{row.Id}: sideboard is not edible");
+        }
+
         foreach (var row in items.Where(i => i.IsRewrite))
         {
             if (string.IsNullOrEmpty(row.RecipeId))
@@ -156,6 +199,24 @@ public static class CookYaml
             if (!ReachesFeast(meal, byId))
                 throw new InvalidOperationException($"{meal.Id}: meal has no path to a feast");
         }
+
+        foreach (var row in items.Where(i => i.IsFeast && i.Source == "custom" && i.IsAdd && (i.Tier == "meadows" || i.Tier == "blackforest")))
+        {
+            if (row.Uses.Any(u => u.Item == "SpiceForests"))
+                throw new InvalidOperationException($"{row.Id}: early custom feast cannot require Bog Witch spices");
+        }
+    }
+
+    private static void ValidateKit(IReadOnlyList<CookRow> kit)
+    {
+        if (kit.Count != 2)
+            throw new InvalidOperationException($"cook.yaml kit must have 2 rows, got {kit.Count}");
+        var table = kit.FirstOrDefault(i => i.Id == "food_preparation_table");
+        var tray = kit.FirstOrDefault(i => i.Id == "serving_tray");
+        if (table == null || !table.IsStation || !table.IsRewrite || table.Prefab != "piece_preptable" || table.Uses.Count == 0)
+            throw new InvalidOperationException("kit: food_preparation_table must rewrite piece_preptable");
+        if (tray == null || !tray.IsTool || !tray.IsAdd || tray.Prefab != "Feaster" || tray.Uses.Count == 0)
+            throw new InvalidOperationException("kit: serving_tray must add a Feaster recipe");
     }
 
     private static bool ReachesFeast(CookRow start, IReadOnlyDictionary<string, CookRow> byId)

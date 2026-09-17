@@ -19,6 +19,11 @@ public sealed class CookRow
     public string Prefab { get; set; } = "";
     public string RecipeId { get; set; } = "";
     public string CloneFrom { get; set; } = "";
+    public int Food { get; set; }
+    public int FoodStamina { get; set; }
+    public int FoodEitr { get; set; }
+    public float FoodRegen { get; set; }
+    public int FoodMinutes { get; set; }
     public List<string> Feeds { get; } = new();
     public List<CookUse> Uses { get; } = new();
     public int OutputAmount { get; set; } = 1;
@@ -31,4 +36,12 @@ public sealed class CookRow
     public bool IsMeal => Kind == "meal";
     public bool IsFeast => Kind == "feast";
     public bool IsSideboard => Kind == "sideboard";
+    public bool IsStation => Kind == "station";
+    public bool IsTool => Kind == "tool";
+}
+
+public sealed class CookBook
+{
+    public List<CookRow> Items { get; } = new();
+    public List<CookRow> Kit { get; } = new();
 }

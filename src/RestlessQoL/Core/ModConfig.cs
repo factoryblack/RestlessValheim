@@ -40,6 +40,7 @@ public static class ModConfig
     public static ConfigEntry<bool> AxeComboEnabled = null!;
     public static ConfigEntry<bool> AutoRepairEnabled = null!;
     public static ConfigEntry<float> StackSizeMultiplier = null!;
+    public static ConfigEntry<bool> HonestItemsEnabled = null!;
     public static ConfigEntry<bool> EternalFireEnabled = null!;
     public static ConfigEntry<bool> DigDeeperEnabled = null!;
     public static ConfigEntry<float> DigMaxDelta = null!;
@@ -220,6 +221,8 @@ public static class ModConfig
             "Repair worn gear when you use a station that can repair it. Hides the hammer button.");
         StackSizeMultiplier = AdminFloat(config, "Inventory.StackSize", "Multiplier", 2f, 1f, 10f,
             "Multiply vanilla max stacks. 1 is vanilla. Gear that does not stack stays at 1. The host value applies to everyone.");
+        HonestItemsEnabled = AdminBool(config, "Inventory.Honest", "Enabled", true,
+            "Clear Valheim 1.0 cheated marks on items. Storage clones, extra-slot moves, and custom crafts were stamping them. Does not un-flag a character that used devcommands.");
 
         NetworkUncapEnabled = AdminBool(config, "Server", "NetworkUncap", true,
             "Raise the ZDO send window (10 KB → 32 KB) and Steam send max (150 KB/s → 512 KB/s). Stops players/mobs freezing then snapping. Host-locked.");

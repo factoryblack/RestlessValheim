@@ -498,6 +498,7 @@ public sealed class SettingsUi : FeatureModule
                 Bool("Build from chests", ModConfig.BuildFromStorageEnabled, locked);
                 Head("Carry");
                 Step("Stack size multiplier", "×", ModConfig.StackSizeMultiplier, locked);
+                Bool("Clear cheated item marks", ModConfig.HonestItemsEnabled, locked);
                 Keyed("Quick stack", ModConfig.QuickStackEnabled, ModConfig.QuickStackHotkey, locked);
                 Keyed("Restock", ModConfig.RestockEnabled, ModConfig.RestockHotkey, locked);
                 Bunch(

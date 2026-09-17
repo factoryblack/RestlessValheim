@@ -26,7 +26,7 @@ public sealed class MapDots : FeatureModule
 
     private static bool On => ModConfig.MapPlayerDots.Value;
 
-    private static Sprite? Diamond() => Kit.Sprite("diamond");
+    private static Sprite? Diamond() => Kit.Sprite("map-player") ?? Kit.Sprite("diamond");
 
     private static void KeepPublic()
     {
@@ -53,7 +53,7 @@ public sealed class MapDots : FeatureModule
                 continue;
             if (sprite != null)
                 pin.m_iconElement.sprite = sprite;
-            pin.m_iconElement.color = RestlessUi.Accent;
+            pin.m_iconElement.color = Color.white;
             pin.m_iconElement.preserveAspect = true;
         }
     }

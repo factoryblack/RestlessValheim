@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>RestlessCook</AssemblyName>
     <RootNamespace>RestlessCook</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\..\dist\</OutputPath>
     <DebugType>embedded</DebugType>
@@ -14,11 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JotunnLib" Version="2.30.0" />
+    <PackageReference Include="JotunnLib" Version="2.30.1" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="..\..\cook.yaml" LogicalName="RestlessCook.cook.yaml" />
+    <EmbeddedResource Include="Assets\*.png" LogicalName="RestlessCook.Assets.%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-17 — Vitals dress adrenaline left of the bar and eitr right; mount stays vanilla.
+# last_audit: 2026-09-18 — Jötunn 2.30.1; Core 0.1.4 / Cook 0.1.1 / pack 0.1.4.
 
-updated: 2026-09-17
+updated: 2026-09-18
 
 items:
   # --- loader ---
@@ -36,7 +36,7 @@ items:
     decision: loader
     in_mod: n/a
     restless: ValheimModding-Jotunn
-    note: "Config sync / admin lock. Pin 2.30.0 (1.0-day). Hard dependency of our plugin."
+    note: "Config sync / admin lock. Pin 2.30.1 (piece categories + 1.0 terrain ops). Hard dependency of our plugin."
 
   - id: core.host_lock
     name: Host-locked gameplay config
@@ -53,7 +53,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Recipe rows show have/need (bag plus spendable chest stock; LeaveOne is reserved per chest in both the have-count and the pull). A 1-cost ingredient no longer stays craftable after the last spendable unit is gone. Craft shortfall is optimistic. Playtest a joining client at a closed chest."
+    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Recipe rows show have/need (bag plus spendable chest stock; LeaveOne is reserved per chest in both the have-count and the pull). A 1-cost ingredient no longer stays craftable after the last spendable unit is gone. HaveRequirements only flips true for chest stock when the current bench already meets GetRequiredStationLevel — a too-low forge used to allow upgrades. Craft shortfall is optimistic. Playtest a joining client at a closed chest."
 
   - id: storage.build
     name: Build from nearby chests
@@ -159,6 +159,14 @@ items:
     restless: Azumatt-AzuMiscPatches / Grantapher-ValheimPlus
     note: "ObjectDB shared m_maxStackSize × F8 slider (default 2, 1–10). Remembers vanilla so the slider cannot compound. Max 1 (gear, trophies) stays 1. Existing piles do not split; they can merge further. Host value syncs to clients (F8 no longer says they must match). Weight multiplier is still misc.azu_leftovers. Playtest."
 
+  - id: inventory.honest
+    name: Clear cheated item flag
+    decision: dll
+    in_mod: done
+    bite: 1
+    restless: n/a
+    note: "Valheim 1.0 ItemData.m_cheated. Storage clones, extra-slot moves, and Jötunn crafts were inheriting it. Cleared on Inventory.Changed, player load, and world drops. Host-locked F8. Does not un-flag a character that already used devcommands. Playtest."
+
   - id: production.eternal_fire
     name: Fires stay lit
     decision: dll
@@ -239,7 +247,7 @@ items:
     in_mod: done
     bite: 3
     restless: Azumatt-Where_You_At
-    note: "Force public position so peers get coords. Cream kit diamond instead of the vanilla person. Visible toggle removed from the M map. Not shared fog (skip.map_share). Playtest."
+    note: "Force public position so peers get coords. Solid cream map-player diamond with an ink edge (kit diamond was a faint stroke / missing PNG). Visible toggle removed from the M map. Not shared fog (skip.map_share). Playtest."
 
   - id: building.armor_stand_stats
     name: Armor stand shows item stats
@@ -295,7 +303,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting and top navigation now use the shared paper materials, amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
+    note: "Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting and top navigation use shared paper when paper-panel.png is in the kit; otherwise vanilla craft wood stays (hiding chrome + a RowTint strip was a black slab). Amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
 
   - id: ui.tooltip
     name: Restless item tooltip

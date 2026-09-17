@@ -1695,7 +1695,12 @@ public sealed partial class InventoryScreen : FeatureModule
                 continue;
             var n = image.gameObject.name.ToLowerInvariant();
             if (n == "panel-back" || IsChromeName(n))
+            {
+                if (Kit.Sprite("paper-panel") == null && gui.m_crafting != null
+                    && image.transform.IsChildOf(gui.m_crafting))
+                    continue;
                 Hide(image);
+            }
         }
 
         foreach (var tmp in root.GetComponentsInChildren<TMP_Text>(true))

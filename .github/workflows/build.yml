@@ -24,7 +24,7 @@ permissions:
 
 env:
   BEPINEX_PACK: 5.4.2350
-  JOTUNN: 2.30.0
+  JOTUNN: 2.30.1
   VHINSTALL: /home/runner/VHINSTALL
 
 jobs:

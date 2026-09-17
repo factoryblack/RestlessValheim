@@ -2,7 +2,7 @@
 
 Valheim 1.0 quality of life for Restless. Gameplay config is **host-locked**. Open **F8** in-game, or Restless from the pause menu.
 
-Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.0**.
+Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.1**.
 
 ## Storage and stations
 
@@ -13,6 +13,7 @@ Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.0**.
 - Hungry tames eat matching food from those chests
 - Ground piles vacuum into chests that already have that item
 - Middle-click lock on bag slots (quick stack and restock skip them)
+- F8 can clear Valheim 1.0 cheated item marks (host-locked)
 
 ## Building and player
 

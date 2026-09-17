@@ -3,10 +3,45 @@
 #
 # operation: add | rewrite | reference
 # kind: meal | feast | sideboard
+# Custom meals/feasts lock food, food_stamina, food_eitr, food_regen, food_minutes.
+# Vanilla feast = balanced. Custom A = health. Custom B = stamina. Mistlands+ custom feasts carry eitr.
+# Sideboards are not edible.
+# kit: early vanilla Food preparation table + Serving tray. Meadows workbench materials.
+# Meadows/Black Forest custom feasts do not use Bog Witch spices.
 #
-updated: 2026-09-17
-last_audit: 2026-09-17
-version: 0.1.0
+updated: 2026-09-18
+last_audit: 2026-09-18
+version: 0.1.1
+kit:
+  - id: food_preparation_table
+    name: "Food preparation table"
+    kind: station
+    source: vanilla
+    operation: rewrite
+    prefab: piece_preptable
+    uses:
+      - item: Wood
+        amount: 10
+      - item: Resin
+        amount: 8
+      - item: LeatherScraps
+        amount: 6
+  - id: serving_tray
+    name: "Serving tray"
+    kind: tool
+    source: vanilla
+    operation: add
+    prefab: Feaster
+    uses:
+      - item: Wood
+        amount: 6
+      - item: LeatherScraps
+        amount: 4
+      - item: Resin
+        amount: 2
+    output_amount: 1
+    station: piece_workbench
+    station_level: 1
 items:
   - id: hunters_skillet
     name: "Hunter's Skillet"
@@ -16,6 +51,10 @@ items:
     tier: meadows
     prefab: RestlessHuntersSkillet
     clone_from: CookedMeat
+    food: 32
+    food_stamina: 24
+    food_regen: 2
+    food_minutes: 25
     feeds:
       - hunters_hearth_board
     uses:
@@ -36,6 +75,10 @@ items:
     tier: meadows
     prefab: RestlessHerbRoastedVenison
     clone_from: CookedDeerMeat
+    food: 40
+    food_stamina: 18
+    food_regen: 3
+    food_minutes: 25
     feeds:
       - hunters_hearth_board
     uses:
@@ -56,6 +99,10 @@ items:
     tier: meadows
     prefab: RestlessHoneyedMushrooms
     clone_from: NeckTailGrilled
+    food: 18
+    food_stamina: 42
+    food_regen: 2
+    food_minutes: 25
     feeds:
       - honeyed_foragers_table
     uses:
@@ -76,6 +123,10 @@ items:
     tier: blackforest
     prefab: RestlessBearMushroomStew
     clone_from: DeerStew
+    food: 48
+    food_stamina: 18
+    food_regen: 3
+    food_minutes: 25
     feeds:
       - foresters_game_supper
     uses:
@@ -96,6 +147,10 @@ items:
     tier: blackforest
     prefab: RestlessForestRootMedley
     clone_from: CarrotSoup
+    food: 18
+    food_stamina: 50
+    food_regen: 2
+    food_minutes: 25
     feeds:
       - foragers_breakfast_board
     uses:
@@ -116,6 +171,10 @@ items:
     tier: swamp
     prefab: RestlessSausageTurnipBake
     clone_from: Sausages
+    food: 60
+    food_stamina: 22
+    food_regen: 4
+    food_minutes: 30
     feeds:
       - cryptkeepers_supper
     uses:
@@ -136,6 +195,10 @@ items:
     tier: swamp
     prefab: RestlessBogrootMash
     clone_from: TurnipStew
+    food: 22
+    food_stamina: 60
+    food_regen: 2
+    food_minutes: 30
     feeds:
       - bog_harvesters_table
     uses:
@@ -156,6 +219,10 @@ items:
     tier: ocean
     prefab: RestlessSerpentSteak
     clone_from: SerpentMeatCooked
+    food: 75
+    food_stamina: 28
+    food_regen: 4
+    food_minutes: 30
     feeds:
       - longship_leviathan_spread
     uses:
@@ -176,6 +243,10 @@ items:
     tier: ocean
     prefab: RestlessFishermansChowder
     clone_from: FishCooked
+    food: 28
+    food_stamina: 70
+    food_regen: 3
+    food_minutes: 30
     feeds:
       - longship_leviathan_spread
       - deckhands_provision
@@ -197,6 +268,10 @@ items:
     tier: ocean
     prefab: RestlessPickledCatch
     clone_from: FishCooked
+    food: 25
+    food_stamina: 65
+    food_regen: 3
+    food_minutes: 30
     feeds:
       - deckhands_provision
     uses:
@@ -217,6 +292,10 @@ items:
     tier: mountain
     prefab: RestlessWolfRoast
     clone_from: CookedWolfMeat
+    food: 72
+    food_stamina: 24
+    food_regen: 4
+    food_minutes: 30
     feeds:
       - wolf_kings_carving_board
     uses:
@@ -237,6 +316,10 @@ items:
     tier: mountain
     prefab: RestlessFrostberryPreserve
     clone_from: Eyescream
+    food: 24
+    food_stamina: 72
+    food_regen: 2
+    food_minutes: 30
     feeds:
       - peak_runners_supper
     uses:
@@ -257,6 +340,10 @@ items:
     tier: plains
     prefab: RestlessLoxRibRoast
     clone_from: CookedLoxMeat
+    food: 82
+    food_stamina: 27
+    food_regen: 5
+    food_minutes: 30
     feeds:
       - jarls_lox_table
     uses:
@@ -277,6 +364,10 @@ items:
     tier: plains
     prefab: RestlessBarleyRootBake
     clone_from: Bread
+    food: 27
+    food_stamina: 82
+    food_regen: 3
+    food_minutes: 30
     feeds:
       - golden_harvest_board
     uses:
@@ -299,6 +390,11 @@ items:
     tier: mistlands
     prefab: RestlessSapGlazedGardenMedley
     clone_from: Salad
+    food: 32
+    food_stamina: 85
+    food_eitr: 15
+    food_regen: 4
+    food_minutes: 30
     feeds:
       - mistwalkers_garden_table
     uses:
@@ -319,6 +415,11 @@ items:
     tier: mistlands
     prefab: RestlessMagecapTart
     clone_from: MushroomOmelette
+    food: 30
+    food_stamina: 18
+    food_eitr: 90
+    food_regen: 4
+    food_minutes: 30
     feeds:
       - mistwalkers_garden_table
     uses:
@@ -341,6 +442,10 @@ items:
     tier: ashlands
     prefab: RestlessBonemawFiddleheadRoast
     clone_from: CookedBoneMawSerpentMeat
+    food: 110
+    food_stamina: 36
+    food_regen: 7
+    food_minutes: 30
     feeds:
       - emberlords_carving_table
     uses:
@@ -361,6 +466,10 @@ items:
     tier: meadows
     prefab: RestlessHuntersHearthBoard
     clone_from: FeastMeadows
+    food: 55
+    food_stamina: 30
+    food_regen: 3
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessHerbRoastedVenison
@@ -369,8 +478,6 @@ items:
         amount: 2
       - item: CookedMeat
         amount: 2
-      - item: SpiceForests
-        amount: 1
     output_amount: 1
     station: piece_preptable
     station_level: 1
@@ -382,6 +489,10 @@ items:
     tier: meadows
     prefab: RestlessHoneyedForagersTable
     clone_from: FeastMeadows
+    food: 30
+    food_stamina: 55
+    food_regen: 3
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessHoneyedMushrooms
@@ -390,8 +501,6 @@ items:
         amount: 6
       - item: Raspberry
         amount: 8
-      - item: SpiceForests
-        amount: 1
     output_amount: 1
     station: piece_preptable
     station_level: 1
@@ -403,6 +512,10 @@ items:
     tier: blackforest
     prefab: RestlessForestersGameSupper
     clone_from: FeastBlackforest
+    food: 60
+    food_stamina: 35
+    food_regen: 4
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessBearMushroomStew
@@ -413,8 +526,6 @@ items:
         amount: 1
       - item: BoarJerky
         amount: 2
-      - item: SpiceForests
-        amount: 1
     output_amount: 1
     station: piece_preptable
     station_level: 1
@@ -426,6 +537,10 @@ items:
     tier: blackforest
     prefab: RestlessForagersBreakfastBoard
     clone_from: FeastBlackforest
+    food: 35
+    food_stamina: 60
+    food_regen: 3
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessForestRootMedley
@@ -434,8 +549,6 @@ items:
         amount: 2
       - item: QueensJam
         amount: 4
-      - item: SpiceForests
-        amount: 1
     output_amount: 1
     station: piece_preptable
     station_level: 1
@@ -447,6 +560,10 @@ items:
     tier: swamp
     prefab: RestlessCryptkeepersSupper
     clone_from: FeastSwamps
+    food: 70
+    food_stamina: 40
+    food_regen: 4
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessSausageTurnipBake
@@ -468,6 +585,10 @@ items:
     tier: swamp
     prefab: RestlessBogHarvestersTable
     clone_from: FeastSwamps
+    food: 40
+    food_stamina: 70
+    food_regen: 3
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessBogrootMash
@@ -489,6 +610,10 @@ items:
     tier: ocean
     prefab: RestlessLongshipLeviathanSpread
     clone_from: FeastOceans
+    food: 80
+    food_stamina: 45
+    food_regen: 5
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessSerpentSteak
@@ -510,6 +635,10 @@ items:
     tier: ocean
     prefab: RestlessDeckhandsProvision
     clone_from: FeastOceans
+    food: 45
+    food_stamina: 80
+    food_regen: 4
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessPickledCatch
@@ -531,6 +660,10 @@ items:
     tier: mountain
     prefab: RestlessWolfKingsCarvingBoard
     clone_from: FeastMountains
+    food: 85
+    food_stamina: 50
+    food_regen: 5
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessWolfRoast
@@ -552,6 +685,10 @@ items:
     tier: mountain
     prefab: RestlessPeakRunnersSupper
     clone_from: FeastMountains
+    food: 50
+    food_stamina: 85
+    food_regen: 4
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessFrostberryPreserve
@@ -573,6 +710,10 @@ items:
     tier: plains
     prefab: RestlessJarlsLoxTable
     clone_from: FeastPlains
+    food: 95
+    food_stamina: 55
+    food_regen: 6
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessLoxRibRoast
@@ -594,6 +735,10 @@ items:
     tier: plains
     prefab: RestlessGoldenHarvestBoard
     clone_from: FeastPlains
+    food: 55
+    food_stamina: 95
+    food_regen: 5
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessBarleyRootBake
@@ -615,6 +760,11 @@ items:
     tier: mistlands
     prefab: RestlessQueensHuntingTable
     clone_from: FeastMistlands
+    food: 100
+    food_stamina: 55
+    food_eitr: 30
+    food_regen: 6
+    food_minutes: 50
     feeds: []
     uses:
       - item: MisthareSupreme
@@ -636,6 +786,11 @@ items:
     tier: mistlands
     prefab: RestlessMistwalkersGardenTable
     clone_from: FeastMistlands
+    food: 55
+    food_stamina: 100
+    food_eitr: 35
+    food_regen: 5
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessSapGlazedGardenMedley
@@ -657,6 +812,11 @@ items:
     tier: ashlands
     prefab: RestlessEmberlordsCarvingTable
     clone_from: FeastAshlands
+    food: 115
+    food_stamina: 65
+    food_eitr: 35
+    food_regen: 7
+    food_minutes: 50
     feeds: []
     uses:
       - item: RestlessBonemawFiddleheadRoast
@@ -680,6 +840,11 @@ items:
     tier: ashlands
     prefab: RestlessCinderRunnersSpread
     clone_from: FeastAshlands
+    food: 65
+    food_stamina: 115
+    food_eitr: 40
+    food_regen: 6
+    food_minutes: 50
     feeds: []
     uses:
       - item: RoastedCrustPie

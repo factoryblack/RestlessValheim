@@ -106,8 +106,24 @@ public sealed class CraftFromStorage : FeatureModule
         {
             if (__result || !On || discover || recipe?.m_resources == null || __instance != Player.m_localPlayer)
                 return;
+            if (!StationReady(__instance, recipe, qualityLevel))
+                return;
             if (NearbyStorage.HasRequirements(__instance, recipe.m_resources, qualityLevel, amount))
                 __result = true;
+        }
+
+        // Chest stock only covers materials. Vanilla already returned false
+        // when the bench is missing or too low for this quality.
+        private static bool StationReady(Player player, Recipe recipe, int qualityLevel)
+        {
+            if (recipe.m_craftingStation == null)
+                return true;
+            var station = player.GetCurrentCraftingStation();
+            if (station == null || station.m_name != recipe.m_craftingStation.m_name)
+                return false;
+            if (!station.CheckUsable(player, false))
+                return false;
+            return station.GetLevel() >= recipe.GetRequiredStationLevel(qualityLevel);
         }
     }
 }

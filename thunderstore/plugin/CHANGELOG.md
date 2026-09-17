@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.4
+
+- Clear Valheim 1.0 cheated item marks on inventory write, load, and world drops (F8, host-locked)
+- Craft panel keeps vanilla wood when paper-panel art is missing (was a black slab)
+- Minimap other-player pins use a cream diamond with an ink edge
+- Craft-from-chests no longer treats a too-low bench as “have the materials” (upgrades stay gated by station level)
+- Jötunn 2.30.1 (BepInExPack stays 5.4.2350)
+
 ## 0.1.3
 
 - Paper frames on Tab, chests and skills only refit when their bounds move

@@ -18,6 +18,11 @@ if (Test-Path $cookDll) {
     $cookPlugins = Join-Path $valheimPlugins 'RestlessCook'
     New-Item -ItemType Directory -Force -Path $cookPlugins | Out-Null
     Copy-Item $cookDll (Join-Path $cookPlugins 'RestlessCook.dll') -Force
+    $mesh = Join-Path $cookPlugins 'mesh'
+    New-Item -ItemType Directory -Force -Path $mesh | Out-Null
+    Get-ChildItem (Join-Path $root 'art\cook\runtime') -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Extension -in '.rcm', '.png' } |
+        ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
     Write-Host "installed $(Join-Path $cookPlugins 'RestlessCook.dll')"
 }
 Write-Host 'Launch Valheim from Steam. This install already has BepInEx + Jotunn.'

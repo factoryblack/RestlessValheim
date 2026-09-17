@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.1
+
+- Custom meals, feasts, and sideboards use isolated plate icons
+- Custom dishes use the Meshy plate meshes and 1024 albedos
+- Thunderstore readme is the cooking wiki and full recipe matrix
+- Locked v0.1 food stats: vanilla feasts stay balanced, custom feasts split health/stamina, Mistlands+ custom feasts carry eitr, sideboards stay inedible
+- Food meshes unflip Meshy UVs, bleed atlas gutters, and drop leftover vanilla meat/feast gloss
+- Food preparation table and Serving tray become Meadows workbench crafts; Meadows/Black Forest custom feasts drop Woodland Herb Blend
+- Custom feast recipes are taught when known-recipes refresh and when you use the prep table
+- Jötunn 2.30.1 (needs RestlessCore 0.1.3+)
+
 ## 0.1.0
 
 - Meadows through Ashlands cooking graph: 17 meals, 16 feasts, 2 sideboards

@@ -42,19 +42,25 @@ public sealed partial class InventoryScreen
         if (gui.m_recipeRequirementList != null)
             foreach (var requirement in gui.m_recipeRequirementList)
                 if (requirement != null) AddRt(parts, requirement.transform);
-        if (Union(parts, out var x0, out var y0, out var x1, out var y1))
+        if (Kit.Sprite("paper-panel") == null)
+        {
+            DropNamed(craft, "RestlessCraftPaper");
+            if (header != null) DropNamed(header, "paperAccent");
+            if (detail != null) DropNamed(detail, "paperAccent");
+        }
+        else if (Union(parts, out var x0, out var y0, out var x1, out var y1))
         {
             var body = EnsureStrip(craft, "RestlessCraftPaper");
             Place(body.GetComponent<RectTransform>(), x0, y0, x1, y1, 14f, 14f);
             RestlessUi.PaperSurface(body.gameObject);
+            if (header != null)
+            {
+                RestlessUi.PaperSurface(header.gameObject);
+                var rule = header.Find("RestlessPaperRule");
+                if (rule != null) rule.gameObject.SetActive(false);
+            }
+            if (detail != null) RestlessUi.PaperSurface(detail.gameObject);
         }
-        if (header != null)
-        {
-            RestlessUi.PaperSurface(header.gameObject);
-            var rule = header.Find("RestlessPaperRule");
-            if (rule != null) rule.gameObject.SetActive(false);
-        }
-        if (detail != null) RestlessUi.PaperSurface(detail.gameObject);
         DressStructuredRecipe(gui);
         if (gui.m_recipeIcon != null && gui.m_recipeIcon.transform.Find("RestlessPortrait") == null)
         {
@@ -76,7 +82,8 @@ public sealed partial class InventoryScreen
 
         // Replace icon artwork, preserving the native nodes, active states and click targets.
         var navigation = gui.m_info != null ? gui.m_info.Find("RestlessIcons") : null;
-        if (navigation != null) RestlessUi.PaperSurface(navigation.gameObject);
+        if (navigation != null && Kit.Sprite("paper-panel") != null)
+            RestlessUi.PaperSurface(navigation.gameObject);
         if (gui.m_info != null)
             foreach (var name in new[] { "Texts", "Skills", "Trophies", "Achievements", "PVP" })
             {

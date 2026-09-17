@@ -13,7 +13,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.cook";
     public const string PluginName = "RestlessCook";
-    public const string PluginVersion = "0.1.0";
+    public const string PluginVersion = "0.1.1";
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;
@@ -23,8 +23,8 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Log = Logger;
 
-        var rows = CookYaml.LoadEmbedded();
-        RecipeEngine.Load(rows);
-        Log.LogInfo($"{PluginName} {PluginVersion} loaded ({rows.Count} cook.yaml rows).");
+        var book = CookYaml.LoadEmbedded();
+        RecipeEngine.Load(book);
+        Log.LogInfo($"{PluginName} {PluginVersion} loaded ({book.Items.Count} cook.yaml rows, {book.Kit.Count} kit).");
     }
 }

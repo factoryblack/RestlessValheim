@@ -9,8 +9,19 @@ items = []
 cur = None
 use = None
 mode = None
+section = None
 for raw in text.splitlines():
     line = raw.rstrip()
+    if line in ("kit:", "items:"):
+        if cur and section == "items":
+            items.append(cur)
+        cur = None
+        use = None
+        mode = None
+        section = line[:-1]
+        continue
+    if section != "items":
+        continue
     if line.startswith("  - id:"):
         if cur:
             items.append(cur)
@@ -44,7 +55,7 @@ for raw in text.splitlines():
         val = val.strip()
         if len(val) >= 2 and val[0] == val[-1] and val[0] in "\"'":
             val = val[1:-1]
-        if key in ("station_level", "output_amount"):
+        if key in ("station_level", "output_amount", "food", "food_stamina", "food_eitr", "food_regen", "food_minutes"):
             cur[key] = int(val)
         else:
             cur[key] = val
@@ -75,6 +86,20 @@ assert n(lambda i: i["kind"] == "feast" and i["source"] == "custom" and i["opera
 assert n(lambda i: i["kind"] == "sideboard") == 2
 assert n(lambda i: i["kind"] == "meal" and i["operation"] == "reference") == 24
 assert n(lambda i: i["kind"] == "feast" and i["operation"] == "reference") == 6
+for i in items:
+    if i["operation"] == "add" and i["kind"] in ("meal", "feast"):
+        assert i.get("food") or i.get("food_stamina") or i.get("food_eitr"), i["id"]
+        assert i.get("food_minutes", 0) > 0, i["id"]
+        assert i.get("food_regen", 0) > 0, i["id"]
+    if i["kind"] == "sideboard":
+        assert not i.get("food") and not i.get("food_stamina") and not i.get("food_eitr")
+    if (
+        i["kind"] == "feast"
+        and i.get("source") == "custom"
+        and i["operation"] == "add"
+        and i["tier"] in ("meadows", "blackforest")
+    ):
+        assert not any(u["item"] == "SpiceForests" for u in i["uses"]), i["id"]
 
 payload = json.dumps(items, ensure_ascii=False, indent=2)
 
@@ -119,6 +144,11 @@ type Item = {
   prefab: string;
   recipe_id?: string;
   clone_from?: string;
+  food?: number;
+  food_stamina?: number;
+  food_eitr?: number;
+  food_regen?: number;
+  food_minutes?: number;
   feeds: string[];
   uses: Use[];
   output_amount: number;
@@ -185,6 +215,13 @@ function feastPath(start: Item): boolean {
 
 function usesLine(i: Item) {
   return i.uses.map((u) => `${u.amount} ${u.item}`).join(" + ");
+}
+
+function statsLine(i: Item) {
+  if (i.kind === "sideboard") return "not edible";
+  if (i.food == null && i.food_stamina == null) return "vanilla";
+  const eitr = i.food_eitr ? `/${i.food_eitr}` : "";
+  return `${i.food ?? 0}/${i.food_stamina ?? 0}${eitr} · ${i.food_regen ?? 0} · ${i.food_minutes ?? 0}m`;
 }
 
 function Graph({ rows }: { rows: Item[] }) {
@@ -311,8 +348,11 @@ export default function RestlessCookGraph() {
 
       <Callout tone="info" title="v0.1 lock">
         17 custom meals, 16 custom feasts, 2 sideboards, 14 cooked-first
-        rewrites, 2 vanilla feast reroutes. Deep North waits. Vanilla spices
-        stay vanilla. Magecap Tart sits on Mistwalker&apos;s Garden Table.
+        rewrites, 2 vanilla feast reroutes. The vanilla prep table and
+        serving tray are Meadows workbench crafts. Meadows/Black Forest
+        custom feasts drop Bog Witch spices. Vanilla feast stays balanced;
+        custom A is health, custom B is stamina. Mistlands+ custom feasts
+        also carry eitr. Sideboards are not edible. Deep North waits.
       </Callout>
 
       <Row gap={12} wrap>
@@ -384,7 +424,7 @@ export default function RestlessCookGraph() {
       <Table
         striped
         stickyHeader
-        headers={["Dish", "Kind", "Op", "Tier", "Feeds", "Uses"]}
+        headers={["Dish", "Kind", "Op", "Tier", "Stats", "Feeds", "Uses"]}
         rows={filtered.map((i) => [
           <Stack gap={2} key={i.id + "-n"}>
             <Text weight="semibold" as="span">
@@ -402,6 +442,9 @@ export default function RestlessCookGraph() {
           </Pill>,
           <Text size="small" as="span">
             {TIER[i.tier]}
+          </Text>,
+          <Text size="small" as="span">
+            {statsLine(i)}
           </Text>,
           <Text size="small" tone="secondary" as="span">
             {i.feeds.length ? i.feeds.map((f) => BY_ID[f]?.name ?? f).join(", ") : "—"}

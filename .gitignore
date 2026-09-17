@@ -14,3 +14,4 @@ Environment.props
 !thunderstore/**/*.dll
 .DS_Store
 Thumbs.db
+art/cook/mesh/*.fbx

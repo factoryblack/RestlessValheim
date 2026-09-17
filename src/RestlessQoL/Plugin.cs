@@ -20,7 +20,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.core";
     public const string PluginName = "RestlessCore";
-    public const string PluginVersion = "0.1.3";
+    public const string PluginVersion = "0.1.4";
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;
@@ -44,6 +44,7 @@ public class Plugin : BaseUnityPlugin
         new AxeCombo(),
         new AutoRepair(),
         new StackSizes(),
+        new HonestItems(),
         new EternalFire(),
         new DigDeeper(),
         new NetworkUncap(),

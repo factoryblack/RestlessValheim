@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-17 — Upgrade from Z/X/C parks the new piece in the bag, not the extra row.
+# last_audit: 2026-09-17 — MyLittleUI is skip. Timers/multicraft are not coming back as a sidecar.
 
-updated: 2026-09-16
+updated: 2026-09-17
 
 items:
   # --- loader ---
@@ -377,14 +377,6 @@ items:
     restless: Azumatt-AzuMiscPatches
     note: "Candidate, not promised. Stack multiplier is inventory.stack_size. Left in the 1.2.8 bag: longer/no-degrade food, weight multipliers, portal-item teleport, portal name length, mute-in-background, hide 'I have arrived', build in protected zones, ignore piece spacing, skip tuts, honey rate. Most of that is still balance."
 
-  # --- optional sidecars (not the pack) ---
-  - id: ui.mylittleui
-    name: Timers, multicraft, chest names, craft search
-    decision: sidecar
-    in_mod: n/a
-    restless: shudnal-MyLittleUI
-    note: "Optional HUD product. 1.2.16 is 1.0-day. Needs shudnal-ConditionalConfigSync 1.0.5. Do not rewrite timers/multicraft in our DLL unless you drop this sidecar. Conflicts with BetterUI / MinimalUI."
-
   - id: inventory.slot_lock
     name: Middle-click lock slots
     decision: dll
@@ -501,6 +493,13 @@ items:
     in_mod: n/a
     restless: OdinPlus-CraftyCartsRemake
     note: "Vehicles / content."
+
+  - id: skip.mylittleui
+    name: Timers, multicraft, chest names, craft search
+    decision: skip
+    in_mod: n/a
+    restless: shudnal-MyLittleUI
+    note: "Gone. Not a sidecar. Do not pull MyLittleUI and do not rewrite timers/multicraft/chest names in this DLL."
 
   - id: skip.ui_overhaul
     name: BetterUI / MinimalUI / Auga / ValheimPlus

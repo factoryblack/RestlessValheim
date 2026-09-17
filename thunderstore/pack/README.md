@@ -1,9 +1,5 @@
 # RestlessCorePack
 
-BepInEx + Jötunn + RestlessCore. That is the whole pack.
+RestlessCore with BepInEx and Jötunn already on the list. One install: nearby storage, extra slots, host-locked F8 settings, and the Restless interface as it stands.
 
-Fires, dig depth, extra slots, nearby-chest QoL, and the in-progress HUD live **in the plugin**. They are not extra Thunderstore deps.
-
-Do **not** also install ValheimPlus, BetterUI, MinimalUI, Auga, AzuCraftyBoxes, EquipmentAndQuickSlots, or PlanBuild.
-
-Optional MyLittleUI is still listed in the repo `catalogue.yaml` if you want timers / multicraft. It is not pulled in automatically.
+The HUD and inventory look are still landing. See the RestlessCore page for what is in this version.

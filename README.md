@@ -2,7 +2,7 @@
 
 Valheim 1.0 quality-of-life core for Restless. One plugin, isolated Harmony modules, host-locked config.
 
-This is **not** the old 60-mod `RestlessQOL` 1.0.7 pack. The master list of what is in the DLL, planned, optional, or skipped is [`catalogue.yaml`](catalogue.yaml).
+The master list of what is in the DLL, planned, optional, or skipped is [`catalogue.yaml`](catalogue.yaml).
 
 ## Layout
 
@@ -17,13 +17,11 @@ thunderstore/pack/        Optional one-click install of BepInEx + Jötunn + this
 
 Enabled by default; each feature can fail without taking the others down. The live list is [`catalogue.yaml`](catalogue.yaml). Player-facing copy lives in [`thunderstore/plugin/README.md`](thunderstore/plugin/README.md).
 
-HUD, inventory, tooltips, crafting, and settings chrome are **in this DLL** and mid-migration — vanilla and Restless currently mix. Extra worn + Z/X/C slots are in the DLL; do not install EquipmentAndQuickSlots. MyLittleUI is still the only optional sidecar (timers / multicraft). PlanBuild, Auga, and ValheimPlus are skip.
+HUD, inventory, tooltips, crafting, and settings chrome are **in this DLL** and still landing — vanilla and Restless currently mix.
 
 ## Pack v0.1
 
-BepInEx + Jötunn + this DLL. Not a 60-mod stack.
-
-Do **not** also install ValheimPlus, BetterUI, MinimalUI, or AzuCraftyBoxes next to this. They patch the same inventory/build methods.
+BepInEx + Jötunn + this DLL. One-click install of RestlessCore.
 
 ## Build
 
@@ -43,7 +41,7 @@ powershell -File scripts/pack.ps1                # zip artifacts/ for Thundersto
 
 This Steam folder is already BepInEx-patched. Launch from Steam, not a vanilla shortcut.
 
-Until the first tag ships, r2modman: BepInEx + Jötunn online, then Import local `artifacts/Restless-RestlessCore-0.1.0.zip`. The pack zip only works after the plugin itself is on Thunderstore.
+r2modman: BepInEx + Jötunn, then Import local `artifacts/Restless-RestlessCore-0.1.1.zip` from `scripts/pack.ps1`.
 
 ## GitHub Actions
 

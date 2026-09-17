@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Listing describes this pack only
+
 ## 0.1.0
 
-First public pack: BepInEx, Jötunn, and RestlessCore only. Not the old RestlessQOL 1.0.7 stack.
+- RestlessCore with BepInEx and Jötunn

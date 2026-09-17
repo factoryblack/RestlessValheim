@@ -37,8 +37,7 @@ Write-Host '  8. Swim with a weapon out; empty a tombstone (death pin goes); bal
 Write-Host '  9. Chop trees with an axe (combo should keep); load a crossbow, swap off, swap back'
 Write-Host ''
 Write-Host 'r2modman: install BepInEx + Jotunn from Thunderstore, then Import local'
-Write-Host '  artifacts\Restless-RestlessCore-0.1.0.zip  (run scripts\pack.ps1 first)'
-Write-Host 'Do not also install ValheimPlus, BetterUI, MinimalUI, or AzuCraftyBoxes.'
+Write-Host '  artifacts\Restless-RestlessCore-0.1.1.zip  (run scripts\pack.ps1 first)'
 
 if ($Launch) {
     Start-Process 'steam://rungameid/892970'

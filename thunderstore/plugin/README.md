@@ -1,10 +1,8 @@
 # RestlessCore
 
-One Valheim 1.0 QoL plugin for Restless. Isolated Harmony modules. Gameplay config is **host-locked** (Jötunn). Open **F8** in-game, or Restless from the pause menu.
+Valheim 1.0 quality of life for Restless. Gameplay config is **host-locked**. Open **F8** in-game, or Restless from the pause menu.
 
-Requires **BepInExPack 5.4.2350** and **Jötunn 2.30.0**.
-
-This is not the old 60-mod RestlessQOL pack.
+Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.0**.
 
 ## Storage and stations
 
@@ -27,16 +25,10 @@ This is not the old 60-mod RestlessQOL pack.
 - Hoe dig/raise cap is 20 m
 - Most drops float (nails still sink)
 - Stack-size multiplier (default 2×; gear stays 1)
-- Extra worn slots plus Z / X / C quick slots (do **not** also install EquipmentAndQuickSlots)
+- Extra worn slots plus Z / X / C quick slots
 
-## Interface (work in progress)
+## Interface
 
-HUD, inventory, tooltips, crafting, map chrome, and settings are **in this DLL**, not a sidecar. They are mid-migration: some surfaces use the Restless kit, others are still vanilla or a mix of the two. Expect unfinished edges, especially Tab, inspect, and crafting.
+HUD, inventory, tooltips, crafting, map chrome, and settings ship in this plugin. The look is still landing: some surfaces use the Restless kit, others are still vanilla or a mix. Tab, inspect, and crafting are the roughest.
 
 F8 toggles the Restless pieces. Vanilla Settings is unchanged.
-
-## Do not install beside this
-
-ValheimPlus, BetterUI, MinimalUI, Auga, AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks, EquipmentAndQuickSlots.
-
-Optional **MyLittleUI** is still a separate product if you want timers / multicraft / chest names. It is not this plugin.

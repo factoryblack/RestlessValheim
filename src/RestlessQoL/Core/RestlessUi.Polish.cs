@@ -20,6 +20,7 @@ internal static partial class RestlessUi
     public static void PortraitFrame(GameObject target)
     {
         var image = target.GetComponent<Image>();
+        if (image == null) return;
         image.sprite = Kit.Sprite("portrait-frame");
         image.type = Image.Type.Simple;
         image.preserveAspect = true;

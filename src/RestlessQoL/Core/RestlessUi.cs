@@ -616,11 +616,34 @@ internal static partial class RestlessUi
 
     // Chip + Averia on a vanilla Button. Caller ghosts the wood. Title from
     // ButtonCopy when the live label exists, else the fallback.
+    private sealed class ChipLayout
+    {
+        public bool Added;
+        public float MinW, PrefW, MinH, PrefH, FlexW, FlexH;
+        public bool Ignore;
+    }
+
+    private static readonly Dictionary<Button, ChipLayout> ChipLayouts = new();
+
     public static GameObject ChipButton(Button button, string title, bool lit, Vector2? size = null)
     {
         var pin = ButtonSize(button, size);
         var hold = button.GetComponent<LayoutElement>();
-        if (hold == null)
+        if (!ChipLayouts.ContainsKey(button))
+        {
+            ChipLayouts[button] = hold == null
+                ? new ChipLayout { Added = true }
+                : new ChipLayout
+                {
+                    MinW = hold.minWidth, PrefW = hold.preferredWidth,
+                    MinH = hold.minHeight, PrefH = hold.preferredHeight,
+                    FlexW = hold.flexibleWidth, FlexH = hold.flexibleHeight,
+                    Ignore = hold.ignoreLayout
+                };
+            if (hold == null)
+                hold = button.gameObject.AddComponent<LayoutElement>();
+        }
+        else if (hold == null)
             hold = button.gameObject.AddComponent<LayoutElement>();
         hold.minWidth = hold.preferredWidth = pin.x;
         hold.minHeight = hold.preferredHeight = pin.y;
@@ -655,6 +678,29 @@ internal static partial class RestlessUi
         }
 
         return chip.gameObject;
+    }
+
+    public static void RestoreChipLayouts()
+    {
+        foreach (var pair in ChipLayouts)
+        {
+            if (pair.Key == null) continue;
+            var hold = pair.Key.GetComponent<LayoutElement>();
+            if (hold == null) continue;
+            if (pair.Value.Added)
+                UnityEngine.Object.Destroy(hold);
+            else
+            {
+                hold.minWidth = pair.Value.MinW;
+                hold.preferredWidth = pair.Value.PrefW;
+                hold.minHeight = pair.Value.MinH;
+                hold.preferredHeight = pair.Value.PrefH;
+                hold.flexibleWidth = pair.Value.FlexW;
+                hold.flexibleHeight = pair.Value.FlexH;
+                hold.ignoreLayout = pair.Value.Ignore;
+            }
+        }
+        ChipLayouts.Clear();
     }
 
     public static Vector2 ButtonSize(Button button, Vector2? preferred = null)

@@ -1,9 +1,14 @@
 # Changelog
 
+## 0.1.3
+
+- Pack icon is the original stone rune R
+- Installs RestlessCore 0.1.3 and RestlessCook 0.1.0 with BepInEx and Jötunn
+
 ## 0.1.2
 
 - Relisted as a Valheim **modpack** (Modpacks category), not a standalone mod
-- Pack icon is the stone R
+- Pack icon is the existing stone rune R (not a new mark)
 - Installs RestlessCore 0.1.2 and RestlessCook 0.1.0 with BepInEx and Jötunn
 
 ## 0.1.1

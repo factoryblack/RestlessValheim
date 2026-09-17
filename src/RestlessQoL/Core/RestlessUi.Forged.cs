@@ -9,6 +9,7 @@ internal static partial class RestlessUi
     public static void ForgedSurface(GameObject target, bool action = false, bool interactive = false)
     {
         var image = target.GetComponent<Image>();
+        if (image == null) return;
         image.sprite = Kit.Sprite(action ? "forged-action" : "forged-badge",
             action ? new Vector4(80f, 20f, 80f, 20f) : new Vector4(52f, 14f, 52f, 14f));
         image.type = Image.Type.Sliced;
@@ -23,6 +24,7 @@ internal static partial class RestlessUi
     public static void ForgedTab(GameObject target, bool selected)
     {
         var image = target.GetComponent<Image>();
+        if (image == null) return;
         image.sprite = Kit.Sprite("category-strip", new Vector4(64f, 12f, 64f, 12f));
         image.type = Image.Type.Sliced;
         image.pixelsPerUnitMultiplier = 3f;
@@ -44,19 +46,35 @@ internal static partial class RestlessUi
         var count = Mathf.Min(Mathf.Max(0, quality), Mathf.Max(0, Mathf.FloorToInt(space / 18f)));
         for (var i = 0; i < count; i++)
         {
-            var gem = Picture(parent, "qualityGem-" + i, "quality-lozenge");
+            var name = "qualityGem-" + i;
+            var gem = parent.Find(name)?.gameObject ?? Picture(parent, name, "quality-lozenge");
+            gem.SetActive(true);
             gem.GetComponent<Image>().sprite = QualityLozenge();
             Pin(gem, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
                 new Vector2(i * 18f, 0f), new Vector2(14f, 20f));
             gem.GetComponent<Image>().raycastTarget = false;
         }
-        // Large mod levels must not silently look like a lower level.
+        for (var i = parent.childCount - 1; i >= 0; i--)
+        {
+            var child = parent.GetChild(i);
+            if (!child.name.StartsWith("qualityGem-")) continue;
+            if (!int.TryParse(child.name.Substring("qualityGem-".Length), out var index) || index >= count)
+                UnityEngine.Object.Destroy(child.gameObject);
+        }
+        var extra = parent.Find("qualityOverflow");
         if (quality > count)
         {
-            var overflow = Label(parent, "+" + (quality - count), HudMeta, Accent, TextAnchor.MiddleLeft);
+            var overflow = extra != null ? extra.GetComponent<Text>() : null;
+            if (overflow == null)
+                overflow = Label(parent, "", HudMeta, Accent, TextAnchor.MiddleLeft);
+            overflow.gameObject.name = "qualityOverflow";
+            overflow.gameObject.SetActive(true);
+            overflow.text = "+" + (quality - count);
             Pin(overflow.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
                 new Vector2(count * 18f, 0f), new Vector2(32f, 20f));
         }
+        else if (extra != null)
+            extra.gameObject.SetActive(false);
         return count * 18f + (quality > count ? 32f : 0f);
     }
 

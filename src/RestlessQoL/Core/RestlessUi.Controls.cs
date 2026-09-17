@@ -20,7 +20,8 @@ internal static partial class RestlessUi
     public static void PaperControl(GameObject target, Color? accent = null)
     {
         PaperSurface(target, small: true, accent: accent);
-        target.GetComponent<Image>().raycastTarget = true;
+        var image = target.GetComponent<Image>();
+        if (image != null) image.raycastTarget = true;
     }
 
     public static void PaperSelectable(Selectable control)

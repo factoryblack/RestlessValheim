@@ -101,7 +101,8 @@ internal static partial class RestlessUi
     public static void InventorySurface(GameObject target)
     {
         PaperSurface(target);
-        target.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.82f);
+        var image = target.GetComponent<Image>();
+        if (image != null) image.color = new Color(1f, 1f, 1f, 0.82f);
     }
 }
 

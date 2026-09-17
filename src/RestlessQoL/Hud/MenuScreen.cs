@@ -489,6 +489,7 @@ public sealed class MenuScreen : FeatureModule
 
     private static void Undress(Menu menu)
     {
+        RestlessUi.RestoreChipLayouts();
         foreach (var go in Ours)
         {
             if (go != null)
@@ -560,6 +561,7 @@ public sealed class MenuScreen : FeatureModule
             Hidden.Clear();
             Ghosted.Clear();
             Readouts.Clear();
+            RestlessUi.RestoreChipLayouts();
             _dressed = false;
         }
     }

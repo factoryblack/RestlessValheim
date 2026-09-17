@@ -1,12 +1,12 @@
 {
   "name": "RestlessCorePack",
-  "version_number": "0.1.2",
+  "version_number": "0.1.3",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "Modpack: BepInEx, Jötunn, RestlessCore, and RestlessCook. Nearby storage, extra slots, host-locked F8, and Meadows through Ashlands cooking.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "ValheimModding-Jotunn-2.30.0",
-    "Restless-RestlessCore-0.1.2",
+    "Restless-RestlessCore-0.1.3",
     "Restless-RestlessCook-0.1.0"
   ]
 }

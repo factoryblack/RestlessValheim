@@ -22,7 +22,7 @@ $log = Join-Path $valheim 'BepInEx\LogOutput.log'
 Write-Host ''
 Write-Host 'Launch Valheim from Steam (this folder is already BepInEx-patched).'
 Write-Host 'After the main menu, confirm BepInEx\LogOutput.log has:'
-Write-Host '  RestlessCore 0.1.2 loaded'
+Write-Host '  RestlessCore 0.1.3 loaded'
 Write-Host "  $log"
 Write-Host ''
 Write-Host 'Hotkeys: ` = quick stack, Shift+` = restock'
@@ -40,7 +40,7 @@ Write-Host '  8. Swim with a weapon out; empty a tombstone (death pin goes); bal
 Write-Host '  9. Chop trees with an axe (combo should keep); load a crossbow, swap off, swap back'
 Write-Host ''
 Write-Host 'r2modman: install BepInEx + Jotunn from Thunderstore, then Import local'
-Write-Host '  artifacts\Restless-RestlessCore-0.1.2.zip  (run scripts\pack.ps1 first)'
+Write-Host '  artifacts\Restless-RestlessCore-0.1.3.zip  (run scripts\pack.ps1 first)'
 
 if ($Launch) {
     Start-Process 'steam://rungameid/892970'

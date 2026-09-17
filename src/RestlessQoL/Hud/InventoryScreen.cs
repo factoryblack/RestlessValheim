@@ -25,6 +25,9 @@ public sealed partial class InventoryScreen : FeatureModule
     private static bool _dressed;
     private static bool _dumped;
     private static int _syncStamp;
+    private static float _invL = float.NaN, _invB, _invR, _invT;
+    private static float _chestL = float.NaN, _chestB, _chestR, _chestT;
+    private static float _skillL = float.NaN, _skillB, _skillR, _skillT;
 
     private sealed class Readout
     {
@@ -85,6 +88,7 @@ public sealed partial class InventoryScreen : FeatureModule
         private static void AfterShow(InventoryGui __instance)
         {
             _syncStamp = int.MinValue;
+            ResetPaperFrames();
             DumpOnce(__instance);
         }
 
@@ -1837,6 +1841,8 @@ public sealed partial class InventoryScreen : FeatureModule
     private static void Undress(InventoryGui gui)
     {
         RestoreCraftControls();
+        RestlessUi.RestoreChipLayouts();
+        ResetPaperFrames();
         foreach (var go in Ours)
         {
             if (go != null)
@@ -1879,6 +1885,26 @@ public sealed partial class InventoryScreen : FeatureModule
         _syncStamp = 0;
     }
 
+    private static bool FrameMoved(ref float left, ref float bottom, ref float right, ref float top,
+        float nextLeft, float nextBottom, float nextRight, float nextTop)
+    {
+        if (!float.IsNaN(left)
+            && Mathf.Abs(left - nextLeft) < 0.5f && Mathf.Abs(bottom - nextBottom) < 0.5f
+            && Mathf.Abs(right - nextRight) < 0.5f && Mathf.Abs(top - nextTop) < 0.5f)
+            return false;
+        left = nextLeft;
+        bottom = nextBottom;
+        right = nextRight;
+        top = nextTop;
+        return true;
+    }
+
+    private static void ResetPaperFrames()
+    {
+        _invL = _chestL = _skillL = float.NaN;
+        _containerPaper = null;
+    }
+
     private static void TearDown()
     {
         var gui = InventoryGui.instance;
@@ -1887,6 +1913,8 @@ public sealed partial class InventoryScreen : FeatureModule
         else
         {
             RestoreCraftControls();
+            RestlessUi.RestoreChipLayouts();
+            ResetPaperFrames();
             foreach (var go in Ours)
             {
                 if (go != null)

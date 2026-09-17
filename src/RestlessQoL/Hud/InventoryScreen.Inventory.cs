@@ -36,8 +36,11 @@ public sealed partial class InventoryScreen
         var hasExtras = Union(extras, out var extraLeft, out _, out var extraRight, out _);
         if (hasExtras) fullRight = Mathf.Max(fullRight, extraRight);
         var panel = EnsureStrip(gui.m_player, "RestlessInventoryPaper");
-        Place(panel.GetComponent<RectTransform>(), left, bottom, fullRight, top, 10f, 10f, false);
-        RestlessUi.InventorySurface(panel.gameObject);
+        if (FrameMoved(ref _invL, ref _invB, ref _invR, ref _invT, left, bottom, fullRight, top))
+        {
+            Place(panel.GetComponent<RectTransform>(), left, bottom, fullRight, top, 10f, 10f, false);
+            RestlessUi.InventorySurface(panel.gameObject);
+        }
         // Plain rules use the existing gaps. No new header, rune or corner decoration.
         var split = InventoryRule(panel, "RestlessEquipmentRule");
         split.gameObject.SetActive(hasExtras);

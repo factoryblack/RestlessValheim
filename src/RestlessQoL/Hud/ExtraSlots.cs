@@ -31,6 +31,7 @@ public sealed class ExtraSlots : FeatureModule
     private static readonly List<Behaviour> Hidden = new();
     private static readonly HashSet<GameObject> Ours = new();
     private static readonly long[] ExtraPaint = new long[ExtraCount];
+    private static readonly long[] HudPaint = new long[3];
     private static readonly ItemDrop.ItemData.ItemType[,] Worn =
     {
         { ItemDrop.ItemData.ItemType.Helmet, ItemDrop.ItemData.ItemType.Shoulder },
@@ -1565,7 +1566,13 @@ public sealed class ExtraSlots : FeatureModule
                 cell.Icon.color = Color.white;
             }
 
-            RestlessUi.DressSlot(cell.Go, cell.Icon, lit, item, Hidden, false, SlotLock.Held(pos));
+            var locked = SlotLock.Held(pos);
+            var sig = PaintSig(item, lit, locked);
+            if (HudPaint[i] != sig || cell.Go.transform.Find("RestlessSlot") == null)
+            {
+                HudPaint[i] = sig;
+                RestlessUi.DressSlot(cell.Go, cell.Icon, lit, item, Hidden, false, locked);
+            }
             var dressed = cell.Go.transform.Find("RestlessSlot") as RectTransform;
             if (dressed != null)
             {
@@ -1644,6 +1651,7 @@ public sealed class ExtraSlots : FeatureModule
 
         Hidden.Clear();
         Array.Clear(ExtraPaint, 0, ExtraPaint.Length);
+        Array.Clear(HudPaint, 0, HudPaint.Length);
         _slotRoot = null;
         _hiddenRoot = null;
         _hud = null;

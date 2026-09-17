@@ -17,6 +17,16 @@ internal static partial class RestlessUi
         var sprite = Kit.Sprite(name, border);
         if (sprite == null) return; // Existing kit remains the missing-asset fallback.
         var image = target.GetComponent<Image>();
+        if (image == null) return;
+        var rim = target.transform.Find("paperAccent")?.gameObject;
+        var overlayColor = accent ?? new Color(0.18f, 0.16f, 0.13f, 0.88f);
+        if (image.sprite == sprite && image.type == Image.Type.Tiled && rim != null)
+        {
+            var live = rim.GetComponent<Image>();
+            if (live != null) live.color = overlayColor;
+            return;
+        }
+
         image.sprite = sprite;
         image.color = Color.white; // Material already contains its charcoal colour.
         image.type = Image.Type.Tiled;
@@ -24,7 +34,6 @@ internal static partial class RestlessUi
         image.raycastTarget = false;
         Rim(target, on: false);
 
-        var rim = target.transform.Find("paperAccent")?.gameObject;
         if (rim == null) rim = Graphic(target.transform, "paperAccent", Color.white, false);
         Stretch(rim, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var overlay = rim.GetComponent<Image>();
@@ -32,13 +41,14 @@ internal static partial class RestlessUi
         overlay.type = Image.Type.Tiled;
         overlay.pixelsPerUnitMultiplier = 1f;
         // Cover the baked gold edge on idle surfaces; reserve amber for emphasis.
-        overlay.color = accent ?? new Color(0.18f, 0.16f, 0.13f, 0.88f);
+        overlay.color = overlayColor;
         overlay.raycastTarget = false;
     }
 
     public static void PaperCorner(GameObject panel)
     {
-        var corner = Graphic(panel.transform, "paperCorner", Color.white, false);
+        var corner = panel.transform.Find("paperCorner")?.gameObject
+            ?? Graphic(panel.transform, "paperCorner", Color.white, false);
         var image = corner.GetComponent<Image>();
         image.sprite = Kit.Sprite("corner-overlay");
         if (image.sprite == null) { corner.SetActive(false); return; }
@@ -46,7 +56,8 @@ internal static partial class RestlessUi
         Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(112f, 112f));
         // Decoration behind all text; title layout reserves space on the right.
         corner.transform.SetAsFirstSibling();
-        var tree = Graphic(corner.transform, "emblem", new Color(1f, 1f, 1f, 0.8f), false);
+        var tree = corner.transform.Find("emblem")?.gameObject
+            ?? Graphic(corner.transform, "emblem", new Color(1f, 1f, 1f, 0.8f), false);
         tree.GetComponent<Image>().sprite = Kit.Sprite("pine-emblem");
         tree.GetComponent<Image>().preserveAspect = true;
         Pin(tree, Vector2.one, Vector2.one, new Vector2(-13f, -14f), new Vector2(16f, 48f));
@@ -59,13 +70,16 @@ internal static partial class RestlessUi
     public static void PaperDivider(GameObject row)
     {
         var tint = new Color(0.58f, 0.46f, 0.30f, 0.55f);
-        var left = Graphic(row.transform, "left", tint, false);
+        var left = row.transform.Find("left")?.gameObject
+            ?? Graphic(row.transform, "left", tint, false);
         Stretch(left, new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f),
             new Vector2(0f, -0.5f), new Vector2(-14f, 0.5f));
-        var right = Graphic(row.transform, "right", tint, false);
+        var right = row.transform.Find("right")?.gameObject
+            ?? Graphic(row.transform, "right", tint, false);
         Stretch(right, new Vector2(0.5f, 0.5f), new Vector2(1f, 0.5f),
             new Vector2(14f, -0.5f), new Vector2(0f, 0.5f));
-        var knot = Graphic(row.transform, "knot", tint, false);
+        var knot = row.transform.Find("knot")?.gameObject
+            ?? Graphic(row.transform, "knot", tint, false);
         knot.GetComponent<Image>().sprite = CastKnot();
         knot.GetComponent<Image>().color = new Color(1f, 1f, 1f, 0.75f);
         knot.GetComponent<Image>().preserveAspect = true;

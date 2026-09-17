@@ -24,11 +24,11 @@ HUD, inventory, tooltips, crafting, and settings chrome are **in this DLL** and 
 
 ## Cook v0.1
 
-Second plugin, hard-depends on Core. Recipe graph is [`cook.yaml`](cook.yaml). Ships with Core on a `v*` tag, or alone on `cook-v*`.
+Second plugin, hard-depends on Core. Recipe graph is [`cook.yaml`](cook.yaml). Tag `cook-v*` to ship it. A Core `v*` tag does not republish Cook.
 
 ## Pack v0.1
 
-A Thunderstore **modpack** (not a plugin). One-click install of BepInEx + Jötunn + RestlessCore + RestlessCook. The listing uses the stone R icon.
+A Thunderstore **modpack** (not a plugin). One-click install of BepInEx + Jötunn + RestlessCore + RestlessCook. The listing uses the original stone rune R.
 
 ## Build
 
@@ -49,17 +49,17 @@ powershell -File scripts/pack.ps1                # zip artifacts/ for Thundersto
 
 This Steam folder is already BepInEx-patched. Launch from Steam, not a vanilla shortcut.
 
-r2modman: install the **RestlessCorePack** modpack, or BepInEx + Jötunn then Import local `artifacts/Restless-RestlessCore-0.1.2.zip` from `scripts/pack.ps1`.
+r2modman: install the **RestlessCorePack** modpack, or BepInEx + Jötunn then Import local `artifacts/Restless-RestlessCore-0.1.3.zip` from `scripts/pack.ps1`.
 
 ## GitHub Actions
 
 Pushes and pull requests compile Release `RestlessCore.dll` and `RestlessCook.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2350`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
 
-A tag named `v*` ships **RestlessCore**, **RestlessCook**, and the **RestlessCorePack** modpack. A tag named `cook-v*` ships **RestlessCook** only.
+A tag named `v*` ships **RestlessCore** and the **RestlessCorePack** modpack. A tag named `cook-v*` ships **RestlessCook** only.
 
 ```
-git tag v0.1.2
-git push origin v0.1.2
+git tag v0.1.3
+git push origin v0.1.3
 
 git tag cook-v0.1.0
 git push origin cook-v0.1.0

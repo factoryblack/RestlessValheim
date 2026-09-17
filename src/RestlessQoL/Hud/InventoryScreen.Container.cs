@@ -82,17 +82,21 @@ public sealed partial class InventoryScreen
         _containerPaper = panel.gameObject;
         _containerPaper.SetActive(true);
         var sy = Mathf.Max(0.01f, Mathf.Abs(panel.lossyScale.y));
-        Place(panel.GetComponent<RectTransform>(), left, bottom - 24f * sy, right, top, 10f, 10f, false);
-        RestlessUi.InventorySurface(panel.gameObject);
+        var frameBottom = bottom - 24f * sy;
+        if (FrameMoved(ref _chestL, ref _chestB, ref _chestR, ref _chestT, left, frameBottom, right, top))
+        {
+            Place(panel.GetComponent<RectTransform>(), left, frameBottom, right, top, 10f, 10f, false);
+            RestlessUi.InventorySurface(panel.gameObject);
+        }
         var capacity = panel.Find("RestlessCapacity")?.GetComponent<Text>();
         if (capacity == null)
         {
             capacity = RestlessUi.Label(panel, "", RestlessUi.HintSize, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
             capacity.name = "RestlessCapacity";
+            RestlessUi.Stretch(capacity.gameObject, Vector2.zero, new Vector2(1f, 0f),
+                new Vector2(16f, 8f), new Vector2(-16f, 30f));
         }
-        RestlessUi.Stretch(capacity.gameObject, Vector2.zero, new Vector2(1f, 0f),
-            new Vector2(16f, 8f), new Vector2(-16f, 30f));
         RestlessUi.BoundedLabel(capacity, RestlessUi.HintSize, RestlessUi.HudMeta);
-        capacity.text = inv.GetAllItems().Count + " / " + (inv.GetWidth() * inv.GetHeight()) + " slots";
+        capacity.text = inv.NrOfItems() + " / " + (inv.GetWidth() * inv.GetHeight()) + " slots";
     }
 }

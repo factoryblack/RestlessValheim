@@ -48,7 +48,8 @@ public sealed partial class InventoryScreen
             BindCraftControl(button, chip.GetComponent<Image>(), face, false);
         }
         // Fit the viewport, not scrolling content, so the frame stays still while scrolling.
-        if (scroll != null && Union(parts, out var x0, out var y0, out var x1, out var y1))
+        if (scroll != null && Union(parts, out var x0, out var y0, out var x1, out var y1)
+            && FrameMoved(ref _skillL, ref _skillB, ref _skillR, ref _skillT, x0, y0, x1, y1))
         {
             var panel = EnsureStrip(dialog.transform, "RestlessSkillsPaper");
             Place(panel.GetComponent<RectTransform>(), x0, y0, x1, y1, 20f, 16f, false);
@@ -60,7 +61,8 @@ public sealed partial class InventoryScreen
             if (!IsListRow(row, dialog.m_listRoot, dialog.m_elementPrefab)) continue;
             var plate = row.Find("RestlessSlot");
             if (plate == null) continue;
-            RestlessUi.PaperControl(plate.gameObject);
+            if (plate.Find("paperAccent") == null)
+                RestlessUi.PaperControl(plate.gameObject);
             var name = plate.Find("label")?.GetComponent<Text>();
             if (name != null)
             {

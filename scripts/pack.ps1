@@ -30,7 +30,7 @@ function Zip-Dir([string]$name, [scriptblock]$stage) {
     Write-Host "wrote $zip"
 }
 
-Zip-Dir 'Restless-RestlessCore-0.1.2' {
+Zip-Dir 'Restless-RestlessCore-0.1.3' {
     param($d)
     Copy-Item $dll $d
     Copy-Item (Join-Path $root 'thunderstore\plugin\manifest.json') $d
@@ -42,7 +42,7 @@ Zip-Dir 'Restless-RestlessCore-0.1.2' {
 $packIcon = Join-Path $root 'thunderstore\pack\icon.png'
 if (-not (Test-Path $packIcon)) { throw "missing thunderstore/pack/icon.png (256x256 PNG)" }
 
-Zip-Dir 'Restless-RestlessCorePack-0.1.2' {
+Zip-Dir 'Restless-RestlessCorePack-0.1.3' {
     param($d)
     Copy-Item (Join-Path $root 'thunderstore\pack\manifest.json') $d
     Copy-Item (Join-Path $root 'thunderstore\pack\README.md') $d

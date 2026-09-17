@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Paper frames on Tab, chests and skills only refit when their bounds move
+- Chip buttons restore native layout on undress; HUD extra slots no longer re-dress every frame
+
 ## 0.1.2
 
 - Recipe rows show have/need, including nearby chests

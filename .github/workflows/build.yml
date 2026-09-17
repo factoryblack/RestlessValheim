@@ -1,0 +1,162 @@
+# Compile on every PR / push. Ship GitHub + Thunderstore only when you tag v*.
+# GitHub runners have no Valheim client, so this follows Jötunn's pattern:
+# SteamCMD anonymous dedicated server (app 896660) + BepInEx pack, cached by buildid.
+# Thunderstore publish needs repo secret TCLI_AUTH_TOKEN (never commit the token).
+
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  BEPINEX_PACK: 5.4.2350
+  JOTUNN: 2.30.0
+  VHINSTALL: /home/runner/VHINSTALL
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Valheim dedicated-server buildid
+        id: valheim
+        run: |
+          buildid=$(curl -fsSL https://api.steamcmd.net/v1/info/896660 | jq -r '.data."896660".depots.branches.public.buildid')
+          if [ -z "$buildid" ] || [ "$buildid" = "null" ]; then
+            echo "steamcmd.net did not return a buildid" >&2
+            exit 1
+          fi
+          echo "buildid=$buildid" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Cache Valheim + BepInEx
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VHINSTALL }}
+          key: vh-${{ steps.valheim.outputs.buildid }}-bep-${{ env.BEPINEX_PACK }}-jotunn-${{ env.JOTUNN }}
+
+      - uses: CyberAndrii/setup-steamcmd@v1
+        if: steps.cache.outputs.cache-hit != 'true'
+
+      - name: Install dedicated server + BepInEx
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          wget -q -O bepinex.zip "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/${BEPINEX_PACK}/"
+          unzip -q bepinex.zip -d "$HOME/BepInExRaw"
+          steamcmd +force_install_dir "$VHINSTALL" +login anonymous +app_info_update 1 +app_update 896660 validate +exit
+          mv "$VHINSTALL/valheim_server_Data" "$VHINSTALL/Valheim_Data"
+          ln -sfn Valheim_Data "$VHINSTALL/valheim_Data"
+          mv "$HOME/BepInExRaw/BepInExPack_Valheim/"* "$VHINSTALL/"
+          rm -rf "$VHINSTALL/Valheim_Data/Managed/publicized_assemblies"
+          test -f "$VHINSTALL/Valheim_Data/Managed/assembly_valheim.dll"
+
+      - name: Point MSBuild at the cached install
+        run: |
+          cat > Environment.props <<EOF
+          <Project>
+            <PropertyGroup>
+              <ValheimInstall>${VHINSTALL}</ValheimInstall>
+              <VALHEIM_INSTALL>${VHINSTALL}</VALHEIM_INSTALL>
+              <BEPINEX_PATH>${VHINSTALL}/BepInEx</BEPINEX_PATH>
+            </PropertyGroup>
+          </Project>
+          EOF
+
+      - name: Release build
+        run: dotnet build src/RestlessQoL/RestlessQoL.csproj -c Release --nologo
+
+      - name: Upload RestlessCore.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: RestlessCore-${{ github.sha }}
+          path: dist/RestlessCore.dll
+          if-no-files-found: error
+
+      - name: Stamp package versions from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "version=$version" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import os, re, json
+          from pathlib import Path
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("v")
+          for toml in (Path("thunderstore/plugin/thunderstore.toml"), Path("thunderstore/pack/thunderstore.toml")):
+              text = toml.read_text(encoding="utf-8")
+              text = re.sub(r'versionNumber = ".*"', f'versionNumber = "{version}"', text, count=1)
+              if toml.name == "thunderstore.toml" and "RestlessCorePack" in text:
+                  text = re.sub(r'Restless-RestlessCore = ".*"', f'Restless-RestlessCore = "{version}"', text, count=1)
+              toml.write_text(text, encoding="utf-8")
+          for manifest, dep in (
+              (Path("thunderstore/plugin/manifest.json"), None),
+              (Path("thunderstore/pack/manifest.json"), True),
+          ):
+              data = json.loads(manifest.read_text(encoding="utf-8"))
+              data["version_number"] = version
+              if dep:
+                  data["dependencies"] = [
+                      d if not d.startswith("Restless-RestlessCore-") else f"Restless-RestlessCore-{version}"
+                      for d in data["dependencies"]
+                  ]
+              manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          print(f"stamped {version}")
+          PY
+
+      - name: Thunderstore zips
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          test -f thunderstore/icon.png
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet tool install -g tcli
+          tcli build --config-path thunderstore/plugin/thunderstore.toml --package-version "$version"
+          tcli build --config-path thunderstore/pack/thunderstore.toml --package-version "$version"
+
+      - name: Publish to Thunderstore
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.TCLI_AUTH_TOKEN }}
+        run: |
+          if [ -z "$TCLI_AUTH_TOKEN" ]; then
+            echo "Add a repo secret named TCLI_AUTH_TOKEN (Thunderstore team service account)." >&2
+            exit 1
+          fi
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          plugin_zip=$(ls artifacts/tcli-plugin/*.zip | head -n 1)
+          pack_zip=$(ls artifacts/tcli-pack/*.zip | head -n 1)
+          tcli publish --config-path thunderstore/plugin/thunderstore.toml --file "$plugin_zip"
+          # Pack depends on the plugin version we just uploaded.
+          for attempt in 1 2 3 4 5; do
+            tcli publish --config-path thunderstore/pack/thunderstore.toml --file "$pack_zip" && break
+            if [ "$attempt" -eq 5 ]; then
+              echo "pack publish failed after plugin upload" >&2
+              exit 1
+            fi
+            sleep 15
+          done
+
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          files: |
+            dist/RestlessCore.dll
+            artifacts/tcli-plugin/*.zip
+            artifacts/tcli-pack/*.zip

@@ -54,6 +54,8 @@ public sealed class ExtraSlots : FeatureModule
     private static bool _wasOn = true;
     private static bool _busy;
     private static bool _doingEquip;
+    private static int _leaveWorn;
+    private static int _craftPark;
     private static int _dragExtra = -1;
     private static ItemDrop.ItemData? _dragItem;
     private static bool _dragMoved;
@@ -225,10 +227,12 @@ public sealed class ExtraSlots : FeatureModule
 
     private static bool TryAddVisible(Inventory inv, ItemDrop.ItemData item)
     {
-        for (var y = 0; y < _visibleHeight; y++)
+        for (var y = 1; y < _visibleHeight; y++)
         {
             for (var x = 0; x < inv.GetWidth(); x++)
             {
+                if (SlotLock.Held(new Vector2i(x, y)))
+                    continue;
                 if (inv.GetItemAt(x, y) != null)
                     continue;
                 return inv.AddItem(item, item.m_stack, x, y, false);
@@ -274,16 +278,19 @@ public sealed class ExtraSlots : FeatureModule
     private static bool IsHiddenExtra(Inventory inv, int extra) =>
         extra >= ExtraCount && extra < ExtraRows * inv.GetWidth();
 
-    private static Vector2i VisibleEmpty(Inventory inv, bool topFirst)
+    private static Vector2i VisibleEmpty(Inventory inv, bool topFirst, bool skipHotbar = false)
     {
         var w = inv.GetWidth();
         var h = Mathf.Max(_visibleHeight, 0);
+        var first = skipHotbar ? 1 : 0;
         if (topFirst)
         {
-            for (var y = 0; y < h; y++)
+            for (var y = first; y < h; y++)
             {
                 for (var x = 0; x < w; x++)
                 {
+                    if (SlotLock.Held(new Vector2i(x, y)))
+                        continue;
                     if (inv.GetItemAt(x, y) == null)
                         return new Vector2i(x, y);
                 }
@@ -291,10 +298,12 @@ public sealed class ExtraSlots : FeatureModule
         }
         else
         {
-            for (var y = h - 1; y >= 0; y--)
+            for (var y = h - 1; y >= first; y--)
             {
                 for (var x = 0; x < w; x++)
                 {
+                    if (SlotLock.Held(new Vector2i(x, y)))
+                        continue;
                     if (inv.GetItemAt(x, y) == null)
                         return new Vector2i(x, y);
                 }
@@ -418,6 +427,32 @@ public sealed class ExtraSlots : FeatureModule
         }
 
         [HarmonyPrefix]
+        [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.DoCrafting))]
+        private static void BeforeCraft() => _craftPark++;
+
+        [HarmonyFinalizer]
+        [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.DoCrafting))]
+        private static void AfterCraft()
+        {
+            if (_craftPark > 0)
+                _craftPark--;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Inventory), nameof(Inventory.AddItem), typeof(string), typeof(int), typeof(int),
+            typeof(int), typeof(long), typeof(string), typeof(Vector2i), typeof(bool), typeof(bool), typeof(bool))]
+        private static void ParkCrafted(Inventory __instance, ref Vector2i position)
+        {
+            if (_craftPark <= 0 || !IsLocal(__instance) || _visibleHeight < 0)
+                return;
+            if (!ExtraIndex(__instance, position.x, position.y, out _))
+                return;
+            var dest = VisibleEmpty(__instance, topFirst: false, skipHotbar: true);
+            if (dest.x >= 0)
+                position = dest;
+        }
+
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.SetupDragItem))]
         private static bool BeforeDrag(ItemDrop.ItemData item, Inventory inventory)
         {
@@ -532,11 +567,39 @@ public sealed class ExtraSlots : FeatureModule
             SeatWorn(player, item);
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.OnSelectedItem))]
+        private static void BeforeSelected(InventoryGrid.Modifier mod)
+        {
+            if (mod is InventoryGrid.Modifier.Move or InventoryGrid.Modifier.Drop)
+                _leaveWorn++;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.OnSelectedItem))]
+        private static void AfterSelected(InventoryGrid.Modifier mod)
+        {
+            if ((mod is InventoryGrid.Modifier.Move or InventoryGrid.Modifier.Drop) && _leaveWorn > 0)
+                _leaveWorn--;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.DropItem))]
+        private static void BeforeDrop() => _leaveWorn++;
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.DropItem))]
+        private static void AfterDrop()
+        {
+            if (_leaveWorn > 0)
+                _leaveWorn--;
+        }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UnequipItem))]
         private static void AfterUnequip(Humanoid __instance, ItemDrop.ItemData item)
         {
-            if (_doingEquip || _busy || __instance is not Player player || item?.m_shared == null)
+            if (_doingEquip || _busy || _leaveWorn > 0 || __instance is not Player player || item?.m_shared == null)
                 return;
             if (!IsOwnedPlayer(player) || CraftingNow())
                 return;
@@ -981,13 +1044,28 @@ public sealed class ExtraSlots : FeatureModule
 
     private static void TryUse(Player player, Inventory inv, int row, ConfigEntry<KeyboardShortcut> key)
     {
-        if (!key.Value.IsDown())
+        if (!Tapped(key.Value))
             return;
         var pos = ExtraPos(inv, EquipCount + row);
         var item = inv.GetItemAt(pos.x, pos.y);
         if (item == null)
             return;
         player.UseItem(inv, item, false);
+    }
+
+    // BepInEx IsDown() fails if any other keyboard key is held (sprint, move, block).
+    // Required modifiers from the bind still have to be down.
+    private static bool Tapped(KeyboardShortcut bind)
+    {
+        if (bind.MainKey == KeyCode.None || !Input.GetKeyDown(bind.MainKey))
+            return false;
+        foreach (var mod in bind.Modifiers)
+        {
+            if (!Input.GetKey(mod))
+                return false;
+        }
+
+        return true;
     }
 
     private static void Relocate(InventoryGrid grid)
@@ -1490,7 +1568,11 @@ public sealed class ExtraSlots : FeatureModule
             RestlessUi.DressSlot(cell.Go, cell.Icon, lit, item, Hidden, false, SlotLock.Held(pos));
             var dressed = cell.Go.transform.Find("RestlessSlot") as RectTransform;
             if (dressed != null)
-                dressed.sizeDelta = plateSize;
+            {
+                // Match hotbar DressSlot: idle +8, held +14. Sampled plateSize is idle.
+                var grow = lit ? 6f : 0f;
+                dressed.sizeDelta = plateSize + new Vector2(grow, grow);
+            }
             var key = cell.Go.transform.Find("RestlessKey");
             if (key != null)
             {

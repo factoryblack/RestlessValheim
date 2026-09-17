@@ -1,8 +1,8 @@
 {
   "name": "RestlessCore",
   "version_number": "0.1.0",
-  "website_url": "",
-  "description": "Personal Valheim 1.0 QoL core: craft/build from nearby storage, quick stack, restock, area repair, and small player papercuts. Host-locked config. Isolated Harmony modules.",
+  "website_url": "https://github.com/factoryblack/RestlessValheim",
+  "description": "Valheim 1.0 QoL: nearby chests for craft, build and stations; extra armor and Z/X/C slots; F8 host-locked settings. HUD and inventory are mid-migration — vanilla and Restless currently mix.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "ValheimModding-Jotunn-2.30.0"

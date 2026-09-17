@@ -1,8 +1,8 @@
 {
   "name": "RestlessCorePack",
   "version_number": "0.1.0",
-  "website_url": "",
-  "description": "RestlessCore plus BepInEx and Jötunn. One QoL plugin, not a 60-mod stack.",
+  "website_url": "https://github.com/factoryblack/RestlessValheim",
+  "description": "BepInEx + Jötunn + RestlessCore. One plugin, not a 60-mod stack. Do not add ValheimPlus, Auga, or EquipmentAndQuickSlots.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "ValheimModding-Jotunn-2.30.0",

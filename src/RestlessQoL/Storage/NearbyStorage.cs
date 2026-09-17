@@ -157,10 +157,42 @@ public static class NearbyStorage
         item = null!;
         if (drop?.m_itemData?.m_shared == null)
             return false;
-        if (!Has(drop.m_itemData.m_shared.m_name))
+        var name = drop.m_itemData.m_shared.m_name;
+        ItemDrop.ItemData? source = null;
+        foreach (var container in ForLocalPlayer())
+        {
+            source = container.GetInventory().GetItem(name, -1, false);
+            if (source != null)
+                break;
+        }
+
+        if (source == null)
             return false;
-        item = drop.m_itemData.Clone();
+        item = source.Clone();
         item.m_stack = 1;
+        return EnsureDropPrefab(item, drop);
+    }
+
+    // CookItem / OnAddOre / Fermenter.AddItem all read m_dropPrefab.name first.
+    internal static bool EnsureDropPrefab(ItemDrop.ItemData? item, ItemDrop? from = null)
+    {
+        if (item == null)
+            return false;
+        if (item.m_dropPrefab != null)
+            return true;
+        if (from != null && from.gameObject != null)
+        {
+            item.m_dropPrefab = from.gameObject;
+            return true;
+        }
+
+        var db = ObjectDB.instance;
+        if (db == null || item.m_shared == null)
+            return false;
+        var prefab = db.GetItemPrefab(item.m_shared);
+        if (prefab == null)
+            return false;
+        item.m_dropPrefab = prefab;
         return true;
     }
 

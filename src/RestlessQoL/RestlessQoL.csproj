@@ -20,11 +20,11 @@
 
   <ItemGroup>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>$(ValheimInstall)\valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>$(ValheimManaged)\Unity.TextMeshPro.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="com.rlabrecque.steamworks.net">
-      <HintPath>$(ValheimInstall)\valheim_Data\Managed\com.rlabrecque.steamworks.net.dll</HintPath>
+      <HintPath>$(ValheimManaged)\com.rlabrecque.steamworks.net.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

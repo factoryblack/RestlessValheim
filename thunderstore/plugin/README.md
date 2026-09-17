@@ -1,21 +1,42 @@
 # RestlessCore
 
-Valheim 1.0 quality-of-life core for Restless. One BepInEx plugin, isolated Harmony modules, host-locked config via Jötunn.
+One Valheim 1.0 QoL plugin for Restless. Isolated Harmony modules. Gameplay config is **host-locked** (Jötunn). Open **F8** in-game, or Restless from the pause menu.
 
 Requires **BepInExPack 5.4.2350** and **Jötunn 2.30.0**.
 
-## Features (v0.1)
+This is not the old 60-mod RestlessQOL pack.
 
-- Craft and build from nearby chests
-- Quick stack (`` ` ``) / restock (`Shift+`` ` ``)
+## Storage and stations
+
+- Nearby chests count toward craft and build
+- Quick stack (`` ` ``) / restock (`Shift+`` ` ``) — matching stacks only
 - Smelters, kilns, cooking stations, and fermenters pull from those chests
-- Area repair and wider workbench range
+- Hungry tames eat matching food from those chests
+- Ground piles vacuum into chests that already have that item
+- Middle-click lock on bag slots (quick stack and restock skip them)
+
+## Building and player
+
+- Hammer repairs a radius; stations use a wider range
+- Using a station repairs what that station can repair
 - Death pins clear when the tomb is emptied
-- Keep tools equipped while swimming
-- Ballistae skip tames
-- Axe combo while chopping; loaded crossbow survives a swap
-- Campfires stay lit; hoe dig/raise cap is 20 m
+- Tools stay equipped while swimming
+- No tame-on-tame / player-on-tame friendly fire (player PvP stays vanilla)
+- Axe combo while chopping; a loaded crossbow survives unequip
+- Campfires and hearths stay lit; held torches do not burn down
+- Hoe dig/raise cap is 20 m
+- Most drops float (nails still sink)
+- Stack-size multiplier (default 2×; gear stays 1)
+- Extra worn slots plus Z / X / C quick slots (do **not** also install EquipmentAndQuickSlots)
 
-Do **not** run ValheimPlus, BetterUI, MinimalUI, or AzuCraftyBoxes next to this DLL.
+## Interface (work in progress)
 
-Optional HUD / equipment-slot products are listed in the repo `catalogue.yaml`. They are not this plugin.
+HUD, inventory, tooltips, crafting, map chrome, and settings are **in this DLL**, not a sidecar. They are mid-migration: some surfaces use the Restless kit, others are still vanilla or a mix of the two. Expect unfinished edges, especially Tab, inspect, and crafting.
+
+F8 toggles the Restless pieces. Vanilla Settings is unchanged.
+
+## Do not install beside this
+
+ValheimPlus, BetterUI, MinimalUI, Auga, AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks, EquipmentAndQuickSlots.
+
+Optional **MyLittleUI** is still a separate product if you want timers / multicraft / chest names. It is not this plugin.

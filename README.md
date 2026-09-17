@@ -15,34 +15,13 @@ thunderstore/pack/        Optional one-click install of BepInEx + Jötunn + this
 
 ## Plugin v0.1
 
-Enabled by default, each feature can fail without taking the others down:
+Enabled by default; each feature can fail without taking the others down. The live list is [`catalogue.yaml`](catalogue.yaml). Player-facing copy lives in [`thunderstore/plugin/README.md`](thunderstore/plugin/README.md).
 
-| Module | What it does |
-|---|---|
-| Craft from storage | Nearby chests count toward crafting |
-| Build from storage | Nearby chests count toward placing pieces |
-| Quick stack (`` ` ``) | Dump matching stacks into nearby chests |
-| Restock (`Shift+`` ` ``) | Fill existing stacks from nearby chests |
-| Station pull | Smelters/kilns take ore from those chests |
-| Area repair | Hammer repair hits a radius |
-| Workbench range | Configurable station use range |
-| Death pins | Pin goes away when the tombstone is emptied |
-| Swim-wield | Keep tools equipped in water |
-| Friendly fire | Ballistae skip tames |
-| Axe combo / crossbow | Small player papercuts |
-| Eternal fire | Campfires / hearths stay lit (`Fireplace.m_infiniteFuel`) |
-| Dig deeper | Hoe raise/dig cap is 20 m instead of 8 |
-| Pet pantry | Hungry tames eat matching food from nearby chests |
-| Ground vacuum | Floor piles route into chests that already have that item |
-| Floating items | Drops float (nails still sink) |
-| Settings panel | F8 or pause-menu Restless. Glass overlay, not Azu Config Manager. |
-| Buff list | Food and status effects stacked under the minimap |
-
-UI timers and dedicated armor slots are optional sidecars — see `catalogue.yaml`. PlanBuild, skills, drawers, collectors, portals, Auga, and ValheimPlus are skip.
+HUD, inventory, tooltips, crafting, and settings chrome are **in this DLL** and mid-migration — vanilla and Restless currently mix. Extra worn + Z/X/C slots are in the DLL; do not install EquipmentAndQuickSlots. MyLittleUI is still the only optional sidecar (timers / multicraft). PlanBuild, Auga, and ValheimPlus are skip.
 
 ## Pack v0.1
 
-BepInEx + Jötunn + this DLL. Not a 60-mod stack. Optional MyLittleUI / EquipmentAndQuickSlots are listed in the catalogue if you still want them.
+BepInEx + Jötunn + this DLL. Not a 60-mod stack.
 
 Do **not** also install ValheimPlus, BetterUI, MinimalUI, or AzuCraftyBoxes next to this. They patch the same inventory/build methods.
 
@@ -64,4 +43,26 @@ powershell -File scripts/pack.ps1                # zip artifacts/ for Thundersto
 
 This Steam folder is already BepInEx-patched. Launch from Steam, not a vanilla shortcut.
 
-Until Thunderstore is published, r2modman: BepInEx + Jötunn online, then Import local `artifacts/Restless-RestlessCore-0.1.0.zip`. The pack zip only works after the plugin itself is on Thunderstore.
+Until the first tag ships, r2modman: BepInEx + Jötunn online, then Import local `artifacts/Restless-RestlessCore-0.1.0.zip`. The pack zip only works after the plugin itself is on Thunderstore.
+
+## GitHub Actions
+
+Pushes and pull requests compile a Release `RestlessCore.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2350`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
+
+A tag named `v*` is the ship button. It builds the DLL, opens a GitHub Release, then publishes **RestlessCore** and **RestlessCorePack** to Thunderstore under the `Restless` team.
+
+```
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+### Thunderstore token
+
+Do **not** put the API key in git, chat, or the workflow file.
+
+1. On Thunderstore, create a team named exactly `Restless` (the pack already depends on `Restless-RestlessCore`).
+2. Team → **Service Accounts** → add one (name it `github` or similar). Copy the token once.
+3. In this GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**.
+4. Name: `TCLI_AUTH_TOKEN`. Value: that token.
+
+You can also run the compile job by hand from the Actions tab (`workflow_dispatch`). Publish still only happens on a `v*` tag.

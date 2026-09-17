@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-16 — Character/Skills presentation; compile/in-game validation pending.
+# last_audit: 2026-09-17 — Upgrade from Z/X/C parks the new piece in the bag, not the extra row.
 
 updated: 2026-09-16
 
@@ -85,7 +85,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Smelter/kiln + cooking + fermenter. Chest pull uses RestlessPull when this peer is not the ZDO owner. Clone-from-chest still lights the station; consume is the RemoveOneItem postfix."
+    note: "Smelter/kiln + cooking + fermenter. Chest pull uses RestlessPull when this peer is not the ZDO owner. Clone comes from the chest row when possible. EnsureDropPrefab fills m_dropPrefab from the conversion or ObjectDB — OnAddOre/CookItem/AddItem read the prefab name and NRE when it is missing (bag clones included). Consume is the RemoveOneItem postfix."
 
   - id: building.area_repair
     name: Area repair
@@ -399,7 +399,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-EquipmentAndQuickSlots
-    note: "Do not install the sidecar. Hidden rows, relocated worn + Z/X/C. Player.Load / Seat / Wear only on the owned local player — a friend joining used to reset the static height and shuffle extras. FinishDrag deletes leftover only if it is the same instance (not m_shared). WearExtras skipped while m_craftTimer >= 0. Death: extras into a second tomb. Playtest upgrade + a joining client."
+    note: "Do not install the sidecar. Hidden rows, relocated worn + Z/X/C. Player.Load / Seat / Wear only on the owned local player — a friend joining used to reset the static height and shuffle extras. FinishDrag deletes leftover only if it is the same instance (not m_shared). WearExtras skipped while m_craftTimer >= 0. Death: extras into a second tomb. Ctrl/Move and Drop skip UnseatWorn so vanilla can take the item — AddItem clones, which used to zero the original stack and make DropItem spawn a second copy on the ground after parking one on hotbar row 0. Unequip parks in the bag, not the hotbar, and skips locks. HUD Z/X/C keep the hotbar held grow; taps fire while sprinting/moving (BepInEx IsDown blocks any extra key). DoCrafting AddItem that targets an extra cell is rewritten to a bag slot so upgrade/craft from a quick slot does not leave the unequipped piece in Z/X/C. Playtest upgrade + a joining client."
 
   - id: tooling.config_manager
     name: In-game settings panel

@@ -1,4 +1,4 @@
-# RestlessCorePack
+# Restless Valheim
 
 A **Valheim modpack**, not a plugin. r2modman / Thunderstore install this listing and pull the stack:
 

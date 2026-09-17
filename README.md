@@ -28,7 +28,7 @@ Second plugin, hard-depends on Core. Recipe graph is [`cook.yaml`](cook.yaml). T
 
 ## Pack v0.1
 
-A Thunderstore **modpack** (not a plugin). One-click install of BepInEx + Jötunn + RestlessCore + RestlessCook. The listing uses the original stone rune R.
+A Thunderstore **modpack** (not a plugin) listed as **Restless Valheim**. One-click install of BepInEx + Jötunn + RestlessCore + RestlessCook. The listing uses the original stone rune R.
 
 ## Build
 
@@ -49,17 +49,20 @@ powershell -File scripts/pack.ps1                # zip artifacts/ for Thundersto
 
 This Steam folder is already BepInEx-patched. Launch from Steam, not a vanilla shortcut.
 
-r2modman: install the **RestlessCorePack** modpack, or BepInEx + Jötunn then Import local `artifacts/Restless-RestlessCore-0.1.3.zip` from `scripts/pack.ps1`.
+r2modman: install the **Restless Valheim** modpack, or BepInEx + Jötunn then Import local `artifacts/Restless-RestlessCore-0.1.3.zip` from `scripts/pack.ps1`.
 
 ## GitHub Actions
 
 Pushes and pull requests compile Release `RestlessCore.dll` and `RestlessCook.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2350`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
 
-A tag named `v*` ships **RestlessCore** and the **RestlessCorePack** modpack. A tag named `cook-v*` ships **RestlessCook** only.
+A tag named `v*` ships **RestlessCore** and the **Restless Valheim** modpack. A tag named `pack-v*` ships the pack only. A tag named `cook-v*` ships **RestlessCook** only.
 
 ```
 git tag v0.1.3
 git push origin v0.1.3
+
+git tag pack-v0.1.3
+git push origin pack-v0.1.3
 
 git tag cook-v0.1.0
 git push origin cook-v0.1.0
@@ -74,4 +77,4 @@ Do **not** put the API key in git, chat, or the workflow file.
 3. In this GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**.
 4. Name: `TCLI_AUTH_TOKEN`. Value: that token.
 
-You can also run the compile job by hand from the Actions tab (`workflow_dispatch`). Publish still only happens on a `v*` or `cook-v*` tag.
+You can also run the compile job by hand from the Actions tab (`workflow_dispatch`). Publish still only happens on a `v*`, `pack-v*`, or `cook-v*` tag.

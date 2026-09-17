@@ -42,7 +42,7 @@ Zip-Dir 'Restless-RestlessCore-0.1.3' {
 $packIcon = Join-Path $root 'thunderstore\pack\icon.png'
 if (-not (Test-Path $packIcon)) { throw "missing thunderstore/pack/icon.png (256x256 PNG)" }
 
-Zip-Dir 'Restless-RestlessCorePack-0.1.3' {
+Zip-Dir 'Restless-Restless_Valheim-0.1.3' {
     param($d)
     Copy-Item (Join-Path $root 'thunderstore\pack\manifest.json') $d
     Copy-Item (Join-Path $root 'thunderstore\pack\README.md') $d

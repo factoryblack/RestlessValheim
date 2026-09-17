@@ -1,0 +1,53 @@
+{
+  "status": "Art study; inventory layout not implemented",
+  "assets": [
+    {
+      "file": "inventory-slot.png",
+      "width": 256,
+      "height": 256,
+      "source": "exec-48bcd065-7aa5-4bd4-8220-c2b699226287.png"
+    },
+    {
+      "file": "empty-head.png",
+      "width": 64,
+      "height": 64,
+      "source": "svg/empty-head.svg"
+    },
+    {
+      "file": "empty-chest.png",
+      "width": 64,
+      "height": 64,
+      "source": "svg/empty-chest.svg"
+    },
+    {
+      "file": "empty-legs.png",
+      "width": 64,
+      "height": 64,
+      "source": "svg/empty-legs.svg"
+    },
+    {
+      "file": "empty-cape.png",
+      "width": 64,
+      "height": 64,
+      "source": "svg/empty-cape.svg"
+    },
+    {
+      "file": "empty-utility.png",
+      "width": 64,
+      "height": 64,
+      "source": "svg/empty-utility.svg"
+    },
+    {
+      "file": "empty-trinket.png",
+      "width": 64,
+      "height": 64,
+      "source": "svg/empty-trinket.svg"
+    },
+    {
+      "file": "carry-weight.png",
+      "width": 64,
+      "height": 64,
+      "source": "svg/carry-weight.svg"
+    }
+  ]
+}

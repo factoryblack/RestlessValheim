@@ -20,9 +20,10 @@ namespace RestlessQoL.Core;
 //   Type   — Averia regular; Bold only at TitleSize. Text / Muted / Accent.
 //   Fade   — FadeSeconds. Slide uses the same clock.
 //   HudRow — Strip + left-anchored torn fill + icon + title + meta. Notices and buffs.
-//   HudMeter — thin Ink track sized to max HP/stamina + masked fill (current).
+//   HudMeter — thin Ink track sized to max + masked fill (current).
 //              18px on purpose (thinner is the look). Health left of Bar
-//              (grows left). Stamina right of Bar (grows right).
+//              (grows left); adrenaline stacks above it. Stamina right of
+//              Bar (grows right); eitr stacks above it.
 //   Wear    — vertical torn slit on the right of a slot (row-idle left+right
 //              edges, 9-sliced top/bottom). Cream when healthy, red when not.
 //   KeyChip— Chip + Bind(). Mouse binds use cream mouse-left/right/middle.
@@ -52,6 +53,8 @@ internal static partial class RestlessUi
     public static readonly Color Selected = new(0.93f, 0.74f, 0.36f, 1f);
     public static readonly Color HealthTint = Hex(0xC4453A);
     public static readonly Color StaminaTint = Hex(0xD6A83C);
+    public static readonly Color AdrenalineTint = Hex(0xE07028);
+    public static readonly Color EitrTint = Hex(0x3E8FA8);
 
     public static readonly Vector4 StripBorder = new(28f, 14f, 28f, 14f);
     // Taller top cap so a tall plate does not stretch the torn lip. Bottom 14px already holds.
@@ -333,7 +336,7 @@ internal static partial class RestlessUi
         }
     }
 
-    // Cream diamond on a locked slot. Opposite corner from quality.
+    // Quiet diamond marker for a locked slot, opposite the quality numeral.
     public static void DressLock(Transform host, bool locked)
     {
         var mark = host.Find("RestlessLock");
@@ -860,7 +863,7 @@ internal static partial class RestlessUi
     // Torn plate + Wear on a vanilla inventory / hotbar cell. Hides GuiBar.
     // Does not add a key chip. Extra Tab / HUD slots call this.
     public static GameObject DressSlot(GameObject cell, Image? icon, bool lit, ItemDrop.ItemData? item,
-        List<Behaviour>? hidden = null, bool fillCell = false, bool locked = false)
+        List<Behaviour>? hidden = null, bool fillCell = false, bool locked = false, bool inventory = false)
     {
         var plate = cell.transform.Find("RestlessSlot");
         if (plate == null)
@@ -893,6 +896,7 @@ internal static partial class RestlessUi
         DressAmount(cell.transform, item?.m_stack ?? 0);
         DressQuality(cell.transform, item?.m_quality ?? 0);
         DressLock(cell.transform, locked);
+        InventorySlot(plate.gameObject, cell, lit, item, inventory);
         return plate.gameObject;
     }
 
@@ -1856,8 +1860,8 @@ internal static partial class RestlessUi
         }
     }
 
-    // Thin Ink track beside the hotbar. Width follows max HP/stamina. Height
-    // stays 18px — a 9-slice plate here reads as a fat card, not a bar.
+    // Thin Ink track beside the hotbar. Width follows max. Height stays
+    // 18px — a 9-slice plate here reads as a fat card, not a bar.
     public sealed class HudMeter
     {
         public const float MinWidth = 88f;
@@ -1892,6 +1896,10 @@ internal static partial class RestlessUi
         public static HudMeter Health(Transform parent) => Build(parent, "health", true, HealthTint);
 
         public static HudMeter Stamina(Transform parent) => Build(parent, "stamina", false, StaminaTint);
+
+        public static HudMeter Adrenaline(Transform parent) => Build(parent, "adrenaline", true, AdrenalineTint);
+
+        public static HudMeter Eitr(Transform parent) => Build(parent, "eitr", false, EitrTint);
 
         public static float Span(float max, float baseMax) =>
             Mathf.Clamp(BaseWidth + Mathf.Max(0f, max - baseMax) * PerPoint, MinWidth, CapWidth);

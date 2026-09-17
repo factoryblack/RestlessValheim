@@ -17,7 +17,7 @@ public sealed class ItemTooltip : FeatureModule
     public override bool Enabled => true;
     public override bool TickInMenus => true;
 
-    private const float CardWidth = 380f;
+    private const float CardWidth = 440f;
     private const float Pad = 18f;
     private const int CopySize = RestlessUi.MetaSize;
     private static GameObject? _card;
@@ -230,20 +230,22 @@ public sealed class ItemTooltip : FeatureModule
             Vector2.zero, new Vector2(52f, 52f));
         var slot = RestlessUi.Strip(cell.transform, "portrait");
         slot.transform.SetAsFirstSibling();
-        RestlessUi.PaperSurface(slot, accent: RimTint(contributions));
+        RestlessUi.PortraitFrame(slot);
         RestlessUi.Pin(slot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
             Vector2.zero, new Vector2(72f, 72f));
 
-        var metaWidth = inner - 86f - 56f;
+        var metaWidth = Mathf.Max(100f, inner - 86f - 116f);
         var name = RestlessUi.Label(header.transform, title, RestlessUi.TitleSize,
             RestlessUi.Text, TextAnchor.UpperLeft);
         name.gameObject.name = "title";
         var nameHeight = Measure(name, metaWidth);
         Place(name.gameObject, 86f, 0f, metaWidth, nameHeight);
         var hasQuality = item.m_shared.m_maxQuality > 1 || item.m_quality > 1;
-        var qualityWidth = hasQuality ? (item.m_quality > 5 ? 107f : item.m_quality * 15f) : 0f;
-        var typeWidth = Mathf.Max(56f, metaWidth - qualityWidth - (hasQuality ? 8f : 0f));
-        var ribbon = RestlessUi.Picture(header.transform, "category", "category-ribbon");
+        var qualityWidth = hasQuality ? Mathf.Min(metaWidth, item.m_quality > 5 ? 122f : item.m_quality * 18f) : 0f;
+        var wrapQuality = hasQuality && category.Length > 0 && metaWidth - qualityWidth - 8f < 100f;
+        var typeWidth = wrapQuality ? metaWidth : Mathf.Max(56f, metaWidth - qualityWidth - (hasQuality ? 8f : 0f));
+        var ribbon = RestlessUi.Picture(header.transform, "category", "category-strip");
+        RestlessUi.CategoryStrip(ribbon);
         var type = RestlessUi.Label(ribbon.transform, category,
             RestlessUi.HudMeta, RestlessUi.Accent, TextAnchor.MiddleLeft);
         var typeHeight = Mathf.Max(24f, Measure(type, typeWidth - 16f) + 8f);
@@ -251,11 +253,12 @@ public sealed class ItemTooltip : FeatureModule
         RestlessUi.Stretch(type.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 4f), new Vector2(-8f, -4f));
         ribbon.GetComponent<Image>().raycastTarget = false;
         ribbon.SetActive(category.Length > 0);
-        var headerHeight = Mathf.Max(72f, nameHeight + typeHeight + 4f);
+        var headerHeight = Mathf.Max(72f, nameHeight + typeHeight + 4f + (wrapQuality ? 24f : 0f));
         if (hasQuality)
         {
             var quality = RestlessUi.Node(header.transform, "quality");
-            Place(quality, 86f + typeWidth + 8f, nameHeight + 4f, qualityWidth, typeHeight);
+            Place(quality, 86f + (wrapQuality || category.Length == 0 ? 0f : typeWidth + 8f),
+                nameHeight + 4f + (wrapQuality ? typeHeight : 0f), qualityWidth, wrapQuality ? 24f : typeHeight);
             RestlessUi.QualityMarks(quality.transform, item.m_quality, qualityWidth);
         }
         Place(header, Pad, Pad, inner, headerHeight);
@@ -411,9 +414,9 @@ public sealed class ItemTooltip : FeatureModule
     private static void Place(GameObject go, float x, float y, float width, float height) =>
         RestlessUi.Pin(go, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(x, -y), new Vector2(width, height));
 
-    private static void Paragraph(Transform parent, string copy, float width, Color tint)
+    private static void Paragraph(Transform parent, string copy, float width, Color tint, int size = CopySize)
     {
-        var text = RestlessUi.Label(parent, copy, CopySize, tint, TextAnchor.UpperLeft);
+        var text = RestlessUi.Label(parent, copy, size, tint, TextAnchor.UpperLeft);
         Hold(text.gameObject, Measure(text, width));
     }
 
@@ -439,13 +442,13 @@ public sealed class ItemTooltip : FeatureModule
         Hold(row, height);
     }
 
-    private static void StatRow(Transform parent, string label, string value, float width, bool supporting = false)
+    private static void StatRow(Transform parent, string label, string value, float width, bool supporting = false, int size = CopySize)
     {
         var row = RestlessUi.Node(parent, "stat");
         var labelWidth = (width - 14f) * 0.52f;
         var valueWidth = width - 14f - labelWidth;
-        var left = RestlessUi.Label(row.transform, label, CopySize, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
-        var right = RestlessUi.Label(row.transform, value, supporting ? RestlessUi.HudMeta : CopySize,
+        var left = RestlessUi.Label(row.transform, label, size, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
+        var right = RestlessUi.Label(row.transform, value, supporting ? RestlessUi.HudMeta : size,
             supporting ? RestlessUi.PaperMuted : RestlessUi.Accent, TextAnchor.UpperRight);
         if (supporting) left.fontSize = RestlessUi.HudMeta;
         var height = Mathf.Max(Measure(left, labelWidth), Measure(right, valueWidth));
@@ -504,11 +507,11 @@ public sealed class ItemTooltip : FeatureModule
     internal static void RecipeBody(Transform parent, string raw, float width)
     {
         Parse(raw, "", "", out var stats, out var chips, out var notes);
-        if (notes.Count > 0) Paragraph(parent, string.Join("\n", notes), width, RestlessUi.PaperMuted);
+        if (notes.Count > 0) Paragraph(parent, string.Join("\n", notes), width, RestlessUi.PaperMuted, CopySize + 2);
         if (stats.Count > 0)
         {
             Divider(parent);
-            foreach (var stat in stats) StatRow(parent, stat.label, stat.value, width);
+            foreach (var stat in stats) StatRow(parent, stat.label, stat.value, width, size: CopySize + 2);
         }
         if (chips.Count > 0)
         {

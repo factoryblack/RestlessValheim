@@ -1,0 +1,11 @@
+{
+  "tool": "Built-in image generation",
+  "assets": [
+    {
+      "name": "inventory-slot",
+      "source": "exec-48bcd065-7aa5-4bd4-8220-c2b699226287.png",
+      "prompt": "Use case: stylized-concept. Asset: ONE reusable square inventory cell background sprite for a restrained Nordic game UI. Genuine transparent background outside the square. Front-facing orthographic, square with almost straight edges that are subtly chipped and softly irregular, not ragged fringe. Solid charcoal dark grey leather/paper surface with very quiet broad texture, a shallow recessed centre, a thin dark upper inner lip and barely lighter worn lower edge. Very low contrast. At 64 pixels it should read as a simple dark slot with slight depth, never as an ornate frame. The central 85 percent must be quiet and unobstructed for a colourful game item. No bronze or gold outline, no metal corner clasps, no stitch pattern, no emblem, no rune, no item, no text, no glow, no hard drop shadow. No bevel wider than 2 percent of the square. Generous transparent margins. The goal is a clean repeated grid, not a showcase portrait frame."
+    }
+  ],
+  "otherAssets": "Native SVG geometry, kept monochrome for faint empty-slot use."
+}

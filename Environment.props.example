@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
     <ValheimInstall>C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimInstall>
+    <!-- GitHub Actions writes this file each run; do not commit the real Environment.props. -->
   </PropertyGroup>
 </Project>

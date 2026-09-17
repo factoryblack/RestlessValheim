@@ -111,6 +111,9 @@ public sealed partial class InventoryScreen : FeatureModule
                 Sync(__instance);
             KeepQuiet();
             RefreshCraftFeedback(__instance);
+            RefreshInventoryMaterials(__instance);
+            RefreshContainerMaterials(__instance);
+            RefreshSkillsMaterials(__instance);
         }
     }
 
@@ -304,6 +307,7 @@ public sealed partial class InventoryScreen : FeatureModule
     {
         if (grid == null)
             return h * 31;
+        var playerGrid = grid == InventoryGui.instance?.m_playerGrid;
         var inv = grid.GetInventory();
         var elements = Elements(grid);
         if (elements != null)
@@ -311,11 +315,11 @@ public sealed partial class InventoryScreen : FeatureModule
             h = h * 31 + elements.Count;
             foreach (var element in elements)
             {
-                if (element == null || ExtraSlots.IsExtraCell(element.Position))
+                if (element == null || playerGrid && ExtraSlots.HoldsPlayerStats && ExtraSlots.IsExtraCell(element.Position))
                     continue;
                 var item = inv?.GetItemAt(element.Position.x, element.Position.y);
                 h = MixItem(h, item);
-                h = h * 31 + (SlotLock.Held(element.Position) ? 1 : 0);
+                h = h * 31 + (playerGrid && SlotLock.Held(element.Position) ? 1 : 0);
                 var lit = item is { m_equipped: true }
                     || element.m_equiped != null && element.m_equiped.gameObject.activeSelf
                     || element.m_selected != null && element.m_selected.activeSelf;
@@ -334,10 +338,10 @@ public sealed partial class InventoryScreen : FeatureModule
             for (var x = 0; x < w; x++)
             {
                 var pos = new Vector2i(x, y);
-                if (ExtraSlots.IsExtraCell(pos))
+                if (playerGrid && ExtraSlots.HoldsPlayerStats && ExtraSlots.IsExtraCell(pos))
                     continue;
                 h = MixItem(h, inv.GetItemAt(x, y));
-                h = h * 31 + (SlotLock.Held(pos) ? 1 : 0);
+                h = h * 31 + (playerGrid && SlotLock.Held(pos) ? 1 : 0);
             }
         }
 
@@ -386,26 +390,23 @@ public sealed partial class InventoryScreen : FeatureModule
         if (elements == null)
         {
             foreach (var element in grid.GetComponentsInChildren<InventoryElement>(true))
-                PaintCell(inv, element);
+                PaintCell(grid, inv, element);
             return;
         }
 
         foreach (var element in elements)
-            PaintCell(inv, element);
+            PaintCell(grid, inv, element);
     }
 
-    private static void PaintCell(Inventory? inv, InventoryElement? element)
+    private static void PaintCell(InventoryGrid grid, Inventory? inv, InventoryElement? element)
     {
-        if (element == null || ExtraSlots.IsExtraCell(element.Position))
+        if (element == null || ExtraSlots.HoldsPlayerStats && grid == InventoryGui.instance?.m_playerGrid && ExtraSlots.IsExtraCell(element.Position))
             return;
         try
         {
             var item = inv?.GetItemAt(element.Position.x, element.Position.y);
-            var lit = item is { m_equipped: true }
-                || element.m_equiped != null && element.m_equiped.gameObject.activeSelf
-                || element.m_selected != null && element.m_selected.activeSelf;
-            Ours.Add(RestlessUi.DressSlot(element.gameObject, element.m_icon, lit, item, Hidden, true,
-                SlotLock.Held(element.Position)));
+            Ours.Add(RestlessUi.DressSlot(element.gameObject, element.m_icon, item is { m_equipped: true }, item, Hidden, true,
+                grid == InventoryGui.instance?.m_playerGrid && SlotLock.Held(element.Position), inventory: true));
         }
         catch (System.Exception e)
         {
@@ -889,7 +890,17 @@ public sealed partial class InventoryScreen : FeatureModule
         }
 
         if (gui.m_skillsDialog != null && gui.m_skillsDialog.gameObject.activeInHierarchy)
+        {
             h = h * 31 + 5;
+            var skills = gui.m_skillsDialog;
+            h = MixTmp(h, skills.m_totalSkillText);
+            if (skills.m_listRoot != null)
+            {
+                h = h * 31 + skills.m_listRoot.childCount;
+                foreach (var copy in skills.m_listRoot.GetComponentsInChildren<TMP_Text>(true))
+                    h = MixTmp(h, copy);
+            }
+        }
         if (gui.m_trophiesPanel != null && gui.m_trophiesPanel.activeInHierarchy)
             h = h * 31 + 7;
         var ach = gui.m_achievementsPanel;
@@ -1893,3 +1904,4 @@ public sealed partial class InventoryScreen : FeatureModule
         }
     }
 }
+

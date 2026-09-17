@@ -140,7 +140,7 @@ export default function RestlessQolCatalogue() {
       <Callout tone="info" title="Product">
         One plugin. Papercuts go in the DLL. PlanBuild, skills, drawers, collectors,
         portals, Auga, ValheimPlus stay out. BepInEx + Jötunn are the loader.
-        MyLittleUI and EquipmentAndQuickSlots are optional sidecars only if you want them.
+        No sidecars. Extra slots live in the DLL. MyLittleUI is skip.
       </Callout>
 
       <Grid columns={5} gap={12}>

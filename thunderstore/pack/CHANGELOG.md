@@ -1,7 +1,15 @@
 # Changelog
 
+## 0.1.2
+
+- Relisted as a Valheim **modpack** (Modpacks category), not a standalone mod
+- Pack icon is the stone R
+- Installs RestlessCore 0.1.2 and RestlessCook 0.1.0 with BepInEx and Jötunn
+
+## 0.1.1
+
+- Listing describes this pack only
+
 ## 0.1.0
 
-- 1.0-safe Restless play stack. Not the old RestlessQOL 1.0.7 (Bog Witch, ~60 deps).
-- RestlessCore plus MyLittleUI, Eternal Fire, Dig Deeper, Server Devcommands, EquipmentAndQuickSlots.
-- Wait-for-1.0 and never-install lists live in `stack.yaml` in the source repo.
+- RestlessCore with BepInEx and Jötunn

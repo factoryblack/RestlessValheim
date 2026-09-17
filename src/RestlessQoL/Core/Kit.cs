@@ -10,6 +10,8 @@ internal static class Kit
     private static readonly string[] Library =
     {
         "row-idle", "btn-small", "diamond", "eat-fork",
+        "inventory-slot", "empty-head", "empty-chest", "empty-legs", "empty-cape",
+        "empty-utility", "empty-trinket", "carry-weight",
         "mouse-left", "mouse-right", "mouse-middle",
         "tab-glow", "panel-back",
         "paper-panel", "paper-panel-rim", "paper-chip", "paper-chip-rim",
@@ -18,6 +20,10 @@ internal static class Kit
         "station-medallion", "tab-inset", "tab-marker", "scroll-thumb",
         "glyph-blunt", "glyph-slash", "glyph-pierce", "glyph-fire", "glyph-frost",
         "glyph-poison", "glyph-lightning", "glyph-spirit", "glyph-chop", "glyph-pickaxe", "glyph-station",
+        "corner-overlay", "craft-hammer", "station-socket", "portrait-frame", "knot-divider", "category-strip", "pine-emblem",
+        "nav-raven", "nav-knot", "nav-shield", "nav-trophy", "nav-swords",
+        "utility-lock", "utility-equipped", "utility-repair", "utility-missing",
+        "utility-expand", "utility-collapse", "utility-close", "quality-lozenge", "selection-marker", "focus-corners",
     };
 
     private static readonly Dictionary<string, Sprite> Cache = new();

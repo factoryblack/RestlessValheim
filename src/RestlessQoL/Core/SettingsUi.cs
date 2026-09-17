@@ -257,7 +257,10 @@ public sealed class SettingsUi : FeatureModule
         RestlessUi.Pin(esc, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
             new Vector2(-62f, 0f), new Vector2(72f, 36f));
         var escLabel = RestlessUi.Label(esc.transform, "ESC", RestlessUi.HintSize, RestlessUi.Text, TextAnchor.MiddleCenter);
-        RestlessUi.Stretch(escLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        RestlessUi.Stretch(escLabel.gameObject, Vector2.zero, Vector2.one, new Vector2(16f, 0f), Vector2.zero);
+        var closeMark = RestlessUi.Picture(esc.transform, "RestlessClose", "utility-close");
+        RestlessUi.Pin(closeMark, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+            new Vector2(5f, 0f), new Vector2(16f, 16f));
         var escBtn = esc.AddComponent<Button>();
         escBtn.targetGraphic = esc.GetComponent<Image>();
         RestlessUi.PaperSelectable(escBtn);
@@ -333,6 +336,10 @@ public sealed class SettingsUi : FeatureModule
         _lock = RestlessUi.Label(card, "", RestlessUi.HudSize, RestlessUi.Accent, TextAnchor.MiddleRight);
         RestlessUi.Stretch(_lock.gameObject, Vector2.zero, new Vector2(1f, 0f),
             new Vector2(740f, 12f), new Vector2(-inset, 56f));
+        var lockIcon = RestlessUi.Picture(_lock.transform, "RestlessLock", "utility-lock");
+        RestlessUi.Pin(lockIcon, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+            new Vector2(-22f, 0f), new Vector2(18f, 18f));
+        lockIcon.GetComponent<Image>().raycastTarget = false;
     }
 
     private static void UpdateLock()
@@ -340,6 +347,8 @@ public sealed class SettingsUi : FeatureModule
         if (_lock == null)
             return;
         _lock.text = CanEditGameplay() ? "" : "Host locked";
+        var icon = _lock.transform.Find("RestlessLock");
+        if (icon != null) icon.gameObject.SetActive(_lock.text.Length > 0);
     }
 
     private static void ShowHint(string text)
@@ -583,8 +592,10 @@ public sealed class SettingsUi : FeatureModule
                     t => Bool("Action hints", ModConfig.ActionHintsEnabled, false, t, true),
                     t => Bool("World hover prompts", ModConfig.LookHintsEnabled, false, t, true));
                 Bunch(
-                    t => Bool("Health and stamina on the hotbar", ModConfig.VitalsEnabled, false, t),
+                    t => Bool("Vitals on the hotbar", ModConfig.VitalsEnabled, false, t),
                     t => Bool("Always show stamina", ModConfig.VitalsStaminaAlways, false, t, true),
+                    t => Bool("Adrenaline with health", ModConfig.VitalsAdrenaline, false, t, true),
+                    t => Bool("Eitr with stamina", ModConfig.VitalsEitr, false, t, true),
                     t => Bool("Numbers on the bars", ModConfig.VitalsNumbers, false, t, true));
                 Head("Debug");
                 Bunch(
@@ -679,8 +690,7 @@ public sealed class SettingsUi : FeatureModule
     {
         var t = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(t.gameObject, Vector2.zero, Vector2.one, new Vector2(20f, 6f), new Vector2(-gutter, -6f));
-        t.horizontalOverflow = HorizontalWrapMode.Wrap;
-        t.verticalOverflow = VerticalWrapMode.Truncate;
+        RestlessUi.BoundedLabel(t, RestlessUi.BodySize, RestlessUi.HintSize);
         t.gameObject.name = hint;
         var trigger = row.GetComponent<EventTrigger>();
         if (trigger == null)
@@ -721,16 +731,14 @@ public sealed class SettingsUi : FeatureModule
 
     private static void PaintCharacter()
     {
-        Head("This save");
-        Stat("Deaths", Count(PlayerStatType.Deaths));
-        Stat("Jumps", Count(PlayerStatType.Jumps));
-        Stat("Food eaten", Count(PlayerStatType.FoodEaten));
-        Stat("Portals used", Count(PlayerStatType.PortalsUsed));
-        Stat("Walked", Distance(PlayerStatType.DistanceWalk));
-        Stat("Sailed", Distance(PlayerStatType.DistanceSail));
-        Stat("Items crafted", Count(PlayerStatType.Crafts));
-        Stat("Picked up", Count(PlayerStatType.ItemsPickedUp));
+        Head("Journey");
+        MetricPair("Walked", Distance(PlayerStatType.DistanceWalk), "Sailed", Distance(PlayerStatType.DistanceSail));
+        MetricPair("Jumps", Count(PlayerStatType.Jumps), "Portals used", Count(PlayerStatType.PortalsUsed));
+        Head("Survival");
+        MetricPair("Deaths", Count(PlayerStatType.Deaths), "Food eaten", Count(PlayerStatType.FoodEaten));
         Stat("Boss kills", Count(PlayerStatType.BossKills));
+        Head("Craft and gather");
+        MetricPair("Items crafted", Count(PlayerStatType.Crafts), "Picked up", Count(PlayerStatType.ItemsPickedUp));
 
         Head("Hunts");
         var hunts = 0;
@@ -738,26 +746,30 @@ public sealed class SettingsUi : FeatureModule
         {
             Stat(Ledger.EnemyName(pair.Key), CountValue(pair.Value));
             hunts++;
-            if (hunts >= 8)
-                break;
         }
+        if (hunts == 0) Stat("No hunts recorded", "");
 
-        Head("Extras");
+        var extras = false;
         foreach (var pair in Ledger.Extras())
+        {
+            if (!extras) { Head("Additional records"); extras = true; }
             Stat(pair.Key, CountValue(pair.Value));
+        }
+    }
+
+    private static void MetricPair(string left, string leftValue, string right, string rightValue)
+    {
+        var row = Row();
+        RestlessUi.Metric(row.transform, left, leftValue, 0f, 0.5f);
+        RestlessUi.Metric(row.transform, right, rightValue, 0.5f, 1f);
+        var seam = RestlessUi.Graphic(row.transform, "RestlessMetricSeam",
+            new Color(0.64f, 0.56f, 0.42f, 0.25f), false);
+        RestlessUi.Stretch(seam, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f),
+            new Vector2(-0.5f, 12f), new Vector2(0.5f, -12f));
     }
 
     private static void Stat(string title, string value)
-    {
-        var row = Row();
-        var label = RestlessUi.Label(row.transform, title, RestlessUi.BodySize, RestlessUi.PaperMuted,
-            TextAnchor.MiddleLeft);
-        RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(20f, 6f), new Vector2(-160f, -6f));
-        var face = RestlessUi.Label(row.transform, value, RestlessUi.BodySize, RestlessUi.Accent,
-            TextAnchor.MiddleRight);
-        RestlessUi.Pin(face.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f),
-            new Vector2(140f, 24f));
-    }
+        => RestlessUi.Metric(Row().transform, title, value);
 
     private static string Count(PlayerStatType stat) => CountValue(Ledger.Get(stat));
 
@@ -848,9 +860,10 @@ public sealed class SettingsUi : FeatureModule
         var label = RestlessUi.Label(plate.transform, entry.Value, RestlessUi.MetaSize, RestlessUi.Text,
             TextAnchor.MiddleLeft);
         RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(8f, 0f), new Vector2(-8f, 0f));
-        label.horizontalOverflow = HorizontalWrapMode.Wrap;
+        label.horizontalOverflow = HorizontalWrapMode.Overflow;
         label.verticalOverflow = VerticalWrapMode.Truncate;
         var field = plate.AddComponent<InputField>();
+        field.lineType = InputField.LineType.SingleLine;
         field.textComponent = label;
         field.text = entry.Value;
         RestlessUi.PaperSelectable(field);
@@ -869,6 +882,7 @@ public sealed class SettingsUi : FeatureModule
         ScrollRelay.Bind(plate, _scroll);
         var label = RestlessUi.Label(plate.transform, Pretty(entry.Value), RestlessUi.MetaSize, RestlessUi.Text, TextAnchor.MiddleCenter);
         RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(6f, 0f), new Vector2(-6f, 0f));
+        RestlessUi.BoundedLabel(label, RestlessUi.HintSize, RestlessUi.HudMeta);
         var go = plate;
         var button = go.AddComponent<Button>();
         button.targetGraphic = plate.GetComponent<Image>();
@@ -1008,3 +1022,4 @@ public sealed class SettingsUi : FeatureModule
         }
     }
 }
+

@@ -1,7 +1,12 @@
+using System;
+using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using RestlessQoL.Core;
 using RestlessQoL.HudTweaks;
+using TMPro;
+using UnityEngine;
 
 namespace RestlessQoL.Storage;
 
@@ -12,6 +17,57 @@ public sealed class CraftFromStorage : FeatureModule
 
     private static bool On =>
         ModConfig.StorageEnabled.Value && ModConfig.CraftFromStorageEnabled.Value;
+
+    protected override void OnLoaded()
+    {
+        var original = FindSetupRequirement(typeof(InventoryGui)) ?? FindSetupRequirement(typeof(Hud));
+        if (original == null)
+        {
+            Plugin.Log.LogError($"{Id}: SetupRequirement not found — recipe counts stay need-only");
+            return;
+        }
+
+        Harmony!.Patch(original, postfix: new HarmonyMethod(typeof(CraftFromStorage), nameof(ShowHaveNeed)));
+    }
+
+    private static MethodBase? FindSetupRequirement(Type type)
+    {
+        var six = new[]
+        {
+            typeof(Transform), typeof(Piece.Requirement), typeof(Player), typeof(bool), typeof(int), typeof(int)
+        };
+        var five = new[]
+        {
+            typeof(Transform), typeof(Piece.Requirement), typeof(Player), typeof(bool), typeof(int)
+        };
+        return AccessTools.DeclaredMethod(type, "SetupRequirement", six)
+               ?? AccessTools.Method(type, "SetupRequirement", six)
+               ?? AccessTools.DeclaredMethod(type, "SetupRequirement", five)
+               ?? AccessTools.Method(type, "SetupRequirement", five);
+    }
+
+    // Vanilla writes the need only. CountItems already includes nearby chests
+    // (minus LeaveOne). Keep a foreign have/need string if another mod wrote one.
+    private static void ShowHaveNeed(object[] __args)
+    {
+        if (__args == null || __args.Length < 3)
+            return;
+        var elementRoot = __args[0] as Transform;
+        var req = __args[1] as Piece.Requirement;
+        var player = __args[2] as Player;
+        if (elementRoot == null || req?.m_resItem?.m_itemData?.m_shared == null || player == null)
+            return;
+        var amount = elementRoot.Find("res_amount")?.GetComponent<TMP_Text>();
+        if (amount == null || !amount.gameObject.activeSelf)
+            return;
+        var raw = RestlessUi.Bare(amount.text);
+        if (string.IsNullOrEmpty(raw) || raw.IndexOf('/') >= 0)
+            return;
+        if (!int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var need) || need <= 0)
+            return;
+        var have = player.GetInventory().CountItems(req.m_resItem.m_itemData.m_shared.m_name, -1, true);
+        amount.text = have + "/" + need;
+    }
 
     [HarmonyPatch]
     private static class Patches

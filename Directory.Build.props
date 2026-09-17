@@ -1,10 +1,13 @@
 <Project>
+  <!-- CI and local overrides first so derived paths use the real install. -->
+  <Import Project="Environment.props" Condition="Exists('Environment.props')" />
   <PropertyGroup>
-    <!-- Override in Environment.props if Valheim is not in the default Steam folder. -->
     <ValheimInstall Condition="'$(ValheimInstall)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Valheim</ValheimInstall>
-    <VALHEIM_INSTALL>$(ValheimInstall)</VALHEIM_INSTALL>
+    <VALHEIM_INSTALL Condition="'$(VALHEIM_INSTALL)' == ''">$(ValheimInstall)</VALHEIM_INSTALL>
     <BEPINEX_PATH Condition="'$(BEPINEX_PATH)' == ''">$(ValheimInstall)\BepInEx</BEPINEX_PATH>
+    <ValheimManaged Condition="'$(ValheimManaged)' == '' AND Exists('$(ValheimInstall)\valheim_Data\Managed')">$(ValheimInstall)\valheim_Data\Managed</ValheimManaged>
+    <ValheimManaged Condition="'$(ValheimManaged)' == '' AND Exists('$(ValheimInstall)\Valheim_Data\Managed')">$(ValheimInstall)\Valheim_Data\Managed</ValheimManaged>
+    <ValheimManaged Condition="'$(ValheimManaged)' == ''">$(ValheimInstall)\valheim_Data\Managed</ValheimManaged>
     <ExecutePrebuild>true</ExecutePrebuild>
   </PropertyGroup>
-  <Import Project="Environment.props" Condition="Exists('Environment.props')" />
 </Project>

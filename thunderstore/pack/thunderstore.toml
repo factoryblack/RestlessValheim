@@ -1,0 +1,32 @@
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "Restless"
+name = "RestlessCorePack"
+versionNumber = "0.1.2"
+description = "Modpack: BepInEx, Jötunn, RestlessCore, and RestlessCook. Nearby storage, extra slots, host-locked F8, and Meadows through Ashlands cooking."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+containsNsfwContent = false
+
+[package.dependencies]
+denikson-BepInExPack_Valheim = "5.4.2350"
+ValheimModding-Jotunn = "2.30.0"
+Restless-RestlessCore = "0.1.2"
+Restless-RestlessCook = "0.1.0"
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "../../artifacts/tcli-pack"
+
+[[build.copy]]
+source = "./CHANGELOG.md"
+target = "/"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["valheim"]
+
+[publish.categories]
+valheim = ["modpacks"]

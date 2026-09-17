@@ -74,6 +74,8 @@ public static class ModConfig
     public static ConfigEntry<KeyboardShortcut> QuickSlot3 = null!;
     public static ConfigEntry<bool> VitalsEnabled = null!;
     public static ConfigEntry<bool> VitalsStaminaAlways = null!;
+    public static ConfigEntry<bool> VitalsAdrenaline = null!;
+    public static ConfigEntry<bool> VitalsEitr = null!;
     public static ConfigEntry<bool> VitalsNumbers = null!;
     public static ConfigEntry<bool> EquipHintEnabled = null!;
     public static ConfigEntry<bool> BuildMenuEnabled = null!;
@@ -137,11 +139,15 @@ public static class ModConfig
         QuickSlot3 = config.Bind("Hud.ExtraSlots", "QuickSlot3", new KeyboardShortcut(KeyCode.C),
             "Use the third extra quick slot. Client-local.");
         VitalsEnabled = config.Bind("Hud.Vitals", "Enabled", true,
-            "Health and stamina as torn plates flanking the hotbar. Health grows left, stamina grows right. Client-local.");
+            "Health, stamina, adrenaline, and eitr as torn plates flanking the hotbar. Health and adrenaline grow left; stamina and eitr grow right. Client-local.");
         VitalsStaminaAlways = config.Bind("Hud.Vitals", "StaminaAlways", true,
             "Keep the stamina plate visible even when full. Vanilla hides it. Client-local.");
+        VitalsAdrenaline = config.Bind("Hud.Vitals", "Adrenaline", true,
+            "Adrenaline plate stacked above health when a trinket gives you a pool. Client-local.");
+        VitalsEitr = config.Bind("Hud.Vitals", "Eitr", true,
+            "Eitr plate stacked above stamina when you have an eitr pool. Client-local.");
         VitalsNumbers = config.Bind("Hud.Vitals", "Numbers", false,
-            "Averia current on the health and stamina plates. Off while we play with the look. Client-local.");
+            "Averia current on the vital plates. Off while we play with the look. Client-local.");
         EquipHintEnabled = config.Bind("Hud.EquipHint", "Enabled", true,
             "Selected piece helper when the hammer or cultivator is out. Client-local.");
         BuildMenuEnabled = config.Bind("Hud.Build", "Enabled", true,
@@ -169,7 +175,7 @@ public static class ModConfig
             "Leave one item in a stack when pulling, so the chest stays a valid restock target.");
 
         CraftFromStorageEnabled = AdminBool(config, "Storage.Crafting", "Enabled", true,
-            "Spend materials in nearby chests when crafting.");
+            "Spend materials in nearby chests when crafting. Recipe ingredient counts are have/need including those chests.");
         BuildFromStorageEnabled = AdminBool(config, "Storage.Building", "Enabled", true,
             "Spend materials in nearby chests when placing pieces.");
         QuickStackEnabled = AdminBool(config, "Storage.QuickStack", "Enabled", true,

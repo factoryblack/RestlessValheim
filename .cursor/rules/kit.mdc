@@ -17,11 +17,11 @@ alwaysApply: true
 - **Type** — Jötunn Averia `Text`. Regular body, Bold only at `TitleSize`. Colours: `Text` / `Muted` / `Accent`.
 - **Fade** — `FadeSeconds`. Slide uses the same clock.
 - **HudRow** — one Strip + duration fill (left-anchored `row-idle` in `FillTint`, width follows the clock) + icon + title + meta. Notices (`HudRow.Notice`) and buffs (`HudRow.Buff`). Empty food slots use the vanilla food fork when it exists, else kit `eat-fork` (cream). Do not rebuild this layout in a feature. Call `Notices.Post` to push a line into the drawer.
-- **HudMeter** — thin Ink track (`row-idle`) whose **width follows max** HP/stamina (grows out from the hotbar). Keep it **18px** — a sliced plate here is the wrong shape; thinner is the look. Dark track is always the full max length. Fill is kit `HealthTint` / `StaminaTint` (garnet / amber), clipped to current/max. Averia current is optional. Health docks left of `Bar` and grows left. Stamina docks right and grows right. Do not rebuild this in a feature.
+- **HudMeter** — thin Ink track (`row-idle`) whose **width follows max** (grows out from the hotbar). Keep it **18px** — a sliced plate here is the wrong shape; thinner is the look. Dark track is always the full max length. Fill is kit `HealthTint` / `AdrenalineTint` / `StaminaTint` / `EitrTint` (garnet / copper / amber / frost), clipped to current/max. Averia current is optional. Health docks left of `Bar` and grows left; adrenaline stacks above it on the same inner X. Stamina docks right and grows right; eitr stacks above it. Do not rebuild this in a feature.
 - **Wear** — vertical torn slit on the **right inside** of the slot, **11px** wide. Graphic is `row-idle`'s ragged left and right stacked, bleached to white, then tinted cream (`Accent`) / red (`HealthTint`). 9-sliced top/bottom. Grows up with remaining durability. Never Mask-fill the plate. Do not keep vanilla `GuiBar` on a Restless slot.
 - **KeyChip** — Chip + Averia. Verb left, bind right (cream mouse glyph or key). Resolve with `RestlessUi.Bind` / `PaintChip` (never dump `MISSING BUTTONDEF` or raw `$button` tokens).
 - **KeyStack** — KeyChip column, or one torn Look **plate**. Features pass rows only. `BottomRight` grows up (combat, fishing, hammer). `Look` is a single Strip with title + bind lines on it (cook, pick up, doors) — not a stack of separate chips.
-- **Dock** — named `HudDock` pins (`TopLeft` for every notice, `Bar` for the item hotbar, equipped-piece helper just above `Bar`, health left of `Bar`, stamina right of `Bar`, `BottomRight` for action hints — pivot on the corner, stack upward, `Look` for world hover under the crosshair). Guardian power and food (including empty Eat rows) live on the buff list. `Dock()` still means hang one rect on another.
+- **Dock** — named `HudDock` pins (`TopLeft` for every notice, `Bar` for the item hotbar, equipped-piece helper just above `Bar`, health left of `Bar` with adrenaline stacked above, stamina right of `Bar` with eitr stacked above, `BottomRight` for action hints — pivot on the corner, stack upward, `Look` for world hover under the crosshair). Guardian power and food (including empty Eat rows) live on the buff list. `Dock()` still means hang one rect on another.
 
 Never: TMP / LiberationSans, `hotkey-btn`, `slider.png`, `toggle-on`, `map-compass`, 9-sliced `panel-back` as a card. `panel-back` is a mask only. Never UI-Mask the vanilla map RawImage. M map uses the same off-screen RT + `panel-back` Mask as the HUD minimap. Chrome is Strip plates (biome, pin name, share toggles, icon trays) and a KeyStack for the map binds. The kit's full-width top Hotkeys bar is baked ESC/I text — reconstruct keys as Chip + Averia. Notices all stack **top-left**. Do not pin toasts to the right, center, or onto the hotbar.
 
@@ -81,3 +81,35 @@ the vanilla TMP rectangle. Craft detail uses a clone of the vanilla recipe-list
 scrollbar, not ForgedScrollbar. RestlessScrollRect moves about one viewport per
 wheel notch without inertia; same-recipe refreshes retain scroll position. See
 docs/forged-kit.md.
+
+## Material polish integration
+
+User authorised wiring the asset study into the existing UI. PortraitFrame,
+CategoryStrip, QualityLozenge and ControlFeedback are shared RestlessUi helpers.
+PaperCorner uses the solid corner overlay and separate cast pine; PaperDivider
+keeps its cast knot proportional. Navigation sprite replacements must restore the
+original sprite, colour and aspect on undress. Keep native PVP state presentation.
+Focus and selection are separate visual states. Do not replace main's recipe
+scrolling implementation. See docs/ui-polish-integration.md.
+
+## Inventory material adoption
+
+DressSlot's inventory opt-in uses inventory-slot with quiet focus outlines and an
+equipped underline. HUD slots retain their existing material and wear. Inventory
+wear is 4px wide with clearance for the lock diamond and bottom count/bind strip.
+Use InventoryEmpty/InventoryBinding/InventorySurface; no ornate slot frames or
+padlock replacement. Empty equipment silhouettes disappear when occupied. Fit the
+shared paper to existing grid cells and divide groups with plain rules; do not
+move cells away from native grid hit testing. See docs/inventory-integration.md.
+
+Container presentation shares InventorySurface, PaperControl and the existing
+reversible control/artwork registries. Fit the frame to native bounds, never move
+the grid for decoration. Capacity means occupied cells / total cells, not weight.
+BoundedLabel gives compact controls modest best-fit limits; descriptions and
+tooltip/recipe stat rows retain their measured wrapping layout.
+
+Skills uses PaperControl rows and InventorySurface around the native viewport,
+with original icons, bars and hover descriptions. Never resize the frame around
+scrolling content or replace native progress calculations. Restore bar colours
+on undress. Character records use the display-only Metric helper with bounded
+labels/values; data comes from Ledger, not new counters. See docs/character-skills.md.

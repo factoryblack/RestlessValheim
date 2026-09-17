@@ -19,10 +19,11 @@ public sealed class StationPull : FeatureModule
     {
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Smelter), nameof(Smelter.OnAddOre))]
-        private static void BeginOre(ref IDisposable __state)
+        private static void BeginOre(ref ItemDrop.ItemData item, ref IDisposable __state)
         {
             if (On)
                 __state = NearbyStorage.BeginDirectTake();
+            NearbyStorage.EnsureDropPrefab(item);
         }
 
         [HarmonyFinalizer]
@@ -31,10 +32,11 @@ public sealed class StationPull : FeatureModule
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(CookingStation), nameof(CookingStation.OnUseItem))]
-        private static void BeginCook(ref IDisposable __state)
+        private static void BeginCook(ref ItemDrop.ItemData item, ref IDisposable __state)
         {
             if (On)
                 __state = NearbyStorage.BeginDirectTake();
+            NearbyStorage.EnsureDropPrefab(item);
         }
 
         [HarmonyFinalizer]
@@ -43,10 +45,11 @@ public sealed class StationPull : FeatureModule
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Fermenter), nameof(Fermenter.AddItem))]
-        private static void BeginFerment(ref IDisposable __state)
+        private static void BeginFerment(ref ItemDrop.ItemData item, ref IDisposable __state)
         {
             if (On)
                 __state = NearbyStorage.BeginDirectTake();
+            NearbyStorage.EnsureDropPrefab(item);
         }
 
         [HarmonyFinalizer]
@@ -55,18 +58,27 @@ public sealed class StationPull : FeatureModule
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Smelter), nameof(Smelter.FindCookableItem))]
-        private static void SmelterFind(Smelter __instance, Inventory inventory, ref ItemDrop.ItemData __result) =>
+        private static void SmelterFind(Smelter __instance, Inventory inventory, ref ItemDrop.ItemData __result)
+        {
             TryFind(inventory, From(__instance.m_conversion, c => c.m_from), ref __result);
+            NearbyStorage.EnsureDropPrefab(__result);
+        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(CookingStation), nameof(CookingStation.FindCookableItem))]
-        private static void CookFind(CookingStation __instance, Inventory inventory, ref ItemDrop.ItemData __result) =>
+        private static void CookFind(CookingStation __instance, Inventory inventory, ref ItemDrop.ItemData __result)
+        {
             TryFind(inventory, From(__instance.m_conversion, c => c.m_from), ref __result);
+            NearbyStorage.EnsureDropPrefab(__result);
+        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Fermenter), nameof(Fermenter.FindCookableItem))]
-        private static void FermentFind(Fermenter __instance, Inventory inventory, ref ItemDrop.ItemData __result) =>
+        private static void FermentFind(Fermenter __instance, Inventory inventory, ref ItemDrop.ItemData __result)
+        {
             TryFind(inventory, From(__instance.m_conversion, c => c.m_from), ref __result);
+            NearbyStorage.EnsureDropPrefab(__result);
+        }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Inventory), nameof(Inventory.RemoveOneItem))]

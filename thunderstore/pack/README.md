@@ -1,7 +1,12 @@
 # RestlessCorePack
 
-BepInEx + Jötunn + RestlessCore. That is the whole pack.
+A **Valheim modpack**, not a plugin. r2modman / Thunderstore install this listing and pull the stack:
 
-Fires, dig depth, craft-from-chests, and the other papercuts live **in the plugin**, not as extra Thunderstore deps. Optional extras (MyLittleUI, EquipmentAndQuickSlots) are listed in the repo `catalogue.yaml` if you still want them — they are not pulled in automatically.
+- BepInExPack 5.4.2350
+- Jötunn 2.30.0
+- **RestlessCore** — nearby storage, extra slots, host-locked F8, Restless HUD
+- **RestlessCook** — Meadows through Ashlands meals and feasts
 
-Do not combine with ValheimPlus, BetterUI, MinimalUI, AzuCraftyBoxes, or PlanBuild.
+This zip has no DLL. It only names those packages. See each plugin page for what that version does.
+
+The HUD and inventory look are still landing.

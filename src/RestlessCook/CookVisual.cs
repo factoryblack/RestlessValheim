@@ -5,9 +5,16 @@ namespace RestlessCook;
 
 internal static class CookVisual
 {
+    private const string ChildName = "RestlessCookMesh";
+
     public static void Apply(CustomItem item, CookRow row)
     {
-        var prefab = item.ItemPrefab;
+        if (item?.ItemPrefab != null)
+            Apply(item.ItemPrefab, row);
+    }
+
+    public static void Apply(GameObject prefab, CookRow row)
+    {
         if (prefab == null)
             return;
 
@@ -16,76 +23,62 @@ internal static class CookVisual
         if (mesh == null)
             return;
 
-        var filters = prefab.GetComponentsInChildren<MeshFilter>(true);
-        var host = Pick(filters);
-        if (host != null)
-        {
-            host.sharedMesh = mesh;
-            Paint(host.GetComponent<Renderer>(), albedo);
-            foreach (var filter in filters)
-            {
-                if (filter != host && filter.GetComponent<Renderer>() is { } extra)
-                    extra.enabled = false;
-            }
-        }
-
-        foreach (var skin in prefab.GetComponentsInChildren<SkinnedMeshRenderer>(true))
-        {
-            if (host != null)
-            {
-                skin.enabled = false;
-                continue;
-            }
-
-            var filter = skin.gameObject.GetComponent<MeshFilter>() ?? skin.gameObject.AddComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
-            var rend = skin.gameObject.GetComponent<MeshRenderer>() ?? skin.gameObject.AddComponent<MeshRenderer>();
-            rend.sharedMaterials = skin.sharedMaterials;
-            Paint(rend, albedo);
-            skin.enabled = false;
-            host = filter;
-        }
-
-        if (host == null)
-        {
-            var visual = new GameObject("RestlessCookMesh");
-            visual.transform.SetParent(prefab.transform, false);
-            var filter = visual.AddComponent<MeshFilter>();
-            filter.sharedMesh = mesh;
-            Paint(visual.AddComponent<MeshRenderer>(), albedo);
-        }
-
-        Plugin.Log.LogInfo("cook mesh " + row.Id);
+        var visual = FindOrCreate(prefab);
+        var filter = visual.GetComponent<MeshFilter>() ?? visual.AddComponent<MeshFilter>();
+        filter.sharedMesh = mesh;
+        var rend = visual.GetComponent<MeshRenderer>() ?? visual.AddComponent<MeshRenderer>();
+        rend.enabled = true;
+        Paint(rend, albedo);
+        KeepPlate(prefab);
     }
 
-    private static MeshFilter? Pick(MeshFilter[] filters)
+    public static void KeepPlate(GameObject prefab)
     {
-        MeshFilter? best = null;
-        var bestVol = -1f;
-        foreach (var filter in filters)
+        if (prefab == null)
+            return;
+        var keep = prefab.transform.Find(ChildName)?.GetComponent<Renderer>();
+        if (keep == null)
+            return;
+        keep.enabled = true;
+        keep.gameObject.SetActive(true);
+        foreach (var rend in prefab.GetComponentsInChildren<Renderer>(true))
         {
-            if (filter == null)
+            if (rend == null || rend == keep)
                 continue;
-            var size = filter.sharedMesh != null ? filter.sharedMesh.bounds.size : Vector3.one * 0.01f;
-            var vol = size.x * size.y * size.z;
-            if (vol > bestVol)
-            {
-                best = filter;
-                bestVol = vol;
-            }
+            if (rend is not MeshRenderer && rend is not SkinnedMeshRenderer)
+                continue;
+            rend.enabled = false;
         }
-
-        return best;
     }
 
-    private static void Paint(Renderer? renderer, Texture2D? albedo)
+    private static GameObject FindOrCreate(GameObject prefab)
     {
-        if (renderer == null)
+        var t = prefab.transform.Find(ChildName);
+        if (t != null)
+        {
+            t.SetParent(prefab.transform, false);
+            t.localPosition = Vector3.zero;
+            t.localRotation = Quaternion.identity;
+            t.localScale = Vector3.one;
+            t.gameObject.layer = prefab.layer;
+            t.gameObject.SetActive(true);
+            return t.gameObject;
+        }
+
+        var visual = new GameObject(ChildName);
+        visual.layer = prefab.layer;
+        visual.transform.SetParent(prefab.transform, false);
+        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localRotation = Quaternion.identity;
+        visual.transform.localScale = Vector3.one;
+        return visual;
+    }
+
+    private static void Paint(Renderer renderer, Texture2D? albedo)
+    {
+        var mat = Fallback();
+        if (mat == null)
             return;
-        var source = renderer.sharedMaterial;
-        if (source == null)
-            return;
-        var mat = new Material(source);
         mat.color = Color.white;
         SetColor(mat, "_Color", Color.white);
         SetColor(mat, "_BaseColor", Color.white);
@@ -101,7 +94,16 @@ internal static class CookVisual
             if (mat.HasProperty("_BaseMap"))
                 mat.SetTexture("_BaseMap", albedo);
         }
+
         renderer.sharedMaterial = mat;
+    }
+
+    private static Material? Fallback()
+    {
+        var shader = Shader.Find("Standard")
+                     ?? Shader.Find("Diffuse")
+                     ?? Shader.Find("Legacy Shaders/Diffuse");
+        return shader != null ? new Material(shader) : null;
     }
 
     private static void SetColor(Material mat, string prop, Color color)

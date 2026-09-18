@@ -21,12 +21,16 @@ internal static class PilePatches
     private static void AfterPiece(Piece __instance) => Pile.TryAttach(__instance.gameObject);
 
     [HarmonyPrefix]
-    [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Destroy))]
-    private static void BeforeDestroy(WearNTear __instance) => Pile.Spill(__instance);
-
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Remove))]
-    private static void BeforeRemove(WearNTear __instance) => Pile.Spill(__instance);
+    [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Destroy), typeof(HitData), typeof(bool))]
+    private static void BeforeDestroy(WearNTear __instance, ref bool blockDrop)
+    {
+        var box = __instance != null ? __instance.GetComponent<PileBox>() : null;
+        if (box == null)
+            return;
+        var refundBuild = !blockDrop;
+        box.Spill(refundBuild);
+        blockDrop = true;
+    }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(HoverText), nameof(HoverText.GetHoverText))]

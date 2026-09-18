@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+- Custom feasts are serving-tray pieces (vanilla models were the Meadows/Black Forest boards). Unlock by knowing the meals, then place with the tray
+- Meal, sideboard, leftover, and feast plates sit at the prefab origin at baked metre scale; vanilla food/feast meshes stay hidden, including when a feast updates as you eat
+- Plate materials use a lit albedo shader instead of vanilla skinned-food materials
+
 ## 0.1.2
 
 - Matrix drops the internal Op column and keeps Recipe

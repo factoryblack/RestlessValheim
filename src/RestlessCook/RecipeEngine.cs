@@ -5,6 +5,7 @@ using HarmonyLib;
 using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
+using UnityEngine;
 
 namespace RestlessCook;
 
@@ -21,6 +22,7 @@ internal static class RecipeEngine
         _kit = book.Kit;
         PrefabManager.OnVanillaPrefabsAvailable += AddCustom;
         ItemManager.OnItemsRegistered += RewriteRegistered;
+        PieceManager.OnPiecesRegistered += WireFeasts;
         _harmony = new Harmony(Plugin.PluginGuid + ".recipes");
         _harmony.PatchAll(typeof(RecipeEngine).Assembly);
     }
@@ -59,7 +61,7 @@ internal static class RecipeEngine
         foreach (var row in _rows.Where(r => r.IsAdd && r.IsSideboard))
             RegisterItem(row);
         foreach (var row in _rows.Where(r => r.IsAdd && r.IsFeast))
-            RegisterItem(row);
+            RegisterFeast(row);
 
         var ops = _rows.Count(r => r.IsAdd || r.IsRewrite);
         Plugin.Log.LogInfo($"RestlessCook registered {_rows.Count(r => r.IsAdd)} custom items from cook.yaml ({ops} recipe operations).");
@@ -81,13 +83,75 @@ internal static class RecipeEngine
         foreach (var use in row.Uses)
             cfg.AddRequirement(use.Item, use.Amount);
 
-        var item = new CustomItem(row.Prefab, CloneSource(row), cfg);
+        var source = CloneSource(row);
+        var go = PrefabManager.Instance.CreateClonedPrefab(row.Prefab, source);
+        CustomItem item;
+        if (go != null)
+            item = new CustomItem(go, true, cfg);
+        else
+            item = new CustomItem(row.Prefab, source, cfg);
         ItemManager.Instance.AddItem(item);
-        CookVisual.Apply(item, row);
+        CookVisual.Apply(go != null ? go : item.ItemPrefab, row);
         if (row.IsSideboard)
             StripFood(item);
-        else if (row.IsMeal || row.IsFeast)
+        else if (row.IsMeal)
             ApplyFood(row, item);
+    }
+
+    private static void RegisterFeast(CookRow row)
+    {
+        var icon = CookIcons.Sprite(row.Id);
+        var matName = row.Prefab + "_Material";
+        var matSource = row.CloneFrom.EndsWith("_Material", StringComparison.Ordinal)
+            ? row.CloneFrom
+            : row.CloneFrom + "_Material";
+        if (PrefabManager.Instance.GetPrefab(matSource) == null)
+            matSource = row.CloneFrom;
+
+        var matGo = PrefabManager.Instance.CreateClonedPrefab(matName, matSource);
+        if (matGo != null)
+        {
+            var shared = matGo.GetComponent<ItemDrop>()?.m_itemData?.m_shared;
+            if (shared != null)
+            {
+                shared.m_name = row.Name;
+                shared.m_description = Description(row);
+                if (icon != null)
+                    shared.m_icons = new[] { icon };
+            }
+
+            ItemManager.Instance.AddItem(new CustomItem(matGo, true));
+            CookVisual.Apply(matGo, row);
+            ApplyFood(row, matGo.GetComponent<ItemDrop>());
+        }
+        else
+            Plugin.Log.LogWarning("cook feast missing material " + matSource);
+
+        var pieceSource = row.CloneFrom.EndsWith("_Material", StringComparison.Ordinal)
+            ? row.CloneFrom.Substring(0, row.CloneFrom.Length - "_Material".Length)
+            : row.CloneFrom;
+        var pieceGo = PrefabManager.Instance.CreateClonedPrefab(row.Prefab, pieceSource);
+        if (pieceGo == null)
+        {
+            Plugin.Log.LogWarning("cook feast missing piece " + pieceSource);
+            return;
+        }
+
+        var cfg = new PieceConfig
+        {
+            Name = row.Name,
+            Description = Description(row),
+            PieceTable = PieceTables.ServingTray,
+            CraftingStation = CraftingStations.None
+        };
+        if (icon != null)
+            cfg.Icon = icon;
+        foreach (var use in row.Uses)
+            cfg.AddRequirement(use.Item, use.Amount, true);
+
+        PieceManager.Instance.AddPiece(new CustomPiece(pieceGo, true, cfg));
+        CookVisual.Apply(pieceGo, row);
+        Plugin.Log.LogInfo("cook feast piece " + row.Prefab);
     }
 
     private static void GrantTrayRecipe()
@@ -166,8 +230,11 @@ internal static class RecipeEngine
     }
 
     private static void ApplyFood(CookRow row, CustomItem item)
+        => ApplyFood(row, item.ItemDrop);
+
+    private static void ApplyFood(CookRow row, ItemDrop? drop)
     {
-        var shared = Shared(item);
+        var shared = drop?.m_itemData?.m_shared;
         if (shared == null)
             return;
         shared.m_food = row.Food;
@@ -178,8 +245,11 @@ internal static class RecipeEngine
     }
 
     private static void StripFood(CustomItem item)
+        => StripFood(item.ItemDrop);
+
+    private static void StripFood(ItemDrop? drop)
     {
-        var shared = Shared(item);
+        var shared = drop?.m_itemData?.m_shared;
         if (shared == null)
             return;
         shared.m_itemType = ItemDrop.ItemData.ItemType.Material;
@@ -192,11 +262,64 @@ internal static class RecipeEngine
             shared.m_maxStackSize = 20;
     }
 
-    private static ItemDrop.ItemData.SharedData? Shared(CustomItem item)
-        => item.ItemDrop?.m_itemData?.m_shared;
-
     private static void RewriteRegistered()
     {
+        DressRegistered();
+        if (ObjectDB.instance != null)
+            Rewrite(ObjectDB.instance);
+    }
+
+    private static void DressRegistered()
+    {
+        var n = 0;
+        foreach (var row in _rows.Where(r => r.IsAdd))
+        {
+            foreach (var name in PrefabNames(row))
+            {
+                var go = PrefabManager.Instance.GetPrefab(name)
+                    ?? ObjectDB.instance?.GetItemPrefab(name);
+                if (go == null)
+                    continue;
+                CookVisual.Apply(go, row);
+                var drop = go.GetComponent<ItemDrop>();
+                if (row.IsSideboard)
+                    StripFood(drop);
+                else if (row.IsMeal || row.IsFeast)
+                    ApplyFood(row, drop);
+                n++;
+            }
+        }
+
+        Plugin.Log.LogInfo($"cook dressed {n} prefabs");
+    }
+
+    private static IEnumerable<string> PrefabNames(CookRow row)
+    {
+        yield return row.Prefab;
+        if (row.IsFeast)
+            yield return row.Prefab + "_Material";
+    }
+
+    private static void WireFeasts()
+    {
+        foreach (var row in _rows.Where(r => r.IsAdd && r.IsFeast))
+        {
+            var feast = PrefabManager.Instance.GetPrefab(row.Prefab)?.GetComponent<Feast>();
+            var mat = PrefabManager.Instance.GetPrefab(row.Prefab + "_Material")
+                ?? ObjectDB.instance?.GetItemPrefab(row.Prefab + "_Material");
+            var drop = mat?.GetComponent<ItemDrop>();
+            if (feast == null || drop == null)
+            {
+                Plugin.Log.LogWarning("cook feast leftover missing " + row.Prefab);
+                continue;
+            }
+
+            feast.m_foodItem = drop;
+            CookVisual.Apply(feast.gameObject, row);
+        }
+
+        DressRegistered();
+
         if (ObjectDB.instance != null)
             Rewrite(ObjectDB.instance);
     }
@@ -212,45 +335,57 @@ internal static class RecipeEngine
 
         foreach (var row in _rows.Where(r => r.IsRewrite))
         {
-            var recipe = db.m_recipes.FirstOrDefault(r => r != null && r.name == row.RecipeId);
-            if (recipe == null)
-            {
-                Plugin.Log.LogWarning($"RestlessCook: missing {row.RecipeId} for {row.Id}");
-                continue;
-            }
-
-            var reqs = new List<Piece.Requirement>();
-            foreach (var use in row.Uses)
-            {
-                var prefab = db.GetItemPrefab(use.Item);
-                if (prefab == null)
-                {
-                    Plugin.Log.LogWarning($"RestlessCook: {row.Id} missing ingredient {use.Item}");
-                    continue;
-                }
-
-                var drop = prefab.GetComponent<ItemDrop>();
-                if (drop == null)
-                {
-                    Plugin.Log.LogWarning($"RestlessCook: {use.Item} has no ItemDrop");
-                    continue;
-                }
-
-                reqs.Add(new Piece.Requirement
-                {
-                    m_resItem = drop,
-                    m_amount = use.Amount,
-                    m_amountPerLevel = 0,
-                    m_recover = false
-                });
-            }
-
+            var reqs = BuildReqs(db, row);
             if (reqs.Count == 0)
                 continue;
 
-            recipe.m_resources = reqs.ToArray();
-            recipe.m_amount = row.OutputAmount;
+            var recipe = db.m_recipes.FirstOrDefault(r => r != null && r.name == row.RecipeId);
+            if (recipe != null)
+            {
+                recipe.m_resources = reqs.ToArray();
+                recipe.m_amount = row.OutputAmount;
+            }
+
+            var pieceName = row.Prefab.EndsWith("_Material", StringComparison.Ordinal)
+                ? row.Prefab.Substring(0, row.Prefab.Length - "_Material".Length)
+                : row.Prefab;
+            var piece = PrefabManager.Instance.GetPrefab(pieceName)?.GetComponent<Piece>();
+            if (piece != null)
+                piece.m_resources = reqs.ToArray();
+            else if (recipe == null)
+                Plugin.Log.LogWarning($"RestlessCook: missing {row.RecipeId} / {pieceName} for {row.Id}");
         }
+    }
+
+    private static List<Piece.Requirement> BuildReqs(ObjectDB db, CookRow row)
+    {
+        var reqs = new List<Piece.Requirement>();
+        foreach (var use in row.Uses)
+        {
+            var prefab = db.GetItemPrefab(use.Item);
+            if (prefab == null)
+            {
+                Plugin.Log.LogWarning($"RestlessCook: {row.Id} missing ingredient {use.Item}");
+                continue;
+            }
+
+            var drop = prefab.GetComponent<ItemDrop>();
+            if (drop == null)
+            {
+                Plugin.Log.LogWarning($"RestlessCook: {use.Item} has no ItemDrop");
+                continue;
+            }
+
+            reqs.Add(new Piece.Requirement
+            {
+                m_resItem = drop,
+                m_amount = use.Amount,
+                m_amountPerLevel = 0,
+                m_recover = row.IsFeast
+            });
+        }
+
+        return reqs;
     }
 
     [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB))]
@@ -263,5 +398,15 @@ internal static class RecipeEngine
     public static class AwakePatch
     {
         public static void Postfix(ObjectDB __instance) => Rewrite(__instance);
+    }
+
+    [HarmonyPatch(typeof(Feast), nameof(Feast.UpdateVisual))]
+    public static class FeastVisualPatch
+    {
+        public static void Postfix(Feast __instance)
+        {
+            if (__instance != null)
+                CookVisual.KeepPlate(__instance.gameObject);
+        }
     }
 }

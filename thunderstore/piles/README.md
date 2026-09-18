@@ -16,7 +16,7 @@ Each pile only holds the item it is made of (a stone pile only takes stone). Sto
 - **Stack** dumps every matching bag stack into this pile (hotbar, extra slots, and locked cells stay).
 - **`** (Core quick stack) dumps matching bag stacks into nearby piles first, then into chests the way Core already does.
 - **Vacuum** pulls matching ground drops into nearby piles (including empty / 0 stored), then into chests that already hold that item.
-- Hammer-remove or smash spills the stored extra as normal bag-sized drops. The 50 you spent to place the piece still refunds as vanilla.
+- Hammer-remove or smash spills stored extras and the piece's build cost as bag-sized drops.
 
 Wood, finewood, core wood, yggdrasil, ashwood, stone, coal, black marble, grausten, bones, skulls, and the coin stacks/piles are included — anything whose prefab name ends in `_stack` or `_pile` and costs one stackable resource.
 

@@ -12,7 +12,7 @@ This page is the recipe wiki. Isolated plates are the full renders; the in-game 
 
 1. Cook the raw meat and fish first.
 2. Turn those cuts (and forage) into prepared meals.
-3. Assemble meals into feast boards. Two sideboards bundle leftover Mistlands and Ashlands plates so they still reach a vanilla feast.
+3. Assemble meals into feast boards with the **serving tray**. Two sideboards bundle leftover Mistlands and Ashlands plates so they still reach a vanilla feast.
 
 Every prepared meal still reaches at least one feast. Existing vanilla feasts stay valid sinks. Protein recipes that already exist are rewritten in place so they ask for the cooked cut.
 

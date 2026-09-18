@@ -85,12 +85,6 @@ internal static class Pile
             act(view);
     }
 
-    public static void Spill(WearNTear wear)
-    {
-        var box = wear != null ? wear.GetComponent<PileBox>() : null;
-        box?.Spill();
-    }
-
     public static string Title(ItemDrop.ItemData item)
     {
         var name = item?.m_shared?.m_name ?? "";

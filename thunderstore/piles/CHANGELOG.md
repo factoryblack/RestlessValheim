@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- Hammer-remove or smash returns stored extras and the pile's build cost (the wood/stone spent to place it)
+
 ## 0.1.0
 
 - Vanilla resource piles (wood stack, stone pile, and the rest) open as uncapped single-item stores

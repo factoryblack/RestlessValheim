@@ -1,6 +1,6 @@
 {
   "name": "RestlessPiles",
-  "version_number": "0.1.0",
+  "version_number": "0.1.1",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "Wood stacks and stone piles become uncapped stores. E opens a tray; Take stack grabs one bag stack. Needs RestlessCore.",
   "dependencies": [

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Full stack: RestlessCore 0.1.5, RestlessCook 0.1.2, RestlessPiles 0.1.0, and RestlessPlant 0.1.0
+
 ## 0.1.5
 
 - Installs RestlessCore 0.1.5 and RestlessCook 0.1.2 with BepInEx 5.4.2350 and Jötunn 2.30.1

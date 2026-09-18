@@ -1,5 +1,5 @@
 # Compile on every PR / push. Ship GitHub + Thunderstore only when you tag:
-#   v*      RestlessCore + Restless Valheim (modpack). Cook/Piles compiled, not published.
+#   v*      RestlessCore + Restless Valheim (full pack: Core Cook Piles Plant). Addons compiled, not published.
 #   pack-v* Restless Valheim pack only
 #   cook-v* RestlessCook only
 #   piles-v* RestlessPiles only
@@ -128,36 +128,57 @@ jobs:
           from pathlib import Path
 
           version = os.environ["GITHUB_REF_NAME"].removeprefix("v")
-          cook_toml = Path("thunderstore/cook/thunderstore.toml")
-          cook_ver = re.search(r'versionNumber = "(.*)"', cook_toml.read_text(encoding="utf-8")).group(1)
 
-          def stamp_toml(path, version_number=None, core=None, cook=None):
+          def toml_ver(path):
+              return re.search(r'versionNumber = "(.*)"', Path(path).read_text(encoding="utf-8")).group(1)
+
+          cook_ver = toml_ver("thunderstore/cook/thunderstore.toml")
+          piles_ver = toml_ver("thunderstore/piles/thunderstore.toml")
+          plant_ver = toml_ver("thunderstore/plant/thunderstore.toml")
+          addons = {
+              "Restless-RestlessCore": version,
+              "Restless-RestlessCook": cook_ver,
+              "Restless-RestlessPiles": piles_ver,
+              "Restless-RestlessPlant": plant_ver,
+          }
+
+          def set_toml_dep(text, key, ver):
+              line = f'{key} = "{ver}"'
+              if re.search(rf'{re.escape(key)} = "', text):
+                  return re.sub(rf'{re.escape(key)} = ".*"', line, text, count=1)
+              return text.replace(
+                  'ValheimModding-Jotunn = "2.30.1"\n',
+                  'ValheimModding-Jotunn = "2.30.1"\n' + line + "\n",
+                  1,
+              )
+
+          def stamp_toml(path, version_number=None, deps=None):
               text = path.read_text(encoding="utf-8")
               if version_number:
                   text = re.sub(r'versionNumber = ".*"', f'versionNumber = "{version_number}"', text, count=1)
-              if core:
-                  text = re.sub(r'Restless-RestlessCore = ".*"', f'Restless-RestlessCore = "{core}"', text, count=1)
-              if cook:
-                  text = re.sub(r'Restless-RestlessCook = ".*"', f'Restless-RestlessCook = "{cook}"', text, count=1)
+              for key, ver in (deps or {}).items():
+                  text = set_toml_dep(text, key, ver)
               path.write_text(text, encoding="utf-8")
 
-          def stamp_manifest(path, version_number=None, core=None, cook=None):
+          def stamp_manifest(path, version_number=None, deps=None):
               data = json.loads(path.read_text(encoding="utf-8"))
               if version_number:
                   data["version_number"] = version_number
-              deps = data.get("dependencies") or []
-              if core:
-                  deps = [f"Restless-RestlessCore-{core}" if d.startswith("Restless-RestlessCore-") else d for d in deps]
-              if cook:
-                  deps = [f"Restless-RestlessCook-{cook}" if d.startswith("Restless-RestlessCook-") else d for d in deps]
-              data["dependencies"] = deps
+              listed = data.get("dependencies") or []
+              for key, ver in (deps or {}).items():
+                  prefix = key + "-"
+                  if any(d.startswith(prefix) for d in listed):
+                      listed = [f"{key}-{ver}" if d.startswith(prefix) else d for d in listed]
+                  else:
+                      listed.append(f"{key}-{ver}")
+              data["dependencies"] = listed
               path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
           stamp_toml(Path("thunderstore/plugin/thunderstore.toml"), version_number=version)
           stamp_manifest(Path("thunderstore/plugin/manifest.json"), version_number=version)
-          stamp_toml(Path("thunderstore/pack/thunderstore.toml"), version_number=version, core=version, cook=cook_ver)
-          stamp_manifest(Path("thunderstore/pack/manifest.json"), version_number=version, core=version, cook=cook_ver)
-          print(f"stamped core/pack {version}, pack still depends on cook {cook_ver}")
+          stamp_toml(Path("thunderstore/pack/thunderstore.toml"), version_number=version, deps=addons)
+          stamp_manifest(Path("thunderstore/pack/manifest.json"), version_number=version, deps=addons)
+          print(f"stamped core/pack {version} with cook {cook_ver}, piles {piles_ver}, plant {plant_ver}")
           PY
 
       - name: Thunderstore zips
@@ -217,15 +238,47 @@ jobs:
           import os, re, json
           from pathlib import Path
           version = os.environ["GITHUB_REF_NAME"].removeprefix("pack-v")
+
+          def toml_ver(path):
+              return re.search(r'versionNumber = "(.*)"', Path(path).read_text(encoding="utf-8")).group(1)
+
+          addons = {
+              "Restless-RestlessCore": toml_ver("thunderstore/plugin/thunderstore.toml"),
+              "Restless-RestlessCook": toml_ver("thunderstore/cook/thunderstore.toml"),
+              "Restless-RestlessPiles": toml_ver("thunderstore/piles/thunderstore.toml"),
+              "Restless-RestlessPlant": toml_ver("thunderstore/plant/thunderstore.toml"),
+          }
+
+          def set_toml_dep(text, key, ver):
+              line = f'{key} = "{ver}"'
+              if re.search(rf'{re.escape(key)} = "', text):
+                  return re.sub(rf'{re.escape(key)} = ".*"', line, text, count=1)
+              return text.replace(
+                  'ValheimModding-Jotunn = "2.30.1"\n',
+                  'ValheimModding-Jotunn = "2.30.1"\n' + line + "\n",
+                  1,
+              )
+
           toml = Path("thunderstore/pack/thunderstore.toml")
           text = toml.read_text(encoding="utf-8")
           text = re.sub(r'versionNumber = ".*"', f'versionNumber = "{version}"', text, count=1)
+          for key, ver in addons.items():
+              text = set_toml_dep(text, key, ver)
           toml.write_text(text, encoding="utf-8")
+
           manifest = Path("thunderstore/pack/manifest.json")
           data = json.loads(manifest.read_text(encoding="utf-8"))
           data["version_number"] = version
+          listed = data.get("dependencies") or []
+          for key, ver in addons.items():
+              prefix = key + "-"
+              if any(d.startswith(prefix) for d in listed):
+                  listed = [f"{key}-{ver}" if d.startswith(prefix) else d for d in listed]
+              else:
+                  listed.append(f"{key}-{ver}")
+          data["dependencies"] = listed
           manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-          print(f"stamped pack {version}")
+          print(f"stamped pack {version} with {addons}")
           PY
 
       - name: Thunderstore pack zip

@@ -4,8 +4,8 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "Restless_Valheim"
-versionNumber = "0.1.5"
-description = "Restless Valheim: BepInEx, Jötunn, RestlessCore, and RestlessCook. Nearby storage, extra slots, host-locked F8, and Meadows through Ashlands cooking."
+versionNumber = "0.1.6"
+description = "Restless Valheim: BepInEx, Jötunn, RestlessCore, RestlessCook, RestlessPiles, and RestlessPlant."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
 
@@ -14,6 +14,8 @@ denikson-BepInExPack_Valheim = "5.4.2350"
 ValheimModding-Jotunn = "2.30.1"
 Restless-RestlessCore = "0.1.5"
 Restless-RestlessCook = "0.1.2"
+Restless-RestlessPiles = "0.1.0"
+Restless-RestlessPlant = "0.1.0"
 
 [build]
 icon = "./icon.png"

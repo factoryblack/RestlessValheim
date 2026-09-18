@@ -14,10 +14,10 @@ src/RestlessCook/         RestlessCook BepInEx plugin (hard-depends on Core)
 src/RestlessPiles/        RestlessPiles BepInEx plugin (hard-depends on Core)
 src/RestlessPlant/        RestlessPlant BepInEx plugin (hard-depends on Core)
 thunderstore/plugin/      Thunderstore package for RestlessCore
-thunderstore/pack/        Valheim modpack: BepInEx + Jötunn + Core + Cook
+thunderstore/pack/        Valheim modpack: BepInEx + Jötunn + Core + Cook + Piles + Plant
 thunderstore/cook/        Thunderstore package for RestlessCook
-thunderstore/piles/       Thunderstore package for RestlessPiles (not in the pack)
-thunderstore/plant/       Thunderstore package for RestlessPlant (not in the pack)
+thunderstore/piles/       Thunderstore package for RestlessPiles
+thunderstore/plant/       Thunderstore package for RestlessPlant
 ```
 
 ## Plugin v0.1
@@ -32,11 +32,11 @@ Second plugin, hard-depends on Core. Recipe graph is [`cook.yaml`](cook.yaml). T
 
 ## Piles / Plant v0.1
 
-Sibling plugins, hard-depend on Core. Not in the Restless Valheim pack. Tag `piles-v*` or `plant-v*` to ship each one.
+Sibling plugins, hard-depend on Core. They ship in the Restless Valheim pack. Tag `piles-v*` or `plant-v*` to ship each plugin on its own.
 
 ## Pack v0.1
 
-A Thunderstore **modpack** (not a plugin) listed as **Restless Valheim**. One-click install of BepInEx + Jötunn + RestlessCore + RestlessCook. The listing uses the original stone rune R.
+A Thunderstore **modpack** (not a plugin) listed as **Restless Valheim**. One-click install of BepInEx + Jötunn + RestlessCore + RestlessCook + RestlessPiles + RestlessPlant. The listing uses the original stone rune R.
 
 ## Build
 
@@ -65,14 +65,14 @@ r2modman: install the **Restless Valheim** modpack, or BepInEx + Jötunn then Im
 
 Pushes and pull requests compile Release `RestlessCore.dll`, `RestlessCook.dll`, `RestlessPiles.dll`, and `RestlessPlant.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2350`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
 
-A tag named `v*` ships **RestlessCore** and the **Restless Valheim** modpack. A tag named `pack-v*` ships the pack only. `cook-v*`, `piles-v*`, and `plant-v*` ship those plugins only.
+A tag named `v*` ships **RestlessCore** and the **Restless Valheim** modpack (Core + Cook + Piles + Plant). A tag named `pack-v*` ships the pack only. `cook-v*`, `piles-v*`, and `plant-v*` ship those plugins only.
 
 ```
 git tag v0.1.5
 git push origin v0.1.5
 
-git tag pack-v0.1.5
-git push origin pack-v0.1.5
+git tag pack-v0.1.6
+git push origin pack-v0.1.6
 
 git tag cook-v0.1.2
 git push origin cook-v0.1.2
@@ -88,7 +88,7 @@ git push origin plant-v0.1.0
 
 Do **not** put the API key in git, chat, or the workflow file.
 
-1. On Thunderstore, create a team named exactly `Restless` (the pack depends on `Restless-RestlessCore` and `Restless-RestlessCook`).
+1. On Thunderstore, create a team named exactly `Restless` (the pack depends on Core, Cook, Piles, and Plant).
 2. Team → **Service Accounts** → add one (name it `github` or similar). Copy the token once.
 3. In this GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**.
 4. Name: `TCLI_AUTH_TOKEN`. Value: that token.

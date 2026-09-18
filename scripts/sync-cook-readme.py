@@ -1,9 +1,11 @@
 # Regenerates thunderstore/cook/README.md from cook.yaml.
 # Source of truth is the yaml. Full-size plates live in docs/cook/wiki/.
 from pathlib import Path
+import json
 import re
 
 root = Path(__file__).resolve().parents[1]
+VANILLA_ICON = json.loads((root / "scripts" / "cook-vanilla-icons.json").read_text(encoding="utf-8"))
 text = (root / "cook.yaml").read_text(encoding="utf-8")
 items = []
 cur = None
@@ -204,9 +206,12 @@ def station(row):
 
 
 def icon_md(row):
-    if row["source"] != "custom" or row["operation"] != "add":
-        return ""
-    return f'![{row["name"]}]({ICON}/{stem(row)}.png)'
+    if row["source"] == "custom" and row["operation"] == "add":
+        return f'![{row["name"]}]({ICON}/{stem(row)}.png)'
+    url = VANILLA_ICON.get(row["id"])
+    if url:
+        return f'![{row["name"]}]({url})'
+    return ""
 
 
 def plate(row):
@@ -255,19 +260,18 @@ add("The Food preparation table and Serving tray are the vanilla pieces, unlocke
 add("")
 add("## The matrix")
 add("")
-add("All 81 graph rows. Custom dishes show a thumb; vanilla rewrites and references keep Iron Gate art.")
+add("All 81 graph rows. Custom dishes use the isolated plate thumbs; vanilla rows use Iron Gate icons.")
 add("")
-add(md_row(["", "Dish", "Kind", "Biome", "Op", "H/S/E", "Recipe", "Goes into"]))
-add(md_row(["---", "---", "---", "---", "---", "---", "---", "---"]))
+add(md_row(["", "Dish", "Kind", "Biome", "Recipe", "H/S/E", "Goes into"]))
+add(md_row(["---", "---", "---", "---", "---", "---", "---"]))
 for row in items:
     add(md_row([
         icon_md(row),
         row["name"],
         KIND.get(row["kind"], row["kind"]),
         TIER.get(row["tier"], row["tier"]),
-        row["operation"],
-        stats(row),
         recipe(row),
+        stats(row),
         feeds(row),
     ]))
 add("")
@@ -305,10 +309,10 @@ add("## Vanilla rewrites")
 add("")
 add("These keep their vanilla identity. Ingredients change in place; there is no second Meat Platter.")
 add("")
-add(md_row(["Dish", "Biome", "Now asks for"]))
-add(md_row(["---", "---", "---"]))
+add(md_row(["", "Dish", "Biome", "Now asks for"]))
+add(md_row(["---", "---", "---", "---"]))
 for row in rewrites:
-    add(md_row([row["name"], TIER.get(row["tier"], row["tier"]), recipe(row)]))
+    add(md_row([icon_md(row), row["name"], TIER.get(row["tier"], row["tier"]), recipe(row)]))
 add("")
 add("## Vanilla spices")
 add("")

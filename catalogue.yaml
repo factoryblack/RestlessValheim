@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-18 — Jötunn 2.30.1; Core 0.1.4 / Cook 0.1.1 / pack 0.1.4.
+# last_audit: 2026-09-18 — Core 0.1.5: vitals pairs center on the hotbar.
 
 updated: 2026-09-18
 
@@ -327,7 +327,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Thin 18px Ink track grows with max (112 + 1.1px/point, cap 260). Dark track = max; kit HealthTint / AdrenalineTint / StaminaTint / EitrTint fill = current (no vanilla steal). Adrenaline stacks above health (left); eitr stacks above stamina (right); each hides until the pool exists. Averia current is an F8 child, off by default. Mount stays vanilla. Playtest."
+    note: "Thin 18px Ink track grows with max (112 + 1.1px/point, cap 260). Dark track = max; kit HealthTint / AdrenalineTint / StaminaTint / EitrTint fill = current (no vanilla steal). Adrenaline stacks above health (left); eitr stacks above stamina (right); each pair is vertically centered on the hotbar midline and hides until the pool exists. Averia current is an F8 child, off by default. Mount stays vanilla. Playtest."
 
   - id: ui.equiphint
     name: Equipped piece helper

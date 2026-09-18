@@ -23,7 +23,8 @@ namespace RestlessQoL.Core;
 //   HudMeter — thin Ink track sized to max + masked fill (current).
 //              18px on purpose (thinner is the look). Health left of Bar
 //              (grows left); adrenaline stacks above it. Stamina right of
-//              Bar (grows right); eitr stacks above it.
+//              Bar (grows right); eitr stacks above it. Each pair is
+//              vertically centered on the hotbar midline.
 //   Wear    — vertical torn slit on the right of a slot (row-idle left+right
 //              edges, 9-sliced top/bottom). Cream when healthy, red when not.
 //   KeyChip— Chip + Bind(). Mouse binds use cream mouse-left/right/middle.

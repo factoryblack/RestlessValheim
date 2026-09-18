@@ -3,9 +3,9 @@ schemaVersion = "0.0.1"
 
 [package]
 namespace = "Restless"
-name = "Restless_Valheim"
-versionNumber = "0.1.5"
-description = "Restless Valheim: BepInEx, Jötunn, RestlessCore, and RestlessCook. Nearby storage, extra slots, host-locked F8, and Meadows through Ashlands cooking."
+name = "RestlessPiles"
+versionNumber = "0.1.0"
+description = "Wood stacks and stone piles become uncapped stores. E opens a tray; Take stack grabs one bag stack. Needs RestlessCore."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
 
@@ -13,12 +13,15 @@ containsNsfwContent = false
 denikson-BepInExPack_Valheim = "5.4.2350"
 ValheimModding-Jotunn = "2.30.1"
 Restless-RestlessCore = "0.1.5"
-Restless-RestlessCook = "0.1.2"
 
 [build]
 icon = "./icon.png"
 readme = "./README.md"
-outdir = "../../artifacts/tcli-pack"
+outdir = "../../artifacts/tcli-piles"
+
+[[build.copy]]
+source = "../../dist/RestlessPiles.dll"
+target = "/"
 
 [[build.copy]]
 source = "./CHANGELOG.md"
@@ -29,4 +32,4 @@ repository = "https://thunderstore.io"
 communities = ["valheim"]
 
 [publish.categories]
-valheim = ["modpacks"]
+valheim = ["tweaks", "misc", "mods"]

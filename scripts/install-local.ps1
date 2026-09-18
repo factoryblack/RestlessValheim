@@ -25,5 +25,21 @@ if (Test-Path $cookDll) {
         ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
     Write-Host "installed $(Join-Path $cookPlugins 'RestlessCook.dll')"
 }
+
+$pilesDll = Join-Path $root 'dist\RestlessPiles.dll'
+if (Test-Path $pilesDll) {
+    $pilesPlugins = Join-Path $valheimPlugins 'RestlessPiles'
+    New-Item -ItemType Directory -Force -Path $pilesPlugins | Out-Null
+    Copy-Item $pilesDll (Join-Path $pilesPlugins 'RestlessPiles.dll') -Force
+    Write-Host "installed $(Join-Path $pilesPlugins 'RestlessPiles.dll')"
+}
+
+$plantDll = Join-Path $root 'dist\RestlessPlant.dll'
+if (Test-Path $plantDll) {
+    $plantPlugins = Join-Path $valheimPlugins 'RestlessPlant'
+    New-Item -ItemType Directory -Force -Path $plantPlugins | Out-Null
+    Copy-Item $plantDll (Join-Path $plantPlugins 'RestlessPlant.dll') -Force
+    Write-Host "installed $(Join-Path $plantPlugins 'RestlessPlant.dll')"
+}
 Write-Host 'Launch Valheim from Steam. This install already has BepInEx + Jotunn.'
 Write-Host 'Extra slots ship in this DLL. No sidecars.'

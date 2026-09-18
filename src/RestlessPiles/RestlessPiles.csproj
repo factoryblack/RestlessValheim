@@ -4,9 +4,9 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssemblyName>RestlessCore</AssemblyName>
-    <RootNamespace>RestlessQoL</RootNamespace>
-    <Version>0.1.5</Version>
+    <AssemblyName>RestlessPiles</AssemblyName>
+    <RootNamespace>RestlessPiles</RootNamespace>
+    <Version>0.1.0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\..\dist\</OutputPath>
     <DebugType>embedded</DebugType>
@@ -19,19 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>$(ValheimManaged)\Unity.TextMeshPro.dll</HintPath>
+    <ProjectReference Include="..\RestlessQoL\RestlessQoL.csproj">
       <Private>false</Private>
-    </Reference>
-    <Reference Include="com.rlabrecque.steamworks.net">
-      <HintPath>$(ValheimManaged)\com.rlabrecque.steamworks.net.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\*.png" LogicalName="RestlessQoL.Assets.%(Filename)%(Extension)" />
-  </ItemGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="RestlessPiles" />
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 </Project>

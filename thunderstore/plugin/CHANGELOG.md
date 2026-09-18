@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.5
+
+- Health/adrenaline and stamina/eitr pairs sit vertically centered on the hotbar
+- RestlessPiles can skip extra slots when dumping into a pile
+
 ## 0.1.4
 
 - Clear Valheim 1.0 cheated item marks on inventory write, load, and world drops (F8, host-locked)

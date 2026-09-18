@@ -1,7 +1,9 @@
 # Compile on every PR / push. Ship GitHub + Thunderstore only when you tag:
-#   v*      RestlessCore + Restless Valheim (modpack). Cook is compiled, not published.
+#   v*      RestlessCore + Restless Valheim (modpack). Cook/Piles compiled, not published.
 #   pack-v* Restless Valheim pack only
 #   cook-v* RestlessCook only
+#   piles-v* RestlessPiles only
+#   plant-v* RestlessPlant only
 # GitHub runners have no Valheim client, so this follows Jötunn's pattern:
 # SteamCMD anonymous dedicated server (app 896660) + BepInEx pack, cached by buildid.
 # Thunderstore publish needs repo secret TCLI_AUTH_TOKEN (never commit the token).
@@ -12,7 +14,7 @@ on:
   pull_request:
   push:
     branches: [main]
-    tags: ['v*', 'pack-v*', 'cook-v*']
+    tags: ['v*', 'pack-v*', 'cook-v*', 'piles-v*', 'plant-v*']
   workflow_dispatch:
 
 concurrency:
@@ -85,6 +87,8 @@ jobs:
         run: |
           dotnet build src/RestlessQoL/RestlessQoL.csproj -c Release --nologo
           dotnet build src/RestlessCook/RestlessCook.csproj -c Release --nologo
+          dotnet build src/RestlessPiles/RestlessPiles.csproj -c Release --nologo
+          dotnet build src/RestlessPlant/RestlessPlant.csproj -c Release --nologo
 
       - name: Upload RestlessCore.dll
         uses: actions/upload-artifact@v4
@@ -98,6 +102,20 @@ jobs:
         with:
           name: RestlessCook-${{ github.sha }}
           path: dist/RestlessCook.dll
+          if-no-files-found: error
+
+      - name: Upload RestlessPiles.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: RestlessPiles-${{ github.sha }}
+          path: dist/RestlessPiles.dll
+          if-no-files-found: error
+
+      - name: Upload RestlessPlant.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: RestlessPlant-${{ github.sha }}
+          path: dist/RestlessPlant.dll
           if-no-files-found: error
 
       - name: Stamp package versions from tag
@@ -291,3 +309,107 @@ jobs:
           files: |
             dist/RestlessCook.dll
             artifacts/tcli-cook/*.zip
+
+      - name: Stamp piles package version from tag
+        if: startsWith(github.ref, 'refs/tags/piles-v')
+        run: |
+          version="${GITHUB_REF_NAME#piles-v}"
+          echo "version=$version" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import os, re, json
+          from pathlib import Path
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("piles-v")
+          toml = Path("thunderstore/piles/thunderstore.toml")
+          text = toml.read_text(encoding="utf-8")
+          text = re.sub(r'versionNumber = ".*"', f'versionNumber = "{version}"', text, count=1)
+          toml.write_text(text, encoding="utf-8")
+          manifest = Path("thunderstore/piles/manifest.json")
+          data = json.loads(manifest.read_text(encoding="utf-8"))
+          data["version_number"] = version
+          manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          print(f"stamped piles {version}")
+          PY
+
+      - name: Thunderstore piles zip
+        if: startsWith(github.ref, 'refs/tags/piles-v')
+        run: |
+          test -f thunderstore/piles/icon.png
+          test -f dist/RestlessPiles.dll
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet tool install -g tcli
+          tcli build --config-path thunderstore/piles/thunderstore.toml --package-version "$version"
+
+      - name: Publish piles to Thunderstore
+        if: startsWith(github.ref, 'refs/tags/piles-v')
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.TCLI_AUTH_TOKEN }}
+        run: |
+          if [ -z "$TCLI_AUTH_TOKEN" ]; then
+            echo "Add a repo secret named TCLI_AUTH_TOKEN (Thunderstore team service account)." >&2
+            exit 1
+          fi
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          piles_zip=$(ls artifacts/tcli-piles/*.zip | head -n 1)
+          tcli publish --config-path thunderstore/piles/thunderstore.toml --file "$piles_zip"
+
+      - name: GitHub Release piles
+        if: startsWith(github.ref, 'refs/tags/piles-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          files: |
+            dist/RestlessPiles.dll
+            artifacts/tcli-piles/*.zip
+
+      - name: Stamp plant package version from tag
+        if: startsWith(github.ref, 'refs/tags/plant-v')
+        run: |
+          version="${GITHUB_REF_NAME#plant-v}"
+          echo "version=$version" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import os, re, json
+          from pathlib import Path
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("plant-v")
+          toml = Path("thunderstore/plant/thunderstore.toml")
+          text = toml.read_text(encoding="utf-8")
+          text = re.sub(r'versionNumber = ".*"', f'versionNumber = "{version}"', text, count=1)
+          toml.write_text(text, encoding="utf-8")
+          manifest = Path("thunderstore/plant/manifest.json")
+          data = json.loads(manifest.read_text(encoding="utf-8"))
+          data["version_number"] = version
+          manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          print(f"stamped plant {version}")
+          PY
+
+      - name: Thunderstore plant zip
+        if: startsWith(github.ref, 'refs/tags/plant-v')
+        run: |
+          test -f thunderstore/plant/icon.png
+          test -f dist/RestlessPlant.dll
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet tool install -g tcli
+          tcli build --config-path thunderstore/plant/thunderstore.toml --package-version "$version"
+
+      - name: Publish plant to Thunderstore
+        if: startsWith(github.ref, 'refs/tags/plant-v')
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.TCLI_AUTH_TOKEN }}
+        run: |
+          if [ -z "$TCLI_AUTH_TOKEN" ]; then
+            echo "Add a repo secret named TCLI_AUTH_TOKEN (Thunderstore team service account)." >&2
+            exit 1
+          fi
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          plant_zip=$(ls artifacts/tcli-plant/*.zip | head -n 1)
+          tcli publish --config-path thunderstore/plant/thunderstore.toml --file "$plant_zip"
+
+      - name: GitHub Release plant
+        if: startsWith(github.ref, 'refs/tags/plant-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+          files: |
+            dist/RestlessPlant.dll
+            artifacts/tcli-plant/*.zip

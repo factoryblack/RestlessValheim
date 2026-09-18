@@ -19,7 +19,6 @@ internal static class RecipeEngine
     {
         _rows = book.Items;
         _kit = book.Kit;
-        GrantTrayRecipe();
         PrefabManager.OnVanillaPrefabsAvailable += AddCustom;
         ItemManager.OnItemsRegistered += RewriteRegistered;
         _harmony = new Harmony(Plugin.PluginGuid + ".recipes");
@@ -53,6 +52,7 @@ internal static class RecipeEngine
         _added = true;
 
         RewritePrepTable();
+        GrantTrayRecipe();
 
         foreach (var row in _rows.Where(r => r.IsAdd && r.IsMeal))
             RegisterItem(row);
@@ -95,6 +95,11 @@ internal static class RecipeEngine
         var row = _kit.FirstOrDefault(r => r.IsTool && r.IsAdd);
         if (row == null)
             return;
+        if (PrefabManager.Instance.GetPrefab(row.Prefab) == null)
+        {
+            Plugin.Log.LogWarning("cook kit missing item " + row.Prefab);
+            return;
+        }
 
         var cfg = new RecipeConfig
         {
@@ -102,7 +107,7 @@ internal static class RecipeEngine
             Item = row.Prefab,
             Amount = row.OutputAmount,
             CraftingStation = StationName(string.IsNullOrEmpty(row.Station) ? "piece_workbench" : row.Station),
-            RepairStation = "piece_workbench",
+            RepairStation = CraftingStations.Workbench,
             MinStationLevel = row.StationLevel < 1 ? 1 : row.StationLevel
         };
         foreach (var use in row.Uses)
@@ -201,6 +206,10 @@ internal static class RecipeEngine
         if (db?.m_recipes == null)
             return;
 
+        var tray = _kit.FirstOrDefault(r => r.IsTool && r.IsAdd);
+        if (tray != null && !db.m_recipes.Any(r => r != null && r.name == "Recipe_Restless_" + tray.Id))
+            Plugin.Log.LogWarning("cook kit recipe missing from ObjectDB: Recipe_Restless_" + tray.Id);
+
         foreach (var row in _rows.Where(r => r.IsRewrite))
         {
             var recipe = db.m_recipes.FirstOrDefault(r => r != null && r.name == row.RecipeId);
@@ -254,54 +263,5 @@ internal static class RecipeEngine
     public static class AwakePatch
     {
         public static void Postfix(ObjectDB __instance) => Rewrite(__instance);
-    }
-
-    [HarmonyPatch(typeof(Player), nameof(Player.UpdateKnownRecipesList))]
-    public static class KnownRecipesPatch
-    {
-        public static void Postfix(Player __instance) => Teach(__instance);
-    }
-
-    [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.Interact))]
-    public static class PrepTablePatch
-    {
-        public static void Postfix(CraftingStation __instance, Humanoid user)
-        {
-            if (__instance == null || user is not Player player)
-                return;
-            if (__instance.name.Replace("(Clone)", "") != "piece_preptable")
-                return;
-            Teach(player);
-        }
-    }
-
-    private static void Teach(Player player)
-    {
-        if (player == null || ObjectDB.instance == null)
-            return;
-
-        foreach (var row in _rows.Where(r => r.IsAdd))
-        {
-            var prefab = ObjectDB.instance.GetItemPrefab(row.Prefab);
-            var data = prefab?.GetComponent<ItemDrop>()?.m_itemData;
-            if (data == null)
-                continue;
-            player.AddKnownItem(data);
-        }
-
-        var ours = new HashSet<string>(_rows.Where(r => r.IsAdd).Select(r => r.Prefab), StringComparer.Ordinal);
-        foreach (var row in _kit.Where(r => r.IsAdd))
-            ours.Add(row.Prefab);
-
-        if (ObjectDB.instance.m_recipes == null)
-            return;
-        foreach (var recipe in ObjectDB.instance.m_recipes)
-        {
-            if (recipe?.m_item == null)
-                continue;
-            if (!ours.Contains(recipe.m_item.name))
-                continue;
-            player.AddKnownRecipe(recipe);
-        }
     }
 }

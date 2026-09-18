@@ -144,9 +144,9 @@ public static class ModConfig
         VitalsStaminaAlways = config.Bind("Hud.Vitals", "StaminaAlways", true,
             "Keep the stamina plate visible even when full. Vanilla hides it. Client-local.");
         VitalsAdrenaline = config.Bind("Hud.Vitals", "Adrenaline", true,
-            "Adrenaline plate stacked above health when a trinket gives you a pool. Client-local.");
+            "Adrenaline plate stacked above health when a trinket gives you a pool; the pair stays centered on the hotbar. Client-local.");
         VitalsEitr = config.Bind("Hud.Vitals", "Eitr", true,
-            "Eitr plate stacked above stamina when you have an eitr pool. Client-local.");
+            "Eitr plate stacked above stamina when you have an eitr pool; the pair stays centered on the hotbar. Client-local.");
         VitalsNumbers = config.Bind("Hud.Vitals", "Numbers", false,
             "Averia current on the vital plates. Off while we play with the look. Client-local.");
         EquipHintEnabled = config.Bind("Hud.EquipHint", "Enabled", true,

@@ -89,36 +89,46 @@ public sealed class Vitals : FeatureModule
         var hpMax = Mathf.Max(1f, player.GetMaxHealth());
         var hpSpan = RestlessUi.HudMeter.Span(hpMax, 25f);
         _health.Set(player.GetHealth(), hpMax, hpSpan, numbers);
-        _health.Park(left, midY);
         _health.Root.SetActive(true);
 
         var adrMax = player.GetMaxAdrenaline();
         var showAdr = ModConfig.VitalsAdrenaline.Value && adrMax > 0.01f;
         _adrenaline.Root.SetActive(showAdr);
         if (showAdr)
-        {
             _adrenaline.Set(player.GetAdrenaline(), adrMax, RestlessUi.HudMeter.Span(adrMax, 20f), numbers);
-            _adrenaline.Park(left, midY + stack);
-        }
+        ParkPair(_health, _adrenaline, showAdr, left, midY, stack);
 
         var stamMax = Mathf.Max(1f, player.GetMaxStamina());
         var stam = player.GetStamina();
         var showStam = ModConfig.VitalsStaminaAlways.Value || stam < stamMax * 0.98f;
         _stamina.Root.SetActive(showStam);
         if (showStam)
-        {
             _stamina.Set(stam, stamMax, RestlessUi.HudMeter.Span(stamMax, 50f), numbers);
-            _stamina.Park(right, midY);
-        }
 
         var eitrMax = player.GetMaxEitr();
         var showEitr = ModConfig.VitalsEitr.Value && eitrMax > 0.01f;
         _eitr.Root.SetActive(showEitr);
         if (showEitr)
-        {
             _eitr.Set(player.GetEitr(), eitrMax, RestlessUi.HudMeter.Span(eitrMax, 40f), numbers);
-            _eitr.Park(right, showStam ? midY + stack : midY);
+        if (showStam)
+            ParkPair(_stamina, _eitr, showEitr, right, midY, stack);
+        else if (showEitr)
+            _eitr.Park(right, midY);
+    }
+
+    // One bar sits on the hotbar midline. A pair keeps that midline
+    // between them (upper above, lower below).
+    private static void ParkPair(RestlessUi.HudMeter lower, RestlessUi.HudMeter upper,
+        bool showUpper, float x, float midY, float stack)
+    {
+        if (showUpper)
+        {
+            lower.Park(x, midY - stack * 0.5f);
+            upper.Park(x, midY + stack * 0.5f);
+            return;
         }
+
+        lower.Park(x, midY);
     }
 
     private static bool Span(out float left, out float right, out float midY, out float height)

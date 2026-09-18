@@ -15,6 +15,12 @@ if ($LASTEXITCODE -ne 0) { throw 'build failed' }
 & $dotnet build (Join-Path $root 'src\RestlessCook\RestlessCook.csproj') -c Release
 if ($LASTEXITCODE -ne 0) { throw 'cook build failed' }
 
+& $dotnet build (Join-Path $root 'src\RestlessPiles\RestlessPiles.csproj') -c Release
+if ($LASTEXITCODE -ne 0) { throw 'piles build failed' }
+
+& $dotnet build (Join-Path $root 'src\RestlessPlant\RestlessPlant.csproj') -c Release
+if ($LASTEXITCODE -ne 0) { throw 'plant build failed' }
+
 & (Join-Path $PSScriptRoot 'install-local.ps1')
 
 $valheim = 'C:\Program Files (x86)\Steam\steamapps\common\Valheim'
@@ -23,6 +29,8 @@ Write-Host ''
 Write-Host 'Launch Valheim from Steam (this folder is already BepInEx-patched).'
 Write-Host 'After the main menu, confirm BepInEx\LogOutput.log has:'
 Write-Host '  RestlessCore 0.1.4 loaded'
+Write-Host '  RestlessPiles 0.1.0 loaded'
+Write-Host '  RestlessPlant 0.1.0 loaded'
 Write-Host "  $log"
 Write-Host ''
 Write-Host 'Hotkeys: ` = quick stack, Shift+` = restock'
@@ -38,6 +46,8 @@ Write-Host '  6. Campfire stays lit with 0 wood'
 Write-Host '  7. Hoe: dig / raise past 8 m (cap is 20)'
 Write-Host '  8. Swim with a weapon out; empty a tombstone (death pin goes); ballista vs a tame'
 Write-Host '  9. Chop trees with an axe (combo should keep); load a crossbow, swap off, swap back'
+Write-Host '  10. Look at a placed stone pile / wood stack: E opens it. Take stack = one bag stack. ` dumps matching items in. Do not rebuild old piles.'
+Write-Host '  11. Cultivator: raspberry / mushroom pieces, [ ] for the planting square, pick a planted bush to bulk-harvest neighbours.'
 Write-Host ''
 Write-Host 'r2modman: install BepInEx + Jotunn from Thunderstore, then Import local'
 Write-Host '  artifacts\Restless-RestlessCore-0.1.4.zip  (run scripts\pack.ps1 first)'

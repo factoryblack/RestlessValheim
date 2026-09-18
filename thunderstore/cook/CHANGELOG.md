@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+- Matrix drops the internal Op column and keeps Recipe
+- Vanilla rewrite and reference rows use Iron Gate icons from the Valheim wiki (Pulled Bear has no wiki file yet)
+- Serving tray (Feaster) recipe registers after vanilla prefabs so the workbench craft actually appears
+- Recipe discovery is vanilla again: hold the ingredients. Feast crafts stay on the food preparation table
+
 ## 0.1.1
 
 - Custom meals, feasts, and sideboards use isolated plate icons

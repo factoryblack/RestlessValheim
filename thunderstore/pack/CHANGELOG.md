@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Installs RestlessCore 0.1.5 and RestlessCook 0.1.2 with BepInEx 5.4.2350 and Jötunn 2.30.1
+
 ## 0.1.4
 
 - Installs RestlessCore 0.1.4 and RestlessCook 0.1.1 with BepInEx 5.4.2350 and Jötunn 2.30.1

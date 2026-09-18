@@ -3,6 +3,10 @@
 from pathlib import Path
 import json
 
+VANILLA_ICON = json.loads(
+    (Path(__file__).resolve().parents[1] / "scripts" / "cook-vanilla-icons.json").read_text(encoding="utf-8")
+)
+
 root = Path(__file__).resolve().parents[1]
 text = (root / "cook.yaml").read_text(encoding="utf-8")
 items = []
@@ -101,6 +105,30 @@ for i in items:
     ):
         assert not any(u["item"] == "SpiceForests" for u in i["uses"]), i["id"]
 
+by_prefab = {i["prefab"]: i for i in items if i.get("prefab")}
+by_id = {i["id"]: i for i in items}
+
+def label(token):
+    if token in by_prefab:
+        return by_prefab[token]["name"]
+    if token in by_id:
+        return by_id[token]["name"]
+    return token
+
+for i in items:
+    bits = [f"{u['amount']} {label(u['item'])}" for u in i["uses"]]
+    line = " + ".join(bits)
+    out = i.get("output_amount", 1)
+    i["recipe"] = f"{line} → {out}" if out != 1 else line
+    if i.get("source") == "custom" and i.get("operation") == "add":
+        i["icon"] = (
+            "https://raw.githubusercontent.com/factoryblack/RestlessValheim/main/docs/cook/icons/"
+            + i["id"].replace("_", "-")
+            + ".png"
+        )
+    else:
+        i["icon"] = VANILLA_ICON.get(i["id"], "")
+
 payload = json.dumps(items, ensure_ascii=False, indent=2)
 
 tsx = '''import {
@@ -154,6 +182,8 @@ type Item = {
   output_amount: number;
   station: string;
   station_level: number;
+  recipe: string;
+  icon: string;
 };
 
 const ITEMS: Item[] = ''' + payload + ''';
@@ -325,6 +355,7 @@ export default function RestlessCookGraph() {
       i.name.toLowerCase().includes(q) ||
       i.id.toLowerCase().includes(q) ||
       i.prefab.toLowerCase().includes(q) ||
+      i.recipe.toLowerCase().includes(q) ||
       usesLine(i).toLowerCase().includes(q)
     );
   });
@@ -424,22 +455,27 @@ export default function RestlessCookGraph() {
       <Table
         striped
         stickyHeader
-        headers={["Dish", "Kind", "Op", "Tier", "Stats", "Feeds", "Uses"]}
+        headers={["Dish", "Kind", "Recipe", "Tier", "Stats", "Feeds"]}
         rows={filtered.map((i) => [
-          <Stack gap={2} key={i.id + "-n"}>
-            <Text weight="semibold" as="span">
-              {i.name}
-            </Text>
-            <Text size="small" tone="tertiary" as="span">
-              {i.id} · {i.prefab}
-            </Text>
-          </Stack>,
+          <Row key={i.id + "-n"} gap={8} align="center">
+            {i.icon ? (
+              <img src={i.icon} alt="" width={28} height={28} style={{ objectFit: "contain" }} />
+            ) : null}
+            <Stack gap={2}>
+              <Text weight="semibold" as="span">
+                {i.name}
+              </Text>
+              <Text size="small" tone="tertiary" as="span">
+                {i.id} · {i.prefab}
+              </Text>
+            </Stack>
+          </Row>,
           <Pill key={i.id + "-k"} size="sm" tone={KIND[i.kind].tone} active>
             {KIND[i.kind].label}
           </Pill>,
-          <Pill key={i.id + "-o"} size="sm" tone={OP[i.operation].tone} active>
-            {OP[i.operation].label}
-          </Pill>,
+          <Text size="small" tone="secondary" as="span">
+            {i.recipe}
+          </Text>,
           <Text size="small" as="span">
             {TIER[i.tier]}
           </Text>,
@@ -448,9 +484,6 @@ export default function RestlessCookGraph() {
           </Text>,
           <Text size="small" tone="secondary" as="span">
             {i.feeds.length ? i.feeds.map((f) => BY_ID[f]?.name ?? f).join(", ") : "—"}
-          </Text>,
-          <Text size="small" tone="secondary" as="span">
-            {usesLine(i)}
           </Text>,
         ])}
         emptyMessage="No rows match that filter."

@@ -6,6 +6,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}") = "RestlessQoL", "src\Restless
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}") = "RestlessCook", "src\RestlessCook\RestlessCook.csproj", "{A3C91E04-7B2E-4F11-9D55-2C8E4A1B6F90}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}") = "RestlessPiles", "src\RestlessPiles\RestlessPiles.csproj", "{C4E81B07-9A2D-4F33-8E11-6B7C2A9D0F14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}") = "RestlessPlant", "src\RestlessPlant\RestlessPlant.csproj", "{D5F92C18-0B3E-4A77-91C4-8E2A1B3D6F20}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,5 +24,13 @@ Global
 		{A3C91E04-7B2E-4F11-9D55-2C8E4A1B6F90}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3C91E04-7B2E-4F11-9D55-2C8E4A1B6F90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3C91E04-7B2E-4F11-9D55-2C8E4A1B6F90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4E81B07-9A2D-4F33-8E11-6B7C2A9D0F14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4E81B07-9A2D-4F33-8E11-6B7C2A9D0F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4E81B07-9A2D-4F33-8E11-6B7C2A9D0F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4E81B07-9A2D-4F33-8E11-6B7C2A9D0F14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5F92C18-0B3E-4A77-91C4-8E2A1B3D6F20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5F92C18-0B3E-4A77-91C4-8E2A1B3D6F20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5F92C18-0B3E-4A77-91C4-8E2A1B3D6F20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5F92C18-0B3E-4A77-91C4-8E2A1B3D6F20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -745,11 +745,7 @@ internal static class RecipeEngine
         }
     }
 
-    [HarmonyPatch(typeof(Feast), "Awake")]
-    public static class FeastAwakePatch
-    {
-        public static void Postfix(Feast __instance) => ReadyFeast(__instance);
-    }
+
 
     [HarmonyPatch(typeof(Feast), nameof(Feast.Interact))]
     public static class FeastInteractPatch

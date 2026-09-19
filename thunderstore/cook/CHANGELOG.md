@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Remove Feast.Awake patch — method was removed in the latest Valheim update; feasts initialize correctly via UpdateVisual and Interact
+
 ## 0.1.4
 
 - Custom feast boards craft at the food preparation table; the serving tray places the leftover board

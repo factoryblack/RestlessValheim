@@ -1,6 +1,6 @@
 {
   "name": "RestlessCook",
-  "version_number": "0.1.4",
+  "version_number": "0.1.5",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "Cook the haul, make meals, turn meals into feasts. Meadows through Ashlands. Needs RestlessCore.",
   "dependencies": [

@@ -117,8 +117,6 @@ public static class ModConfig
         NoticesHold = config.Bind("Hud.Notices", "HoldSeconds", 7.2f,
             new ConfigDescription("How long a toast sits before it fades. Client-local.",
                 new AcceptableValueRange<float>(1.5f, 16f)));
-        if (Mathf.Approximately(NoticesHold.Value, 3.6f))
-            NoticesHold.Value = 7.2f;
         HotbarEnabled = config.Bind("Hud.Hotbar", "Enabled", true,
             "Torn-edge squares and Averia key chips on the item hotbar, pinned to the bottom center. Client-local.");
         InventoryScreenEnabled = config.Bind("Hud.Inventory", "Enabled", true,

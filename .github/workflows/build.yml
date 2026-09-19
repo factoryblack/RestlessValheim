@@ -233,6 +233,57 @@ jobs:
           print(f"stamped pack {version} with {addons}")
           PY
 
+      # Tagging cook-v*/piles-v*/plant-v* alongside pack-v* fires independent,
+      # unserialized jobs (concurrency groups by ref). Thunderstore can lag a
+      # few seconds after those publish, so the pack's own dependency check
+      # would 404 on a fresh addon version. Poll each Restless-* dependency
+      # before building/publishing the pack instead of racing it.
+      - name: Wait for pack dependencies on Thunderstore
+        if: startsWith(github.ref, 'refs/tags/pack-v')
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.error, urllib.request
+          from pathlib import Path
+
+          data = json.loads(Path("thunderstore/pack/manifest.json").read_text(encoding="utf-8"))
+          pending = []
+          for dep in data.get("dependencies") or []:
+              if not dep.startswith("Restless-"):
+                  continue
+              namespace, name, version = dep.split("-", 2)
+              pending.append((namespace, name, version))
+
+          def published(namespace, name, version):
+              url = f"https://thunderstore.io/api/experimental/package/{namespace}/{name}/{version}/"
+              try:
+                  urllib.request.urlopen(url, timeout=10)
+                  return True
+              except urllib.error.HTTPError as e:
+                  if e.code == 404:
+                      return False
+                  raise
+              except urllib.error.URLError:
+                  return False
+
+          deadline = time.time() + 180
+          while pending and time.time() < deadline:
+              still = []
+              for namespace, name, version in pending:
+                  dep = f"{namespace}-{name}-{version}"
+                  if published(namespace, name, version):
+                      print(f"ready: {dep}")
+                  else:
+                      still.append((namespace, name, version))
+              pending = still
+              if pending:
+                  print(f"waiting on {len(pending)} dependency(ies), retrying in 10s...")
+                  time.sleep(10)
+
+          if pending:
+              missing = ", ".join(f"{n}-{p}-{v}" for n, p, v in pending)
+              raise SystemExit(f"Timed out waiting for Thunderstore dependencies: {missing}")
+          PY
+
       - name: Thunderstore pack zip
         if: startsWith(github.ref, 'refs/tags/pack-v')
         run: |

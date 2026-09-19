@@ -790,7 +790,7 @@ public sealed class ExtraSlots : FeatureModule
     {
         if (item?.m_shared == null)
             return false;
-        var found = inv.FindFreeStackItem(item.m_shared.m_name, item.m_quality, item.m_worldLevel, item.m_cheated);
+        var found = inv.FindFreeStackItem(item.m_shared.m_name, item.m_quality, item.m_worldLevel);
         return found != null && found.m_gridPos.y < _visibleHeight;
     }
 
@@ -1659,4 +1659,3 @@ public sealed class ExtraSlots : FeatureModule
         Array.Clear(HudSlots, 0, HudSlots.Length);
     }
 }
-

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9
+
+- Full stack: RestlessCore 0.1.6, RestlessCook 0.1.6, RestlessPiles 0.1.3, and RestlessPlant 0.1.1
+
 ## 0.1.8
 
 - Full stack: RestlessCore 0.1.6, RestlessCook 0.1.4, RestlessPiles 0.1.2, and RestlessPlant 0.1.1

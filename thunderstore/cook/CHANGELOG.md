@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Custom feast plates render at 2.5x their baked mesh scale — Meshy exports were noticeably undersized against the vanilla food/feast meshes they replace
+
 ## 0.1.5
 
 - Remove Feast.Awake patch — method was removed in the latest Valheim update; feasts initialize correctly via UpdateVisual and Interact

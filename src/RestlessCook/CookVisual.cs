@@ -7,6 +7,11 @@ internal static class CookVisual
 {
     private const string ChildName = "RestlessCookMesh";
 
+    // Meshy exports come in noticeably smaller than the vanilla food/feast
+    // meshes they replace, so custom plates need an upscale to read at the
+    // same size on the board/table.
+    private static readonly Vector3 ModelScale = Vector3.one * 2.5f;
+
     public static void Apply(CustomItem item, CookRow row)
     {
         if (item?.ItemPrefab != null)
@@ -88,7 +93,7 @@ internal static class CookVisual
             t.SetParent(prefab.transform, false);
             t.localPosition = Vector3.zero;
             t.localRotation = Quaternion.identity;
-            t.localScale = Vector3.one;
+            t.localScale = ModelScale;
             t.gameObject.layer = prefab.layer;
             t.gameObject.SetActive(true);
             return t.gameObject;
@@ -99,7 +104,7 @@ internal static class CookVisual
         visual.transform.SetParent(prefab.transform, false);
         visual.transform.localPosition = Vector3.zero;
         visual.transform.localRotation = Quaternion.identity;
-        visual.transform.localScale = Vector3.one;
+        visual.transform.localScale = ModelScale;
         return visual;
     }
 

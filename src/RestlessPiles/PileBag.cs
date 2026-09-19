@@ -187,7 +187,7 @@ internal static class PileBag
             return 0;
 
         var origin = player.transform.position;
-        var range = PileConfig.Range.Value;
+        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
         var moved = 0;
         ItemDrop.ItemData? last = null;
         var credit = new System.Collections.Generic.Dictionary<PileBox, (int N, ItemDrop.ItemData Sample)>();
@@ -236,7 +236,7 @@ internal static class PileBag
             return;
         _nextVacuum = Time.time + ModConfig.VacuumInterval.Value;
         var origin = player.transform.position;
-        var range = PileConfig.Range.Value;
+        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
         foreach (var drop in ItemDrop.s_instances.ToArray())
         {
             if (drop?.m_itemData?.m_shared == null || drop.m_nview == null || !drop.m_nview.IsValid())

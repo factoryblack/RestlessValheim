@@ -791,6 +791,7 @@ public sealed class ExtraSlots : FeatureModule
         if (item?.m_shared == null)
             return false;
         var found = inv.FindFreeStackItem(item.m_shared.m_name, item.m_quality, item.m_worldLevel);
+        if (found != null && found.m_cheated != item.m_cheated) found = null;
         return found != null && found.m_gridPos.y < _visibleHeight;
     }
 

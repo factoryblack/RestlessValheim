@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Quick-stack (`) and auto-vacuum respect the Search range setting, not just the fixed Piles range — they now reach as far as Storage Range when it's set higher (matching how craft/build pile lookups already worked)
+
 ## 0.1.2
 
 - Vacuum and ` now take piles before chests, and only live placed piles (Core was winning the race, and prefab dummies could swallow a dump)

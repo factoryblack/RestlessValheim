@@ -49,6 +49,8 @@ internal static class Kit
     {
         if (name == "wear-slit")
             return WearSlit();
+        if (name == "row-fill")
+            return FillIdle();
 
         var key = name + border;
         if (Cache.TryGetValue(key, out var sprite) && sprite != null)
@@ -112,6 +114,47 @@ internal static class Kit
             0,
             SpriteMeshType.FullRect,
             new Vector4(0f, 28f, 0f, 28f));
+        sprite.name = key;
+        Cache[key] = sprite;
+        return sprite;
+    }
+
+    // row-idle bleached to white so a pool tint is the colour you see.
+    private static Sprite? FillIdle()
+    {
+        const string key = "row-fill";
+        if (Cache.TryGetValue(key, out var sprite) && sprite != null)
+            return sprite;
+
+        var src = Sprite("row-idle")?.texture;
+        if (src == null)
+            return null;
+
+        var tex = new Texture2D(src.width, src.height, TextureFormat.RGBA32, false)
+        {
+            wrapMode = src.wrapMode,
+            filterMode = src.filterMode,
+            name = key
+        };
+        var pix = src.GetPixels();
+        for (var i = 0; i < pix.Length; i++)
+        {
+            var a = pix[i].a;
+            if (a < 0.02f)
+                continue;
+            pix[i] = new Color(1f, 1f, 1f, a);
+        }
+
+        tex.SetPixels(pix);
+        tex.Apply();
+        sprite = UnityEngine.Sprite.Create(
+            tex,
+            new Rect(0f, 0f, tex.width, tex.height),
+            new Vector2(0.5f, 0.5f),
+            100f,
+            0,
+            SpriteMeshType.FullRect,
+            new Vector4(28f, 14f, 28f, 14f));
         sprite.name = key;
         Cache[key] = sprite;
         return sprite;

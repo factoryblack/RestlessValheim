@@ -249,7 +249,7 @@ public static class NearbyStorage
                 continue;
             var need = req.GetAmount(qualityLevel) * Mathf.Max(1, amount);
             var name = req.m_resItem.m_itemData.m_shared.m_name;
-            var have = CountVanilla(player.GetInventory(), name) + Count(name);
+            var have = CountVanilla(player.GetInventory(), name, -1, true) + Count(name, -1, true);
             if (have < need)
                 return false;
         }
@@ -368,10 +368,9 @@ public static class NearbyStorage
             return moved;
         }
 
-        RequestDeposit(player, item, drop, extra =>
+        RequestDeposit(player, item, drop, _ =>
         {
-            if (item.m_stack <= 0 || extra > 0)
-                FinishDrop(drop, item);
+            FinishDrop(drop, item);
             EndDeposit(id);
         });
         return moved;

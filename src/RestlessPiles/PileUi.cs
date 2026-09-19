@@ -40,6 +40,7 @@ internal static class PileUi
             return;
         _root.SetActive(true);
         Block(true);
+        FreeCursor();
         Refresh();
     }
 
@@ -90,6 +91,7 @@ internal static class PileUi
             return;
         }
 
+        FreeCursor();
         Refresh();
     }
 
@@ -99,6 +101,14 @@ internal static class PileUi
             return;
         GUIManager.BlockInput(on);
         _blocked = on;
+        if (on)
+            FreeCursor();
+    }
+
+    private static void FreeCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     private static void Ensure()

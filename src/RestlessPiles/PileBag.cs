@@ -9,6 +9,8 @@ namespace RestlessPiles;
 
 internal static class PileBag
 {
+    private static float _nextVacuum;
+
     public static bool Matches(ItemDrop.ItemData? a, ItemDrop.ItemData? b)
     {
         if (a?.m_shared == null || b?.m_shared == null)
@@ -19,11 +21,69 @@ internal static class PileBag
     public static int TakeStack(Player player, PileBox box)
     {
         var taken = 0;
-        Pile.OwnThen(box.View, _ => taken = TakeOwned(player, box));
+        Pile.OwnThen(box.View, _ => taken = TakeOwned(player, box, 0));
         return taken;
     }
 
-    private static int TakeOwned(Player player, PileBox box)
+    public static int CountNearby(string sharedName)
+    {
+        var player = Player.m_localPlayer;
+        if (player == null || string.IsNullOrEmpty(sharedName) || !PileConfig.On)
+            return 0;
+        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var total = 0;
+        foreach (var box in PileBox.All)
+        {
+            if (box == null || !box.Live || box.Item?.m_shared == null)
+                continue;
+            if (box.Item.m_shared.m_name != sharedName)
+                continue;
+            if ((box.transform.position - player.transform.position).sqrMagnitude > range * range)
+                continue;
+            total += box.Stored;
+        }
+
+        return total;
+    }
+
+    public static int ConsumeNearby(string sharedName, int amount)
+    {
+        var player = Player.m_localPlayer;
+        if (player == null || amount <= 0 || !PileConfig.On)
+            return 0;
+        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var taken = 0;
+        foreach (var box in PileBox.All)
+        {
+            if (taken >= amount)
+                break;
+            if (box == null || !box.Live || box.Item?.m_shared == null)
+                continue;
+            if (box.Item.m_shared.m_name != sharedName)
+                continue;
+            if ((box.transform.position - player.transform.position).sqrMagnitude > range * range)
+                continue;
+            if (!box.View.IsOwner())
+                box.View.ClaimOwnership();
+            if (!box.View.IsOwner())
+                continue;
+            taken += PullFromPile(box, amount - taken);
+        }
+
+        return taken;
+    }
+
+    // Craft/build consume — drop pile count only, never route through the bag.
+    private static int PullFromPile(PileBox box, int amount)
+    {
+        if (box == null || amount <= 0 || box.Stored <= 0)
+            return 0;
+        var take = Mathf.Min(amount, box.Stored);
+        Pile.Write(box.View, box.Stored - take);
+        return take;
+    }
+
+    private static int TakeOwned(Player player, PileBox box, int limit)
     {
         if (player == null || box == null || box.Stored <= 0)
             return 0;
@@ -33,15 +93,17 @@ internal static class PileBag
             return 0;
 
         var max = item.m_shared.m_maxStackSize;
-        var partial = inv.FindFreeStackItem(item.m_shared.m_name, item.m_quality, item.m_worldLevel, item.m_cheated);
+        var want = limit > 0 ? Mathf.Min(limit, box.Stored) : box.Stored;
+        var partial = RoomInBag(inv, item);
         int take;
         if (partial != null)
-            take = Mathf.Min(max - partial.m_stack, box.Stored);
+            take = Mathf.Min(max - partial.m_stack, want);
         else if (inv.HaveEmptySlot())
-            take = Mathf.Min(max, box.Stored);
+            take = Mathf.Min(max, want);
         else
         {
-            player.Message(MessageHud.MessageType.Center, "Bag is full");
+            if (limit <= 0)
+                player.Message(MessageHud.MessageType.Center, "Bag is full");
             return 0;
         }
 
@@ -54,17 +116,33 @@ internal static class PileBag
         {
             var clone = item.Clone();
             clone.m_stack = take;
+            clone.m_cheated = false;
             if (!inv.AddItem(clone))
             {
-                player.Message(MessageHud.MessageType.Center, "Bag is full");
+                if (limit <= 0)
+                    player.Message(MessageHud.MessageType.Center, "Bag is full");
                 return 0;
             }
         }
 
         inv.Changed(true, false);
         Pile.Write(box.View, box.Stored - take);
-        Tell(player, "Took " + take + " " + Pile.Title(item), take, item);
+        if (limit <= 0)
+            Tell(player, "Took " + take + " " + Pile.Title(item), take, item);
         return take;
+    }
+
+    private static ItemDrop.ItemData? RoomInBag(Inventory inv, ItemDrop.ItemData item)
+    {
+        foreach (var slot in inv.GetAllItems())
+        {
+            if (slot?.m_shared == null || slot.m_shared.m_name != item.m_shared.m_name)
+                continue;
+            if (slot.m_stack < slot.m_shared.m_maxStackSize)
+                return slot;
+        }
+
+        return null;
     }
 
     public static int DumpInto(Player player, PileBox box)
@@ -110,6 +188,9 @@ internal static class PileBag
 
         var origin = player.transform.position;
         var range = PileConfig.Range.Value;
+        var moved = 0;
+        ItemDrop.ItemData? last = null;
+        var credit = new System.Collections.Generic.Dictionary<PileBox, (int N, ItemDrop.ItemData Sample)>();
         foreach (var item in inv.GetAllItems().ToArray())
         {
             if (!CanDump(item))
@@ -117,70 +198,81 @@ internal static class PileBag
             var box = Nearest(origin, range, item);
             if (box == null)
                 continue;
-            var payload = item;
-            Pile.OwnThen(box.View, _ =>
-            {
-                if (payload.m_stack <= 0 || !inv.ContainsItem(payload))
-                    return;
-                var n = payload.m_stack;
-                inv.RemoveItem(payload);
-                Pile.Write(box.View, box.Stored + n);
-                inv.Changed(true, false);
-            });
+            var n = item.m_stack;
+            var sample = item.Clone();
+            sample.m_stack = n;
+            inv.RemoveItem(item);
+            moved += n;
+            last = sample;
+            if (credit.TryGetValue(box, out var have))
+                credit[box] = (have.N + n, have.Sample);
+            else
+                credit[box] = (n, sample);
         }
 
-        return 0;
+        foreach (var pair in credit)
+        {
+            var dest = pair.Key;
+            var n = pair.Value.N;
+            var sample = pair.Value.Sample;
+            Pile.OwnThen(dest.View, view => Pile.Write(view, Pile.Count(view) + n),
+                () => dest.DropStacks(sample, n));
+        }
+
+        if (moved <= 0)
+            return 0;
+
+        inv.Changed(true, false);
+        if (last != null)
+            Tell(player, "Stacked " + moved + " into piles", moved, last);
+        return moved;
     }
 
     public static void VacuumNearby(Player player)
     {
         if (player == null || !PileConfig.On)
             return;
+        if (Time.time < _nextVacuum)
+            return;
+        _nextVacuum = Time.time + ModConfig.VacuumInterval.Value;
         var origin = player.transform.position;
         var range = PileConfig.Range.Value;
         foreach (var drop in ItemDrop.s_instances.ToArray())
         {
             if (drop?.m_itemData?.m_shared == null || drop.m_nview == null || !drop.m_nview.IsValid())
                 continue;
-            if (drop.m_itemData.m_shared.m_questItem || !drop.CanPickup(true))
+            if (drop.m_itemData.m_shared.m_questItem || !drop.CanPickup(false))
                 continue;
             if ((drop.transform.position - origin).sqrMagnitude > range * range)
                 continue;
             var box = Nearest(origin, range, drop.m_itemData);
             if (box == null)
                 continue;
-            Plugin.Instance.StartCoroutine(AbsorbDrop(drop, box));
+            var id = drop.m_nview.GetZDO().m_uid;
+            if (!NearbyStorage.BeginDeposit(id))
+                continue;
+            Plugin.Instance.StartCoroutine(AbsorbDrop(drop, box, id));
         }
     }
 
-    private static IEnumerator AbsorbDrop(ItemDrop drop, PileBox box)
+    private static IEnumerator AbsorbDrop(ItemDrop drop, PileBox box, ZDOID id)
     {
-        if (drop?.m_nview == null || !drop.m_nview.IsValid() || box == null)
-            yield break;
-        var id = drop.m_nview.GetZDO().m_uid;
-        if (!NearbyStorage.BeginDeposit(id))
-            yield break;
-
         try
         {
+            if (box == null || !box.Live)
+                yield break;
             if (!box.View.IsOwner())
             {
                 box.View.ClaimOwnership();
                 var until = Time.time + 1.5f;
-                while (box != null && box.View.IsValid() && !box.View.IsOwner() && Time.time < until)
+                while (box != null && box.Live && !box.View.IsOwner() && Time.time < until)
                     yield return null;
             }
 
-            if (box == null || !box.View.IsValid() || !box.View.IsOwner())
+            if (box == null || !box.Live || !box.View.IsOwner())
                 yield break;
-            if (drop == null || drop.m_itemData == null || drop.m_itemData.m_stack <= 0)
+            if (drop == null || drop.m_nview == null || !drop.m_nview.IsValid())
                 yield break;
-            if (!Matches(drop.m_itemData, box.Item))
-                yield break;
-
-            var n = drop.m_itemData.m_stack;
-            Pile.Write(box.View, box.Stored + n);
-            drop.m_itemData.m_stack = 0;
             if (!drop.m_nview.IsOwner())
             {
                 drop.m_nview.ClaimOwnership();
@@ -190,8 +282,16 @@ internal static class PileBag
                     yield return null;
             }
 
-            if (drop != null && drop.m_nview != null && drop.m_nview.IsValid() && drop.m_nview.IsOwner())
-                drop.m_nview.Destroy();
+            if (drop == null || drop.m_nview == null || !drop.m_nview.IsValid() || !drop.m_nview.IsOwner())
+                yield break;
+            if (drop.m_itemData == null || drop.m_itemData.m_stack <= 0)
+                yield break;
+            if (!Matches(drop.m_itemData, box.Item))
+                yield break;
+
+            var n = drop.m_itemData.m_stack;
+            Pile.Write(box.View, box.Stored + n);
+            drop.m_nview.Destroy();
         }
         finally
         {
@@ -214,7 +314,7 @@ internal static class PileBag
         var bestSqr = range * range;
         foreach (var box in PileBox.All)
         {
-            if (box == null || !Matches(box.Item, item))
+            if (box == null || !box.Live || !Matches(box.Item, item))
                 continue;
             var sqr = (box.transform.position - origin).sqrMagnitude;
             if (sqr > bestSqr)

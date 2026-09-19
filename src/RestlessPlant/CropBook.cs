@@ -40,14 +40,6 @@ internal static class CropBook
     {
         if (string.IsNullOrEmpty(prefabName))
             return false;
-        if (prefabName.StartsWith("Restless_"))
-            return true;
-        foreach (var row in Rows)
-        {
-            if (row.Source == prefabName || row.Prefab == prefabName)
-                return true;
-        }
-
-        return false;
+        return prefabName.StartsWith("Restless_");
     }
 }

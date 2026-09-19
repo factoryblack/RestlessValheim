@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6
+
+- Vitals bleach the torn fill inside the meter mask so health/stamina/eitr read as colour, not charcoal (notice duration fill unchanged)
+- Build-from-chests no longer unlocks unknown hammer pieces or feast boards
+- Vacuum always syncs the world drop after a partial chest take; restock matches stack quality; storage RPCs reply when off and expire after 3s
+
 ## 0.1.5
 
 - Health/adrenaline and stamina/eitr pairs sit vertically centered on the hotbar

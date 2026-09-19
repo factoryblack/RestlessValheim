@@ -141,9 +141,12 @@ public sealed class BuildFromStorage : FeatureModule
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Player), nameof(Player.HaveRequirements), typeof(Piece), typeof(Player.RequirementMode))]
-        private static void HaveRequirements(Player __instance, Piece piece, ref bool __result)
+        private static void HaveRequirements(Player __instance, Piece piece, Player.RequirementMode mode,
+            ref bool __result)
         {
             if (__result || !On || piece?.m_resources == null || __instance != Player.m_localPlayer)
+                return;
+            if (mode == Player.RequirementMode.IsKnown)
                 return;
             if (NearbyStorage.HasRequirements(__instance, piece.m_resources, 1, 1))
                 __result = true;
@@ -252,7 +255,7 @@ public sealed class Restock : FeatureModule
                     }
 
                     Next(index);
-                });
+                }, true, item.m_quality, true);
                 return;
             }
 

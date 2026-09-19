@@ -594,6 +594,14 @@ internal static partial class RestlessUi
         return go;
     }
 
+    // Bleached row-idle for meter pool fills only. Notices/buffs use Strip + FillTint.
+    public static GameObject FillStrip(Transform parent, string name, Color tint, bool raycast = false)
+    {
+        var go = Slice(parent, name, "row-fill", StripBorder, raycast);
+        go.GetComponent<Image>().color = tint;
+        return go;
+    }
+
     public static GameObject Strip(Transform parent, string name, Color? tint = null, bool raycast = false)
     {
         var go = Slice(parent, name, "row-idle", StripBorder, raycast);
@@ -1909,6 +1917,8 @@ internal static partial class RestlessUi
 
     // Thin Ink track beside the hotbar. Width follows max. Height stays
     // 18px — a 9-slice plate here reads as a fat card, not a bar.
+    // Fill is bleached row-idle inside a torn mask so pool tints read true.
+    // HudRow keeps charcoal row-idle + FillTint — do not use FillStrip there.
     public sealed class HudMeter
     {
         public const float MinWidth = 88f;
@@ -2006,9 +2016,10 @@ internal static partial class RestlessUi
             var mask = clip.AddComponent<Mask>();
             mask.showMaskGraphic = false;
 
-            var fillGo = Graphic(clip.transform, "fill", tint, false);
+            var fillGo = FillStrip(clip.transform, "fill", tint);
+            Stretch(fillGo, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             var fill = fillGo.GetComponent<Image>();
-            fill.type = Image.Type.Simple;
+            fill.raycastTarget = false;
             var fillRt = fillGo.GetComponent<RectTransform>();
 
             var readout = Label(root.transform, "", HudMeta, Text, TextAnchor.MiddleCenter);

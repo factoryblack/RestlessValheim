@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.2
+
+- Vacuum and ` now take piles before chests, and only live placed piles (Core was winning the race, and prefab dummies could swallow a dump)
+- ` credits one write per pile (stacked dumps no longer race Count)
+- Tray Stack / UseItem no longer treat a not-yet-owned pile as a failed click
+- Take stack merges onto any matching bag stack (cheated-flag match was blocking the pull)
+- Craft/build pull nearby pile stock after chests (consume drops pile count only — no bag round-trip); sneak+use takes a stack without the tray
+
 ## 0.1.1
 
 - Hammer-remove or smash returns stored extras and the pile's build cost (the wood/stone spent to place it)

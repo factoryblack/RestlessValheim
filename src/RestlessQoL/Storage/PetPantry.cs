@@ -28,7 +28,9 @@ public sealed class PetPantry : FeatureModule
             if (__instance.m_consumeItems == null || __instance.m_consumeItems.Count == 0)
                 return;
 
-            var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
+            if (Player.m_localPlayer == null)
+                return;
+            var playerId = Player.m_localPlayer.GetPlayerID();
             var origin = __instance.transform.position;
             var range = ModConfig.StorageRange.Value;
 

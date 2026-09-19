@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -22,6 +23,7 @@ internal static class RecipeEngine
         _kit = book.Kit;
         PrefabManager.OnVanillaPrefabsAvailable += AddCustom;
         ItemManager.OnItemsRegistered += RewriteRegistered;
+        ItemManager.OnItemsRegistered += RewriteSoon;
         PieceManager.OnPiecesRegistered += WireFeasts;
         _harmony = new Harmony(Plugin.PluginGuid + ".recipes");
         _harmony.PatchAll(typeof(RecipeEngine).Assembly);
@@ -123,6 +125,7 @@ internal static class RecipeEngine
             ItemManager.Instance.AddItem(new CustomItem(matGo, true));
             CookVisual.Apply(matGo, row);
             ApplyFood(row, matGo.GetComponent<ItemDrop>());
+            GrantItemRecipe(row, matName);
         }
         else
             Plugin.Log.LogWarning("cook feast missing material " + matSource);
@@ -146,8 +149,7 @@ internal static class RecipeEngine
         };
         if (icon != null)
             cfg.Icon = icon;
-        foreach (var use in row.Uses)
-            cfg.AddRequirement(use.Item, use.Amount, true);
+        cfg.AddRequirement(matName, 1, true);
 
         PieceManager.Instance.AddPiece(new CustomPiece(pieceGo, true, cfg));
         CookVisual.Apply(pieceGo, row);
@@ -178,6 +180,28 @@ internal static class RecipeEngine
             cfg.AddRequirement(use.Item, use.Amount, 0);
         ItemManager.Instance.AddRecipe(new CustomRecipe(cfg));
         Plugin.Log.LogInfo("cook kit recipe " + row.Prefab);
+    }
+
+    private static void GrantItemRecipe(CookRow row, string itemName)
+    {
+        if (PrefabManager.Instance.GetPrefab(itemName) == null)
+        {
+            Plugin.Log.LogWarning("cook feast leftover missing " + itemName);
+            return;
+        }
+
+        var cfg = new RecipeConfig
+        {
+            Name = "Recipe_Restless_" + row.Id,
+            Item = itemName,
+            Amount = row.OutputAmount,
+            CraftingStation = StationName(string.IsNullOrEmpty(row.Station) ? "piece_preptable" : row.Station),
+            MinStationLevel = row.StationLevel < 1 ? 1 : row.StationLevel
+        };
+        foreach (var use in row.Uses)
+            cfg.AddRequirement(use.Item, use.Amount, 0);
+        ItemManager.Instance.AddRecipe(new CustomRecipe(cfg));
+        Plugin.Log.LogInfo("cook feast leftover recipe " + itemName);
     }
 
     private static void RewritePrepTable()
@@ -242,6 +266,7 @@ internal static class RecipeEngine
         shared.m_foodEitr = row.FoodEitr;
         shared.m_foodRegen = row.FoodRegen;
         shared.m_foodBurnTime = row.FoodMinutes * 60f;
+        shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
     }
 
     private static void StripFood(CustomItem item)
@@ -265,6 +290,20 @@ internal static class RecipeEngine
     private static void RewriteRegistered()
     {
         DressRegistered();
+        if (ObjectDB.instance != null)
+            Rewrite(ObjectDB.instance);
+    }
+
+    private static void RewriteSoon()
+    {
+        if (Plugin.Instance != null)
+            Plugin.Instance.StartCoroutine(RewriteAfterRecipes());
+    }
+
+    private static IEnumerator RewriteAfterRecipes()
+    {
+        yield return null;
+        yield return null;
         if (ObjectDB.instance != null)
             Rewrite(ObjectDB.instance);
     }
@@ -315,7 +354,11 @@ internal static class RecipeEngine
             }
 
             feast.m_foodItem = drop;
+            ApplyFood(row, drop);
+            if (feast.m_eatStacks < 1)
+                feast.m_eatStacks = 10;
             CookVisual.Apply(feast.gameObject, row);
+            BindFeastPiece(row, feast.GetComponent<Piece>(), ObjectDB.instance);
         }
 
         DressRegistered();
@@ -324,13 +367,93 @@ internal static class RecipeEngine
             Rewrite(ObjectDB.instance);
     }
 
+    private static void BindFeastPiece(CookRow row, Piece? piece, ObjectDB? db)
+    {
+        if (piece == null)
+            return;
+
+        piece.m_craftingStation = null;
+        piece.m_enabled = true;
+        EnsureOnTray(piece.gameObject);
+        DetachFromOtherTables(piece.gameObject);
+
+        var matName = row.Prefab + "_Material";
+        var prefab = db != null ? db.GetItemPrefab(matName) : null;
+        if (prefab == null)
+            prefab = PrefabManager.Instance.GetPrefab(matName);
+        var drop = prefab?.GetComponent<ItemDrop>();
+        if (drop?.m_itemData?.m_shared == null)
+        {
+            Plugin.Log.LogWarning($"cook feast {row.Id} missing leftover {matName}");
+            return;
+        }
+
+        piece.m_resources = new[]
+        {
+            new Piece.Requirement
+            {
+                m_resItem = drop,
+                m_amount = 1,
+                m_amountPerLevel = 0,
+                m_recover = true
+            }
+        };
+    }
+
+    private static void EnsureOnTray(GameObject go)
+    {
+        foreach (var table in PieceTablesInPlay())
+        {
+            if (!IsServingTray(table) || table.m_pieces == null)
+                continue;
+            if (table.m_pieces.Contains(go))
+                continue;
+            table.m_pieces.Add(go);
+            Plugin.Log.LogInfo("cook feast added to " + table.name);
+        }
+    }
+
+    private static void DetachFromOtherTables(GameObject go)
+    {
+        foreach (var table in PieceTablesInPlay())
+        {
+            if (IsServingTray(table) || table.m_pieces == null)
+                continue;
+            if (table.m_pieces.Remove(go))
+                Plugin.Log.LogInfo("cook feast removed from " + table.name);
+        }
+    }
+
+    private static bool IsServingTray(PieceTable table)
+    {
+        var name = table != null ? table.name : "";
+        if (string.IsNullOrEmpty(name))
+            return false;
+        if (name.IndexOf("Feaster", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        if (name.IndexOf("ServingTray", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        var token = PieceTables.ServingTray ?? "";
+        return token.Length > 0 && name.IndexOf(token, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static IEnumerable<PieceTable> PieceTablesInPlay()
+    {
+        var seen = new HashSet<PieceTable>();
+        foreach (var table in Resources.FindObjectsOfTypeAll<PieceTable>())
+        {
+            if (table != null && seen.Add(table))
+                yield return table;
+        }
+    }
+
     internal static void Rewrite(ObjectDB db)
     {
-        if (db?.m_recipes == null)
+        if (db?.m_recipes == null || FindItem(db, "Wood") == null)
             return;
 
         var tray = _kit.FirstOrDefault(r => r.IsTool && r.IsAdd);
-        if (tray != null && !db.m_recipes.Any(r => r != null && r.name == "Recipe_Restless_" + tray.Id))
+        if (tray != null && !db.m_recipes.Any(r => r != null && MatchesKitRecipe(r, tray)))
             Plugin.Log.LogWarning("cook kit recipe missing from ObjectDB: Recipe_Restless_" + tray.Id);
 
         foreach (var row in _rows.Where(r => r.IsRewrite))
@@ -355,6 +478,67 @@ internal static class RecipeEngine
             else if (recipe == null)
                 Plugin.Log.LogWarning($"RestlessCook: missing {row.RecipeId} / {pieceName} for {row.Id}");
         }
+
+        foreach (var row in _rows.Where(r => r.IsAdd && r.IsFeast))
+        {
+            var piece = PrefabManager.Instance.GetPrefab(row.Prefab)?.GetComponent<Piece>();
+            BindFeastPiece(row, piece, db);
+        }
+
+        foreach (var recipe in db.m_recipes)
+        {
+            var row = RowForRecipe(recipe);
+            if (row == null)
+                continue;
+            var reqs = BuildReqs(db, row);
+            if (reqs.Count == 0)
+                continue;
+            recipe.m_resources = reqs.ToArray();
+            recipe.m_amount = row.OutputAmount;
+        }
+    }
+
+    private static bool MatchesKitRecipe(Recipe recipe, CookRow tray)
+    {
+        if (recipe == null)
+            return false;
+        if (recipe.name == "Recipe_Restless_" + tray.Id)
+            return true;
+        var item = recipe.m_item != null ? recipe.m_item.name : "";
+        return item == tray.Prefab || item.IndexOf(tray.Prefab, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static CookRow? RowForRecipe(Recipe? recipe)
+    {
+        if (recipe == null)
+            return null;
+        foreach (var row in _rows)
+        {
+            if (!row.IsAdd || !(row.IsMeal || row.IsSideboard || row.IsFeast))
+                continue;
+            if (MatchesAddRecipe(recipe, row))
+                return row;
+        }
+
+        return null;
+    }
+
+    private static bool MatchesAddRecipe(Recipe? recipe, CookRow row)
+    {
+        if (recipe == null)
+            return false;
+        var itemName = row.IsFeast ? row.Prefab + "_Material" : row.Prefab;
+        var crafted = recipe.m_item != null ? recipe.m_item.name : "";
+        if (crafted == itemName || crafted == row.Prefab)
+            return true;
+        if (crafted.IndexOf(itemName, StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        var name = recipe.name ?? "";
+        if (name == "Recipe_Restless_" + row.Id)
+            return true;
+        return name.IndexOf(itemName, StringComparison.OrdinalIgnoreCase) >= 0
+            || name.IndexOf(row.Prefab, StringComparison.OrdinalIgnoreCase) >= 0
+            || name.IndexOf(row.Id, StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static List<Piece.Requirement> BuildReqs(ObjectDB db, CookRow row)
@@ -362,7 +546,7 @@ internal static class RecipeEngine
         var reqs = new List<Piece.Requirement>();
         foreach (var use in row.Uses)
         {
-            var prefab = db.GetItemPrefab(use.Item);
+            var prefab = FindItem(db, use.Item);
             if (prefab == null)
             {
                 Plugin.Log.LogWarning($"RestlessCook: {row.Id} missing ingredient {use.Item}");
@@ -388,6 +572,154 @@ internal static class RecipeEngine
         return reqs;
     }
 
+    private static GameObject? FindItem(ObjectDB db, string name)
+    {
+        var go = db.GetItemPrefab(name);
+        if (go != null)
+            return go;
+        go = PrefabManager.Instance.GetPrefab(name);
+        if (go != null)
+            return go;
+        if (db.m_items == null)
+            return null;
+        foreach (var item in db.m_items)
+        {
+            if (item != null && item.name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                return item;
+        }
+
+        return null;
+    }
+
+    private static bool Ours(Recipe? recipe)
+    {
+        if (recipe?.m_item == null)
+            return false;
+        var crafted = recipe.m_item.name;
+        if (crafted.StartsWith("Restless", StringComparison.Ordinal))
+            return true;
+        if ((recipe.name ?? "").IndexOf("Restless", StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        return _rows.Any(r => r.IsAdd && (crafted == r.Prefab || crafted == r.Prefab + "_Material"));
+    }
+
+    private static bool ReqsComplete(Recipe? recipe)
+    {
+        if (recipe?.m_resources == null || recipe.m_resources.Length == 0)
+            return false;
+        var needed = 0;
+        foreach (var req in recipe.m_resources)
+        {
+            if (req == null || req.m_amount <= 0)
+                continue;
+            needed++;
+            var drop = req.m_resItem;
+            if (drop == null || drop.name.IndexOf("Mock", StringComparison.OrdinalIgnoreCase) >= 0)
+                return false;
+            if (drop.m_itemData?.m_shared == null || string.IsNullOrEmpty(drop.m_itemData.m_shared.m_name))
+                return false;
+        }
+
+        return needed > 0;
+    }
+
+    private static bool HoldsAll(Player player, Recipe recipe)
+    {
+        var inv = player.GetInventory();
+        if (inv == null || recipe.m_resources == null)
+            return false;
+        foreach (var req in recipe.m_resources)
+        {
+            if (req == null || req.m_amount <= 0 || req.m_resItem?.m_itemData?.m_shared == null)
+                continue;
+            if (inv.CountItems(req.m_resItem.m_itemData.m_shared.m_name, -1, true) < req.m_amount)
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool ShouldShow(Player player, Recipe recipe)
+    {
+        if (!ReqsComplete(recipe))
+            return false;
+        if (player.HaveRequirements(recipe, true, 1, 1))
+            return true;
+        return HoldsAll(player, recipe);
+    }
+
+    private static void TeachOurs(Player player)
+    {
+        var db = ObjectDB.instance;
+        if (db?.m_recipes == null || player.m_knownRecipes == null)
+            return;
+        var drop = new List<string>();
+        foreach (var name in player.m_knownRecipes)
+        {
+            var known = FindRecipeByKnownName(db, name);
+            if (known != null && Ours(known) && !ShouldShow(player, known))
+                drop.Add(name);
+        }
+
+        foreach (var name in drop)
+            player.m_knownRecipes.Remove(name);
+
+        foreach (var recipe in db.m_recipes)
+        {
+            if (!Ours(recipe) || !ShouldShow(player, recipe))
+                continue;
+            var token = recipe.m_item.m_itemData?.m_shared?.m_name;
+            if (string.IsNullOrEmpty(token) || player.IsRecipeKnown(token))
+                continue;
+            player.AddKnownRecipe(recipe);
+        }
+    }
+
+    private static Recipe? FindRecipeByKnownName(ObjectDB db, string name)
+    {
+        foreach (var recipe in db.m_recipes)
+        {
+            var token = recipe?.m_item?.m_itemData?.m_shared?.m_name;
+            if (token == name)
+                return recipe;
+        }
+
+        return null;
+    }
+
+    private static void HideUnknown(object? list)
+    {
+        var player = Player.m_localPlayer;
+        if (player == null || list == null)
+            return;
+        if (list is List<Recipe> recipes)
+        {
+            recipes.RemoveAll(recipe => Ours(recipe) && !ShouldShow(player, recipe));
+            return;
+        }
+
+        if (list is not IList entries)
+            return;
+        for (var i = entries.Count - 1; i >= 0; i--)
+        {
+            var recipe = RecipeOf(entries[i]);
+            if (recipe != null && Ours(recipe) && !ShouldShow(player, recipe))
+                entries.RemoveAt(i);
+        }
+    }
+
+    private static Recipe? RecipeOf(object? entry)
+    {
+        if (entry is Recipe recipe)
+            return recipe;
+        if (entry == null)
+            return null;
+        var field = AccessTools.Field(entry.GetType(), "Recipe")
+            ?? AccessTools.Field(entry.GetType(), "m_recipe")
+            ?? AccessTools.Field(entry.GetType(), "recipe");
+        return field?.GetValue(entry) as Recipe;
+    }
+
     [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB))]
     public static class CopyOtherDbPatch
     {
@@ -406,7 +738,93 @@ internal static class RecipeEngine
         public static void Postfix(Feast __instance)
         {
             if (__instance != null)
+            {
+                ReadyFeast(__instance);
                 CookVisual.KeepPlate(__instance.gameObject);
+            }
         }
+    }
+
+    [HarmonyPatch(typeof(Feast), "Awake")]
+    public static class FeastAwakePatch
+    {
+        public static void Postfix(Feast __instance) => ReadyFeast(__instance);
+    }
+
+    [HarmonyPatch(typeof(Feast), nameof(Feast.Interact))]
+    public static class FeastInteractPatch
+    {
+        public static void Prefix(Feast __instance) => ReadyFeast(__instance);
+    }
+
+    private static void ReadyFeast(Feast? feast)
+    {
+        if (feast == null)
+            return;
+        var name = Utils.GetPrefabName(feast.gameObject);
+        var row = _rows.FirstOrDefault(r => r.IsAdd && r.IsFeast && r.Prefab == name);
+        if (row == null)
+            return;
+        var mat = ObjectDB.instance != null
+            ? ObjectDB.instance.GetItemPrefab(row.Prefab + "_Material")
+            : null;
+        if (mat == null)
+            mat = PrefabManager.Instance.GetPrefab(row.Prefab + "_Material");
+        var drop = mat?.GetComponent<ItemDrop>();
+        if (drop != null)
+        {
+            feast.m_foodItem = drop;
+            ApplyFood(row, drop);
+        }
+
+        if (feast.m_eatStacks < 1)
+            feast.m_eatStacks = 10;
+        CookVisual.EnsureHit(feast.gameObject);
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.UpdateKnownRecipesList))]
+    public static class KnownFeastPatch
+    {
+        public static void Postfix(Player __instance)
+        {
+            if (__instance != Player.m_localPlayer)
+                return;
+            TeachOurs(__instance);
+            foreach (var row in _rows.Where(r => r.IsAdd && r.IsFeast))
+            {
+                var piece = PrefabManager.Instance.GetPrefab(row.Prefab)?.GetComponent<Piece>();
+                if (piece == null || string.IsNullOrEmpty(piece.m_name))
+                    continue;
+                if (__instance.m_knownRecipes.Contains(piece.m_name))
+                    continue;
+                if (!__instance.HaveRequirements(piece, Player.RequirementMode.IsKnown))
+                    continue;
+                __instance.AddKnownPiece(piece);
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.IsRecipeKnown))]
+    public static class IsRecipeKnownPatch
+    {
+        public static void Postfix(Player __instance, string name, ref bool __result)
+        {
+            if (!__result)
+                return;
+            var db = ObjectDB.instance;
+            if (db?.m_recipes == null)
+                return;
+            var recipe = FindRecipeByKnownName(db, name);
+            if (recipe == null || !Ours(recipe))
+                return;
+            if (!ShouldShow(__instance, recipe))
+                __result = false;
+        }
+    }
+
+    [HarmonyPatch(typeof(InventoryGui), nameof(InventoryGui.UpdateRecipeList))]
+    public static class RecipeListPatch
+    {
+        public static void Prefix(object __0) => HideUnknown(__0);
     }
 }

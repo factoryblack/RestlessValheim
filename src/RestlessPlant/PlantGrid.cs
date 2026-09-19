@@ -153,6 +153,13 @@ internal static class PlantGrid
         {
             if (_placing)
                 return;
+            if (Cultivating(__instance))
+            {
+                var selected = __instance.GetSelectedPiece();
+                if (selected != null)
+                    PlantHarvest.Remember(selected);
+            }
+
             if (!Active(__instance) || __instance.m_placementStatus != Player.PlacementStatus.Valid)
             {
                 Hide();
@@ -194,10 +201,11 @@ internal static class PlantGrid
                 i++;
             }
 
-            for (var n = i; n < Ghosts.Count; n++)
+            for (var n = Ghosts.Count - 1; n >= i; n--)
             {
                 if (Ghosts[n] != null)
-                    Ghosts[n].SetActive(false);
+                    Object.Destroy(Ghosts[n]);
+                Ghosts.RemoveAt(n);
             }
 
             if (_lastTold != PlantConfig.GridSize.Value)

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Bulk harvest only treats Restless_* clones or pieces with a creator as player-grown (vanilla bushes stayed “ours”)
+- One-shot crops replant the picked piece, including bulk neighbours; cultivator selection is remembered at 1×1
+- Shrinking the plant grid destroys leftover ghosts instead of hiding them
+
 ## 0.1.0
 
 - Cultivator plants berry bushes, mushrooms, thistle, dandelion, and later-biome forage (skips missing prefabs)

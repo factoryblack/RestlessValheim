@@ -44,7 +44,7 @@ internal static class PlantConfig
             new ConfigDescription("Bulk-harvest radius.",
                 new AcceptableValueRange<float>(1f, 8f), Admin));
         Replant = config.Bind("Plant", "ReplantOnHarvest", true,
-            new ConfigDescription("One-shot crops (carrots and the like) replant the last selected cultivator piece if you can pay for it. Host-locked.",
+            new ConfigDescription("One-shot crops (carrots and the like) replant the picked piece if you can pay for it. Host-locked.",
                 null, Admin));
         SizeUp = config.Bind("Client", "GridBigger", new KeyboardShortcut(KeyCode.RightBracket),
             "Grow the planting square. Client-local.");

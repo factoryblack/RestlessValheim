@@ -62,10 +62,14 @@ internal static class Pile
         zdo.Set(CountKey, n);
     }
 
-    public static void OwnThen(ZNetView view, Action<ZNetView> act)
+    public static void OwnThen(ZNetView view, Action<ZNetView> act, Action? fail = null)
     {
         if (view == null || !view.IsValid())
+        {
+            fail?.Invoke();
             return;
+        }
+
         if (view.IsOwner())
         {
             act(view);
@@ -73,16 +77,18 @@ internal static class Pile
         }
 
         view.ClaimOwnership();
-        Plugin.Instance.StartCoroutine(WaitOwn(view, act));
+        Plugin.Instance.StartCoroutine(WaitOwn(view, act, fail));
     }
 
-    private static IEnumerator WaitOwn(ZNetView view, Action<ZNetView> act)
+    private static IEnumerator WaitOwn(ZNetView view, Action<ZNetView> act, Action? fail)
     {
         var until = Time.time + 1.5f;
         while (view != null && view.IsValid() && !view.IsOwner() && Time.time < until)
             yield return null;
         if (view != null && view.IsValid() && view.IsOwner())
             act(view);
+        else
+            fail?.Invoke();
     }
 
     public static string Title(ItemDrop.ItemData item)

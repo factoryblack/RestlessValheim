@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.4
+
+- Custom feast boards craft at the food preparation table; the serving tray places the leftover board
+- Custom feast leftover recipes bind real meal ItemDrops so they grey out without ingredients
+- Feast leftovers get an explicit prep-table recipe; the list forgets the empty-cost leak and only shows boards you know or hold
+- Placed feast boards keep a leftover food item, servings, and a plate collider so E can eat them
+- Dropped meals no longer get the feast plate collider (convex mesh on ItemDrop prefabs made them pop upward)
+
 ## 0.1.3
 
 - Custom feasts are serving-tray pieces (vanilla models were the Meadows/Black Forest boards). Unlock by knowing the meals, then place with the tray

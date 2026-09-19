@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using RestlessQoL.Core;
@@ -46,7 +47,10 @@ public sealed class StorageSync : FeatureModule
 
         var id = done == null ? 0 : NextId();
         if (done != null)
+        {
             Waiting[id] = done;
+            Plugin.Instance.StartCoroutine(Expire(id));
+        }
 
         var pkg = new ZPackage();
         pkg.Write(playerId);
@@ -77,6 +81,7 @@ public sealed class StorageSync : FeatureModule
 
         var id = NextId();
         Waiting[id] = done;
+        Plugin.Instance.StartCoroutine(Expire(id));
         var pkg = new ZPackage();
         pkg.Write(playerId);
         pkg.Write(id);
@@ -113,9 +118,15 @@ public sealed class StorageSync : FeatureModule
         done(taken);
     }
 
+    private static IEnumerator Expire(int id)
+    {
+        yield return new WaitForSeconds(3f);
+        Finish(id, 0);
+    }
+
     private static void OnPull(Container container, long sender, ZPackage pkg)
     {
-        if (!container.IsOwner() || !ModConfig.StorageEnabled.Value)
+        if (!container.IsOwner())
             return;
         pkg.SetPos(0);
         var playerId = pkg.ReadLong();
@@ -126,14 +137,14 @@ public sealed class StorageSync : FeatureModule
         var worldLevel = pkg.ReadBool();
         var honorLeave = pkg.ReadBool();
         var taken = 0;
-        if (container.CheckAccess(playerId))
+        if (ModConfig.StorageEnabled.Value && container.CheckAccess(playerId))
             taken = NearbyStorage.PullOwned(container, name, amount, honorLeave, quality, worldLevel);
         Reply(container, sender, PulledRpc, id, taken);
     }
 
     private static void OnPush(Container container, long sender, ZPackage pkg)
     {
-        if (!container.IsOwner() || !ModConfig.StorageEnabled.Value)
+        if (!container.IsOwner())
             return;
         pkg.SetPos(0);
         var playerId = pkg.ReadLong();
@@ -141,7 +152,7 @@ public sealed class StorageSync : FeatureModule
         var dropId = pkg.ReadZDOID();
         var item = ReadItem(pkg.ReadPackage());
         var taken = 0;
-        if (item != null && container.CheckAccess(playerId))
+        if (ModConfig.StorageEnabled.Value && item != null && container.CheckAccess(playerId))
             taken = NearbyStorage.PushOwned(container, item, FindDrop(dropId));
         Reply(container, sender, PushedRpc, id, taken);
     }

@@ -1,4 +1,5 @@
 using HarmonyLib;
+using RestlessQoL.Storage;
 using UnityEngine;
 
 namespace RestlessPiles;
@@ -49,11 +50,28 @@ internal static class PilePatches
             PileBag.DumpNearby(player);
     }
 
-    [HarmonyPostfix]
+    [HarmonyPrefix]
     [HarmonyPatch(typeof(RestlessQoL.Storage.GroundVacuum), nameof(RestlessQoL.Storage.GroundVacuum.Tick))]
-    private static void AfterVacuum()
+    private static void BeforeVacuum()
     {
         if (PileConfig.On)
             PileBag.VacuumNearby(Player.m_localPlayer);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(NearbyStorage), nameof(NearbyStorage.Count))]
+    private static void AfterCount(string sharedName, ref int __result)
+    {
+        if (PileConfig.On)
+            __result += PileBag.CountNearby(sharedName);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(NearbyStorage), nameof(NearbyStorage.TryConsume))]
+    private static void AfterConsume(string sharedName, int amount, ref int __result)
+    {
+        if (!PileConfig.On || __result >= amount)
+            return;
+        __result += PileBag.ConsumeNearby(sharedName, amount - __result);
     }
 }

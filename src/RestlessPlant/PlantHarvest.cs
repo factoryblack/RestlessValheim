@@ -19,7 +19,7 @@ internal static class PlantHarvest
         if (pickable == null)
             return false;
         var name = Utils.GetPrefabName(pickable.gameObject);
-        if (CropBook.IsOurs(name))
+        if (name.StartsWith("Restless_"))
             return true;
         var piece = pickable.GetComponentInParent<Piece>();
         return piece != null && piece.GetCreator() != 0L;
@@ -37,11 +37,15 @@ internal static class PlantHarvest
             if (!Ours(__instance))
                 return;
 
+            var piece = __instance.GetComponentInParent<Piece>();
+            if (piece != null)
+                Remember(piece);
+
             if (PlantConfig.BulkHarvest.Value)
                 Bulk(__instance, character);
 
             if (PlantConfig.Replant.Value && __instance.m_respawnTimeMinutes <= 0f)
-                Replant(character as Player, __instance.transform.position, __instance.transform.rotation);
+                Replant(character as Player, __instance.transform.position, __instance.transform.rotation, piece);
         }
     }
 
@@ -61,7 +65,13 @@ internal static class PlantHarvest
                     continue;
                 if ((other.transform.position - origin).sqrMagnitude > range * range)
                     continue;
+                var pos = other.transform.position;
+                var rot = other.transform.rotation;
+                var piece = other.GetComponentInParent<Piece>();
+                var oneShot = other.m_respawnTimeMinutes <= 0f;
                 other.Interact(character, false, false);
+                if (PlantConfig.Replant.Value && oneShot)
+                    Replant(character as Player, pos, rot, piece);
             }
         }
         finally
@@ -70,12 +80,13 @@ internal static class PlantHarvest
         }
     }
 
-    private static void Replant(Player? player, Vector3 pos, Quaternion rot)
+    private static void Replant(Player? player, Vector3 pos, Quaternion rot, Piece? piece)
     {
-        if (player == null || _remembered == null)
+        var seed = piece != null ? piece : _remembered;
+        if (player == null || seed == null)
             return;
-        if (!player.HaveRequirements(_remembered, Player.RequirementMode.CanBuild))
+        if (!player.HaveRequirements(seed, Player.RequirementMode.CanBuild))
             return;
-        player.PlacePiece(_remembered, pos, rot, false, false);
+        player.PlacePiece(seed, pos, rot, false, false);
     }
 }

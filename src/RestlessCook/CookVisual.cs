@@ -30,6 +30,7 @@ internal static class CookVisual
         rend.enabled = true;
         Paint(rend, albedo);
         KeepPlate(prefab);
+        EnsureHit(prefab);
     }
 
     public static void KeepPlate(GameObject prefab)
@@ -49,6 +50,34 @@ internal static class CookVisual
                 continue;
             rend.enabled = false;
         }
+
+        EnsureHit(prefab);
+    }
+
+    // Placed feast boards only. Ground meals carry ItemDrop physics; a convex
+    // plate collider on those prefabs skews the rigidbody and they pop upward.
+    public static void EnsureHit(GameObject prefab)
+    {
+        if (prefab == null)
+            return;
+        var keep = prefab.transform.Find(ChildName);
+        if (keep == null)
+            return;
+        if (prefab.GetComponent<Feast>() == null)
+        {
+            var stray = keep.GetComponent<MeshCollider>();
+            if (stray != null)
+                Object.Destroy(stray);
+            return;
+        }
+
+        var filter = keep.GetComponent<MeshFilter>();
+        if (filter?.sharedMesh == null)
+            return;
+        var col = keep.GetComponent<MeshCollider>() ?? keep.gameObject.AddComponent<MeshCollider>();
+        col.sharedMesh = filter.sharedMesh;
+        col.convex = true;
+        col.enabled = true;
     }
 
     private static GameObject FindOrCreate(GameObject prefab)

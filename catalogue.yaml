@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-18 — Core 0.1.5: vitals pairs center on the hotbar.
+# last_audit: 2026-09-18 — vitals FillStrip scoped to HudMeter; pile craft consume; feast prep/tray/eat/float.
 
 updated: 2026-09-18
 
@@ -61,7 +61,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Same RestlessPull as storage.craft, including LeaveOne reservation in the have-count. Ghosts still skipped. Playtest a joining client placing a piece from closed chests."
+    note: "Same RestlessPull as storage.craft, including LeaveOne reservation in the have-count. Ghosts still skipped. Chest stock never flips RequirementMode.IsKnown (hammer and feast discovery stay vanilla). Playtest a joining client placing a piece from closed chests."
 
   - id: storage.quickstack
     name: Quick stack (`)
@@ -77,7 +77,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuAutoStore
-    note: "Existing stacks only; LeaveOne. Pull waits for the owner reply before adding to the bag so a failed RPC cannot dupe."
+    note: "Existing stacks only; LeaveOne. Pull waits for the owner reply before adding to the bag so a failed RPC cannot dupe. Quality and world-level match the stack being filled. Owner replies taken=0 when storage is off; pending pulls expire after 3s."
 
   - id: storage.station_pull
     name: Stations pull ore/fuel from chests
@@ -206,7 +206,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-PetPantry
-    note: "Hungry tames pull one matching stack from chests in Storage.Range. AI owner sends RestlessPull if it does not own the chest. LeaveOne applies. Not playtested."
+    note: "Hungry tames pull one matching stack from chests in Storage.Range. AI owner sends RestlessPull if it does not own the chest. LeaveOne applies. Dedicated with no local player does not pull (was playerId 0 / skip access). Not playtested."
 
   - id: storage.ground_vacuum
     name: Ground loot into chests
@@ -214,7 +214,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-AzuAutoStore
-    note: "Ground piles into chests that already HaveItem that stack. Local write if we own the chest; else RestlessPush and the owner also despawns the drop if they own it. Bag/ground source is not destroyed until the owner replies. Interval 0.75 s. Quest items skipped."
+    note: "Ground piles into chests that already HaveItem that stack. Local write if we own the chest; else RestlessPush. FinishDrop always runs after the walk so a partial local take cannot leave the world drop. Interval 0.75 s. Quest items skipped."
 
   - id: inventory.mouse_tweaks
     name: Shift-click / stack-split inventory
@@ -303,7 +303,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting and top navigation use shared paper when paper-panel.png is in the kit; otherwise vanilla craft wood stays (hiding chrome + a RowTint strip was a black slab). Amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
+    note: "Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting uses inventory charcoal paper with a lighter rim (full-opacity PaperSurface was a black slab). Amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
 
   - id: ui.tooltip
     name: Restless item tooltip
@@ -327,7 +327,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Thin 18px Ink track grows with max (112 + 1.1px/point, cap 260). Dark track = max; kit HealthTint / AdrenalineTint / StaminaTint / EitrTint fill = current (no vanilla steal). Adrenaline stacks above health (left); eitr stacks above stamina (right); each pair is vertically centered on the hotbar midline and hides until the pool exists. Averia current is an F8 child, off by default. Mount stays vanilla. Playtest."
+    note: "Thin 18px Ink track grows with max (112 + 1.1px/point, cap 260). Dark track = max; fill is a torn row-idle Strip in HealthTint / AdrenalineTint / StaminaTint / EitrTint (same atom as HudRow). Adrenaline stacks above health (left); eitr stacks above stamina (right); each pair is vertically centered on the hotbar midline and hides until the pool exists. Averia current is an F8 child, off by default. Mount stays vanilla. Playtest."
 
   - id: ui.equiphint
     name: Equipped piece helper
@@ -458,7 +458,7 @@ items:
     decision: skip
     in_mod: n/a
     restless: Smoothbrain-Farming / Advize-PlantEasily
-    note: "Skills are progression. PlantEasily is a specialist (grid / bulk harvest). Out of this plugin."
+    note: "Skills are progression. PlantEasily-style grid / bulk harvest / replant lives in RestlessPlant, not Core. Out of this plugin."
 
   - id: skip.muc
     name: Multi-user chests / ChestButler

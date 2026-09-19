@@ -17,6 +17,12 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
     public ItemDrop.ItemData Item => _item;
     public int Stored => Pile.Count(_view);
 
+    internal bool Live =>
+        isActiveAndEnabled
+        && gameObject.scene.IsValid()
+        && _view != null
+        && _view.IsValid();
+
     private void Awake()
     {
         _view = GetComponent<ZNetView>();
@@ -27,18 +33,30 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
         }
     }
 
-    private void OnEnable()
+    private void OnEnable() => Register();
+
+    private void Start() => Register();
+
+    private void OnDisable() => All.Remove(this);
+
+    private void Register()
     {
+        if (!isActiveAndEnabled || !gameObject.scene.IsValid())
+            return;
         if (!All.Contains(this))
             All.Add(this);
     }
-
-    private void OnDisable() => All.Remove(this);
 
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
         if (!PileConfig.On || hold || user != Player.m_localPlayer)
             return false;
+        if (alt)
+        {
+            PileBag.TakeStack(Player.m_localPlayer, this);
+            return true;
+        }
+
         PileUi.Open(this);
         return true;
     }
@@ -47,7 +65,8 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
     {
         if (!PileConfig.On || user != Player.m_localPlayer || !PileBag.Matches(item, _item))
             return false;
-        return PileBag.DumpInto(Player.m_localPlayer, this) > 0;
+        PileBag.DumpInto(Player.m_localPlayer, this);
+        return true;
     }
 
     public string GetHoverText()
@@ -55,7 +74,9 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
         if (!PileConfig.On)
             return GetHoverName();
         return Localization.instance.Localize(
-            GetHoverName() + " x" + Stored + "\n[<color=yellow><b>$KEY_Use</b></color>] Open");
+            GetHoverName() + " x" + Stored
+            + "\n[<color=yellow><b>$KEY_Use</b></color>] Open"
+            + "\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] Take stack");
     }
 
     public string GetHoverName()
@@ -68,7 +89,11 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
 
     internal void Spill(bool includeBuildCost)
     {
-        if (_view == null || !_view.IsValid() || !_view.IsOwner())
+        if (_view == null || !_view.IsValid())
+            return;
+        if (!_view.IsOwner())
+            _view.ClaimOwnership();
+        if (!_view.IsOwner())
             return;
         var left = Stored;
         Pile.Write(_view, 0);
@@ -86,7 +111,7 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
         }
     }
 
-    private void DropStacks(ItemDrop.ItemData item, int amount)
+    internal void DropStacks(ItemDrop.ItemData item, int amount)
     {
         if (item?.m_shared == null || amount <= 0)
             return;

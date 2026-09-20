@@ -26,7 +26,15 @@ internal static class CookVisual
         var mesh = CookMesh.Mesh(row.Id);
         var albedo = CookMesh.Albedo(row.Id);
         if (mesh == null)
+        {
+            // No custom model available (e.g. a dev build missing the mesh/
+            // folder that ships alongside the packaged DLL). Fall back to the
+            // vanilla clone_from appearance instead of leaving the prefab in a
+            // half-configured state, and skip the plate/collider setup below
+            // that assumes a custom mesh exists.
+            Plugin.Log.LogWarning($"RestlessCook: no custom model for '{row.Id}', using vanilla appearance.");
             return;
+        }
 
         var visual = FindOrCreate(prefab);
         var filter = visual.GetComponent<MeshFilter>() ?? visual.AddComponent<MeshFilter>();

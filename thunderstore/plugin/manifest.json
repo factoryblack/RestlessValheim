@@ -1,6 +1,6 @@
 {
   "name": "RestlessCore",
-  "version_number": "0.1.6",
+  "version_number": "0.1.8",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "Valheim 1.0 QoL: nearby chests for craft, build and stations; extra armor and Z/X/C slots; F8 host-locked settings. HUD and inventory are mid-migration — vanilla and Restless currently mix.",
   "dependencies": [

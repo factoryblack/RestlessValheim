@@ -102,8 +102,8 @@ public static class ModConfig
             "Torn paper edge on the HUD minimap. Client-local.");
         MapBiomePlate = config.Bind("Hud.Minimap", "BiomePlate", true,
             "Biome name on a dark plate like the buff rows. Client-local.");
-        MapWindPlate = config.Bind("Hud.Minimap", "WindPlate", true,
-            "Wind arrow on the right of the biome bar, same cream as the title. Client-local.");
+  MapWindPlate = config.Bind("Hud.Minimap", "WindPlate", true,
+  "Wind arrow on its own plate to the left of the minimap, same cream as the title. Client-local.");
         MapScreenEnabled = config.Bind("Hud.Map", "Enabled", true,
             "Restless chrome on the M map: torn mat, biome and pin-name plates, hint plate. Terrain stays vanilla. Client-local.");
         MapPlayerDots = config.Bind("Hud.Map", "PlayerDots", true,
@@ -117,8 +117,6 @@ public static class ModConfig
         NoticesHold = config.Bind("Hud.Notices", "HoldSeconds", 7.2f,
             new ConfigDescription("How long a toast sits before it fades. Client-local.",
                 new AcceptableValueRange<float>(1.5f, 16f)));
-        if (Mathf.Approximately(NoticesHold.Value, 3.6f))
-            NoticesHold.Value = 7.2f;
         HotbarEnabled = config.Bind("Hud.Hotbar", "Enabled", true,
             "Torn-edge squares and Averia key chips on the item hotbar, pinned to the bottom center. Client-local.");
         InventoryScreenEnabled = config.Bind("Hud.Inventory", "Enabled", true,

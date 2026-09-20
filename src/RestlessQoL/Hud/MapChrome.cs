@@ -13,6 +13,7 @@ public sealed class MapChrome : FeatureModule
 
     private static GameObject? _biomePlate;
     private static Text? _biome;
+    private static GameObject? _windPlate;
     private static MapStudio? _studio;
     private static bool _dressed;
 
@@ -29,6 +30,7 @@ public sealed class MapChrome : FeatureModule
                 _studio = null;
                 _biomePlate = null;
                 _biome = null;
+                _windPlate = null;
                 _dressed = false;
             }
         };
@@ -114,6 +116,12 @@ public sealed class MapChrome : FeatureModule
             _biome = null;
         }
 
+        if (_windPlate != null)
+        {
+            Object.Destroy(_windPlate);
+            _windPlate = null;
+        }
+
         if (map.m_biomeNameSmall != null)
             map.m_biomeNameSmall.alpha = 1f;
         _studio?.Dispose();
@@ -173,7 +181,7 @@ public sealed class MapChrome : FeatureModule
         if (wind == null)
             return;
         var parent = wind.parent;
-        if (parent == null || (parent.name != "RestlessWind" && parent.name != "RestlessBiome"))
+        if (parent == null || (parent.name != "RestlessWind" && parent.name != "RestlessBiome" && parent.name != "RestlessWindPlate"))
             return;
         var home = Host(map);
         if (home != null)
@@ -243,6 +251,18 @@ public sealed class MapChrome : FeatureModule
         RestlessUi.Stretch(_biome.gameObject, Vector2.zero, Vector2.one, new Vector2(14f, 2f), new Vector2(-28f, -2f));
     }
 
+    private static void EnsureWindPlate(Minimap map)
+    {
+        if (_windPlate != null)
+            return;
+        var parent = Host(map);
+        if (parent == null)
+            return;
+
+        _windPlate = RestlessUi.Strip(parent, "RestlessWindPlate");
+        RestlessUi.Pin(_windPlate, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(28f, 28f));
+    }
+
     private static void Sync(Minimap map)
     {
         var mapRt = map.m_mapImageSmall.rectTransform;
@@ -252,39 +272,49 @@ public sealed class MapChrome : FeatureModule
         {
             var text = ModConfig.MapBiomePlate.Value && map.m_biomeNameSmall != null ? map.m_biomeNameSmall.text : "";
             _biome.text = text;
-            _biomePlate.SetActive(PlateOn() && (!string.IsNullOrEmpty(text) || ModConfig.MapWindPlate.Value));
+            _biomePlate.SetActive(PlateOn() && !string.IsNullOrEmpty(text));
             if (_biomePlate.activeSelf)
                 RestlessUi.Dock(_biomePlate.GetComponent<RectTransform>(), mapRt, new Vector2(0.5f, 1f), new Vector2(0f, -16f));
         }
 
-        DockWind(map);
+        DockWind(map, mapRt);
         LiftMarkers(map);
     }
 
     private static bool PlateOn() =>
-        ModConfig.MapBiomePlate.Value || ModConfig.MapWindPlate.Value;
+        ModConfig.MapBiomePlate.Value;
 
-    private static void DockWind(Minimap map)
+    // Wind arrow gets its own plate docked to the left of the minimap,
+    // independent of the biome bar underneath it.
+    private static void DockWind(Minimap map, RectTransform mapRt)
     {
         var wind = map.m_windMarker;
-        if (wind == null || _biomePlate == null)
+        if (wind == null)
             return;
 
-        var show = ModConfig.MapWindPlate.Value && _biomePlate.activeSelf;
-        if (!show)
+        if (!ModConfig.MapWindPlate.Value)
         {
             RestoreWind(map);
+            if (_windPlate != null)
+                _windPlate.SetActive(false);
             return;
         }
 
-        if (wind.parent != _biomePlate.transform)
-            wind.SetParent(_biomePlate.transform, false);
+        EnsureWindPlate(map);
+        if (_windPlate == null)
+            return;
+
+        _windPlate.SetActive(true);
+        RestlessUi.Dock(_windPlate.GetComponent<RectTransform>(), mapRt, new Vector2(0f, 0.5f), new Vector2(-24f, 0f));
+
+        if (wind.parent != _windPlate.transform)
+            wind.SetParent(_windPlate.transform, false);
 
         var rt = wind;
-        rt.anchorMin = rt.anchorMax = new Vector2(1f, 0.5f);
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(16f, 16f);
-        rt.anchoredPosition = new Vector2(-16f, 0f);
+        rt.anchoredPosition = Vector2.zero;
         rt.localScale = Vector3.one;
         foreach (var img in wind.GetComponentsInChildren<Image>(true))
             img.color = RestlessUi.Text;

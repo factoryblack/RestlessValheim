@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.8
+
+- Hammer hover now shows our own clean health meter under the piece name/icon plate for anything with a WearNTear, instead of relying on the vanilla piece health bar (which stays hidden by default via the existing PieceHealth debug toggle)
+
+## 0.1.7
+
+- Wind arrow moves to its own plate on the left of the minimap instead of sharing the biome bar underneath it
+
 ## 0.1.6
 
 - Vitals bleach the torn fill inside the meter mask so health/stamina/eitr read as colour, not charcoal (notice duration fill unchanged)

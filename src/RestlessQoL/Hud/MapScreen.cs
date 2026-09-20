@@ -13,12 +13,12 @@ public sealed class MapScreen : FeatureModule
     public override string Id => "ui.map";
     public override bool Enabled => true;
 
-    private const float PlateW = 220f;
-    private const float PlateH = 36f;
+    private const float PlateW = 260f;
+    private const float PlateH = 42f;
     private const float HintPad = 28f;
     private const float IconGap = 10f;
-    private const float TrayW = 220f;
-    private const float TrayH = 40f;
+    private const float TrayW = 240f;
+    private const float TrayH = 44f;
     private const float TrayGap = 8f;
     private const float TrayIconGap = 12f;
     private static readonly Vector4 TearBorder = new(72f, 72f, 72f, 72f);
@@ -41,9 +41,11 @@ public sealed class MapScreen : FeatureModule
     private static readonly List<IconChip> Icons = new();
     private static readonly List<ToggleRow> Toggles = new();
     private static readonly List<GameObject> Ours = new();
+    // Capture only properties this dresser changes, before their first mutation.
+    private static readonly HashSet<Object> Remembered = new();
+    private static readonly List<System.Action> Restore = new();
+    private static readonly List<RestlessControlFeedback> Feedback = new();
     private static bool _dressed;
-    private static bool _parked;
-    private static bool _nameParked;
 
     private sealed class ToggleRow
     {
@@ -114,17 +116,24 @@ public sealed class MapScreen : FeatureModule
         _biomePlate = RestlessUi.Strip(_root.transform, "biome");
         RestlessUi.Pin(_biomePlate, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f),
             new Vector2(PlateW, PlateH));
-        _biome = RestlessUi.Label(_biomePlate.transform, "", RestlessUi.BodySize, RestlessUi.Text,
+        RestlessUi.PaperSurface(_biomePlate, small: true);
+        _biome = RestlessUi.Label(_biomePlate.transform, "", RestlessUi.BodySize + 2, RestlessUi.Text,
             TextAnchor.MiddleCenter);
         RestlessUi.Stretch(_biome.gameObject, Vector2.zero, Vector2.one, new Vector2(16f, 2f), new Vector2(-16f, -2f));
 
+        RestlessUi.BoundedLabel(_biome, RestlessUi.BodySize + 2, RestlessUi.HintSize);
         _namePlate = RestlessUi.Strip(_root.transform, "name", null, true);
         RestlessUi.Pin(_namePlate, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
             new Vector2(280f, 40f));
+        RestlessUi.PaperSurface(_namePlate, small: true);
+        Ours.Add(_namePlate); // Reparented beside the live input while naming.
         _namePlate.SetActive(false);
 
         _hints = RestlessUi.KeyStack.Plate(_root.transform, "hints");
         _hints.Set("", "", HintFaces());
+        var hintPlate = _hints.Root.transform.Find("plate");
+        if (hintPlate != null) RestlessUi.PaperSurface(hintPlate.gameObject);
+        Ours.Add(_hints.Root); // Docking moves it outside _root.
 
         _studio ??= new MapStudio("RestlessLargeMapStudio", new Vector3(80f, 0f, 0f), -81f);
         _studio.EnsureStudio();
@@ -134,7 +143,6 @@ public sealed class MapScreen : FeatureModule
         DressToggles(map);
         DressIcons(map);
         _dressed = true;
-        _parked = false;
     }
 
     private static void Sync(Minimap map)
@@ -144,7 +152,7 @@ public sealed class MapScreen : FeatureModule
         _root.SetActive(true);
         QuietChrome(map);
         Capture(map);
-        ParkOnce(map);
+        ParkChrome(map);
         ParkTray(map);
         PaintBiome(map);
         PaintName(map);
@@ -152,16 +160,15 @@ public sealed class MapScreen : FeatureModule
         PaintIcons();
     }
 
-    private static void ParkOnce(Minimap map)
+    private static void ParkChrome(Minimap map)
     {
-        if (_parked || _studio?.Wrap == null)
+        if (_studio?.Wrap == null)
             return;
         var wrap = _studio.Wrap.GetComponent<RectTransform>();
         if (_biomePlate != null)
             RestlessUi.Dock(_biomePlate.GetComponent<RectTransform>(), wrap, new Vector2(0.5f, 1f),
                 new Vector2(0f, -28f));
         ParkHints(map);
-        _parked = true;
     }
 
     private static void ParkHints(Minimap map)
@@ -196,6 +203,7 @@ public sealed class MapScreen : FeatureModule
         if (panel != null)
         {
             var rt = panel.GetComponent<RectTransform>();
+            RememberRect(rt);
             iconW = Mathf.Max(rt.rect.width, 56f);
             if (rt.parent != host)
                 rt.SetParent(host, true);
@@ -254,14 +262,11 @@ public sealed class MapScreen : FeatureModule
         var naming = map.m_namePin != null && field != null && field.gameObject.activeInHierarchy;
         if (!naming || field == null)
         {
-            _nameParked = false;
             _namePlate.SetActive(false);
             return;
         }
 
         _namePlate.SetActive(true);
-        if (_nameParked)
-            return;
 
         if (field.transform.parent != null && _namePlate.transform.parent != field.transform.parent)
             _namePlate.transform.SetParent(field.transform.parent, true);
@@ -274,26 +279,28 @@ public sealed class MapScreen : FeatureModule
         if (plateIdx != fieldIdx - 1)
             _namePlate.transform.SetSiblingIndex(fieldIdx);
         StyleName(field);
-        _nameParked = true;
     }
 
     private static void StyleName(Component field)
     {
         foreach (var img in field.GetComponentsInChildren<Image>(true))
         {
+            // Only clear the field backing. Keep selection/caret graphics live.
             if (img.GetComponent<InputField>() != null || img.GetComponent<TMP_InputField>() != null)
             {
+                RememberImage(img);
                 img.color = Color.clear;
                 img.raycastTarget = true;
                 continue;
             }
 
-            img.enabled = false;
         }
 
         var input = field.GetComponent<InputField>();
         if (input?.textComponent != null)
         {
+            RememberText(input.textComponent);
+            input.textComponent.fontSize = RestlessUi.BodySize + 2;
             input.textComponent.font = RestlessUi.Face();
             input.textComponent.color = RestlessUi.Text;
             input.textComponent.supportRichText = false;
@@ -301,15 +308,23 @@ public sealed class MapScreen : FeatureModule
 
         if (input?.placeholder is Text ph)
         {
+            RememberText(ph);
+            ph.fontSize = RestlessUi.BodySize + 2;
             ph.font = RestlessUi.Face();
             ph.color = RestlessUi.Muted;
         }
 
         var tmp = field.GetComponent<TMP_InputField>();
         if (tmp?.textComponent != null)
+        {
+            RememberTmp(tmp.textComponent);
             tmp.textComponent.color = RestlessUi.Text;
+        }
         if (tmp?.placeholder is TMP_Text tmpPh)
-            tmpPh.color = RestlessUi.Muted;
+        {
+            RememberTmp(tmpPh);
+            tmpPh.color = RestlessUi.PaperMuted;
+        }
     }
 
     private static List<(string verb, string face)> HintFaces()
@@ -347,10 +362,17 @@ public sealed class MapScreen : FeatureModule
         var toggle = panel != null ? panel.GetComponentInChildren<Toggle>(true) : null;
         if (toggle != null)
         {
+            var enabled = toggle.enabled;
+            var interactable = toggle.interactable;
+            Restore.Add(() => { if (toggle != null) { toggle.enabled = enabled; toggle.interactable = interactable; } });
             toggle.interactable = false;
             toggle.enabled = false;
             foreach (var graphic in toggle.GetComponentsInChildren<Graphic>(true))
+            {
+                var raycast = graphic.raycastTarget;
+                Restore.Add(() => { if (graphic != null) graphic.raycastTarget = raycast; });
                 graphic.raycastTarget = false;
+            }
         }
 
         if (panel != null)
@@ -358,17 +380,20 @@ public sealed class MapScreen : FeatureModule
 
         var strip = RestlessUi.Strip(_root.transform, "RestlessSharedPanel", null, true);
         Ours.Add(strip);
+        RestlessUi.PaperSurface(strip, small: true);
         RestlessUi.Pin(strip, new Vector2(1f, 0f), new Vector2(1f, 0f), Vector2.zero,
             new Vector2(TrayW, TrayH));
 
         FaceOn(strip, PinFace(map, Minimap.PinType.Shout) ?? PinFace(map, Minimap.PinType.Bed),
             out var labelPad);
-        var text = RestlessUi.Label(strip.transform, "Shared", RestlessUi.HudSize, RestlessUi.Text,
+        var text = RestlessUi.Label(strip.transform, "Shared", RestlessUi.BodySize, RestlessUi.Text,
             TextAnchor.MiddleLeft);
         RestlessUi.Stretch(text.gameObject, Vector2.zero, Vector2.one, new Vector2(labelPad, 2f),
             new Vector2(-72f, -2f));
         var on = map.m_showSharedMapData;
+        RestlessUi.BoundedLabel(text, RestlessUi.BodySize, RestlessUi.HintSize);
         var sw = RestlessUi.Switch(strip.transform, on);
+        RestlessUi.PaperSwitch(sw, on);
         RestlessUi.Pin(sw.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-12f, 0f),
             new Vector2(RestlessUi.ToggleWidth, RestlessUi.ToggleHeight));
         var row = new ToggleRow
@@ -391,17 +416,20 @@ public sealed class MapScreen : FeatureModule
 
         var strip = RestlessUi.Strip(_root.transform, "RestlessFilter" + type, null, true);
         Ours.Add(strip);
+        RestlessUi.PaperSurface(strip, small: true);
         RestlessUi.Pin(strip, new Vector2(1f, 0f), new Vector2(1f, 0f), Vector2.zero,
             new Vector2(TrayW, TrayH));
 
         FaceOn(strip, FaceOf(map, iconName), out var labelPad);
 
         var on = IconShown(type);
-        var text = RestlessUi.Label(strip.transform, title, RestlessUi.HudSize, RestlessUi.Text,
+        var text = RestlessUi.Label(strip.transform, title, RestlessUi.BodySize, RestlessUi.Text,
             TextAnchor.MiddleLeft);
         RestlessUi.Stretch(text.gameObject, Vector2.zero, Vector2.one, new Vector2(labelPad, 2f),
             new Vector2(-72f, -2f));
+        RestlessUi.BoundedLabel(text, RestlessUi.BodySize, RestlessUi.HintSize);
         var sw = RestlessUi.Switch(strip.transform, on);
+        RestlessUi.PaperSwitch(sw, on);
         RestlessUi.Pin(sw.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-12f, 0f),
             new Vector2(RestlessUi.ToggleWidth, RestlessUi.ToggleHeight));
         var row = new ToggleRow
@@ -416,7 +444,7 @@ public sealed class MapScreen : FeatureModule
         {
             ToggleFilter(type);
             row.Last = IconShown(type);
-            RestlessUi.SetSwitch(row.Switch, row.Last);
+            RestlessUi.PaperSwitch(row.Switch, row.Last);
         });
         Toggles.Add(row);
     }
@@ -432,7 +460,7 @@ public sealed class MapScreen : FeatureModule
                 ? map != null && map.m_showSharedMapData
                 : IconShown(row.Filter);
             row.Last = on;
-            RestlessUi.SetSwitch(row.Switch, on);
+            RestlessUi.PaperSwitch(row.Switch, on);
         }
     }
 
@@ -445,7 +473,7 @@ public sealed class MapScreen : FeatureModule
         if (row.Vanilla != null)
             row.Vanilla.SetIsOnWithoutNotify(map.m_showSharedMapData);
         row.Last = map.m_showSharedMapData;
-        RestlessUi.SetSwitch(row.Switch, row.Last);
+        RestlessUi.PaperSwitch(row.Switch, row.Last);
     }
 
     private static void FaceOn(GameObject strip, Sprite? sprite, out float labelPad)
@@ -499,6 +527,11 @@ public sealed class MapScreen : FeatureModule
                 continue;
             var plate = RestlessUi.Strip(icon.parent, "Restless" + name);
             Ours.Add(plate);
+            plate.AddComponent<LayoutElement>().ignoreLayout = true;
+            RestlessUi.PaperSurface(plate, small: true);
+            var control = icon.GetComponent<Selectable>();
+            if (control != null && control.GetComponent<RestlessControlFeedback>() == null)
+                Feedback.Add(RestlessUi.ControlFeedback(control));
             RestlessUi.CopyRect(plate.GetComponent<RectTransform>(), icon.GetComponent<RectTransform>());
             var rt = plate.GetComponent<RectTransform>();
             rt.offsetMin -= new Vector2(6f, 6f);
@@ -542,6 +575,7 @@ public sealed class MapScreen : FeatureModule
         var y = rows[0].Icon.anchoredPosition.y;
         foreach (var row in rows)
         {
+            RememberRect(row.Icon);
             row.Icon.anchoredPosition = new Vector2(x, y);
             RestlessUi.CopyRect(row.Chip.GetComponent<RectTransform>(), row.Icon);
             var chip = row.Chip.GetComponent<RectTransform>();
@@ -553,10 +587,14 @@ public sealed class MapScreen : FeatureModule
         var panelRt = panel.GetComponent<RectTransform>();
         var last = rows[rows.Count - 1].Icon;
         var span = rows[0].Icon.anchoredPosition.y - last.anchoredPosition.y + last.rect.height + 12f;
+        RememberRect(panelRt);
         panelRt.sizeDelta = new Vector2(panelRt.sizeDelta.x, span);
         var panelImg = panel.GetComponent<Image>();
         if (panelImg != null)
+        {
+            RememberImage(panelImg);
             panelImg.enabled = false;
+        }
     }
 
     private static Minimap.PinType TypeOf(string name) =>
@@ -604,13 +642,23 @@ public sealed class MapScreen : FeatureModule
                 continue;
             var lit = row.Type == picked && picked != Minimap.PinType.None;
             if (row.Selected != null)
-                row.Selected.enabled = false;
+            {
+                // Preserve the enabled/active state written by vanilla selection.
+                var selected = row.Selected;
+                if (Remembered.Add(selected))
+                {
+                    var color = selected.color;
+                    Restore.Add(() => { if (selected != null) selected.color = color; });
+                }
+                selected.color = Color.clear;
+            }
             RestlessUi.CopyRect(row.Chip.GetComponent<RectTransform>(), row.Icon);
             var plate = row.Chip.GetComponent<RectTransform>();
-            var pad = lit ? 10f : 6f;
+            const float pad = 5f;
             plate.offsetMin -= new Vector2(pad, pad);
             plate.offsetMax += new Vector2(pad, pad);
-            RestlessUi.PaintSlot(row.Chip, lit);
+            RestlessUi.PaperSurface(row.Chip, small: true,
+                accent: lit ? RestlessUi.Accent : (Color?)null);
             row.Chip.GetComponent<Image>().raycastTarget = false;
         }
     }
@@ -618,7 +666,10 @@ public sealed class MapScreen : FeatureModule
     private static void QuietChrome(Minimap map)
     {
         if (map.m_biomeNameLarge != null)
+        {
+            RememberTmp(map.m_biomeNameLarge);
             map.m_biomeNameLarge.alpha = 0f;
+        }
 
         foreach (var img in map.m_largeRoot.GetComponentsInChildren<Image>(true))
         {
@@ -627,15 +678,15 @@ public sealed class MapScreen : FeatureModule
             var n = img.name;
             if (n is "large" or "Bkg" or "keyboard_hint" or "gamepad_hint" or "mouse1" or "mouse2")
             {
+                RememberImage(img);
                 img.enabled = false;
-                if (n is "Bkg")
-                    img.gameObject.SetActive(false);
                 if (n is "keyboard_hint" or "gamepad_hint")
                     MuteHintCluster(img.transform);
             }
 
             if (n is "MapClick")
             {
+                RememberImage(img);
                 img.color = Color.clear;
                 img.enabled = true;
                 img.raycastTarget = true;
@@ -657,6 +708,7 @@ public sealed class MapScreen : FeatureModule
                 continue;
             if (tmp.name is "large_biome" or "Inventory tip" || tmp.name.StartsWith("Text - "))
             {
+                RememberTmp(tmp);
                 tmp.alpha = 0f;
                 tmp.enabled = false;
                 MuteHintCluster(tmp.transform);
@@ -677,7 +729,99 @@ public sealed class MapScreen : FeatureModule
         Mute(parent.gameObject);
     }
 
-    private static void Mute(GameObject? go) => RestlessUi.Quiet(go);
+    private static void Mute(GameObject? go)
+    {
+        if (go == null) return;
+        var group = go.GetComponent<CanvasGroup>();
+        if (group == null)
+        {
+            group = go.AddComponent<CanvasGroup>();
+            Remembered.Add(group);
+            Restore.Add(() => { if (group != null) Object.Destroy(group); });
+        }
+        else if (Remembered.Add(group))
+        {
+            var alpha = group.alpha;
+            var blocks = group.blocksRaycasts;
+            var interactable = group.interactable;
+            Restore.Add(() => { if (group != null) { group.alpha = alpha; group.blocksRaycasts = blocks; group.interactable = interactable; } });
+        }
+        RestlessUi.Quiet(go);
+    }
+
+    private static void RememberImage(Image image)
+    {
+        if (!Remembered.Add(image)) return;
+        var enabled = image.enabled;
+        var color = image.color;
+        var raycast = image.raycastTarget;
+        var cull = image.canvasRenderer.cull;
+        var cullMesh = image.canvasRenderer.cullTransparentMesh;
+        Restore.Add(() =>
+        {
+            if (image == null) return;
+            image.enabled = enabled;
+            image.color = color;
+            image.raycastTarget = raycast;
+            image.canvasRenderer.cull = cull;
+            image.canvasRenderer.cullTransparentMesh = cullMesh;
+        });
+    }
+
+    private static void RememberTmp(TMP_Text text)
+    {
+        if (!Remembered.Add(text)) return;
+        var color = text.color;
+        var enabled = text.enabled;
+        Restore.Add(() => { if (text != null) { text.color = color; text.enabled = enabled; } });
+    }
+
+    private static void RememberText(Text text)
+    {
+        if (!Remembered.Add(text)) return;
+        var font = text.font;
+        var size = text.fontSize;
+        var color = text.color;
+        var rich = text.supportRichText;
+        Restore.Add(() => { if (text != null) { text.font = font; text.fontSize = size; text.color = color; text.supportRichText = rich; } });
+    }
+
+    private static void RememberRect(RectTransform rect)
+    {
+        if (!Remembered.Add(rect)) return;
+        var parent = rect.parent;
+        var sibling = rect.GetSiblingIndex();
+        var min = rect.anchorMin;
+        var max = rect.anchorMax;
+        var pivot = rect.pivot;
+        var position = rect.anchoredPosition3D;
+        var size = rect.sizeDelta;
+        var scale = rect.localScale;
+        var rotation = rect.localRotation;
+        Restore.Add(() =>
+        {
+            if (rect == null || parent == null) return;
+            rect.SetParent(parent, false);
+            rect.SetSiblingIndex(sibling);
+            rect.anchorMin = min;
+            rect.anchorMax = max;
+            rect.pivot = pivot;
+            rect.sizeDelta = size;
+            rect.anchoredPosition3D = position;
+            rect.localScale = scale;
+            rect.localRotation = rotation;
+        });
+    }
+
+    private static void RestoreNative()
+    {
+        foreach (var feedback in Feedback)
+            if (feedback != null) Object.Destroy(feedback);
+        Feedback.Clear();
+        for (var i = Restore.Count - 1; i >= 0; i--) Restore[i]();
+        Restore.Clear();
+        Remembered.Clear();
+    }
 
     private static void LiftMarkers(Minimap map)
     {
@@ -780,8 +924,12 @@ public sealed class MapScreen : FeatureModule
         if (map.m_mapImageLarge != null)
             _studio?.ShowSource(map.m_mapImageLarge);
 
-        if (map.m_biomeNameLarge != null)
-            map.m_biomeNameLarge.alpha = 1f;
+        RestoreNative();
+        ClearOwned();
+    }
+
+    private static void ClearOwned()
+    {
         if (_root != null)
             Object.Destroy(_root);
         foreach (var go in Ours)
@@ -801,8 +949,6 @@ public sealed class MapScreen : FeatureModule
         _studio?.Dispose();
         _studio = null;
         _dressed = false;
-        _parked = false;
-        _nameParked = false;
     }
 
     private static void TearDown()
@@ -812,12 +958,8 @@ public sealed class MapScreen : FeatureModule
             Undress(map);
         else
         {
-            if (_root != null)
-                Object.Destroy(_root);
-            _root = null;
-            _studio?.Dispose();
-            _studio = null;
-            _dressed = false;
+            RestoreNative();
+            ClearOwned();
         }
     }
 }

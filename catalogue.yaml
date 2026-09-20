@@ -279,7 +279,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "M map. Shared flips m_showSharedMapData on the Switch. Filter defaulted to Icon0 (None is 8) so PaintToggles overwrote Shared every frame — Shared rows now start at None. Shout pin face. Visible row removed — map.player_dots. Playtest."
+    note: "M map uses shared paper for biome, pin-name field, key hints, filters and icon backings; larger filter labels and capsule switches. Selected pin backing stays fixed-size; native selection state remains live. Reversible native chrome/input/geometry changes and cleanup of reparented owned surfaces. Original map capture, pin art and interactions retained. See docs/map-materials.md. Syntax checked; compilation and Unity mouse/controller/UI-scale verification pending."
 
   - id: ui.notices
     name: Message toasts

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Fix cultivator crops that placed with no visible model (mushrooms and other forage). Cloned pieces now force every renderer active and strip any LODGroup, instead of inheriting whatever visibility state the vanilla pickable prefab happened to ship with.
+
 ## 0.1.1
 
 - Bulk harvest only treats Restless_* clones or pieces with a creator as player-grown (vanilla bushes stayed “ours”)

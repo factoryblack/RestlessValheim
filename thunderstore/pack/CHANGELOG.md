@@ -2,7 +2,7 @@
 
 ## 0.1.10
 
-- Full stack: RestlessCore 0.1.7, RestlessCook 0.1.7, RestlessPiles 0.1.3, and RestlessPlant 0.1.2
+- Full stack: RestlessCore 0.1.8, RestlessCook 0.1.7, RestlessPiles 0.1.3, and RestlessPlant 0.1.2
 
 ## 0.1.9
 

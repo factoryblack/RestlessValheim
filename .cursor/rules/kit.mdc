@@ -113,3 +113,13 @@ with original icons, bars and hover descriptions. Never resize the frame around
 scrolling content or replace native progress calculations. Restore bar colours
 on undress. Character records use the display-only Metric helper with bounded
 labels/values; data comes from Ledger, not new counters. See docs/character-skills.md.
+
+
+## ESC material adoption
+
+MenuScreen uses PaperSurface around active button bounds and complete logout/quit
+confirmation bounds; PaperControl/PaperSelectable on owned child graphics. Keep
+native button rects, callbacks and navigation. Owned surfaces/mirrors ignore native
+layout groups. Restore exact TMP visibility, native graphics and selectable state
+on undress. Do not add decorative action icons or style settings/player/cloud
+warnings through the menu traversal. See docs/menu-materials.md and ui-asset-audit.md.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.12
+
+- One pack bump: RestlessCore 0.1.10 (ESC pause labels). Cook, plant and piles unchanged.
+
 ## 0.1.11
 
 - One pack bump: RestlessCore 0.1.9, RestlessCook 0.1.8, RestlessPlant 0.1.3. RestlessPiles stays 0.1.4.

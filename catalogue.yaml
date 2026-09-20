@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-21 — Collection/ESC/map paper PRs plus craft stone face.
+# last_audit: 2026-09-21 — ESC pause labels stay after layout rebuild.
 
 updated: 2026-09-21
 
@@ -319,7 +319,7 @@ items:
     in_mod: partial
     bite: 1
     restless: RandyKnapp-Auga
-    note: "ESC column and logout/quit confirmations use shared PaperSurface/PaperControl, larger bounded Averia labels and native-button focus feedback. Frames follow live controls without moving hit targets. Original TMP/graphic/selectable state restored on undress; settings/player/cloud-warning subtrees excluded. Existing darken, callbacks and navigation retained. Asset audit in docs/ui-asset-audit.md. Syntax checked; compile and Unity/controller/localization playtest pending."
+    note: "ESC column and logout/quit confirmations use shared PaperSurface/PaperControl, larger bounded Averia labels and native-button focus feedback. Native MenuEntries TMP/knots stay in the layout (dimmed, not deactivated) so the column cannot collapse and clip the Averia after a frame. Frames follow live controls without moving hit targets. Original TMP/graphic/selectable state restored on undress; settings/player/cloud-warning subtrees excluded. Existing darken, callbacks and navigation retained. Shipped in 0.1.10 after the labels vanished in playtest; controller/localization still pending."
 
   - id: ui.vitals
     name: Vitals on the hotbar

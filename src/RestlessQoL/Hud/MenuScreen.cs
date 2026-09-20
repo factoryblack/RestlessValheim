@@ -22,6 +22,7 @@ public sealed class MenuScreen : FeatureModule
     private static readonly Dictionary<Image, (Color color, bool enabled, bool raycast)> Ghosted = new();
     private static readonly Dictionary<TMP_Text, (bool enabled, float alpha, int visible, bool raycast)> CopyState = new();
     private static readonly Dictionary<Button, (Graphic graphic, ColorBlock colors, Selectable.Transition transition)> Controls = new();
+    private static readonly Dictionary<Button, (bool added, float minW, float prefW, float minH, float prefH, float flexW, float flexH, bool ignore)> Holds = new();
     private static readonly List<RestlessControlFeedback> Feedback = new();
     private static readonly List<Readout> Readouts = new();
     private static bool _dressed;
@@ -56,6 +57,8 @@ public sealed class MenuScreen : FeatureModule
         private static void AfterShow(Menu __instance)
         {
             DumpOnce(__instance);
+            if (ModConfig.MenuScreenEnabled.Value)
+                Dress(__instance);
         }
 
         [HarmonyPostfix]
@@ -124,8 +127,8 @@ public sealed class MenuScreen : FeatureModule
         Quiet(menu, menu.m_menuDialog);
         Quiet(menu, menu.m_logoutDialog);
         Quiet(menu, menu.m_quitDialog);
-        MuteCopy(menu, menu.m_root);
-        MuteCopy(menu, menu.m_menuDialog);
+        DimCopy(menu, menu.m_root);
+        DimCopy(menu, menu.m_menuDialog);
         DressButton(menu.m_continueButton, "Continue");
         DressButton(menu.m_skipButton, "Skip");
         DressButton(menu.m_saveButton, "Save");
@@ -149,7 +152,17 @@ public sealed class MenuScreen : FeatureModule
                 column.Add(rect);
         }
         if (menu.m_menuDialog != null)
+        {
+            foreach (var tmp in menu.m_menuDialog.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (UnderSkip(tmp.transform, menu) || UnderConfirm(tmp.transform, menu)
+                    || RestlessUi.Owned(tmp.transform) || tmp.GetComponentInParent<Button>() != null)
+                    continue;
+                Face(tmp, "menu" + tmp.GetInstanceID(), RestlessUi.Muted, RestlessUi.HintSize + 2);
+                column.Add(tmp.rectTransform);
+            }
             Hug(menu.m_menuDialog, "RestlessMenuPaper", column, 24f, 24f);
+        }
         DressConfirm(menu.m_logoutDialog, "logout");
         DressConfirm(menu.m_quitDialog, "quit");
         foreach (var row in Readouts)
@@ -222,13 +235,14 @@ public sealed class MenuScreen : FeatureModule
             var n = child.gameObject.name.ToLowerInvariant();
             if (n.Contains("selected") || n.Contains("glow") || n is "bkg" or "background") Hide(child);
         }
-        foreach (var tmp in button.GetComponentsInChildren<TMP_Text>(true)) Silence(tmp);
+        foreach (var tmp in button.GetComponentsInChildren<TMP_Text>(true)) Dim(tmp);
         foreach (var text in button.GetComponentsInChildren<Text>(true))
         {
-            if (text.transform.name.StartsWith("Restless") || !text.enabled) continue;
+            if (RestlessUi.Owned(text.transform) || !text.enabled) continue;
             Hidden.Add(text);
             text.enabled = false;
         }
+        Hold(button);
         var chip = button.transform.Find("RestlessMenuButton");
         if (chip == null)
         {
@@ -251,10 +265,36 @@ public sealed class MenuScreen : FeatureModule
         var label = chip.GetComponentInChildren<Text>(true);
         if (label != null)
         {
-            label.text = title;
+            label.enabled = true;
+            label.text = title.Length > 0 ? title : fallback;
             label.color = button.IsInteractable() ? RestlessUi.Text : RestlessUi.PaperMuted;
+            var cr = label.GetComponent<CanvasRenderer>();
+            if (cr != null) cr.SetAlpha(1f);
         }
         button.targetGraphic = chip.GetComponent<Image>();
+    }
+
+    private static void Hold(Button button)
+    {
+        var hold = button.GetComponent<LayoutElement>();
+        if (!Holds.ContainsKey(button))
+        {
+            if (hold == null)
+            {
+                Holds.Add(button, (true, 0f, 0f, 0f, 0f, 0f, 0f, false));
+                hold = button.gameObject.AddComponent<LayoutElement>();
+            }
+            else
+            {
+                Holds.Add(button, (false, hold.minWidth, hold.preferredWidth, hold.minHeight,
+                    hold.preferredHeight, hold.flexibleWidth, hold.flexibleHeight, hold.ignoreLayout));
+            }
+        }
+        else if (hold == null)
+            hold = button.gameObject.AddComponent<LayoutElement>();
+        var pin = RestlessUi.ButtonSize(button);
+        hold.minWidth = hold.preferredWidth = pin.x;
+        hold.minHeight = hold.preferredHeight = pin.y;
     }
 
     private static void Quiet(Menu menu, Transform? root)
@@ -292,17 +332,19 @@ public sealed class MenuScreen : FeatureModule
         }
     }
 
-    private static void MuteCopy(Menu menu, Transform? root)
+    // Dim only. MenuEntries sizes each row from the live TMP and knot
+    // children; deactivating them lets the layout rebuild to zero height
+    // and clips the Averia after a frame.
+    private static void DimCopy(Menu menu, Transform? root)
     {
         if (root == null)
             return;
         foreach (var tmp in root.GetComponentsInChildren<TMP_Text>(true))
         {
-            if (tmp.transform.name.StartsWith("Restless") || UnderSkip(tmp.transform, menu)
+            if (RestlessUi.Owned(tmp.transform) || UnderSkip(tmp.transform, menu)
                 || UnderConfirm(tmp.transform, menu))
                 continue;
-            Silence(tmp);
-            Shelf(tmp.gameObject);
+            Dim(tmp);
         }
     }
 
@@ -315,7 +357,9 @@ public sealed class MenuScreen : FeatureModule
             if (t == root || UnderSkip(t, menu) || UnderConfirm(t, menu))
                 continue;
             var n = t.name.ToLowerInvariant();
-            if (n.Contains("knot") || n is "ornament")
+            if (n.Contains("knot") && t.GetComponentInParent<Button>() != null)
+                continue;
+            if (n is "ornament")
                 Shelf(t.gameObject);
         }
     }
@@ -368,7 +412,7 @@ public sealed class MenuScreen : FeatureModule
     {
         if (src == null)
             return;
-        Silence(src);
+        Dim(src);
         foreach (var row in Readouts)
         {
             if (row.Src != src)
@@ -414,9 +458,17 @@ public sealed class MenuScreen : FeatureModule
 
         row.Face.gameObject.SetActive(true);
         RestlessUi.CopyRect(row.Face.rectTransform, row.Src.rectTransform);
+        if (row.Face.rectTransform.rect.height < 8f)
+        {
+            var rt = row.Face.rectTransform;
+            rt.sizeDelta = new Vector2(Mathf.Max(rt.rect.width, 180f), 22f);
+        }
+        row.Face.enabled = true;
         row.Face.text = RestlessUi.Bare(row.Src.text);
         RestlessUi.BoundedLabel(row.Face, row.Face.fontSize, RestlessUi.HintSize);
         row.Face.raycastTarget = false;
+        var cr = row.Face.GetComponent<CanvasRenderer>();
+        if (cr != null) cr.SetAlpha(1f);
     }
 
     private static void Hug(Transform host, string name, List<RectTransform> parts, float padX, float padY)
@@ -470,11 +522,20 @@ public sealed class MenuScreen : FeatureModule
         return !float.IsInfinity(minX) && maxX > minX;
     }
 
-    private static void Silence(TMP_Text tmp)
+    private static void Dim(TMP_Text tmp)
     {
+        if (RestlessUi.Owned(tmp.transform))
+            return;
         if (!CopyState.ContainsKey(tmp))
             CopyState.Add(tmp, (tmp.enabled, tmp.alpha, tmp.maxVisibleCharacters, tmp.raycastTarget));
-        RestlessUi.SilenceTmp(tmp);
+        tmp.alpha = 0f;
+        var color = tmp.color;
+        color.a = 0f;
+        tmp.color = color;
+        tmp.raycastTarget = false;
+        var cr = tmp.GetComponent<CanvasRenderer>();
+        if (cr != null)
+            cr.SetAlpha(0f);
     }
 
     private static void Hide(Image image)
@@ -509,6 +570,25 @@ public sealed class MenuScreen : FeatureModule
             pair.Key.transition = pair.Value.transition;
         }
         Controls.Clear();
+        foreach (var pair in Holds)
+        {
+            if (pair.Key == null) continue;
+            var hold = pair.Key.GetComponent<LayoutElement>();
+            if (hold == null) continue;
+            if (pair.Value.added)
+                Object.Destroy(hold);
+            else
+            {
+                hold.minWidth = pair.Value.minW;
+                hold.preferredWidth = pair.Value.prefW;
+                hold.minHeight = pair.Value.minH;
+                hold.preferredHeight = pair.Value.prefH;
+                hold.flexibleWidth = pair.Value.flexW;
+                hold.flexibleHeight = pair.Value.flexH;
+                hold.ignoreLayout = pair.Value.ignore;
+            }
+        }
+        Holds.Clear();
         foreach (var go in Ours)
         {
             if (go != null)

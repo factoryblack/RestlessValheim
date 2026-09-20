@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10
+
+- ESC pause labels stay on the paper column (native MenuEntries text stays in the layout instead of being deactivated)
+
 ## 0.1.9
 
 - World wind stays on the biome plate; the helm wind ring moves left of the minimap so it is not under the buffs

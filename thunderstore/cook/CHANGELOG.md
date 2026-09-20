@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.7
+
+- A raw `dotnet build` now copies the custom feast/meal mesh + albedo assets (art/cook/runtime) next to the built DLL, matching what the packaged Thunderstore zip already ships. Previously, only the full tcli-built package carried the `mesh/` folder the game reads at runtime — dropping a manually built DLL into BepInEx/plugins without it silently left every custom dish showing its vanilla clone_from appearance instead of the custom model
+- Clarify the vanilla-appearance fallback with an explicit log message when a custom model can't be found, instead of a bare "missing" warning
+
 ## 0.1.6
 
 - Custom feast plates render at 2.5x their baked mesh scale — Meshy exports were noticeably undersized against the vanilla food/feast meshes they replace

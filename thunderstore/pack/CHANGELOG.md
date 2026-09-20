@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11
+
+- Full stack: RestlessCook 0.1.7 (raw dev builds now carry the mesh/ folder custom feasts need; without it they silently showed vanilla models)
+
 ## 0.1.10
 
 - Full stack: RestlessPlant 0.1.2 (fixes cultivator crops placing with no visible model, e.g. mushrooms)

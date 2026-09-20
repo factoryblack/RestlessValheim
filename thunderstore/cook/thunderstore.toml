@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessCook"
-versionNumber = "0.1.6"
+versionNumber = "0.1.7"
 description = "Cook the haul, make meals, turn meals into feasts. Meadows through Ashlands. Needs RestlessCore."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false

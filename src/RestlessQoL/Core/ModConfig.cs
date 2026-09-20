@@ -102,8 +102,8 @@ public static class ModConfig
             "Torn paper edge on the HUD minimap. Client-local.");
         MapBiomePlate = config.Bind("Hud.Minimap", "BiomePlate", true,
             "Biome name on a dark plate like the buff rows. Client-local.");
-        MapWindPlate = config.Bind("Hud.Minimap", "WindPlate", true,
-            "Wind arrow on the right of the biome bar, same cream as the title. Client-local.");
+  MapWindPlate = config.Bind("Hud.Minimap", "WindPlate", true,
+  "Wind arrow on its own plate to the left of the minimap, same cream as the title. Client-local.");
         MapScreenEnabled = config.Bind("Hud.Map", "Enabled", true,
             "Restless chrome on the M map: torn mat, biome and pin-name plates, hint plate. Terrain stays vanilla. Client-local.");
         MapPlayerDots = config.Bind("Hud.Map", "PlayerDots", true,

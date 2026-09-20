@@ -176,6 +176,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          make_latest: true
           fail_on_unmatched_files: false
           files: |
             dist/RestlessCore.dll
@@ -315,15 +316,6 @@ jobs:
           pack_zip=$(ls artifacts/tcli-pack/*.zip | head -n 1)
           tcli publish --config-path thunderstore/pack/thunderstore.toml --file "$pack_zip"
 
-      - name: GitHub Release pack
-        if: startsWith(github.ref, 'refs/tags/pack-v')
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          fail_on_unmatched_files: false
-          files: |
-            artifacts/tcli-pack/*.zip
-
       - name: Stamp cook package version from tag
         if: startsWith(github.ref, 'refs/tags/cook-v')
         run: |
@@ -365,16 +357,6 @@ jobs:
           export PATH="$HOME/.dotnet/tools:$PATH"
           cook_zip=$(ls artifacts/tcli-cook/*.zip | head -n 1)
           tcli publish --config-path thunderstore/cook/thunderstore.toml --file "$cook_zip"
-
-      - name: GitHub Release cook
-        if: startsWith(github.ref, 'refs/tags/cook-v')
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          fail_on_unmatched_files: false
-          files: |
-            dist/RestlessCook.dll
-            artifacts/tcli-cook/*.zip
 
       - name: Stamp piles package version from tag
         if: startsWith(github.ref, 'refs/tags/piles-v')
@@ -418,16 +400,6 @@ jobs:
           piles_zip=$(ls artifacts/tcli-piles/*.zip | head -n 1)
           tcli publish --config-path thunderstore/piles/thunderstore.toml --file "$piles_zip"
 
-      - name: GitHub Release piles
-        if: startsWith(github.ref, 'refs/tags/piles-v')
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          fail_on_unmatched_files: false
-          files: |
-            dist/RestlessPiles.dll
-            artifacts/tcli-piles/*.zip
-
       - name: Stamp plant package version from tag
         if: startsWith(github.ref, 'refs/tags/plant-v')
         run: |
@@ -469,13 +441,3 @@ jobs:
           export PATH="$HOME/.dotnet/tools:$PATH"
           plant_zip=$(ls artifacts/tcli-plant/*.zip | head -n 1)
           tcli publish --config-path thunderstore/plant/thunderstore.toml --file "$plant_zip"
-
-      - name: GitHub Release plant
-        if: startsWith(github.ref, 'refs/tags/plant-v')
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          fail_on_unmatched_files: false
-          files: |
-            dist/RestlessPlant.dll
-            artifacts/tcli-plant/*.zip

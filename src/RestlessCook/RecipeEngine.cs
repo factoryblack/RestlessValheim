@@ -361,8 +361,12 @@ internal static class RecipeEngine
             BindFeastPiece(row, feast.GetComponent<Piece>(), ObjectDB.instance);
         }
 
-        DressRegistered();
-
+        // RewriteRegistered (on ItemManager.OnItemsRegistered) already ran
+        // DressRegistered once by the time PieceManager.OnPiecesRegistered
+        // fires -- every custom prefab is registered with PrefabManager back
+        // in AddCustom, well before either event, so calling it again here
+        // was pure duplicate work that doubled every "cook mesh/albedo
+        // missing" warning on every load.
         if (ObjectDB.instance != null)
             Rewrite(ObjectDB.instance);
     }
@@ -623,50 +627,28 @@ internal static class RecipeEngine
         return needed > 0;
     }
 
-    private static bool HoldsAll(Player player, Recipe recipe)
-    {
-        var inv = player.GetInventory();
-        if (inv == null || recipe.m_resources == null)
-            return false;
-        foreach (var req in recipe.m_resources)
-        {
-            if (req == null || req.m_amount <= 0 || req.m_resItem?.m_itemData?.m_shared == null)
-                continue;
-            if (inv.CountItems(req.m_resItem.m_itemData.m_shared.m_name, -1, true) < req.m_amount)
-                return false;
-        }
-
-        return true;
-    }
-
-    private static bool ShouldShow(Player player, Recipe recipe)
-    {
-        if (!ReqsComplete(recipe))
-            return false;
-        if (player.HaveRequirements(recipe, true, 1, 1))
-            return true;
-        return HoldsAll(player, recipe);
-    }
+    // Data-validity gate only: a recipe becomes knowable as soon as its
+    // resource list is fully loaded (real items, not "Mock" placeholders
+    // left over from a startup load-order race) -- same as vanilla cooking
+    // recipes, which stay visible/known regardless of what you currently
+    // hold. This used to also require the player to presently have the
+    // ingredients or be near a station, which meant custom recipes were
+    // un-learned and re-learned (re-firing the "learned recipe" toast) every
+    // time UpdateKnownRecipesList ran and inventory/proximity had changed --
+    // i.e. constantly during normal play.
+    private static bool ShouldShow(Recipe recipe) => ReqsComplete(recipe);
 
     private static void TeachOurs(Player player)
     {
         var db = ObjectDB.instance;
         if (db?.m_recipes == null || player.m_knownRecipes == null)
             return;
-        var drop = new List<string>();
-        foreach (var name in player.m_knownRecipes)
-        {
-            var known = FindRecipeByKnownName(db, name);
-            if (known != null && Ours(known) && !ShouldShow(player, known))
-                drop.Add(name);
-        }
 
-        foreach (var name in drop)
-            player.m_knownRecipes.Remove(name);
-
+        // Once granted, a recipe stays known forever, same as vanilla -- we
+        // never remove from m_knownRecipes here.
         foreach (var recipe in db.m_recipes)
         {
-            if (!Ours(recipe) || !ShouldShow(player, recipe))
+            if (!Ours(recipe) || !ShouldShow(recipe))
                 continue;
             var token = recipe.m_item.m_itemData?.m_shared?.m_name;
             if (string.IsNullOrEmpty(token) || player.IsRecipeKnown(token))
@@ -694,7 +676,7 @@ internal static class RecipeEngine
             return;
         if (list is List<Recipe> recipes)
         {
-            recipes.RemoveAll(recipe => Ours(recipe) && !ShouldShow(player, recipe));
+            recipes.RemoveAll(recipe => Ours(recipe) && !ShouldShow(recipe));
             return;
         }
 
@@ -703,7 +685,7 @@ internal static class RecipeEngine
         for (var i = entries.Count - 1; i >= 0; i--)
         {
             var recipe = RecipeOf(entries[i]);
-            if (recipe != null && Ours(recipe) && !ShouldShow(player, recipe))
+            if (recipe != null && Ours(recipe) && !ShouldShow(recipe))
                 entries.RemoveAt(i);
         }
     }
@@ -813,7 +795,7 @@ internal static class RecipeEngine
             var recipe = FindRecipeByKnownName(db, name);
             if (recipe == null || !Ours(recipe))
                 return;
-            if (!ShouldShow(__instance, recipe))
+            if (!ShouldShow(recipe))
                 __result = false;
         }
     }

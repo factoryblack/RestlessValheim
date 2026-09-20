@@ -113,3 +113,10 @@ with original icons, bars and hover descriptions. Never resize the frame around
 scrolling content or replace native progress calculations. Restore bar colours
 on undress. Character records use the display-only Metric helper with bounded
 labels/values; data comes from Ledger, not new counters. See docs/character-skills.md.
+
+Compendium, trophies and achievements use shared paper collection shells fitted
+to stationary viewports. Collection cards must preserve unknown native status
+text and progress bars; do not run inventory-only wear/chrome suppression on
+them. Compendium paragraph padding may own a dedicated reader content rect with
+measured text height, while retaining the native ScrollRect and restoring layout
+on undress. Mixed-content prefabs keep their original layout as a fallback.

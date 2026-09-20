@@ -118,6 +118,7 @@ public sealed partial class InventoryScreen : FeatureModule
             RefreshInventoryMaterials(__instance);
             RefreshContainerMaterials(__instance);
             RefreshSkillsMaterials(__instance);
+            RefreshCollections(__instance);
         }
     }
 
@@ -793,9 +794,9 @@ public sealed partial class InventoryScreen : FeatureModule
         var ach = gui.m_achievementsPanel;
         if (ach != null && ach.gameObject.activeInHierarchy)
         {
-            QuietOverlay(ach.transform);
+            QuietOverlay(ach.transform, true);
             if (ach.m_achievementDetails != null && ach.m_achievementDetails.activeInHierarchy)
-                QuietOverlay(ach.m_achievementDetails.transform);
+                QuietOverlay(ach.m_achievementDetails.transform, true);
         }
     }
 
@@ -809,7 +810,8 @@ public sealed partial class InventoryScreen : FeatureModule
             var n = image.gameObject.name.ToLowerInvariant();
             if (n.Contains("icon"))
                 continue;
-            if (keepBars && (n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
+            if (keepBars && (image.GetComponentInParent<GuiBar>() != null
+                || n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
                 continue;
             if (image.GetComponent<Mask>() != null)
             {
@@ -914,6 +916,15 @@ public sealed partial class InventoryScreen : FeatureModule
             h = h * 31 + (ach.m_achievementDetails != null && ach.m_achievementDetails.activeInHierarchy ? 11 : 13);
         }
 
+        foreach (var root in new[] { gui.m_textsDialog != null ? gui.m_textsDialog.transform : null,
+            gui.m_trophiesPanel != null ? gui.m_trophiesPanel.transform : null,
+            ach != null ? ach.transform : null })
+        {
+            if (root == null || !root.gameObject.activeInHierarchy) continue;
+            var copies = root.GetComponentsInChildren<TMP_Text>(true);
+            foreach (var copy in copies) h = MixTmp(h, copy);
+            h = h * 31 + copies.Length;
+        }
         return h;
     }
 
@@ -973,7 +984,16 @@ public sealed partial class InventoryScreen : FeatureModule
 
         var icon = RestlessUi.Deep<Image>(cell, "icon");
         var host = icon != null && icon.transform.parent != null ? icon.transform.parent.gameObject : cell.gameObject;
-        Ours.Add(RestlessUi.DressSlot(host, icon, false, null, Hidden, true));
+        var plate = host.transform.Find("RestlessSlot");
+        if (plate == null)
+        {
+            var go = RestlessUi.Strip(host.transform, "RestlessSlot");
+            Ours.Add(go);
+            plate = go.transform;
+        }
+        plate.SetAsFirstSibling();
+        RestlessUi.Stretch(plate.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        RestlessUi.PaperControl(plate.gameObject);
         foreach (var tmp in cell.GetComponentsInChildren<TMP_Text>(true))
         {
             var n = tmp.gameObject.name.ToLowerInvariant();
@@ -982,7 +1002,12 @@ public sealed partial class InventoryScreen : FeatureModule
             else if (n.Contains("desc"))
                 Face(tmp, "cardBody", RestlessUi.Text, RestlessUi.HudMeta, true);
             else
-                SilenceTmp(tmp);
+            {
+                // Progress, completion and locked-state copy are data, not chrome.
+                var colour = tmp.color;
+                colour.a = 1f;
+                Face(tmp, "cardMeta" + tmp.GetInstanceID(), colour, RestlessUi.HintSize, true);
+            }
         }
     }
 
@@ -997,7 +1022,8 @@ public sealed partial class InventoryScreen : FeatureModule
             var n = image.gameObject.name.ToLowerInvariant();
             if (n.Contains("icon"))
                 continue;
-            if (keepBars && (n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
+            if (keepBars && (image.GetComponentInParent<GuiBar>() != null
+                || n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
                 continue;
             if (n is "bkg")
             {

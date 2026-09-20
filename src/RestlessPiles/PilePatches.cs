@@ -74,4 +74,17 @@ internal static class PilePatches
             return;
         __result += PileBag.ConsumeNearby(sharedName, amount - __result);
     }
+
+    // Without this, stations only ever "see" ore/fuel/wood sitting in a
+    // chest's Inventory: TryCloneIfPresent has nothing to clone from a pile
+    // (it's a bare ZDO count, not an Inventory slot), so FindCookableItem
+    // comes back null and Smelter.OnAddOre never fires for pile-only stock.
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(NearbyStorage), nameof(NearbyStorage.TryCloneIfPresent))]
+    private static void AfterTryCloneIfPresent(ItemDrop drop, ref ItemDrop.ItemData item, ref bool __result)
+    {
+        if (__result || !PileConfig.On)
+            return;
+        __result = PileBag.TryCloneNearby(drop, out item);
+    }
 }

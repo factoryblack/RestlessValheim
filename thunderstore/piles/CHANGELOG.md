@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Fixed stations (kiln, smelter, cooking station, fermenter) not pulling wood/ore/fuel from a nearby pile with `E` — only chests worked. FindCookableItem discovers what to feed a station through NearbyStorage.TryCloneIfPresent, which only clones an ItemData out of a chest's Inventory slot; a pile has no Inventory, just a bare stored count, so it was invisible to that lookup even though Count/TryConsume already knew about piles for crafting. Added the matching pile lookup so stations can find pile-only stock too
+
 ## 0.1.3
 
 - Quick-stack (`) and auto-vacuum respect the Search range setting, not just the fixed Piles range — they now reach as far as Storage Range when it's set higher (matching how craft/build pile lookups already worked)

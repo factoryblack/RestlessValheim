@@ -46,6 +46,36 @@ internal static class PileBag
         return total;
     }
 
+    // Stations (kiln/smelter/cooking/fermenter) find what to consume via
+    // NearbyStorage.TryCloneIfPresent, which only clones an ItemData out of a
+    // chest Inventory slot. A pile has no Inventory -- it's a bare ZDO count
+    // -- so without this, FindCookableItem never sees pile-only wood/ore and
+    // OnAddOre is never even called, even though Count/TryConsume (used for
+    // crafting) already know about piles via AfterCount/AfterConsume below.
+    public static bool TryCloneNearby(ItemDrop drop, out ItemDrop.ItemData item)
+    {
+        item = null!;
+        var player = Player.m_localPlayer;
+        if (player == null || drop?.m_itemData?.m_shared == null || !PileConfig.On)
+            return false;
+        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var name = drop.m_itemData.m_shared.m_name;
+        foreach (var box in PileBox.All)
+        {
+            if (box == null || !box.Live || box.Stored <= 0 || box.Item?.m_shared == null)
+                continue;
+            if (box.Item.m_shared.m_name != name)
+                continue;
+            if ((box.transform.position - player.transform.position).sqrMagnitude > range * range)
+                continue;
+            item = box.Item.Clone();
+            item.m_stack = 1;
+            return NearbyStorage.EnsureDropPrefab(item, drop);
+        }
+
+        return false;
+    }
+
     public static int ConsumeNearby(string sharedName, int amount)
     {
         var player = Player.m_localPlayer;

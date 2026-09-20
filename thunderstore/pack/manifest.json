@@ -1,6 +1,6 @@
 {
   "name": "Restless_Valheim",
-  "version_number": "0.1.9",
+  "version_number": "0.1.10",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "Restless Valheim: BepInEx, Jötunn, RestlessCore, RestlessCook, RestlessPiles, and RestlessPlant.",
   "dependencies": [

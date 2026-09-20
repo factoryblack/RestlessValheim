@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "Restless_Valheim"
-versionNumber = "0.1.9"
+versionNumber = "0.1.10"
 description = "Restless Valheim: BepInEx, Jötunn, RestlessCore, RestlessCook, RestlessPiles, and RestlessPlant."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false

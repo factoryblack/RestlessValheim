@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11
+
+- One pack bump: RestlessCore 0.1.9, RestlessCook 0.1.8, RestlessPlant 0.1.3. RestlessPiles stays 0.1.4.
+
 ## 0.1.10
 
 - Full stack: RestlessCore 0.1.8, RestlessCook 0.1.7, RestlessPiles 0.1.3, and RestlessPlant 0.1.2

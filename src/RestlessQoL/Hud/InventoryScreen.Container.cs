@@ -77,6 +77,12 @@ public sealed partial class InventoryScreen
         }
         if (!Union(parts, out var left, out var bottom, out var right, out var top)) return;
         var hostRoot = grid.transform.parent;
+        if (!PaperOn())
+        {
+            DropNamed(hostRoot, "RestlessContainerPaper");
+            if (_containerPaper != null) _containerPaper.SetActive(false);
+            return;
+        }
         var panel = EnsureStrip(hostRoot, "RestlessContainerPaper");
         if (_containerPaper != null && _containerPaper != panel.gameObject) _containerPaper.SetActive(false);
         _containerPaper = panel.gameObject;

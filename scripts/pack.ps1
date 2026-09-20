@@ -36,7 +36,7 @@ function Zip-Dir([string]$name, [scriptblock]$stage) {
     Write-Host "wrote $zip"
 }
 
-Zip-Dir 'Restless-RestlessCore-0.1.5' {
+Zip-Dir 'Restless-RestlessCore-0.1.9' {
     param($d)
     Copy-Item $dll $d
     Copy-Item (Join-Path $root 'thunderstore\plugin\manifest.json') $d
@@ -48,7 +48,7 @@ Zip-Dir 'Restless-RestlessCore-0.1.5' {
 $packIcon = Join-Path $root 'thunderstore\pack\icon.png'
 if (-not (Test-Path $packIcon)) { throw "missing thunderstore/pack/icon.png (256x256 PNG)" }
 
-Zip-Dir 'Restless-Restless_Valheim-0.1.6' {
+Zip-Dir 'Restless-Restless_Valheim-0.1.11' {
     param($d)
     Copy-Item (Join-Path $root 'thunderstore\pack\manifest.json') $d
     Copy-Item (Join-Path $root 'thunderstore\pack\README.md') $d
@@ -59,7 +59,7 @@ Zip-Dir 'Restless-Restless_Valheim-0.1.6' {
 $cookDll = Join-Path $root 'dist\RestlessCook.dll'
 $cookIcon = Join-Path $root 'thunderstore\cook\icon.png'
 if ((Test-Path $cookDll) -and (Test-Path $cookIcon)) {
-    Zip-Dir 'Restless-RestlessCook-0.1.2' {
+    Zip-Dir 'Restless-RestlessCook-0.1.8' {
         param($d)
         Copy-Item $cookDll $d
         Copy-Item (Join-Path $root 'thunderstore\cook\manifest.json') $d
@@ -77,7 +77,7 @@ if ((Test-Path $cookDll) -and (Test-Path $cookIcon)) {
 $pilesDll = Join-Path $root 'dist\RestlessPiles.dll'
 $pilesIcon = Join-Path $root 'thunderstore\piles\icon.png'
 if ((Test-Path $pilesDll) -and (Test-Path $pilesIcon)) {
-    Zip-Dir 'Restless-RestlessPiles-0.1.0' {
+    Zip-Dir 'Restless-RestlessPiles-0.1.4' {
         param($d)
         Copy-Item $pilesDll $d
         Copy-Item (Join-Path $root 'thunderstore\piles\manifest.json') $d
@@ -90,7 +90,7 @@ if ((Test-Path $pilesDll) -and (Test-Path $pilesIcon)) {
 $plantDll = Join-Path $root 'dist\RestlessPlant.dll'
 $plantIcon = Join-Path $root 'thunderstore\plant\icon.png'
 if ((Test-Path $plantDll) -and (Test-Path $plantIcon)) {
-    Zip-Dir 'Restless-RestlessPlant-0.1.0' {
+    Zip-Dir 'Restless-RestlessPlant-0.1.3' {
         param($d)
         Copy-Item $plantDll $d
         Copy-Item (Join-Path $root 'thunderstore\plant\manifest.json') $d

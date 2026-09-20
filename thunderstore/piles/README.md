@@ -1,25 +1,24 @@
 # RestlessPiles
 
-Vanilla **wood stacks, stone piles, and the other resource piles** become uncapped single-item stores. **E opens them. Take stack takes one bag stack. ` dumps matching items in.**
+The wood stack and the stone pile finally hold what you actually cut.
 
-Hard-depends on **RestlessCore**, **BepInExPack 5.4.2350**, and **Jötunn 2.30.1**. Everyone on the server needs this mod (minor version match).
+**E** opens a tray. **Take stack** puts one bag-sized bite in your inventory. **`** dumps every matching stack you are carrying. Smash or hammer-remove the pile and the extras spill as bag-sized drops, along with the wood or stone you spent to place it.
 
-This is not a chest and not a ground drop. The hammer piece stays where you built it. The visual stack is not a bag you can drag.
+Needs **RestlessCore**, plus BepInEx and Jötunn. Everyone on the server should be on the same minor version.
 
-Existing piles in a world keep working. The mod dresses the vanilla prefabs (`stone_pile`, `wood_stack`, and the rest). You do not have to tear them down and rebuild.
+This is still the hammer piece you already know — not a chest, not a ground drop. Existing piles in a save keep working; you do not have to tear them down.
 
-## How it works
+## Using one
 
-Each pile only holds the item it is made of (a stone pile only takes stone). Storage sits on the piece ZDO, so craft-from-chests still ignores it. Vacuum and ` treat the pile as that item even when stored is 0.
+A stone pile only takes stone. A wood stack only takes wood. Empty is fine: the piece still knows what it is, so vacuum and `` ` `` will fill it.
 
-- **Take stack** moves one bag-shaped bite: fill one matching partial, or start one new max stack. Never a second cell. Never fill the bag.
-- **Stack** dumps every matching bag stack into this pile (hotbar, extra slots, and locked cells stay).
-- **`** (Core quick stack) dumps matching bag stacks into nearby piles first, then into chests the way Core already does.
-- **Vacuum** pulls matching ground drops into nearby piles (including empty / 0 stored), then into chests that already hold that item.
-- Hammer-remove or smash spills stored extras and the piece's build cost as bag-sized drops.
+- **Take stack** fills one matching partial in the bag, or starts one new max stack. It never dumps the whole pile into every free slot.
+- **Stack** on the tray (or `` ` `` nearby) puts matching bag stacks into the pile. Hotbar, extra slots, and locked cells stay put.
+- **Vacuum** prefers a matching pile, then a chest that already has that item.
+- Crafting and building can pull from a nearby pile after they have checked chests.
 
-Wood, finewood, core wood, yggdrasil, ashwood, stone, coal, black marble, grausten, bones, skulls, and the coin stacks/piles are included — anything whose prefab name ends in `_stack` or `_pile` and costs one stackable resource.
+Wood, finewood, core wood, yggdrasil, ashwood, stone, coal, black marble, grausten, bones, skulls, and the coin piles are included — anything that is a `_stack` or `_pile` and costs one stackable resource.
 
 Host-locked toggle and range live in the BepInEx config.
 
-This package does not replace RestlessCore. Install the **Restless Valheim** modpack, or Core then this.
+Install the **Restless Valheim** modpack, or Core then this. This package does not replace RestlessCore.

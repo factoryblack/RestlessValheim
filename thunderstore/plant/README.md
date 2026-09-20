@@ -1,21 +1,22 @@
 # RestlessPlant
 
-**Berry bushes and forage on the cultivator**, plus a planting square, bulk harvest, and replant. PlantEverything content and PlantEasily feel in one Restless addon.
+Berry bushes and forage on the cultivator, the way carrots already work.
 
-Hard-depends on **RestlessCore**, **BepInExPack 5.4.2350**, and **Jötunn 2.30.1**. Everyone on the server needs this mod (minor version match).
+Plant a raspberry bush. Plant thistle. Plant a square of mushrooms if you have the stock. Pick one player-grown plant and its neighbours come with it. Hover a bare bush and the look prompt tells you when the fruit is coming back.
 
-## How it works
+Needs **RestlessCore**, plus BepInEx and Jötunn. Everyone on the server should be on the same minor version.
 
-The cultivator gains raspberry, blueberry, cloudberry, mushrooms, thistle, dandelion, magecap, jotun puffs, smoke puff, and fiddlehead. Each costs one of the item it grows. Missing prefabs are skipped so Deep North / Ashlands holes do not break load.
+Vanilla carrots, flax, and the rest stay as they are. The square and the harvest pass apply to them too.
 
-Vanilla carrots, flax, and the rest stay as they are. The grid and harvest also apply to them.
+## In the field
 
-- **`[` / `]`** shrinks or grows the planting square (starts at 1×1, up to 7×7, odd sizes).
-- Place once to plant the whole square if you can pay for each cell.
-- Picking a **player-grown** plant also picks matching neighbours in range. Wild meadow raspberries stay wild.
-- One-shot crops (carrots and the like) **replant** the last cultivator piece you had selected, if you still have the seed.
-- Bushes and mushrooms keep their vanilla respawn; they are not destroyed on pick, so they are not replanted.
+The cultivator gains raspberry, blueberry, cloudberry, mushrooms, yellow mushrooms, thistle, dandelion, magecap, jotun puffs, smoke puff, and fiddlehead. Each costs one of the thing it grows. If a prefab is missing in your build, that crop is skipped so the rest still load.
 
-Host-locked extras / harvest / replant live in `restless.plant.cfg`. Grid size is client-local.
+- **`[` / `]`** shrinks or grows the planting square (1×1 up to 7×7, odd sizes). Place once; every cell you can afford goes down.
+- Picking a **player-grown** plant also picks matching neighbours. Wild meadow raspberries stay wild.
+- Carrots and other one-shot crops **replant** if you still have the seed.
+- Bushes and mushrooms keep their fruit cycle. They are not ripped up on pick. Hover the bare plant for the wait.
 
-This package does not replace RestlessCore. Install the **Restless Valheim** modpack, or Core then this.
+Host-locked extras, harvest, and replant live in `restless.plant.cfg`. Grid size is yours.
+
+Install the **Restless Valheim** modpack, or Core then this. This package does not replace RestlessCore.

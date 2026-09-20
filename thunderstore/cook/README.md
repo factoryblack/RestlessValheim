@@ -1,28 +1,26 @@
 # RestlessCook
 
-Valheim 1.0 cooking for Restless. **Cook the haul, make meals, turn meals into feasts.**
+**Cook the haul. Plate it. Set a feast.**
 
-Hard-depends on **RestlessCore**, **BepInExPack 5.4.2350**, and **Jötunn 2.30.1**. Everyone on the server needs this mod (minor version match).
+Restless cooking for Valheim 1.0 — Meadows through Ashlands. Deep North waits. Needs **RestlessCore**, plus BepInEx and Jötunn. Everyone on the server should be on the same minor version.
 
-v0.1 is Meadows through Ashlands. Deep North waits.
+The food preparation table and serving tray are the vanilla pieces, unlocked in Meadows at a workbench (10 wood / 8 resin / 6 leather scraps for the table; 6 wood / 4 leather scraps / 2 resin for the tray).
 
-This page is the recipe wiki. Isolated plates are the full renders; the in-game slots use 256px copies of the same art. The graph itself is [`cook.yaml`](https://github.com/factoryblack/RestlessValheim/blob/main/cook.yaml).
+## The loop
 
-## How it works
+1. Cook the raw meat and fish first. A few vanilla recipes now ask for the cooked cut instead of the raw one.
+2. Turn those cuts and forage into prepared meals at the cauldron.
+3. Carry the meals to the food preparation table, then place the board with the **serving tray** and eat off it.
 
-1. Cook the raw meat and fish first.
-2. Turn those cuts (and forage) into prepared meals.
-3. Assemble meals into feast boards with the **serving tray**. Two sideboards bundle leftover Mistlands and Ashlands plates so they still reach a vanilla feast.
+Every custom meal still lands on a feast. Vanilla boards stay in the game; they are still the balanced white fork. Each biome gets two Restless boards — one leans health, one leans stamina. Mistlands and Ashlands boards also carry eitr. Those boards eat finished meals, so they outpace the vanilla spread instead of copying it.
 
-Every prepared meal still reaches at least one feast. Existing vanilla feasts stay valid sinks. Protein recipes that already exist are rewritten in place so they ask for the cooked cut.
+Meadows and Black Forest boards skip Bog Witch spices. Later boards still want them. Hidden Hills and Cinder sideboards are assembly pieces, not food — they exist so leftover Mistlands and Ashlands plates can still reach a vanilla feast.
 
-Vanilla feasts stay the balanced white fork. Custom feast A is health. Custom feast B is stamina. Mistlands and Ashlands custom feasts also carry eitr. Custom feasts consume finished meals, so they beat the vanilla board rather than matching it. Hidden Hills and Cinder sideboards are assembly pieces, not food.
-
-The Food preparation table and Serving tray are the vanilla pieces, unlocked in Meadows: 10 wood / 8 resin / 6 leather scraps for the table, 6 wood / 4 leather scraps / 2 resin for the tray at a workbench. Meadows and Black Forest custom boards do not ask for Bog Witch spices. Later custom feasts still do.
+The plates below are the full renders. In-game slots use smaller copies of the same art. The graph lives in [`cook.yaml`](https://github.com/factoryblack/RestlessValheim/blob/main/cook.yaml).
 
 ## The matrix
 
-All 81 graph rows. Custom dishes use the isolated plate thumbs; vanilla rows use Iron Gate icons.
+Every dish. Custom plates use our art; vanilla rows use Iron Gate icons.
 
 |  | Dish | Kind | Biome | Recipe | H/S/E | Goes into |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -521,4 +519,4 @@ Not new items. They sit on feast boards.
 - Herbs of the Hidden Hills (`SpiceMistlands`)
 - Fiery Spice Powder (`SpiceAshlands`)
 
-This package does not replace RestlessCore. Install the **Restless Valheim** modpack, or Core then this.
+Install the **Restless Valheim** modpack, or Core then this. This package does not replace RestlessCore.

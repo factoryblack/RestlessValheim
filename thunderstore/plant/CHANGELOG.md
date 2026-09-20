@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3
+
+- Mushrooms, thistle, and the other forage crops show a placement ghost again
+- Berry bushes and forage grow their fruit back (about four hours if vanilla left the timer empty)
+- Hover a bare plant to see how long until it fruits
+- Replant still only runs for carrots and other one-shot crops, not bushes
+
 ## 0.1.2
 
 - Fix cultivator crops that placed with no visible model (mushrooms and other forage). Cloned pieces now force every renderer active and strip any LODGroup, instead of inheriting whatever visibility state the vanilla pickable prefab happened to ship with.

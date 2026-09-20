@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.8
+
+- Custom feast boards place again: the plate is the bigger size, the invisible vanilla table no longer blocks the serving tray
+- Feast leftovers no longer show the cloned Meadows 35/35/2 stats under their own food block
+- Incomplete leftover recipes stay disabled so they cannot unlock, get forgotten, and unlock again every tick
+- Plates steal a quiet vanilla food shader for lighting (skip thistle / spice / eitr garnish)
+- Honeyed Mushrooms no longer pops off the ground when dropped (it had inherited grilled neck-tail mesh colliders)
+
 ## 0.1.7
 
 - Fixed custom recipes constantly re-triggering: a known feast/meal/sideboard recipe was being un-learned and re-learned (re-firing the "learned recipe" toast) every time the player's inventory or station proximity changed, because known-status was recomputed from current possession on every UpdateKnownRecipesList tick instead of staying permanent once discovered

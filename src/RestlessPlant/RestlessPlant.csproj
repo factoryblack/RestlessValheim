@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>RestlessPlant</AssemblyName>
     <RootNamespace>RestlessPlant</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.1.3</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\..\dist\</OutputPath>
     <DebugType>embedded</DebugType>

@@ -1952,6 +1952,9 @@ internal static partial class RestlessUi
 
         public static HudMeter Health(Transform parent) => Build(parent, "health", true, HealthTint);
 
+        // Hammer hover: same atom as vitals, left-anchored under EquipHint.
+        public static HudMeter Piece(Transform parent) => Build(parent, "piece", false, HealthTint);
+
         public static HudMeter Stamina(Transform parent) => Build(parent, "stamina", false, StaminaTint);
 
         public static HudMeter Adrenaline(Transform parent) => Build(parent, "adrenaline", true, AdrenalineTint);

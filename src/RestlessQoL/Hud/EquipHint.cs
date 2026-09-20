@@ -15,20 +15,11 @@ public sealed class EquipHint : FeatureModule
 
     internal static bool Showing => _root != null && _root.activeSelf;
 
-    // Plate is name+icon only (PlateShort) unless the hovered piece has a
-    // WearNTear to report, in which case it grows downward (PlateTall) to
-    // fit our own health meter — a clean stand-in for the vanilla piece
-    // health bar/Jötunn panel this module already hides above.
-    private static readonly Vector2 PlateShort = new(280f, 40f);
-    private static readonly Vector2 PlateTall = new(280f, 66f);
-    private const float HealthBarSpan = 248f;
-
     private static readonly HashSet<Behaviour> Hidden = new();
     private static GameObject? _root;
-    private static GameObject? _strip;
     private static Image? _icon;
     private static Text? _name;
-    private static RestlessUi.HudMeter? _health;
+    private static RestlessUi.HudMeter? _wear;
 
     protected override void OnLoaded()
     {
@@ -41,6 +32,7 @@ public sealed class EquipHint : FeatureModule
             return;
         if (_root != null)
             _root.SetActive(false);
+        _wear?.Root.SetActive(false);
         Restore();
     }
 
@@ -73,7 +65,7 @@ public sealed class EquipHint : FeatureModule
             HidePieceHealth(__instance);
             KeepQuiet();
             Ensure();
-            Paint(__instance, HoveredHealthFraction());
+            Paint(__instance);
         }
 
         [HarmonyPostfix]
@@ -213,37 +205,9 @@ public sealed class EquipHint : FeatureModule
         if (_root != null)
             Object.Destroy(_root);
         _root = null;
-        _strip = null;
         _icon = null;
         _name = null;
-        _health = null;
-    }
-
-    // WearNTear.GetHealthPercentage() is the standard vanilla accessor, but
-    // we cannot compile-check against Valheim's assembly from this sandbox,
-    // so this goes through Harmony's reflection helpers rather than a direct
-    // typed call — if the method is ever missing this degrades to "no bar"
-    // instead of failing the whole build.
-    private static float? HoveredHealthFraction()
-    {
-        var player = Player.m_localPlayer;
-        var hover = player != null ? player.GetHoverObject() : null;
-        var wnt = hover != null ? hover.GetComponentInParent<WearNTear>() : null;
-        if (wnt == null)
-            return null;
-
-        var method = Traverse.Create(wnt).Method("GetHealthPercentage");
-        if (!method.MethodExists())
-            return null;
-
-        try
-        {
-            return Mathf.Clamp01(method.GetValue<float>());
-        }
-        catch
-        {
-            return null;
-        }
+        _wear = null;
     }
 
     private static Transform? HudRoot() =>
@@ -253,7 +217,7 @@ public sealed class EquipHint : FeatureModule
 
     private static void Ensure()
     {
-        if (_root != null && _root.transform.Find("snap") != null)
+        if (_root != null && (_root.transform.Find("snap") != null || _wear == null))
             TearDown();
         if (_root != null)
             return;
@@ -262,32 +226,28 @@ public sealed class EquipHint : FeatureModule
             return;
 
         _root = RestlessUi.Node(parent, "RestlessEquipHint");
-        RestlessUi.Place(_root, RestlessUi.HudDock.Bar, new Vector2(300f, 70f), new Vector2(0f, 80f));
+        RestlessUi.Place(_root, RestlessUi.HudDock.Bar, new Vector2(300f, 66f), new Vector2(0f, 92f));
 
-        _strip = RestlessUi.Strip(_root.transform, "strip");
-        RestlessUi.Pin(_strip, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, PlateShort);
+        var strip = RestlessUi.Strip(_root.transform, "strip");
+        RestlessUi.Pin(strip, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 0f), new Vector2(280f, 40f));
 
-        // Name/icon row anchors to the top edge so it holds still while the
-        // strip grows downward underneath it for the health meter.
-        var iconGo = RestlessUi.Graphic(_root.transform, "icon", Color.white, false);
-        RestlessUi.Pin(iconGo, new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(-110f, -20f),
+        var iconGo = RestlessUi.Graphic(strip.transform, "icon", Color.white, false);
+        RestlessUi.Pin(iconGo, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-110f, 0f),
             new Vector2(28f, 28f));
         _icon = iconGo.GetComponent<Image>();
         _icon.preserveAspect = true;
 
-        _name = RestlessUi.Label(_root.transform, "", RestlessUi.BodySize, RestlessUi.Text, TextAnchor.MiddleLeft);
-        RestlessUi.Pin(_name.gameObject, new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(16f, -20f),
+        _name = RestlessUi.Label(strip.transform, "", RestlessUi.BodySize, RestlessUi.Text, TextAnchor.MiddleLeft);
+        RestlessUi.Pin(_name.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(16f, 0f),
             new Vector2(180f, 32f));
 
-        _health = RestlessUi.HudMeter.Health(_root.transform);
-        RestlessUi.Pin(_health.Root, new Vector2(0.5f, 0f), new Vector2(0.5f, 0.5f), new Vector2(0f, 15f),
-            new Vector2(HealthBarSpan, RestlessUi.HudMeter.Height));
-        _health.Root.SetActive(false);
+        _wear = RestlessUi.HudMeter.Piece(_root.transform);
+        _wear.Root.SetActive(false);
     }
 
-    private static void Paint(global::Hud hud, float? healthFraction)
+    private static void Paint(global::Hud hud)
     {
-        if (_root == null || _name == null || _icon == null || _strip == null || _health == null)
+        if (_root == null || _name == null || _icon == null)
             return;
         _root.SetActive(true);
 
@@ -298,11 +258,33 @@ public sealed class EquipHint : FeatureModule
         var sprite = hud.m_buildIcon != null ? hud.m_buildIcon.sprite : null;
         _icon.enabled = sprite != null;
         _icon.sprite = sprite;
+        PaintWear();
+    }
 
-        var showHealth = healthFraction.HasValue;
-        _strip.GetComponent<RectTransform>().sizeDelta = showHealth ? PlateTall : PlateShort;
-        _health.Root.SetActive(showHealth);
-        if (showHealth)
-            _health.Set(healthFraction!.Value, 1f, HealthBarSpan);
+    private static void PaintWear()
+    {
+        if (_wear == null)
+            return;
+        var wear = HoverWear();
+        if (wear == null)
+        {
+            _wear.Root.SetActive(false);
+            return;
+        }
+
+        _wear.Set(wear.GetHealthPercentage(), 1f, 260f);
+        _wear.Rect.anchorMin = _wear.Rect.anchorMax = new Vector2(0.5f, 0f);
+        _wear.Rect.pivot = new Vector2(0.5f, 0.5f);
+        _wear.Rect.anchoredPosition = new Vector2(0f, 10f);
+        _wear.Root.SetActive(true);
+    }
+
+    private static WearNTear? HoverWear()
+    {
+        var player = Player.m_localPlayer;
+        if (player == null)
+            return null;
+        var piece = player.GetHoveringPiece();
+        return piece != null ? piece.GetComponent<WearNTear>() : null;
     }
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.9
+
+- World wind stays on the biome plate; the helm wind ring moves left of the minimap so it is not under the buffs
+- Crafting paper stays grey stone: the dresser was retinting the plate black every frame over the right art
+- Compendium, trophies and achievements use the shared paper collection shells (status text and progress stay)
+- ESC and logout/quit confirmations use the shared paper kit
+- M map biome, pin name, filters and switches use the shared paper kit; selected pin art stays live
+
 ## 0.1.8
 
 - Hammer hover now shows our own clean health meter under the piece name/icon plate for anything with a WearNTear, instead of relying on the vanilla piece health bar (which stays hidden by default via the existing PieceHealth debug toggle)

@@ -468,11 +468,19 @@ public sealed partial class InventoryScreen : FeatureModule
 
     // Header is one tall Strip over the two columns. Title sits at the top;
     // Craft / Upgrade sit inside the bottom with air.
+    private static bool PaperOn() => Kit.Sprite("paper-panel") != null;
+
     private static void DressHeader(InventoryGui gui)
     {
         if (gui.m_crafting == null)
             return;
         var craft = gui.m_crafting;
+        if (!PaperOn())
+        {
+            DropNamed(craft, "RestlessHeader");
+            DropNamed(craft, "RestlessCraftPaper");
+            return;
+        }
         DropNamed(craft, "RestlessCraftTray");
         DropNamed(craft, "RestlessCraftHead");
         var list = ListHost(gui);
@@ -541,6 +549,21 @@ public sealed partial class InventoryScreen : FeatureModule
             return;
         DropNamed(desc, "RestlessRecipeFoot");
         DropNamed(desc, "RestlessRecipeTitle");
+        var level = desc.Find("requirements")?.Find("level");
+        if (level != null)
+        {
+            var copy = RestlessUi.Bare(gui.m_minStationLevelText != null ? gui.m_minStationLevelText.text : "");
+            if (string.IsNullOrEmpty(copy))
+                RestlessUi.Quiet(level.gameObject);
+            else
+                RestlessUi.Loud(level.gameObject);
+        }
+
+        if (!PaperOn())
+        {
+            DropNamed(desc, "RestlessRecipe");
+            return;
+        }
 
         var parts = new List<RectTransform>();
         if (gui.m_recipeIcon != null)
@@ -570,16 +593,6 @@ public sealed partial class InventoryScreen : FeatureModule
 
         minY -= gap;
         TallBox(desc, "RestlessRecipe", minX, minY, maxX, maxY, 0f, 0f);
-
-        var level = desc.Find("requirements")?.Find("level");
-        if (level != null)
-        {
-            var copy = RestlessUi.Bare(gui.m_minStationLevelText != null ? gui.m_minStationLevelText.text : "");
-            if (string.IsNullOrEmpty(copy))
-                RestlessUi.Quiet(level.gameObject);
-            else
-                RestlessUi.Loud(level.gameObject);
-        }
     }
 
     private static void ParkStationTitle(InventoryGui gui)
@@ -1229,7 +1242,7 @@ public sealed partial class InventoryScreen : FeatureModule
             (maxY - minY) / sy + padY * 2f);
         var img = plate.GetComponent<Image>();
         img.raycastTarget = true;
-        if (paint)
+        if (paint && plate.Find("paperAccent") == null)
             img.color = RestlessUi.RowTint;
     }
 
@@ -1722,8 +1735,10 @@ public sealed partial class InventoryScreen : FeatureModule
             var n = image.gameObject.name.ToLowerInvariant();
             if (n == "panel-back" || IsChromeName(n))
             {
-                if (Kit.Sprite("paper-panel") == null && gui.m_crafting != null
-                    && image.transform.IsChildOf(gui.m_crafting))
+                // paper-panel is not in Assets yet. The Tab window, recipe list and
+                // description wood are siblings of m_crafting, not children — hiding
+                // them leaves the craft column on a black void.
+                if (!PaperOn())
                     continue;
                 Hide(image);
             }

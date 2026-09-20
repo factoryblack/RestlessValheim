@@ -51,15 +51,15 @@ public sealed partial class InventoryScreen
         else if (Union(parts, out var x0, out var y0, out var x1, out var y1))
         {
             var body = EnsureStrip(craft, "RestlessCraftPaper");
-            Place(body.GetComponent<RectTransform>(), x0, y0, x1, y1, 14f, 14f);
-            RestlessUi.PaperSurface(body.gameObject);
+            Place(body.GetComponent<RectTransform>(), x0, y0, x1, y1, 14f, 14f, false);
+            RestlessUi.InventorySurface(body.gameObject);
             if (header != null)
             {
-                RestlessUi.PaperSurface(header.gameObject);
+                RestlessUi.InventorySurface(header.gameObject);
                 var rule = header.Find("RestlessPaperRule");
                 if (rule != null) rule.gameObject.SetActive(false);
             }
-            if (detail != null) RestlessUi.PaperSurface(detail.gameObject);
+            if (detail != null) RestlessUi.InventorySurface(detail.gameObject);
         }
         DressStructuredRecipe(gui);
         if (gui.m_recipeIcon != null && gui.m_recipeIcon.transform.Find("RestlessPortrait") == null)

@@ -98,7 +98,7 @@ items:
     operation: add
     tier: meadows
     prefab: RestlessHoneyedMushrooms
-    clone_from: NeckTailGrilled
+    clone_from: CookedMeat
     food: 18
     food_stamina: 42
     food_regen: 2

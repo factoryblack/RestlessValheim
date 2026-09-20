@@ -7,6 +7,7 @@ namespace RestlessPlant;
 
 internal static class CropPieces
 {
+    private const float DefaultRespawnMinutes = 240f;
     private static bool _added;
 
     public static void Load() => PrefabManager.OnVanillaPrefabsAvailable += Add;
@@ -20,6 +21,7 @@ internal static class CropPieces
         if (!PlantConfig.On || !PlantConfig.ExtraCrops.Value)
             return;
 
+        var template = TemplatePiece();
         var n = 0;
         foreach (var row in CropBook.Rows)
         {
@@ -63,9 +65,16 @@ internal static class CropPieces
 
             var piece = go.GetComponent<Piece>() ?? go.AddComponent<Piece>();
             piece.m_groundOnly = true;
+            piece.m_groundPiece = true;
             piece.m_allowAltGroundPlacement = false;
             piece.m_noInWater = true;
+            piece.m_cultivatedGroundOnly = true;
             piece.m_icon = icon;
+            if (template != null)
+                CopyPlacement(piece, template);
+
+            FlattenLod(go);
+            TunePickable(source, go);
 
             var cfg = new PieceConfig
             {
@@ -83,12 +92,63 @@ internal static class CropPieces
         Plugin.Log.LogInfo($"RestlessPlant added {n} cultivator crops.");
     }
 
+    private static Piece? TemplatePiece()
+    {
+        foreach (var name in new[] { "sapling_carrot", "Plant_Carrot", "CarrotSeeds" })
+        {
+            var piece = PrefabManager.Instance.GetPrefab(name)?.GetComponent<Piece>();
+            if (piece != null)
+                return piece;
+        }
+
+        return null;
+    }
+
+    private static void CopyPlacement(Piece dest, Piece src)
+    {
+        dest.m_placeEffect = src.m_placeEffect;
+        dest.m_category = src.m_category;
+    }
+
+    // Placement ghosts use the prefab mesh. LODGroup often hides every renderer at preview distance.
+    private static void FlattenLod(GameObject go)
+    {
+        foreach (var lod in go.GetComponentsInChildren<LODGroup>(true))
+        {
+            var keep = lod.GetLODs();
+            var show = keep.Length > 0 ? keep[0].renderers : null;
+            foreach (var rend in lod.GetComponentsInChildren<Renderer>(true))
+            {
+                if (rend == null)
+                    continue;
+                rend.enabled = show == null || System.Array.IndexOf(show, rend) >= 0;
+            }
+
+            lod.enabled = false;
+            Object.DestroyImmediate(lod);
+        }
+    }
+
+    // Bushes and forage regrow fruit through Pickable — not ReplantOnHarvest.
+    private static void TunePickable(GameObject source, GameObject clone)
+    {
+        var src = source.GetComponentInChildren<Pickable>(true);
+        var dst = clone.GetComponentInChildren<Pickable>(true);
+        if (src == null || dst == null)
+            return;
+
+        dst.m_respawnTimeMinutes = src.m_respawnTimeMinutes;
+        dst.m_amount = src.m_amount;
+        if (dst.m_respawnTimeMinutes <= 0f)
+            dst.m_respawnTimeMinutes = DefaultRespawnMinutes;
+    }
+
     private static string? ItemOf(CropRow row, GameObject source)
     {
         if (PrefabManager.Instance.GetPrefab(row.Item) != null)
             return row.Item;
 
-        var pickable = source.GetComponent<Pickable>();
+        var pickable = source.GetComponentInChildren<Pickable>(true);
         if (pickable?.m_itemPrefab == null)
             return null;
         return Utils.GetPrefabName(pickable.m_itemPrefab);

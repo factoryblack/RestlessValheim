@@ -20,7 +20,7 @@
 #
 # last_audit: 2026-09-18 — vitals FillStrip scoped to HudMeter; pile craft consume; feast prep/tray/eat/float.
 
-updated: 2026-09-18
+updated: 2026-09-20
 
 items:
   # --- loader ---
@@ -343,7 +343,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Dress 1.0 BuildUIV2 in place. Hide wood + scroll-view plates + gold scrollbars. KeepQuiet TMP so Filter/tags do not double-print. Chip tabs (text nudged up), tags, filter, Q/E/F key plates. Hover Selected frames hidden; hovered piece uses DressSlot lit. Playtest."
+    note: "BuildUIV2 hammer/hoe/serving-tray chrome uses shared paper viewport wells, native-sized category/tag controls, larger bounded labels, preserved search input/placeholder and visible scroll-thumb artwork. Piece cards keep native counts, stars, arrows and availability tint; selection and hover have separate accents. No inventory ItemData cleanup on build pieces. Native layout, masks, callbacks and requirements stay authoritative. Changed image/TMP properties restored on undress. See docs/build-menu-materials.md; syntax checked, compilation and Unity/controller checks pending."
 
   - id: ui.hints
     name: Action hints
@@ -578,4 +578,5 @@ items:
     in_mod: n/a
     restless: ASharpPen-This_Goes_Here / Smoothbrain-ShutUp
     note: "Author utilities. Not gameplay."
+
 

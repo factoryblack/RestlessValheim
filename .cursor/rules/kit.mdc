@@ -113,3 +113,15 @@ with original icons, bars and hover descriptions. Never resize the frame around
 scrolling content or replace native progress calculations. Restore bar colours
 on undress. Character records use the display-only Metric helper with bounded
 labels/values; data comes from Ledger, not new counters. See docs/character-skills.md.
+
+
+## Build menu material adoption
+
+BuildUIV2 piece buttons are native piece records, not ItemData inventory slots.
+Use shared PaperControl for their backing; do not call DressSlot on them because
+its inventory cleanup hides piece-specific labels and marks. Preserve count/star/
+arrow and availability presentation. Fit InventorySurface to the viewport, never
+scrolling content or the fullscreen build HUD. Owned visuals may have ignoreLayout
+LayoutElements; never add sizing LayoutElements to native tabs. Keep masks, input
+caret/placeholder, piece requirements and controller navigation native. Scrollbars
+remain visible; reuse scroll-thumb. See docs/build-menu-materials.md.

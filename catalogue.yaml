@@ -319,7 +319,7 @@ items:
     in_mod: partial
     bite: 1
     restless: RandyKnapp-Auga
-    note: "ESC column + logout/quit confirms. Keep darken, hide LeftKnot/RightKnot/ornament. Shelf leftover pause Button_* / OLD_menu only — not ExitConfirm/LogoutConfirm Yes/No. Confirm titles stay live for Averia. Vanilla Settings window stays. Playtest."
+    note: "ESC column and logout/quit confirmations use shared PaperSurface/PaperControl, larger bounded Averia labels and native-button focus feedback. Frames follow live controls without moving hit targets. Original TMP/graphic/selectable state restored on undress; settings/player/cloud-warning subtrees excluded. Existing darken, callbacks and navigation retained. Asset audit in docs/ui-asset-audit.md. Syntax checked; compile and Unity/controller/localization playtest pending."
 
   - id: ui.vitals
     name: Vitals on the hotbar

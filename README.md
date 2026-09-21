@@ -59,7 +59,7 @@ powershell -File scripts/pack.ps1                # zip artifacts/ for Thundersto
 
 This Steam folder is already BepInEx-patched. Launch from Steam, not a vanilla shortcut.
 
-r2modman: install the **Restless Valheim** modpack, or BepInEx + Jötunn then Import local `artifacts/Restless-RestlessCore-0.1.5.zip` from `scripts/pack.ps1`.
+r2modman: install the **Restless Valheim** modpack, or BepInEx + Jötunn then Import local `artifacts/Restless-RestlessCore-0.1.10.zip` from `scripts/pack.ps1`.
 
 ## GitHub Actions
 
@@ -68,20 +68,17 @@ Pushes and pull requests compile Release `RestlessCore.dll`, `RestlessCook.dll`,
 A tag named `v*` ships **RestlessCore** and the **Restless Valheim** modpack (Core + Cook + Piles + Plant). A tag named `pack-v*` ships the pack only. `cook-v*`, `piles-v*`, and `plant-v*` ship those plugins only.
 
 ```
-git tag v0.1.5
-git push origin v0.1.5
+git tag v0.1.10
+git push origin v0.1.10
 
-git tag pack-v0.1.7
-git push origin pack-v0.1.7
+git tag pack-v0.1.13
+git push origin pack-v0.1.13
 
-git tag cook-v0.1.3
-git push origin cook-v0.1.3
+git tag cook-v0.1.9
+git push origin cook-v0.1.9
 
-git tag piles-v0.1.1
-git push origin piles-v0.1.1
-
-git tag plant-v0.1.0
-git push origin plant-v0.1.0
+git tag plant-v0.1.3
+git push origin plant-v0.1.3
 ```
 
 ### Thunderstore token

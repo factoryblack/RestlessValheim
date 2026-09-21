@@ -28,9 +28,9 @@ $log = Join-Path $valheim 'BepInEx\LogOutput.log'
 Write-Host ''
 Write-Host 'Launch Valheim from Steam (this folder is already BepInEx-patched).'
 Write-Host 'After the main menu, confirm BepInEx\LogOutput.log has:'
-Write-Host '  RestlessCore 0.1.4 loaded'
-Write-Host '  RestlessPiles 0.1.0 loaded'
-Write-Host '  RestlessPlant 0.1.0 loaded'
+Write-Host '  RestlessCore 0.1.10 loaded'
+Write-Host '  RestlessPiles 0.1.4 loaded'
+Write-Host '  RestlessPlant 0.1.3 loaded'
 Write-Host "  $log"
 Write-Host ''
 Write-Host 'Hotkeys: ` = quick stack, Shift+` = restock'
@@ -50,7 +50,7 @@ Write-Host '  10. Look at a placed stone pile / wood stack: E opens it. Take sta
 Write-Host '  11. Cultivator: raspberry / mushroom pieces, [ ] for the planting square, pick a planted bush to bulk-harvest neighbours.'
 Write-Host ''
 Write-Host 'r2modman: install BepInEx + Jotunn from Thunderstore, then Import local'
-Write-Host '  artifacts\Restless-RestlessCore-0.1.4.zip  (run scripts\pack.ps1 first)'
+Write-Host '  artifacts\Restless-RestlessCore-0.1.10.zip  (run scripts\pack.ps1 first)'
 
 if ($Launch) {
     Start-Process 'steam://rungameid/892970'

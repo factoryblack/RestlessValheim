@@ -13,8 +13,8 @@ public sealed class MapChrome : FeatureModule
 
     private static GameObject? _biomePlate;
     private static Text? _biome;
-    private static GameObject? _windPlate;
     private static MapStudio? _studio;
+    private static Transform? _shipWindHome;
     private static bool _dressed;
 
     protected override void OnLoaded()
@@ -30,7 +30,7 @@ public sealed class MapChrome : FeatureModule
                 _studio = null;
                 _biomePlate = null;
                 _biome = null;
-                _windPlate = null;
+                _shipWindHome = null;
                 _dressed = false;
             }
         };
@@ -55,6 +55,34 @@ public sealed class MapChrome : FeatureModule
             _dressed = false;
             if (ModConfig.MapChromeEnabled.Value)
                 Dress(__instance);
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Hud), "UpdateShipHud")]
+        private static void ShipHud(Hud __instance)
+        {
+            if (!ModConfig.MapChromeEnabled.Value)
+            {
+                RestoreShipWind(__instance);
+                return;
+            }
+
+            var map = Minimap.instance;
+            var mapRoot = map != null && map.m_smallRoot != null ? map.m_smallRoot : map?.m_mapSmall;
+            if (mapRoot == null || !mapRoot.activeInHierarchy)
+            {
+                RestoreShipWind(__instance);
+                return;
+            }
+
+            var ship = Player.m_localPlayer?.GetControlledShip();
+            if (ship == null || !__instance.IsVisible())
+            {
+                RestoreShipWind(__instance);
+                return;
+            }
+
+            DockShipWind(__instance, map);
         }
 
         [HarmonyPostfix]
@@ -92,7 +120,6 @@ public sealed class MapChrome : FeatureModule
 
         ClearOld(map);
         Unwrap(map);
-        RestoreWind(map);
         QuietBox(map);
         _studio ??= new MapStudio("RestlessMapStudio", Vector3.zero, -80f);
         _studio.EnsureStudio();
@@ -105,7 +132,8 @@ public sealed class MapChrome : FeatureModule
     private static void Undress(Minimap map)
     {
         RestoreBox(map);
-        RestoreWind(map);
+        RestoreMinimapWind(map);
+        RestoreShipWind(Hud.instance);
         ReturnMarkers(map);
         map.m_mapImageSmall.enabled = true;
         _studio?.Sleep();
@@ -114,12 +142,6 @@ public sealed class MapChrome : FeatureModule
             Object.Destroy(_biomePlate);
             _biomePlate = null;
             _biome = null;
-        }
-
-        if (_windPlate != null)
-        {
-            Object.Destroy(_windPlate);
-            _windPlate = null;
         }
 
         if (map.m_biomeNameSmall != null)
@@ -173,19 +195,6 @@ public sealed class MapChrome : FeatureModule
         for (var i = wrap.childCount - 1; i >= 0; i--)
             wrap.GetChild(i).SetParent(home, true);
         Object.Destroy(wrap.gameObject);
-    }
-
-    private static void RestoreWind(Minimap map)
-    {
-        var wind = map.m_windMarker;
-        if (wind == null)
-            return;
-        var parent = wind.parent;
-        if (parent == null || (parent.name != "RestlessWind" && parent.name != "RestlessBiome" && parent.name != "RestlessWindPlate"))
-            return;
-        var home = Host(map);
-        if (home != null)
-            wind.SetParent(home, true);
     }
 
     private static void QuietBox(Minimap map)
@@ -251,18 +260,6 @@ public sealed class MapChrome : FeatureModule
         RestlessUi.Stretch(_biome.gameObject, Vector2.zero, Vector2.one, new Vector2(14f, 2f), new Vector2(-28f, -2f));
     }
 
-    private static void EnsureWindPlate(Minimap map)
-    {
-        if (_windPlate != null)
-            return;
-        var parent = Host(map);
-        if (parent == null)
-            return;
-
-        _windPlate = RestlessUi.Strip(parent, "RestlessWindPlate");
-        RestlessUi.Pin(_windPlate, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(28f, 28f));
-    }
-
     private static void Sync(Minimap map)
     {
         var mapRt = map.m_mapImageSmall.rectTransform;
@@ -272,52 +269,77 @@ public sealed class MapChrome : FeatureModule
         {
             var text = ModConfig.MapBiomePlate.Value && map.m_biomeNameSmall != null ? map.m_biomeNameSmall.text : "";
             _biome.text = text;
-            _biomePlate.SetActive(PlateOn() && !string.IsNullOrEmpty(text));
+            _biomePlate.SetActive(PlateOn() && (!string.IsNullOrEmpty(text) || ModConfig.MapWindPlate.Value));
             if (_biomePlate.activeSelf)
                 RestlessUi.Dock(_biomePlate.GetComponent<RectTransform>(), mapRt, new Vector2(0.5f, 1f), new Vector2(0f, -16f));
         }
 
-        DockWind(map, mapRt);
+        DockMinimapWind(map);
         LiftMarkers(map);
     }
 
     private static bool PlateOn() =>
-        ModConfig.MapBiomePlate.Value;
+        ModConfig.MapBiomePlate.Value || ModConfig.MapWindPlate.Value;
 
-    // Wind arrow gets its own plate docked to the left of the minimap,
-    // independent of the biome bar underneath it.
-    private static void DockWind(Minimap map, RectTransform mapRt)
+    private static void DockMinimapWind(Minimap map)
     {
         var wind = map.m_windMarker;
-        if (wind == null)
+        if (wind == null || _biomePlate == null)
             return;
 
-        if (!ModConfig.MapWindPlate.Value)
+        if (!ModConfig.MapWindPlate.Value || !_biomePlate.activeSelf)
         {
-            RestoreWind(map);
-            if (_windPlate != null)
-                _windPlate.SetActive(false);
+            RestoreMinimapWind(map);
             return;
         }
 
-        EnsureWindPlate(map);
-        if (_windPlate == null)
-            return;
+        if (wind.parent != _biomePlate.transform)
+            wind.SetParent(_biomePlate.transform, false);
 
-        _windPlate.SetActive(true);
-        RestlessUi.Dock(_windPlate.GetComponent<RectTransform>(), mapRt, new Vector2(0f, 0.5f), new Vector2(-24f, 0f));
-
-        if (wind.parent != _windPlate.transform)
-            wind.SetParent(_windPlate.transform, false);
-
-        var rt = wind;
-        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(16f, 16f);
-        rt.anchoredPosition = Vector2.zero;
-        rt.localScale = Vector3.one;
+        wind.anchorMin = wind.anchorMax = new Vector2(1f, 0.5f);
+        wind.pivot = new Vector2(0.5f, 0.5f);
+        wind.sizeDelta = new Vector2(16f, 16f);
+        wind.anchoredPosition = new Vector2(-16f, 0f);
+        wind.localScale = Vector3.one;
         foreach (var img in wind.GetComponentsInChildren<Image>(true))
             img.color = RestlessUi.Text;
+    }
+
+    private static void RestoreMinimapWind(Minimap map)
+    {
+        var wind = map.m_windMarker;
+        if (wind == null || _biomePlate == null)
+            return;
+        if (wind.parent != _biomePlate.transform)
+            return;
+        var home = Host(map);
+        if (home != null)
+            wind.SetParent(home, true);
+    }
+
+    private static void DockShipWind(Hud hud, Minimap map)
+    {
+        var wind = hud.m_shipWindIndicatorRoot;
+        var mapRt = map.m_mapImageSmall?.rectTransform;
+        var root = MapRoot(map);
+        if (wind == null || mapRt == null || root == null)
+            return;
+
+        _shipWindHome ??= wind.parent;
+        if (wind.parent != root)
+            wind.SetParent(root, false);
+
+        wind.localScale = Vector3.one;
+        RestlessUi.Dock(wind, mapRt, new Vector2(0f, 0.5f), new Vector2(-12f, 0f));
+    }
+
+    private static void RestoreShipWind(Hud? hud)
+    {
+        var wind = hud?.m_shipWindIndicatorRoot;
+        if (wind == null || _shipWindHome == null || wind.parent == _shipWindHome)
+            return;
+        wind.SetParent(_shipWindHome, false);
+        wind.localScale = Vector3.one;
     }
 
     private static void LiftMarkers(Minimap map)
@@ -350,4 +372,13 @@ public sealed class MapChrome : FeatureModule
 
     private static Transform? Host(Minimap map) =>
         map.m_mapImageSmall != null ? map.m_mapImageSmall.transform.parent : null;
+
+    private static Transform? MapRoot(Minimap map)
+    {
+        if (map.m_smallRoot != null)
+            return map.m_smallRoot.transform;
+        if (map.m_mapSmall != null)
+            return map.m_mapSmall.transform;
+        return Host(map);
+    }
 }

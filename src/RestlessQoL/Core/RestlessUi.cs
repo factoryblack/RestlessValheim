@@ -759,7 +759,7 @@ internal static partial class RestlessUi
 
     public static void SilenceTmp(TMP_Text? tmp)
     {
-        if (tmp == null || tmp.transform.name.StartsWith("Restless"))
+        if (tmp == null || Owned(tmp.transform))
             return;
         tmp.alpha = 0f;
         tmp.enabled = false;
@@ -772,7 +772,19 @@ internal static partial class RestlessUi
         if (cr != null)
             cr.SetAlpha(0f);
         foreach (var sub in tmp.GetComponentsInChildren<CanvasRenderer>(true))
+        {
+            if (sub.gameObject != tmp.gameObject && Owned(sub.transform))
+                continue;
             sub.SetAlpha(0f);
+        }
+    }
+
+    public static bool Owned(Transform? node)
+    {
+        for (var t = node; t != null; t = t.parent)
+            if (t.name.StartsWith("Restless"))
+                return true;
+        return false;
     }
 
     // Unity Outline recipe. Torn atoms skip this except F8 row hover.
@@ -1951,6 +1963,9 @@ internal static partial class RestlessUi
         }
 
         public static HudMeter Health(Transform parent) => Build(parent, "health", true, HealthTint);
+
+        // Hammer hover: same atom as vitals, left-anchored under EquipHint.
+        public static HudMeter Piece(Transform parent) => Build(parent, "piece", false, HealthTint);
 
         public static HudMeter Stamina(Transform parent) => Build(parent, "stamina", false, StaminaTint);
 

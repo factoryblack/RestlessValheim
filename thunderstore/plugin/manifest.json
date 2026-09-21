@@ -1,8 +1,8 @@
 {
   "name": "RestlessCore",
-  "version_number": "0.1.8",
+  "version_number": "0.1.10",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
-  "description": "Valheim 1.0 QoL: nearby chests for craft, build and stations; extra armor and Z/X/C slots; F8 host-locked settings. HUD and inventory are mid-migration — vanilla and Restless currently mix.",
+  "description": "Nearby chests count as yours. Extra armour and Z/X/C. A quieter HUD. Host-locked F8. Valheim 1.0.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "ValheimModding-Jotunn-2.30.1"

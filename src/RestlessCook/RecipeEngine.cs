@@ -267,6 +267,9 @@ internal static class RecipeEngine
         shared.m_foodRegen = row.FoodRegen;
         shared.m_foodBurnTime = row.FoodMinutes * 60f;
         shared.m_itemType = ItemDrop.ItemData.ItemType.Consumable;
+        // Cloned leftovers keep the vanilla feast consume SE. GetTooltip then
+        // prints our m_food block and the Meadows 35/35/2 block under it.
+        shared.m_consumeStatusEffect = null;
     }
 
     private static void StripFood(CustomItem item)
@@ -283,6 +286,7 @@ internal static class RecipeEngine
         shared.m_foodEitr = 0f;
         shared.m_foodRegen = 0f;
         shared.m_foodBurnTime = 0f;
+        shared.m_consumeStatusEffect = null;
         if (shared.m_maxStackSize < 20)
             shared.m_maxStackSize = 20;
     }
@@ -500,6 +504,23 @@ internal static class RecipeEngine
             recipe.m_resources = reqs.ToArray();
             recipe.m_amount = row.OutputAmount;
         }
+
+        GateOurs(db);
+    }
+
+    // Empty leftover recipes are "already known". Vanilla teaches them, we
+    // used to forget them, vanilla taught them again — unlock spam. Disable
+    // until the real costs are bound so discovery cannot see them.
+    private static void GateOurs(ObjectDB db)
+    {
+        if (db?.m_recipes == null)
+            return;
+        foreach (var recipe in db.m_recipes)
+        {
+            if (!Ours(recipe))
+                continue;
+            recipe.m_enabled = ReqsComplete(recipe);
+        }
     }
 
     private static bool MatchesKitRecipe(Recipe recipe, CookRow tray)
@@ -643,15 +664,24 @@ internal static class RecipeEngine
         var db = ObjectDB.instance;
         if (db?.m_recipes == null || player.m_knownRecipes == null)
             return;
+        GateOurs(db);
+        var drop = new List<string>();
+        foreach (var name in player.m_knownRecipes)
+        {
+            var known = FindRecipeByKnownName(db, name);
+            if (known != null && Ours(known) && !ReqsComplete(known))
+                drop.Add(name);
+        }
 
-        // Once granted, a recipe stays known forever, same as vanilla -- we
-        // never remove from m_knownRecipes here.
+        foreach (var name in drop)
+            player.m_knownRecipes.Remove(name);
+
         foreach (var recipe in db.m_recipes)
         {
             if (!Ours(recipe) || !ShouldShow(recipe))
                 continue;
             var token = recipe.m_item.m_itemData?.m_shared?.m_name;
-            if (string.IsNullOrEmpty(token) || player.IsRecipeKnown(token))
+            if (string.IsNullOrEmpty(token) || player.m_knownRecipes.Contains(token))
                 continue;
             player.AddKnownRecipe(recipe);
         }
@@ -700,6 +730,64 @@ internal static class RecipeEngine
             ?? AccessTools.Field(entry.GetType(), "m_recipe")
             ?? AccessTools.Field(entry.GetType(), "recipe");
         return field?.GetValue(entry) as Recipe;
+    }
+
+    // Temporary size-test dump. F5, devcommands, then restlesscook.
+    internal static void DumpForSizeTest()
+    {
+        var player = Player.m_localPlayer;
+        if (player == null)
+        {
+            Console.instance?.Print("restlesscook: no player");
+            return;
+        }
+
+        var inv = player.GetInventory();
+        var names = new List<string>();
+        var tray = _kit.FirstOrDefault(r => r.IsTool && r.IsAdd);
+        if (tray != null)
+            names.Add(tray.Prefab);
+        foreach (var row in _rows)
+        {
+            if (row.IsAdd && (row.IsMeal || row.IsSideboard))
+                names.Add(row.Prefab);
+            else if (row.IsAdd && row.IsFeast)
+                names.Add(row.Prefab + "_Material");
+            else if (row.IsFeast && (row.IsRewrite || row.IsReference))
+                names.Add(row.Prefab);
+        }
+
+        var given = 0;
+        var dropped = 0;
+        var miss = 0;
+        var feet = player.transform.position + player.transform.forward + Vector3.up;
+        foreach (var name in names.Distinct())
+        {
+            var prefab = ObjectDB.instance != null ? ObjectDB.instance.GetItemPrefab(name) : null;
+            if (prefab == null)
+                prefab = PrefabManager.Instance.GetPrefab(name);
+            if (prefab == null || prefab.GetComponent<ItemDrop>() == null)
+            {
+                miss++;
+                Plugin.Log.LogWarning("restlesscook dump missing " + name);
+                continue;
+            }
+
+            if (inv.AddItem(prefab, 1))
+            {
+                given++;
+                continue;
+            }
+
+            var data = prefab.GetComponent<ItemDrop>().m_itemData.Clone();
+            data.m_stack = 1;
+            ItemDrop.DropItem(data, 1, feet, Quaternion.identity);
+            dropped++;
+        }
+
+        var line = $"restlesscook: {given} in bag, {dropped} at feet" + (miss > 0 ? $", {miss} missing" : "");
+        Console.instance?.Print(line);
+        Plugin.Log.LogInfo(line);
     }
 
     [HarmonyPatch(typeof(ObjectDB), nameof(ObjectDB.CopyOtherDB))]
@@ -758,6 +846,12 @@ internal static class RecipeEngine
         if (feast.m_eatStacks < 1)
             feast.m_eatStacks = 10;
         CookVisual.EnsureHit(feast.gameObject);
+    }
+
+    [HarmonyPatch(typeof(Player), nameof(Player.AddKnownRecipe))]
+    public static class AddKnownRecipePatch
+    {
+        public static bool Prefix(Recipe recipe) => !Ours(recipe) || ReqsComplete(recipe);
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.UpdateKnownRecipesList))]

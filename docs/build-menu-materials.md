@@ -70,4 +70,4 @@ not verified. Test before merging:
 7. UI scale/resolution changes, open/close repeatedly, toggle styling off/on,
    reconnect and GUI recreation. Check no leftover panels or invisible labels.
 
-This branch is independent of the unmerged collection, ESC and map passes.
+Updated onto main after the collection, ESC and map passes were merged.

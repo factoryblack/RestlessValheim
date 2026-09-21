@@ -1,14 +1,14 @@
 # Restless Valheim
 
-A **Valheim modpack**, not a plugin. r2modman / Thunderstore install this listing and pull the full stack:
+One install for the Restless table. r2modman and Thunderstore pull the stack:
 
-- BepInExPack 5.4.2350
-- Jötunn 2.30.1
-- **RestlessCore** — nearby storage, extra slots, host-locked F8, Restless HUD
-- **RestlessCook** — Meadows through Ashlands meals and feasts
-- **RestlessPiles** — wood stacks and stone piles as uncapped stores
-- **RestlessPlant** — bushes and forage on the cultivator, planting square, harvest, replant
+**RestlessCore** — nearby chests, extra slots, host-locked F8, the quieter HUD  
+**RestlessCook** — cook the haul, plate it, set a feast (Meadows through Ashlands)  
+**RestlessPiles** — wood stacks and stone piles that actually hold what you cut  
+**RestlessPlant** — bushes and forage on the cultivator  
 
-This zip has no DLL. It only names those packages. See each plugin page for what that version does.
+Plus **BepInExPack 5.4.2350** and **Jötunn 2.30.1**.
 
-The HUD and inventory look are still landing.
+This zip has no DLL. It only names those packages. Each plugin page has the full story.
+
+The HUD and inventory look are still landing — some of Tab and crafting is still vanilla under Restless paper. F8 turns pieces on and off. Gameplay rules are host-locked.

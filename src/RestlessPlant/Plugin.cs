@@ -15,7 +15,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.plant";
     public const string PluginName = "RestlessPlant";
-    public const string PluginVersion = "0.1.0";
+    public const string PluginVersion = "0.1.3";
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;

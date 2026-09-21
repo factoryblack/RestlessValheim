@@ -18,10 +18,59 @@ internal static class CookMesh
     {
         if (_folder != null)
             return _folder;
-        var root = Path.GetDirectoryName(typeof(CookMesh).Assembly.Location) ?? ".";
-        _folder = Path.Combine(root, "mesh");
+
+        // Thunderstore ships art under mesh/. r2modman then flattens that
+        // folder into the plugin directory, so Assembly.Location/mesh misses
+        // every plate and we silently fall back to vanilla clones.
+        var roots = PluginRoots();
+        foreach (var root in roots)
+        {
+            var nested = Path.Combine(root, "mesh");
+            if (HasRcm(nested))
+                return Remember(nested);
+            if (HasRcm(root))
+                return Remember(root);
+        }
+
+        _folder = Path.Combine(roots.Length > 0 ? roots[0] : ".", "mesh");
+        Plugin.Log.LogWarning("cook mesh folder missing, looking in " + _folder);
         return _folder;
     }
+
+    private static string[] PluginRoots()
+    {
+        var roots = new List<string>();
+        var plugin = Plugin.Instance?.Info?.Location;
+        if (!string.IsNullOrEmpty(plugin))
+            AddRoot(roots, Path.GetDirectoryName(plugin));
+        var asm = typeof(CookMesh).Assembly.Location;
+        if (!string.IsNullOrEmpty(asm))
+            AddRoot(roots, Path.GetDirectoryName(asm));
+        return roots.ToArray();
+    }
+
+    private static void AddRoot(List<string> roots, string? root)
+    {
+        if (string.IsNullOrEmpty(root))
+            return;
+        foreach (var existing in roots)
+        {
+            if (string.Equals(existing, root, StringComparison.OrdinalIgnoreCase))
+                return;
+        }
+
+        roots.Add(root);
+    }
+
+    private static string Remember(string dir)
+    {
+        _folder = dir;
+        Plugin.Log.LogInfo("cook mesh folder " + dir);
+        return dir;
+    }
+
+    private static bool HasRcm(string dir) =>
+        Directory.Exists(dir) && Directory.GetFiles(dir, "*.rcm").Length > 0;
 
     public static Mesh? Mesh(string id)
     {

@@ -118,6 +118,7 @@ public sealed partial class InventoryScreen : FeatureModule
             RefreshInventoryMaterials(__instance);
             RefreshContainerMaterials(__instance);
             RefreshSkillsMaterials(__instance);
+            RefreshCollections(__instance);
         }
     }
 
@@ -467,11 +468,19 @@ public sealed partial class InventoryScreen : FeatureModule
 
     // Header is one tall Strip over the two columns. Title sits at the top;
     // Craft / Upgrade sit inside the bottom with air.
+    private static bool PaperOn() => Kit.Sprite("paper-panel") != null;
+
     private static void DressHeader(InventoryGui gui)
     {
         if (gui.m_crafting == null)
             return;
         var craft = gui.m_crafting;
+        if (!PaperOn())
+        {
+            DropNamed(craft, "RestlessHeader");
+            DropNamed(craft, "RestlessCraftPaper");
+            return;
+        }
         DropNamed(craft, "RestlessCraftTray");
         DropNamed(craft, "RestlessCraftHead");
         var list = ListHost(gui);
@@ -540,6 +549,21 @@ public sealed partial class InventoryScreen : FeatureModule
             return;
         DropNamed(desc, "RestlessRecipeFoot");
         DropNamed(desc, "RestlessRecipeTitle");
+        var level = desc.Find("requirements")?.Find("level");
+        if (level != null)
+        {
+            var copy = RestlessUi.Bare(gui.m_minStationLevelText != null ? gui.m_minStationLevelText.text : "");
+            if (string.IsNullOrEmpty(copy))
+                RestlessUi.Quiet(level.gameObject);
+            else
+                RestlessUi.Loud(level.gameObject);
+        }
+
+        if (!PaperOn())
+        {
+            DropNamed(desc, "RestlessRecipe");
+            return;
+        }
 
         var parts = new List<RectTransform>();
         if (gui.m_recipeIcon != null)
@@ -569,16 +593,6 @@ public sealed partial class InventoryScreen : FeatureModule
 
         minY -= gap;
         TallBox(desc, "RestlessRecipe", minX, minY, maxX, maxY, 0f, 0f);
-
-        var level = desc.Find("requirements")?.Find("level");
-        if (level != null)
-        {
-            var copy = RestlessUi.Bare(gui.m_minStationLevelText != null ? gui.m_minStationLevelText.text : "");
-            if (string.IsNullOrEmpty(copy))
-                RestlessUi.Quiet(level.gameObject);
-            else
-                RestlessUi.Loud(level.gameObject);
-        }
     }
 
     private static void ParkStationTitle(InventoryGui gui)
@@ -793,9 +807,9 @@ public sealed partial class InventoryScreen : FeatureModule
         var ach = gui.m_achievementsPanel;
         if (ach != null && ach.gameObject.activeInHierarchy)
         {
-            QuietOverlay(ach.transform);
+            QuietOverlay(ach.transform, true);
             if (ach.m_achievementDetails != null && ach.m_achievementDetails.activeInHierarchy)
-                QuietOverlay(ach.m_achievementDetails.transform);
+                QuietOverlay(ach.m_achievementDetails.transform, true);
         }
     }
 
@@ -809,7 +823,8 @@ public sealed partial class InventoryScreen : FeatureModule
             var n = image.gameObject.name.ToLowerInvariant();
             if (n.Contains("icon"))
                 continue;
-            if (keepBars && (n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
+            if (keepBars && (image.GetComponentInParent<GuiBar>() != null
+                || n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
                 continue;
             if (image.GetComponent<Mask>() != null)
             {
@@ -914,6 +929,15 @@ public sealed partial class InventoryScreen : FeatureModule
             h = h * 31 + (ach.m_achievementDetails != null && ach.m_achievementDetails.activeInHierarchy ? 11 : 13);
         }
 
+        foreach (var root in new[] { gui.m_textsDialog != null ? gui.m_textsDialog.transform : null,
+            gui.m_trophiesPanel != null ? gui.m_trophiesPanel.transform : null,
+            ach != null ? ach.transform : null })
+        {
+            if (root == null || !root.gameObject.activeInHierarchy) continue;
+            var copies = root.GetComponentsInChildren<TMP_Text>(true);
+            foreach (var copy in copies) h = MixTmp(h, copy);
+            h = h * 31 + copies.Length;
+        }
         return h;
     }
 
@@ -973,7 +997,16 @@ public sealed partial class InventoryScreen : FeatureModule
 
         var icon = RestlessUi.Deep<Image>(cell, "icon");
         var host = icon != null && icon.transform.parent != null ? icon.transform.parent.gameObject : cell.gameObject;
-        Ours.Add(RestlessUi.DressSlot(host, icon, false, null, Hidden, true));
+        var plate = host.transform.Find("RestlessSlot");
+        if (plate == null)
+        {
+            var go = RestlessUi.Strip(host.transform, "RestlessSlot");
+            Ours.Add(go);
+            plate = go.transform;
+        }
+        plate.SetAsFirstSibling();
+        RestlessUi.Stretch(plate.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        RestlessUi.PaperControl(plate.gameObject);
         foreach (var tmp in cell.GetComponentsInChildren<TMP_Text>(true))
         {
             var n = tmp.gameObject.name.ToLowerInvariant();
@@ -982,7 +1015,12 @@ public sealed partial class InventoryScreen : FeatureModule
             else if (n.Contains("desc"))
                 Face(tmp, "cardBody", RestlessUi.Text, RestlessUi.HudMeta, true);
             else
-                SilenceTmp(tmp);
+            {
+                // Progress, completion and locked-state copy are data, not chrome.
+                var colour = tmp.color;
+                colour.a = 1f;
+                Face(tmp, "cardMeta" + tmp.GetInstanceID(), colour, RestlessUi.HintSize, true);
+            }
         }
     }
 
@@ -997,7 +1035,8 @@ public sealed partial class InventoryScreen : FeatureModule
             var n = image.gameObject.name.ToLowerInvariant();
             if (n.Contains("icon"))
                 continue;
-            if (keepBars && (n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
+            if (keepBars && (image.GetComponentInParent<GuiBar>() != null
+                || n is "bar" || n.Contains("levelbar") || n.Contains("currentlevel")))
                 continue;
             if (n is "bkg")
             {
@@ -1203,7 +1242,7 @@ public sealed partial class InventoryScreen : FeatureModule
             (maxY - minY) / sy + padY * 2f);
         var img = plate.GetComponent<Image>();
         img.raycastTarget = true;
-        if (paint)
+        if (paint && plate.Find("paperAccent") == null)
             img.color = RestlessUi.RowTint;
     }
 
@@ -1696,8 +1735,10 @@ public sealed partial class InventoryScreen : FeatureModule
             var n = image.gameObject.name.ToLowerInvariant();
             if (n == "panel-back" || IsChromeName(n))
             {
-                if (Kit.Sprite("paper-panel") == null && gui.m_crafting != null
-                    && image.transform.IsChildOf(gui.m_crafting))
+                // paper-panel is not in Assets yet. The Tab window, recipe list and
+                // description wood are siblings of m_crafting, not children — hiding
+                // them leaves the craft column on a black void.
+                if (!PaperOn())
                     continue;
                 Hide(image);
             }

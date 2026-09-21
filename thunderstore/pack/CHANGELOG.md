@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.13
+
+- One pack bump: RestlessCook 0.1.9 (r2modman custom plates). Core, plant and piles unchanged.
+
+## 0.1.12
+
+- One pack bump: RestlessCore 0.1.10 (ESC pause labels). Cook, plant and piles unchanged.
+
+## 0.1.11
+
+- One pack bump: RestlessCore 0.1.9, RestlessCook 0.1.8, RestlessPlant 0.1.3. RestlessPiles stays 0.1.4.
+
 ## 0.1.10
 
 - Full stack: RestlessCore 0.1.8, RestlessCook 0.1.7, RestlessPiles 0.1.3, and RestlessPlant 0.1.2

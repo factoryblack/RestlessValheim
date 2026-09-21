@@ -44,7 +44,8 @@ internal static class PlantHarvest
             if (PlantConfig.BulkHarvest.Value)
                 Bulk(__instance, character);
 
-            if (PlantConfig.Replant.Value && __instance.m_respawnTimeMinutes <= 0f)
+            // Replant only one-shot crops. Forage and bushes regrow via Pickable.m_respawnTimeMinutes.
+            if (PlantConfig.Replant.Value && __instance.m_respawnTimeMinutes <= 0f && piece?.GetComponent<Plant>() != null)
                 Replant(character as Player, __instance.transform.position, __instance.transform.rotation, piece);
         }
     }
@@ -70,7 +71,7 @@ internal static class PlantHarvest
                 var piece = other.GetComponentInParent<Piece>();
                 var oneShot = other.m_respawnTimeMinutes <= 0f;
                 other.Interact(character, false, false);
-                if (PlantConfig.Replant.Value && oneShot)
+                if (PlantConfig.Replant.Value && oneShot && piece?.GetComponent<Plant>() != null)
                     Replant(character as Player, pos, rot, piece);
             }
         }

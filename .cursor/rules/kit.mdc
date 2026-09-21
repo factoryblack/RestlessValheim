@@ -114,6 +114,33 @@ scrolling content or replace native progress calculations. Restore bar colours
 on undress. Character records use the display-only Metric helper with bounded
 labels/values; data comes from Ledger, not new counters. See docs/character-skills.md.
 
+## Collection material adoption
+
+Compendium, trophies and achievements use shared paper collection shells fitted
+to stationary viewports. Collection cards must preserve unknown native status
+text and progress bars; do not run inventory-only wear/chrome suppression on
+them. Compendium paragraph padding may own a dedicated reader content rect with
+measured text height, while retaining the native ScrollRect and restoring layout
+on undress. Mixed-content prefabs keep their original layout as a fallback.
+See docs/collection-screens.md.
+
+## ESC material adoption
+
+MenuScreen uses PaperSurface around active button bounds and complete logout/quit
+confirmation bounds; PaperControl/PaperSelectable on owned child graphics. Keep
+native button rects, callbacks and navigation. Owned surfaces/mirrors ignore native
+layout groups. Restore exact TMP visibility, native graphics and selectable state
+on undress. Do not add decorative action icons or style settings/player/cloud
+warnings through the menu traversal. See docs/menu-materials.md and ui-asset-audit.md.
+
+## World map material adoption
+
+Large-map chrome opts into PaperSurface, PaperSwitch and BoundedLabel; retain
+native map/pin sprites and MapStudio capture. Pin selection uses a constant-sized
+paper accent; do not disable the native Selected image to hide its art, because
+its live enabled/active state is an input to selection detection. Preserve native
+input caret/selection graphics. Track reparented owned surfaces for cleanup, and
+restore native chrome, input styling and moved rects on undress. See docs/map-materials.md.
 
 ## Build menu material adoption
 

@@ -1,4 +1,5 @@
 using Jotunn.Entities;
+using Jotunn.Managers;
 using UnityEngine;
 
 namespace RestlessCook;
@@ -6,6 +7,8 @@ namespace RestlessCook;
 internal static class CookVisual
 {
     private const string ChildName = "RestlessCookMesh";
+    // Baked feast plates are dish-sized (~0.6m). Visual-only scale until a Blender re-bake.
+    private const float FeastMeshScale = 3f;
 
     // Meshy exports come in noticeably smaller than the vanilla food/feast
     // meshes they replace, so custom plates need an upscale to read at the
@@ -41,9 +44,8 @@ internal static class CookVisual
         filter.sharedMesh = mesh;
         var rend = visual.GetComponent<MeshRenderer>() ?? visual.AddComponent<MeshRenderer>();
         rend.enabled = true;
-        Paint(rend, albedo);
+        Paint(rend, albedo, prefab);
         KeepPlate(prefab);
-        EnsureHit(prefab);
     }
 
     public static void KeepPlate(GameObject prefab)
@@ -78,19 +80,64 @@ internal static class CookVisual
             return;
         if (prefab.GetComponent<Feast>() == null)
         {
-            var stray = keep.GetComponent<MeshCollider>();
-            if (stray != null)
-                Object.Destroy(stray);
+            foreach (var col in prefab.GetComponentsInChildren<Collider>(true))
+            {
+                if (col is MeshCollider mesh)
+                    Object.DestroyImmediate(mesh);
+            }
+
+            if (prefab.GetComponentInChildren<Collider>(true) == null)
+                SitOnGround(keep);
             return;
+        }
+
+        DressFeast(prefab, keep);
+    }
+
+    // Scale the plate, not the cloned feast root. Root scale also blows up
+    // vanilla table colliders and the serving-tray ghost fails as invalid.
+    private static void DressFeast(GameObject prefab, Transform keep)
+    {
+        keep.localScale = Vector3.one * FeastMeshScale;
+        keep.localPosition = new Vector3(0f, 0.02f, 0f);
+
+        foreach (var col in prefab.GetComponentsInChildren<Collider>(true))
+        {
+            if (col == null)
+                continue;
+            if (col.transform == keep || col.transform.IsChildOf(keep))
+                continue;
+            col.enabled = false;
+        }
+
+        var piece = prefab.GetComponent<Piece>();
+        if (piece != null)
+        {
+            piece.m_clipGround = true;
+            piece.m_noInWater = true;
+            piece.m_cultivatedGroundOnly = false;
+            piece.m_groundOnly = false;
         }
 
         var filter = keep.GetComponent<MeshFilter>();
         if (filter?.sharedMesh == null)
             return;
-        var col = keep.GetComponent<MeshCollider>() ?? keep.gameObject.AddComponent<MeshCollider>();
-        col.sharedMesh = filter.sharedMesh;
-        col.convex = true;
-        col.enabled = true;
+        var hit = keep.GetComponent<MeshCollider>() ?? keep.gameObject.AddComponent<MeshCollider>();
+        hit.sharedMesh = filter.sharedMesh;
+        hit.convex = true;
+        hit.enabled = true;
+    }
+
+    private static void SitOnGround(Transform keep)
+    {
+        var filter = keep.GetComponent<MeshFilter>();
+        if (filter?.sharedMesh == null)
+            return;
+        var box = keep.GetComponent<BoxCollider>() ?? keep.gameObject.AddComponent<BoxCollider>();
+        var bounds = filter.sharedMesh.bounds;
+        box.center = bounds.center;
+        box.size = Vector3.Max(bounds.size, new Vector3(0.08f, 0.04f, 0.08f));
+        box.enabled = true;
     }
 
     private static GameObject FindOrCreate(GameObject prefab)
@@ -116,9 +163,9 @@ internal static class CookVisual
         return visual;
     }
 
-    private static void Paint(Renderer renderer, Texture2D? albedo)
+    private static void Paint(Renderer renderer, Texture2D? albedo, GameObject prefab)
     {
-        var mat = Fallback();
+        var mat = CopyLit(prefab);
         if (mat == null)
             return;
         mat.color = Color.white;
@@ -129,24 +176,121 @@ internal static class CookVisual
         SetFloat(mat, "_Glossiness", 0.12f);
         SetFloat(mat, "_Smoothness", 0.12f);
         SetFloat(mat, "_GlossMapScale", 0.12f);
+        MuteGlow(mat);
         if (albedo != null)
         {
             if (mat.HasProperty("_MainTex"))
                 mat.SetTexture("_MainTex", albedo);
             if (mat.HasProperty("_BaseMap"))
                 mat.SetTexture("_BaseMap", albedo);
+            if (mat.HasProperty("_Diffuse"))
+                mat.SetTexture("_Diffuse", albedo);
         }
 
         renderer.sharedMaterial = mat;
     }
 
-    private static Material? Fallback()
+    // Same as the working food-shader steal: clone a vanilla MeshRenderer
+    // on this prefab (or a feast board). Skip thistle / spice / eitr glow
+    // garnish. Never wood_stack — that painted bark on our UVs.
+    private static Material? CopyLit(GameObject prefab)
     {
+        var src = QuietMat(prefab) ?? QuietFeast();
+        if (src != null)
+            return new Material(src);
+
         var shader = Shader.Find("Standard")
                      ?? Shader.Find("Diffuse")
                      ?? Shader.Find("Legacy Shaders/Diffuse");
         return shader != null ? new Material(shader) : null;
     }
+
+    private static Material? QuietFeast()
+    {
+        foreach (var name in new[] { "FeastMeadows", "FeastBlackforest" })
+        {
+            var go = PrefabManager.Instance?.GetPrefab(name);
+            var mat = QuietMat(go);
+            if (mat != null)
+                return mat;
+        }
+
+        return null;
+    }
+
+    private static Material? QuietMat(GameObject? prefab)
+    {
+        if (prefab == null)
+            return null;
+        foreach (var rend in prefab.GetComponentsInChildren<Renderer>(true))
+        {
+            if (rend == null || rend.transform.name == ChildName)
+                continue;
+            if (rend is not MeshRenderer)
+                continue;
+            if (Garnish(rend.transform))
+                continue;
+            var mat = rend.sharedMaterial;
+            if (mat?.shader == null || Glows(mat))
+                continue;
+            return mat;
+        }
+
+        return null;
+    }
+
+    private static bool Garnish(Transform node)
+    {
+        for (var t = node; t != null; t = t.parent)
+        {
+            var n = t.name;
+            if (Has(n, "thistle") || Has(n, "spice") || Has(n, "eitr")
+                || Has(n, "glow") || Has(n, "garnish") || Has(n, "magecap")
+                || Has(n, "jotun") || Has(n, "wisp") || Has(n, "mist"))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool Glows(Material mat)
+    {
+        var label = mat.name + " " + mat.shader.name;
+        if (Has(label, "thistle") || Has(label, "spice") || Has(label, "eitr")
+            || Has(label, "glow"))
+            return true;
+        if (mat.IsKeywordEnabled("_EMISSION") || mat.IsKeywordEnabled("EMISSION"))
+            return true;
+        if (mat.HasProperty("_EmissionMap") && mat.GetTexture("_EmissionMap") != null)
+            return true;
+        if (mat.HasProperty("_EmissionColorMap") && mat.GetTexture("_EmissionColorMap") != null)
+            return true;
+        if (mat.HasProperty("_EmissionColor") && mat.GetColor("_EmissionColor").maxColorComponent > 0.02f)
+            return true;
+        if (mat.HasProperty("_EmissiveColor") && mat.GetColor("_EmissiveColor").maxColorComponent > 0.02f)
+            return true;
+        if (mat.HasProperty("_EnableEmission") && mat.GetFloat("_EnableEmission") > 0.5f)
+            return true;
+        return false;
+    }
+
+    private static void MuteGlow(Material mat)
+    {
+        SetColor(mat, "_EmissionColor", Color.black);
+        SetColor(mat, "_EmissiveColor", Color.black);
+        SetColor(mat, "_GlowColor", Color.black);
+        SetFloat(mat, "_EnableEmission", 0f);
+        SetFloat(mat, "_EmissionIntensity", 0f);
+        if (mat.HasProperty("_EmissionMap"))
+            mat.SetTexture("_EmissionMap", null);
+        if (mat.HasProperty("_EmissionColorMap"))
+            mat.SetTexture("_EmissionColorMap", null);
+        mat.DisableKeyword("_EMISSION");
+        mat.DisableKeyword("EMISSION");
+    }
+
+    private static bool Has(string text, string token) =>
+        text.IndexOf(token, System.StringComparison.OrdinalIgnoreCase) >= 0;
 
     private static void SetColor(Material mat, string prop, Color color)
     {

@@ -16,6 +16,7 @@ internal static class PlantConfig
     public static ConfigEntry<bool> BulkHarvest = null!;
     public static ConfigEntry<float> HarvestRange = null!;
     public static ConfigEntry<bool> Replant = null!;
+    public static ConfigEntry<bool> RegrowHint = null!;
     public static ConfigEntry<KeyboardShortcut> SizeUp = null!;
     public static ConfigEntry<KeyboardShortcut> SizeDown = null!;
 
@@ -46,6 +47,8 @@ internal static class PlantConfig
         Replant = config.Bind("Plant", "ReplantOnHarvest", true,
             new ConfigDescription("One-shot crops (carrots and the like) replant the picked piece if you can pay for it. Host-locked.",
                 null, Admin));
+        RegrowHint = config.Bind("Client", "RegrowHint", true,
+            "Show time until fruit regrows when hovering a picked bush or forage plant. Client-local.");
         SizeUp = config.Bind("Client", "GridBigger", new KeyboardShortcut(KeyCode.RightBracket),
             "Grow the planting square. Client-local.");
         SizeDown = config.Bind("Client", "GridSmaller", new KeyboardShortcut(KeyCode.LeftBracket),

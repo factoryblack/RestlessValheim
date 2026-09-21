@@ -30,6 +30,13 @@ public sealed partial class InventoryScreen
             }
         }
         if (!Union(bag, out var left, out var bottom, out var right, out var top)) return;
+        if (!PaperOn())
+        {
+            DropNamed(gui.m_player, "RestlessInventoryPaper");
+            if (gui.m_weight != null && gui.m_weight.transform.parent != null)
+                CraftArtwork(RestlessUi.Deep<Image>(gui.m_weight.transform.parent, "weight_icon"), "carry-weight");
+            return;
+        }
         var fullRight = right;
         var sx = Mathf.Max(0.01f, Mathf.Abs(gui.m_player.lossyScale.x));
         var sy = Mathf.Max(0.01f, Mathf.Abs(gui.m_player.lossyScale.y));

@@ -22,6 +22,7 @@ internal static partial class RestlessUi
         var overlayColor = accent ?? new Color(0.18f, 0.16f, 0.13f, 0.88f);
         if (image.sprite == sprite && image.type == Image.Type.Tiled && rim != null)
         {
+            image.color = Color.white;
             var live = rim.GetComponent<Image>();
             if (live != null) live.color = overlayColor;
             return;

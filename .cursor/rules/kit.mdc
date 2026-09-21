@@ -165,3 +165,11 @@ individually; never CanvasGroup BuildHud. Fit BuildUi as a whole into the region
 above the band and restore its original transform on close. Native scrollbar art
 is retained but its track thickness is 10 UI units. This supersedes native-position
 hover mirrors and the previous no-native-rect-change restriction for this surface.
+
+## Compact build detail proportions
+
+Latest playtest supersedes the full-width detail band: cap the card at 900 UI
+units, measure its height (128–210), and dock its top 16 units below the fitted
+grid. Grid fitting reserves a constant maximum so hovering does not move the
+menu. Use 24px title, 18px description and 16px requirement copy; retain scrolling
+for overflow. No new artwork or scrollbar changes in this refinement.

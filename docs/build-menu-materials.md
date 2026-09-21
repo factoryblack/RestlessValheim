@@ -5,19 +5,20 @@ it with an owned two-column detail panel and reserves space for it in the menu.
 
 ## Layout
 
-- Paper detail band: maximum width 1400, 32px minimum side margins, height 22% of
-  HUD height bounded to 190–240 units; bottom offset at least 130 units for hotbar clearance.
-- Left 58%: 62px piece icon, wrapped title (28px, minimum 20), then 20px description.
-  Long descriptions use a clipped, wheel-scrollable area without reducing body type.
-- Right: native requirements rendered as rows, with a 36px icon, wrapping 18px
-  name and separate 18px count. Station-only rows use the count space for the name.
-  Long names increase row height. Additional requirements scroll within this column.
-- Grid: fit live tab/search/viewport/scrollbar bounds to the remaining space above
-  the band with a uniform BuildUi transform scale and position change. Native cells,
-  layouts, navigation and coordinate relationships stay together. Never enlarge the
-  native grid above its original scale.
-- Native scrollbar sprites, handle length/value and interaction states remain.
-  Track thickness is explicitly 10 UI units; no custom scrollbar artwork or focus.
+- Compact card: maximum width 900 UI units (previously 1400), centred and docked
+  16 units below the actual fitted grid. It no longer anchors independently near
+  the hotbar or leaves a large gap beneath the menu.
+- Height follows measured description and requirement row heights, bounded to
+  128–210 units. A short two-requirement recipe uses the compact end of that range.
+- Left 60%: 44-unit item icon, 24px title (minimum 20 for long names) and 18px
+  description. Description overflow still scrolls; body type is never shrunk.
+- Right: 30-unit requirement icons, wrapping 16px names and a separate 16px count
+  column. Base row height is 38 plus 4 spacing. Station names retain the unused
+  count space; more requirements scroll within the column.
+- Grid fitting reserves a stable maximum card height, independent of the hovered
+  piece's content. Switching pieces changes the card's bottom edge, not the grid
+  position or the card's top edge. The card retains the existing hotbar reserve.
+- Native scrollbar artwork and 10-unit tracks are retained.
 
 ## Live data and cleanup
 
@@ -58,3 +59,10 @@ Check in game before merge:
    bottom hotbar clearance. The current hotbar reserve assumes the standard dock.
 7. Close/disable/reopen and reconnect: native detail/placement helper returns and
    root/scrollbar transforms are restored without duplicate panels.
+
+## Compact follow-up validation
+
+Syntax and pure layout arithmetic are checked; neither is a Unity visual test.
+Verify the screenshot's roof piece has a compact card attached below the grid,
+then hover a long-description/many-resource recipe: the grid must stay still,
+card height may grow downward, and neither column may overlap the hotbar.

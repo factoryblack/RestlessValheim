@@ -19,6 +19,9 @@ public sealed class BuildMenu : FeatureModule
     private static readonly List<GameObject> Ours = new();
     private static readonly List<Behaviour> Hidden = new();
     private static readonly HashSet<GameObject> Silenced = new();
+    private static readonly HashSet<Object> Remembered = new();
+    private static readonly List<System.Action> Restore = new();
+    private static readonly List<RestlessControlFeedback> Feedback = new();
     private static bool _dressed;
     private static bool _dumped;
 
@@ -55,8 +58,6 @@ public sealed class BuildMenu : FeatureModule
             DumpOnce(__instance);
             if (!_dressed)
             {
-                Scrub(RootOf(__instance.m_buildUi));
-                Scrub(RootOf(__instance.m_pieceSelectionWindow));
                 _dressed = true;
             }
 
@@ -121,8 +122,7 @@ public sealed class BuildMenu : FeatureModule
         var root = RootOf(hud.m_buildUi);
         Quiet(root);
         Quiet(RootOf(hud.m_pieceSelectionWindow));
-        QuietScroll(root);
-        HideHover(root);
+        DressScroll(root);
         var ui = hud.m_buildUi;
         if (ui == null)
             return;
@@ -131,27 +131,6 @@ public sealed class BuildMenu : FeatureModule
         DressTabs(ui);
         DressSearch(ui);
         DressKeys(ui);
-    }
-
-    private static void Scrub(Transform? root)
-    {
-        if (root == null)
-            return;
-        foreach (var chip in root.GetComponentsInChildren<Transform>(true))
-        {
-            if (chip.name is not ("RestlessChip" or "RestlessSlot"))
-                continue;
-            var rt = chip.GetComponent<RectTransform>();
-            if (rt != null && rt.rect.height > 48f)
-                Object.Destroy(chip.gameObject);
-        }
-
-        foreach (var hold in root.GetComponentsInChildren<LayoutElement>(true))
-        {
-            if (hold.transform.Find("RestlessChip") == null)
-                continue;
-            Object.Destroy(hold);
-        }
     }
 
     private static void KeepQuiet()
@@ -176,9 +155,9 @@ public sealed class BuildMenu : FeatureModule
             return;
         foreach (var image in root.GetComponentsInChildren<Image>(true))
         {
-            if (image.transform.name.StartsWith("Restless"))
+            if (Owned(image.transform))
                 continue;
-            if (LeaveMask(image.transform))
+            if (LeaveMask(image.transform) || image.GetComponentInParent<Scrollbar>() != null)
                 continue;
             var n = image.gameObject.name.ToLowerInvariant();
             var size = image.rectTransform.rect;
@@ -194,42 +173,51 @@ public sealed class BuildMenu : FeatureModule
         }
     }
 
-    private static void QuietScroll(Transform? root)
+    private static void DressScroll(Transform? root)
     {
-        if (root == null)
-            return;
+        if (root == null) return;
         foreach (var scroll in root.GetComponentsInChildren<ScrollRect>(true))
         {
             var image = scroll.GetComponent<Image>();
             if (image != null && image.GetComponent<Mask>() == null
-                && image.GetComponent<RectMask2D>() == null)
-                Hide(image);
+                && image.GetComponent<RectMask2D>() == null) Hide(image);
+            // Fit the viewport, never the scrolling content or fullscreen build HUD.
+            var viewport = scroll.viewport;
+            if (viewport == null || viewport.parent == null) continue;
+            var rect = viewport.rect;
+            if (rect.width < 100f || rect.height < 80f || rect.width > 1400f || rect.height > 1000f) continue;
+            var name = "RestlessBuildWell" + scroll.GetInstanceID();
+            var plate = viewport.parent.Find(name);
+            if (plate == null)
+            {
+                var go = RestlessUi.Graphic(viewport.parent, name, Color.white, false);
+                go.AddComponent<LayoutElement>().ignoreLayout = true;
+                RestlessUi.InventorySurface(go);
+                Ours.Add(go);
+                plate = go.transform;
+            }
+            RestlessUi.CopyRect(plate.GetComponent<RectTransform>(), viewport);
+            var before = plate.GetSiblingIndex() < viewport.GetSiblingIndex();
+            plate.SetSiblingIndex(viewport.GetSiblingIndex() - (before ? 1 : 0));
         }
-
         foreach (var bar in root.GetComponentsInChildren<Scrollbar>(true))
         {
-            foreach (var image in bar.GetComponentsInChildren<Image>(true))
-                Hide(image);
-        }
-    }
-
-    private static void HideHover(Transform? root)
-    {
-        if (root == null)
-            return;
-        foreach (var image in root.GetComponentsInChildren<Image>(true))
-        {
-            if (image.transform.name.StartsWith("Restless"))
-                continue;
-            if (LeaveMask(image.transform) && image.GetComponentInParent<BuildUiPieceButton>() == null
-                && image.GetComponentInParent<BuildUiTagButton>() == null)
-                continue;
-            var n = image.gameObject.name.ToLowerInvariant();
-            if (n.Contains("icon") || n.Contains("star") || n.Contains("arrow"))
-                continue;
-            if (n.Contains("selected") || n.Contains("hover") || n.Contains("highlight")
-                || n.Contains("glow"))
-                Hide(image);
+            var track = bar.GetComponent<Image>();
+            if (track != null)
+            {
+                RememberImage(track);
+                track.color = new Color(0.07f, 0.06f, 0.05f, 0.8f);
+            }
+            var thumb = bar.handleRect != null ? bar.handleRect.GetComponent<Image>() : null;
+            if (thumb != null)
+            {
+                RememberImage(thumb);
+                var sprite = Kit.Sprite("scroll-thumb");
+                if (sprite != null) thumb.sprite = sprite;
+                thumb.type = Image.Type.Simple;
+                thumb.color = RestlessUi.Accent;
+            }
+            AddFeedback(bar);
         }
     }
 
@@ -254,51 +242,50 @@ public sealed class BuildMenu : FeatureModule
 
     private static void DressPieces(BuildUi ui)
     {
-        if (ui.m_pieceButtons == null)
-            return;
-        foreach (var piece in ui.m_pieceButtons)
-        {
-            if (piece == null || !piece.gameObject.activeInHierarchy)
-                continue;
-            var rt = piece.GetComponent<RectTransform>();
-            if (rt != null && (rt.rect.width > 80f || rt.rect.height > 80f
-                || rt.rect.width < 24f || rt.rect.height < 24f))
-                continue;
-            var icon = piece.m_icon ?? RestlessUi.Deep<Image>(piece.transform, "Piece Icon");
-            var lit = piece == ui.m_lastSelectedPieceBtn || piece == ui.m_currentHoveredPieceButton;
-            var plate = RestlessUi.DressSlot(piece.gameObject, icon, lit, null, Hidden, true);
-            if (!Ours.Contains(plate))
-                Ours.Add(plate);
-            KeepMarks(piece.transform);
-        }
-
-        if (ui.m_specialPieceButton != null && ui.m_specialPieceButton.gameObject.activeInHierarchy)
-        {
-            var special = ui.m_specialPieceButton;
-            var rt = special.GetComponent<RectTransform>();
-            if (rt != null && rt.rect.width <= 80f && rt.rect.height <= 80f)
-            {
-                var icon = special.m_icon ?? RestlessUi.Deep<Image>(special.transform, "Piece Icon");
-                var plate = RestlessUi.DressSlot(special.gameObject, icon,
-                    special == ui.m_lastSelectedPieceBtn || special == ui.m_currentHoveredPieceButton,
-                    null, Hidden, true);
-                if (!Ours.Contains(plate))
-                    Ours.Add(plate);
-                KeepMarks(special.transform);
-            }
-        }
+        if (ui.m_pieceButtons != null)
+            foreach (var piece in ui.m_pieceButtons) DressPiece(ui, piece);
+        DressPiece(ui, ui.m_specialPieceButton);
     }
 
-    private static void KeepMarks(Transform piece)
+    private static void DressPiece(BuildUi ui, BuildUiPieceButton? piece)
     {
+        if (piece == null || !piece.gameObject.activeInHierarchy) return;
+        var rect = piece.GetComponent<RectTransform>();
+        if (rect == null || rect.rect.width < 24f || rect.rect.height < 24f) return;
+        var icon = piece.m_icon ?? RestlessUi.Deep<Image>(piece.transform, "Piece Icon");
+        var selected = piece == ui.m_lastSelectedPieceBtn;
+        var hovered = piece == ui.m_currentHoveredPieceButton;
+        // Piece buttons are not ItemData slots: keep all counts, stars, arrows,
+        // availability tint and future mod status children under native control.
         foreach (var image in piece.GetComponentsInChildren<Image>(true))
         {
-            var n = image.gameObject.name.ToLowerInvariant();
-            if (!n.Contains("star") && !n.Contains("arrow") && !n.Contains("icon"))
+            if (Owned(image.transform) || image == icon || image.GetComponent<Mask>() != null) continue;
+            if (image.GetComponent<Button>() != null)
+            {
+                RememberImage(image);
+                image.color = Color.clear;
                 continue;
-            Hidden.Remove(image);
-            image.enabled = true;
+            }
+            var name = image.name.ToLowerInvariant();
+            if (name is "background" or "bkg" or "selected" or "hover" or "highlight" or "glow")
+                Hide(image);
         }
+        var plate = piece.transform.Find("RestlessBuildPiece");
+        if (plate == null)
+        {
+            var go = RestlessUi.Chip(piece.transform, "RestlessBuildPiece");
+            go.AddComponent<LayoutElement>().ignoreLayout = true;
+            Ours.Add(go);
+            plate = go.transform;
+            plate.SetAsFirstSibling();
+        }
+        RestlessUi.Stretch(plate.gameObject, Vector2.zero, Vector2.one,
+            new Vector2(2f, 2f), new Vector2(-2f, -2f));
+        RestlessUi.PaperControl(plate.gameObject,
+            selected ? RestlessUi.Accent : hovered ? RestlessUi.PaperMuted : (Color?)null);
+        // Existing Button and BuildUiPieceButton receive pointer/controller events.
+        var button = piece.GetComponent<Button>();
+        if (button != null) AddFeedback(button);
     }
 
     private static void DressTags(BuildUi ui)
@@ -321,10 +308,10 @@ public sealed class BuildMenu : FeatureModule
         if (button == null)
             return;
         var rt = button.GetComponent<RectTransform>();
-        if (rt == null || rt.rect.width < 40f || rt.rect.height > 40f || rt.rect.height < 16f)
+        if (rt == null || rt.rect.width < 40f || rt.rect.height > 80f || rt.rect.height < 16f)
             return;
         Plate(button, RestlessUi.ButtonCopy(button, fallback), lit,
-            new Vector2(Mathf.Min(rt.rect.width, 200f), 30f));
+            rt.rect.size);
     }
 
     private static void DressTabs(BuildUi ui)
@@ -342,99 +329,59 @@ public sealed class BuildMenu : FeatureModule
             if (HintHost(button.transform))
                 continue;
             var rt = button.GetComponent<RectTransform>();
-            if (rt == null || rt.rect.height > 40f || rt.rect.width < 40f)
+            if (rt == null || rt.rect.height > 100f || rt.rect.width < 40f)
                 continue;
             var selected = button.transform.Find("Selected");
             var lit = selected != null && selected.gameObject.activeInHierarchy;
             Plate(button, RestlessUi.ButtonCopy(button, button.gameObject.name), lit,
-                new Vector2(Mathf.Min(rt.rect.width, 260f), 36f));
+                rt.rect.size);
         }
     }
 
     private static void DressSearch(BuildUi ui)
     {
         var field = ui.m_searchField as Component;
-        if (field == null)
-            return;
-        var bar = field.transform;
-        for (var t = field.transform; t != null; t = t.parent)
+        if (field == null) return;
+        var rect = field.GetComponent<RectTransform>();
+        if (rect == null) return;
+        var background = field.GetComponent<Image>();
+        if (background != null)
         {
-            if (t.name.ToLowerInvariant().Contains("search"))
-            {
-                bar = t;
-                break;
-            }
+            RememberImage(background);
+            background.color = Color.clear;
         }
-
-        foreach (var image in bar.GetComponentsInChildren<Image>(true))
-        {
-            if (image.transform.name.StartsWith("Restless"))
-                continue;
-            if (image.GetComponent<TMP_InputField>() != null || image.GetComponent<InputField>() != null)
-            {
-                image.color = Color.clear;
-                image.raycastTarget = true;
-                image.enabled = true;
-                continue;
-            }
-
-            if (HintHost(image.transform))
-            {
-                Hide(image);
-                continue;
-            }
-
-            var n = image.gameObject.name.ToLowerInvariant();
-            if (n.Contains("icon"))
-                continue;
-            Hide(image);
-        }
-
-        foreach (var tmp in bar.GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (tmp.transform.name.StartsWith("Restless"))
-                continue;
-            if (tmp.GetComponentInParent<TMP_InputField>()?.textComponent == tmp)
-            {
-                tmp.color = RestlessUi.Text;
-                continue;
-            }
-
-            MuteTmp(tmp);
-        }
-
-        var plate = bar.Find("RestlessSearch");
+        var plate = field.transform.Find("RestlessSearch");
         if (plate == null)
         {
-            var go = RestlessUi.Chip(bar, "RestlessSearch");
-            go.GetComponent<Image>().raycastTarget = false;
+            var go = RestlessUi.Chip(field.transform, "RestlessSearch");
+            go.AddComponent<LayoutElement>().ignoreLayout = true;
+            RestlessUi.PaperSurface(go, small: true);
             Ours.Add(go);
             plate = go.transform;
             plate.SetAsFirstSibling();
         }
-
-        var host = bar.GetComponent<RectTransform>();
-        if (host != null)
-            RestlessUi.Pin(plate.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                Vector2.zero, new Vector2(Mathf.Max(host.rect.width, 154f), 36f));
-
-        var input = bar.GetComponentInChildren<TMP_InputField>(true);
-        var typed = input != null && !string.IsNullOrEmpty(input.text);
-        var ph = bar.Find("RestlessSearchFace")?.GetComponent<Text>();
-        if (ph == null)
+        RestlessUi.Stretch(plate.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        // Preserve placeholder localization, caret, selection, IME and focus.
+        var tmp = field.GetComponent<TMP_InputField>();
+        if (tmp != null)
         {
-            ph = RestlessUi.Label(bar, "Filter", RestlessUi.HudSize, RestlessUi.Muted,
-                TextAnchor.MiddleLeft);
-            ph.gameObject.name = "RestlessSearchFace";
-            Ours.Add(ph.gameObject);
+            if (tmp.textComponent != null)
+            {
+                RememberTmp(tmp.textComponent);
+                tmp.textComponent.color = RestlessUi.Text;
+            }
+            if (tmp.placeholder is TMP_Text placeholder)
+            {
+                RememberTmp(placeholder);
+                placeholder.color = RestlessUi.PaperMuted;
+            }
         }
-
-        if (host != null)
-            RestlessUi.Pin(ph.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
-                new Vector2(36f, 1f), new Vector2(host.rect.width - 44f, 24f));
-        ph.alignment = TextAnchor.MiddleLeft;
-        ph.verticalOverflow = VerticalWrapMode.Overflow;
-        ph.gameObject.SetActive(!typed);
+        var legacy = field.GetComponent<InputField>();
+        if (legacy != null)
+        {
+            if (legacy.textComponent != null) StyleInputText(legacy.textComponent, RestlessUi.Text);
+            if (legacy.placeholder is Text placeholder) StyleInputText(placeholder, RestlessUi.PaperMuted);
+        }
     }
 
     private static void DressKeys(BuildUi ui)
@@ -454,8 +401,9 @@ public sealed class BuildMenu : FeatureModule
                 continue;
             foreach (var image in host.GetComponentsInChildren<Image>(true))
             {
-                if (!image.transform.name.StartsWith("Restless"))
-                    Hide(image);
+                if (Owned(image.transform)) continue;
+                var name = image.name.ToLowerInvariant();
+                if (name is "background" or "bkg" or "border") Hide(image);
             }
 
             MuteTmp(tmp);
@@ -469,11 +417,13 @@ public sealed class BuildMenu : FeatureModule
         if (chip == null)
         {
             var go = RestlessUi.Chip(host, "RestlessKey");
+            go.AddComponent<LayoutElement>().ignoreLayout = true;
+            RestlessUi.PaperSurface(go, small: true);
             var face = RestlessUi.Label(go.transform, letter, RestlessUi.HudSize, RestlessUi.Text,
                 TextAnchor.MiddleCenter);
             face.gameObject.name = "RestlessKeyFace";
             face.verticalOverflow = VerticalWrapMode.Overflow;
-            RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(4f, 6f),
+            RestlessUi.Stretch(face.gameObject, Vector2.zero, Vector2.one, new Vector2(4f, 2f),
                 new Vector2(-4f, -2f));
             chip = go.transform;
             Ours.Add(go);
@@ -504,7 +454,7 @@ public sealed class BuildMenu : FeatureModule
         return false;
     }
 
-    // Chip + Averia. No LayoutElement — ChipButton's hold blows the tab row up.
+    // Owned child ignores layout; never add ChipButton sizing to the native tab.
     private static void Plate(Button button, string title, bool lit, Vector2 size)
     {
         var image = button.GetComponent<Image>();
@@ -512,7 +462,7 @@ public sealed class BuildMenu : FeatureModule
             Hide(image);
         foreach (var child in button.GetComponentsInChildren<Image>(true))
         {
-            if (child.transform.name.StartsWith("Restless"))
+            if (Owned(child.transform))
                 continue;
             var n = child.gameObject.name.ToLowerInvariant();
             if (n.Contains("selected") || n.Contains("hover") || n is "bkg" or "background")
@@ -530,30 +480,33 @@ public sealed class BuildMenu : FeatureModule
         if (chip == null)
         {
             var go = RestlessUi.Chip(button.transform, "RestlessChip");
-            var label = RestlessUi.Label(go.transform, title, RestlessUi.HudSize, RestlessUi.Text,
+            go.AddComponent<LayoutElement>().ignoreLayout = true;
+            var label = RestlessUi.Label(go.transform, title, RestlessUi.BodySize, RestlessUi.Text,
                 TextAnchor.MiddleCenter);
             label.gameObject.name = "RestlessChipFace";
             label.verticalOverflow = VerticalWrapMode.Overflow;
-            RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(10f, 8f),
+            RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(10f, 2f),
                 new Vector2(-10f, -2f));
             chip = go.transform;
             Ours.Add(go);
         }
 
         RestlessUi.Pin(chip.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, size);
-        RestlessUi.PaintSlot(chip.gameObject, lit);
+        RestlessUi.PaperControl(chip.gameObject, lit ? RestlessUi.Accent : (Color?)null);
+        AddFeedback(button);
         var face = chip.Find("RestlessChipFace")?.GetComponent<Text>();
         if (face != null)
         {
             face.text = title;
             face.alignment = TextAnchor.MiddleCenter;
-            face.verticalOverflow = VerticalWrapMode.Overflow;
-            face.color = lit ? RestlessUi.Accent : RestlessUi.Text;
+            RestlessUi.BoundedLabel(face, RestlessUi.BodySize, RestlessUi.HudSize);
+            face.color = !button.IsInteractable() ? RestlessUi.PaperMuted : lit ? RestlessUi.Accent : RestlessUi.Text;
         }
     }
 
     private static void MuteTmp(TMP_Text tmp)
     {
+        RememberTmp(tmp);
         RestlessUi.SilenceTmp(tmp);
         Silenced.Add(tmp.gameObject);
     }
@@ -562,9 +515,69 @@ public sealed class BuildMenu : FeatureModule
     {
         if (image == null)
             return;
+        RememberImage(image);
         if (!Hidden.Contains(image))
             Hidden.Add(image);
         image.enabled = false;
+    }
+
+    private static bool Owned(Transform node)
+    {
+        for (var t = node; t != null; t = t.parent)
+            if (t.name.StartsWith("Restless")) return true;
+        return false;
+    }
+
+    private static void AddFeedback(Selectable control)
+    {
+        if (control.GetComponent<RestlessControlFeedback>() == null)
+            Feedback.Add(RestlessUi.ControlFeedback(control));
+    }
+
+    private static void RememberImage(Image image)
+    {
+        if (!Remembered.Add(image)) return;
+        var enabled = image.enabled;
+        var color = image.color;
+        var sprite = image.sprite;
+        var type = image.type;
+        Restore.Add(() =>
+        {
+            if (image == null) return;
+            image.enabled = enabled;
+            image.color = color;
+            image.sprite = sprite;
+            image.type = type;
+        });
+    }
+
+    private static void RememberTmp(TMP_Text text)
+    {
+        if (!Remembered.Add(text)) return;
+        var enabled = text.enabled;
+        var color = text.color;
+        var visible = text.maxVisibleCharacters;
+        var raycast = text.raycastTarget;
+        Restore.Add(() =>
+        {
+            if (text == null) return;
+            text.enabled = enabled;
+            text.color = color;
+            text.maxVisibleCharacters = visible;
+            text.raycastTarget = raycast;
+        });
+    }
+
+    private static void StyleInputText(Text text, Color color)
+    {
+        if (Remembered.Add(text))
+        {
+            var font = text.font;
+            var oldColor = text.color;
+            Restore.Add(() => { if (text != null) { text.font = font; text.color = oldColor; } });
+        }
+        text.font = RestlessUi.Face();
+        text.color = color;
     }
 
     private static void TearDown()
@@ -582,26 +595,15 @@ public sealed class BuildMenu : FeatureModule
         }
 
         Ours.Clear();
-        foreach (var behaviour in Hidden)
-        {
-            if (behaviour != null)
-                behaviour.enabled = true;
-        }
-
+        foreach (var feedback in Feedback)
+            if (feedback != null) Object.Destroy(feedback);
+        Feedback.Clear();
+        for (var i = Restore.Count - 1; i >= 0; i--) Restore[i]();
+        Restore.Clear();
+        Remembered.Clear();
         Hidden.Clear();
-        foreach (var go in Silenced)
-        {
-            if (go == null)
-                continue;
-            var tmp = go.GetComponent<TMP_Text>();
-            if (tmp != null)
-            {
-                tmp.enabled = true;
-                tmp.maxVisibleCharacters = int.MaxValue;
-            }
-        }
-
         Silenced.Clear();
         _dressed = false;
     }
 }
+

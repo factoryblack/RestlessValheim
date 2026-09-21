@@ -141,3 +141,14 @@ paper accent; do not disable the native Selected image to hide its art, because
 its live enabled/active state is an input to selection detection. Preserve native
 input caret/selection graphics. Track reparented owned surfaces for cleanup, and
 restore native chrome, input styling and moved rects on undress. See docs/map-materials.md.
+
+## Build menu material adoption
+
+BuildUIV2 piece buttons are native piece records, not ItemData inventory slots.
+Use shared PaperControl for their backing; do not call DressSlot on them because
+its inventory cleanup hides piece-specific labels and marks. Preserve count/star/
+arrow and availability presentation. Fit InventorySurface to the viewport, never
+scrolling content or the fullscreen build HUD. Owned visuals may have ignoreLayout
+LayoutElements; never add sizing LayoutElements to native tabs. Keep masks, input
+caret/placeholder, piece requirements and controller navigation native. Scrollbars
+remain visible; reuse scroll-thumb. See docs/build-menu-materials.md.

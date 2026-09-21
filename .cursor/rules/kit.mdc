@@ -168,8 +168,11 @@ hover mirrors and the previous no-native-rect-change restriction for this surfac
 
 ## Compact build detail proportions
 
-Latest playtest supersedes the full-width detail band: cap the card at 900 UI
-units, measure its height (128–210), and dock its top 16 units below the fitted
-grid. Grid fitting reserves a constant maximum so hovering does not move the
-menu. Use 24px title, 18px description and 16px requirement copy; retain scrolling
-for overflow. No new artwork or scrollbar changes in this refinement.
+Latest playtest supersedes the full-width detail band: match the card width to
+the fitted piece grid (never wider), measure its height (128–280), and dock its
+top 16 units below the grid. Sit the reserved grid+card envelope on the hotbar
+clearance so the pair is not glued to the top of the HUD. Two or more
+requirements share a row. Grid fitting reserves a constant maximum so hovering
+does not move the menu. Use 24px title, 18px description and 16px requirement
+copy; retain scrolling for overflow. No new artwork or scrollbar changes in
+this refinement.

@@ -1,39 +1,43 @@
-# Thunderstore hotfix 0.1.13
+# Thunderstore 0.1.14
 
-Signed off 21 Sep 2026.
+Signed off 22 Sep 2026.
 
 ## Proposed versions
 
-Cook-only r2modman mesh hotfix. Pack moves once. Core, plant and piles stay.
+Core build-menu paper and Plant grid extras. Pack moves once. Cook and piles stay.
 
 | Package | Live now | Next | Why |
 |---|---|---|---|
-| RestlessCore | **0.1.10** | 0.1.10 | No code this pass |
-| RestlessCook | **0.1.8** | **0.1.9** | r2modman flattens `mesh/`; plates were falling back to vanilla |
+| RestlessCore | **0.1.10** | **0.1.11** | Hammer / hoe / tray paper menu and compact piece card |
+| RestlessCook | **0.1.9** | 0.1.9 | No code this pass |
 | RestlessPiles | **0.1.4** | 0.1.4 | No code this pass |
-| RestlessPlant | **0.1.3** | 0.1.3 | No code this pass |
-| Restless Valheim pack | **0.1.12** | **0.1.13** | One pack bump for the Cook hotfix |
+| RestlessPlant | **0.1.3** | **0.1.4** | Soil snap, red skip, rows×columns, F10, extras |
+| Restless Valheim pack | **0.1.13** | **0.1.14** | One pack bump for Core + Plant |
 
 `PluginVersion`, csproj, and `thunderstore/*/manifest.json` now match the **Next** column.
 
 ## What to tell players
 
-**Restless Valheim 0.1.13**  
-Hotfix. Custom cook plates show again in r2modman / Thunderstore installs.
+**Restless Valheim 0.1.14**  
+Hammer menu on paper, and planting that sits on the soil.
 
-**RestlessCook 0.1.9**  
-Custom meal and feast plates load when the manager flattens the `mesh/` folder next to the DLL.
+**RestlessCore 0.1.11**  
+Hammer / hoe / serving-tray menu uses the shared paper wells. The selected piece gets a compact card under the grid (name, description, costs, station).
 
-**RestlessCore / RestlessPlant / RestlessPiles**  
+**RestlessPlant 0.1.4**  
+A planting square sits on the dirt. Bad cells show red and are skipped. `[` `]` and `-` `=` set width and depth. F10 snaps to a nearby plant.
+
+**RestlessCook / RestlessPiles**  
 No new build this drop.
 
 ## Tag order
 
-Cook first so the pack can wait for 0.1.9.
+Core and Plant first so the pack can wait for them.
 
 ```
-git tag cook-v0.1.9 && git push origin cook-v0.1.9
-git tag pack-v0.1.13 && git push origin pack-v0.1.13
+git tag v0.1.11 && git push origin v0.1.11
+git tag plant-v0.1.4 && git push origin plant-v0.1.4
+git tag pack-v0.1.14 && git push origin pack-v0.1.14
 ```
 
-`cook-v*` ships Cook. `pack-v*` waits for Restless-* deps on Thunderstore.
+`v*` ships Core. `plant-v*` ships Plant. `pack-v*` waits for Restless-* deps on Thunderstore.

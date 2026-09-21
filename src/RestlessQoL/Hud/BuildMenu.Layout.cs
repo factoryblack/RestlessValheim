@@ -6,8 +6,9 @@ namespace RestlessQoL.HudTweaks;
 
 public sealed partial class BuildMenu
 {
-    private static float FitBuildGrid(global::Hud hud, RectTransform host, float footerTop)
+    private static float FitBuildGrid(global::Hud hud, RectTransform host, float footerTop, out float gridWidth)
     {
+        gridWidth = 0f;
         var ui = hud.m_buildUi;
         if (ui == null || ui.transform is not RectTransform root) return footerTop;
         if (!MenuGeometry.ContainsKey(root)) MenuGeometry.Add(root, (root.localScale, root.localPosition));
@@ -38,11 +39,20 @@ public sealed partial class BuildMenu
         var scale = Mathf.Min(1f, Mathf.Min(available.x / Mathf.Max(size.x, 1f), available.y / Mathf.Max(size.y, 1f)));
         root.localScale = original.scale * Mathf.Max(0.1f, scale);
         GridBounds(host, parts, out min, out max);
-        // Centre horizontally and top-align, reserving a genuine detail band below.
+        gridWidth = max.x - min.x;
+        // Centre horizontally, then sit the reserved card+hotbar envelope on the
+        // hotbar so a short BuildUi is not glued to the top of the HUD.
         var target = new Vector2(host.rect.center.x, host.rect.yMax - 42f);
         var shift = new Vector3(target.x - (min.x + max.x) * 0.5f, target.y - max.y, 0f);
         root.position += host.TransformVector(shift);
-        return min.y + shift.y - host.rect.yMin;
+        var gridBottom = min.y + shift.y - host.rect.yMin;
+        if (gridBottom > footerTop)
+        {
+            var drop = footerTop - gridBottom;
+            root.position += host.TransformVector(new Vector3(0f, drop, 0f));
+            gridBottom = footerTop;
+        }
+        return gridBottom;
     }
 
     private static bool GridBounds(RectTransform host, List<RectTransform> parts, out Vector2 min, out Vector2 max)

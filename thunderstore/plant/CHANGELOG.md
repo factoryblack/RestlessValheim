@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.4
+
+- Grid extras sit on the heightmap instead of a catch-all ray, so a square no longer floats
+- Extra cells that cannot grow (untilled, wrong biome, no sun, no space) paint red and are skipped
+- `[` `]` set width and `-` `=` set depth, so a bed can be 1×5
+- F10 snaps the ghost onto a nearby plant's spacing
+- Grow-anywhere, decorative trees/shrubs/vines, extra saplings, and beehive bulk harvest are settings (off for grow-anywhere)
+- Hover a growing sapling for the wait; hover a one-shot crop to see what will replant
+- Lingonberry bushes and blue mushrooms join the cultivator when those prefabs exist
+
 ## 0.1.3
 
 - Mushrooms, thistle, and the other forage crops show a placement ghost again

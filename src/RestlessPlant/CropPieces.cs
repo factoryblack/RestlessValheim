@@ -18,13 +18,16 @@ internal static class CropPieces
         if (_added)
             return;
         _added = true;
-        if (!PlantConfig.On || !PlantConfig.ExtraCrops.Value)
+        if (!PlantConfig.On)
             return;
 
         var template = TemplatePiece();
         var n = 0;
         foreach (var row in CropBook.Rows)
         {
+            if (!CropBook.Allowed(row))
+                continue;
+
             var source = PrefabManager.Instance.GetPrefab(row.Source);
             if (source == null)
             {
@@ -64,11 +67,12 @@ internal static class CropPieces
             }
 
             var piece = go.GetComponent<Piece>() ?? go.AddComponent<Piece>();
-            piece.m_groundOnly = true;
-            piece.m_groundPiece = true;
-            piece.m_allowAltGroundPlacement = false;
-            piece.m_noInWater = true;
-            piece.m_cultivatedGroundOnly = true;
+            var free = PlantConfig.GrowAnywhere.Value;
+            piece.m_groundOnly = !row.Attach && !free;
+            piece.m_groundPiece = !row.Attach;
+            piece.m_allowAltGroundPlacement = free;
+            piece.m_noInWater = !free;
+            piece.m_cultivatedGroundOnly = row.Till && !free;
             piece.m_icon = icon;
             if (template != null)
                 CopyPlacement(piece, template);

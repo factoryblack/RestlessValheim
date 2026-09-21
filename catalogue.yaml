@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-21 — ESC pause labels stay after layout rebuild.
+# last_audit: 2026-09-22 — build-menu card matches grid width; two-column costs (not shipped).
 
-updated: 2026-09-21
+updated: 2026-09-22
 
 items:
   # --- loader ---
@@ -343,7 +343,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "BuildUIV2 paper controls and compact measured detail card (max width 900, height 128–210) docked 16 below grid. Stable grid fit across hover changes. Live native requirement data, shortage colours and independent overflow scrolling retained. Native detail backgrounds suppressed; original state restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md. Syntax/arithmetic checked; Unity verification pending."
+    note: "BuildUIV2 paper controls and compact measured detail card (width matches the piece grid, height 128–280) docked 16 below it. Costs take just over half the card (48/52) in two columns. Grid+card sit on the hotbar clearance, not the top of the HUD. Stable grid fit across hover changes. Live native requirement data, shortage colours and independent overflow scrolling retained. Native detail backgrounds suppressed; original state restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md."
 
   - id: ui.hints
     name: Action hints
@@ -458,7 +458,7 @@ items:
     decision: skip
     in_mod: n/a
     restless: Smoothbrain-Farming / Advize-PlantEasily
-    note: "Skills are progression. PlantEasily-style grid / bulk harvest / replant lives in RestlessPlant, not Core. Regrow timer on hover for picked pickables (Client.RegrowHint). Out of this plugin."
+    note: "Skills are progression. PlantEasily-style grid / bulk harvest / replant lives in RestlessPlant, not Core. Grid extras snap to ground height, paint red when they cannot grow, and skip those cells. Separate columns (`[` `]`) and rows (`-` `=`). Snap-to-field (F10) aligns to a nearby plant. Grow-anywhere, extra saplings, decorative flora, and beehive bulk are host-locked settings (grow-anywhere defaults off). Regrow hover on picked pickables and saplings; one-shot hover names the replant piece. Out of this plugin."
 
   - id: skip.muc
     name: Multi-user chests / ChestButler

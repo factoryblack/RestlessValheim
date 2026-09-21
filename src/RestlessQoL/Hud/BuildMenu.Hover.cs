@@ -33,14 +33,15 @@ public sealed partial class BuildMenu
         if (host == null || host.rect.height < 200f) return;
         EnsureDetails(host);
         _hoverPaper!.SetActive(true);
-        const float maxHeight = 210f;
+        const float maxHeight = 280f;
         const float gap = 16f;
-        var width = Mathf.Min(900f, host.rect.width - 64f);
         var reserve = Mathf.Max(130f, host.rect.height * 0.12f);
         // Reserve the maximum once: hovering a different recipe must not resize
         // or move the grid. The actual card is measured separately below.
-        var gridBottom = FitBuildGrid(hud, host, reserve + maxHeight + gap);
-        var split = width * 0.60f;
+        var gridBottom = FitBuildGrid(hud, host, reserve + maxHeight + gap, out var gridWidth);
+        // Match the piece grid — wide enough for resource names, never wider than BuildUi.
+        var width = Mathf.Min(gridWidth > 1f ? gridWidth : 900f, host.rect.width - 64f);
+        var split = width * 0.48f;
         var title = hud.m_buildSelection.text;
         var description = hud.m_pieceDescription != null ? hud.m_pieceDescription.text : "";
         var key = title + "\n" + description;
@@ -97,7 +98,7 @@ public sealed partial class BuildMenu
         RestlessUi.Stretch(_detailBody.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         _costScroll = DetailScroll(_hoverPaper.transform, "requirements", out _costContent);
         var divider = RestlessUi.Graphic(_hoverPaper.transform, "rule", new Color(0.55f, 0.46f, 0.31f, 0.45f), false);
-        RestlessUi.Stretch(divider, new Vector2(0.60f, 0f), new Vector2(0.60f, 1f),
+        RestlessUi.Stretch(divider, new Vector2(0.48f, 0f), new Vector2(0.48f, 1f),
             new Vector2(0f, 16f), new Vector2(1f, -16f));
     }
 
@@ -140,15 +141,12 @@ public sealed partial class BuildMenu
             if (hud.m_buildUi != null && text.transform.IsChildOf(hud.m_buildUi.transform)) continue;
             if (text.transform.parent != null && !slots.Contains(text.transform.parent)) slots.Add(text.transform.parent);
         }
-        var y = 0f;
+        var cols = slots.Count >= 2 ? 2 : 1;
+        var gutter = cols > 1 ? 12f : 0f;
+        var colW = (width - gutter * (cols - 1)) / cols;
+        var itemH = new float[slots.Count];
         for (var i = 0; i < slots.Count; i++)
         {
-            var slot = slots[i];
-            var name = RestlessUi.Deep<TMP_Text>(slot, "res_name");
-            var amount = RestlessUi.Deep<TMP_Text>(slot, "res_amount");
-            Image? icon = null;
-            foreach (var image in slot.GetComponentsInChildren<Image>(true))
-                if (image.name.ToLowerInvariant().Contains("icon") && image.sprite != null) { icon = image; break; }
             if (i == CostRows.Count)
             {
                 var row = RestlessUi.Node(_costContent!, "requirement" + i);
@@ -159,36 +157,68 @@ public sealed partial class BuildMenu
                 count.name = "count";
                 CostRows.Add(row);
             }
-            var go = CostRows[i];
-            go.SetActive(true);
-            var labelFace = go.transform.Find("name").GetComponent<Text>();
-            var countFace = go.transform.Find("count").GetComponent<Text>();
-            var iconFace = go.transform.Find("icon").GetComponent<Image>();
-            var hasCount = amount != null && amount.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(amount.text);
-            labelFace.text = name != null ? name.text : "";
-            labelFace.color = SourceColour(name, RestlessUi.Text);
-            labelFace.fontSize = 16;
-            labelFace.horizontalOverflow = HorizontalWrapMode.Wrap;
-            labelFace.verticalOverflow = VerticalWrapMode.Overflow;
-            var countWidth = hasCount ? Mathf.Min(94f, width * 0.3f) : 0f;
-            Place(labelFace.rectTransform, 42f, 0f, width - 50f - countWidth, 36f);
-            var rowHeight = Mathf.Max(38f, labelFace.preferredHeight + 8f);
-            Place(go.GetComponent<RectTransform>(), 0f, y, width, rowHeight);
-            Place(labelFace.rectTransform, 42f, 0f, width - 50f - countWidth, rowHeight);
-            Place(iconFace.rectTransform, 0f, (rowHeight - 30f) * 0.5f, 30f, 30f);
-            iconFace.sprite = icon != null ? icon.sprite : null;
-            iconFace.enabled = iconFace.sprite != null;
-            iconFace.preserveAspect = true;
-            countFace.text = hasCount ? amount!.text : "";
-            countFace.color = SourceColour(amount, RestlessUi.Accent);
-            Place(countFace.rectTransform, width - countWidth, 0f, Mathf.Max(1f, countWidth), rowHeight);
-            RestlessUi.BoundedLabel(countFace, 16, 14);
-            y += rowHeight + 4f;
+            itemH[i] = BindCost(CostRows[i], slots[i], colW);
         }
         for (var i = slots.Count; i < CostRows.Count; i++) CostRows[i].SetActive(false);
+        var rows = (slots.Count + cols - 1) / cols;
+        var rowH = new float[rows];
+        for (var i = 0; i < slots.Count; i++)
+            rowH[i / cols] = Mathf.Max(rowH[i / cols], itemH[i]);
+        var y = 0f;
+        for (var r = 0; r < rows; r++)
+        {
+            for (var c = 0; c < cols; c++)
+            {
+                var i = r * cols + c;
+                if (i >= slots.Count) break;
+                PlaceCost(CostRows[i], c * (colW + gutter), y, colW, rowH[r]);
+            }
+            y += rowH[r] + 4f;
+        }
         var height = Mathf.Max(0f, y - 4f);
         _costContent!.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(1f, height));
         return height;
+    }
+
+    private static float BindCost(GameObject go, Transform slot, float colW)
+    {
+        go.SetActive(true);
+        var name = RestlessUi.Deep<TMP_Text>(slot, "res_name");
+        var amount = RestlessUi.Deep<TMP_Text>(slot, "res_amount");
+        Image? icon = null;
+        foreach (var image in slot.GetComponentsInChildren<Image>(true))
+            if (image.name.ToLowerInvariant().Contains("icon") && image.sprite != null) { icon = image; break; }
+        var labelFace = go.transform.Find("name").GetComponent<Text>();
+        var countFace = go.transform.Find("count").GetComponent<Text>();
+        var iconFace = go.transform.Find("icon").GetComponent<Image>();
+        var hasCount = amount != null && amount.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(amount.text);
+        labelFace.text = name != null ? name.text : "";
+        labelFace.color = SourceColour(name, RestlessUi.Text);
+        labelFace.fontSize = 16;
+        labelFace.horizontalOverflow = HorizontalWrapMode.Wrap;
+        labelFace.verticalOverflow = VerticalWrapMode.Overflow;
+        var countWidth = hasCount ? Mathf.Min(72f, colW * 0.28f) : 0f;
+        Place(labelFace.rectTransform, 42f, 0f, colW - 50f - countWidth, 36f);
+        iconFace.sprite = icon != null ? icon.sprite : null;
+        iconFace.enabled = iconFace.sprite != null;
+        iconFace.preserveAspect = true;
+        countFace.text = hasCount ? amount!.text : "";
+        countFace.color = SourceColour(amount, RestlessUi.Accent);
+        return Mathf.Max(38f, labelFace.preferredHeight + 8f);
+    }
+
+    private static void PlaceCost(GameObject go, float x, float y, float colW, float rowH)
+    {
+        var labelFace = go.transform.Find("name").GetComponent<Text>();
+        var countFace = go.transform.Find("count").GetComponent<Text>();
+        var iconFace = go.transform.Find("icon").GetComponent<Image>();
+        var hasCount = !string.IsNullOrWhiteSpace(countFace.text);
+        var countWidth = hasCount ? Mathf.Min(72f, colW * 0.28f) : 0f;
+        Place(go.GetComponent<RectTransform>(), x, y, colW, rowH);
+        Place(labelFace.rectTransform, 42f, 0f, colW - 50f - countWidth, rowH);
+        Place(iconFace.rectTransform, 0f, (rowH - 30f) * 0.5f, 30f, 30f);
+        Place(countFace.rectTransform, colW - countWidth, 0f, Mathf.Max(1f, countWidth), rowH);
+        RestlessUi.BoundedLabel(countFace, 16, 14);
     }
 
     private static Color SourceColour(Graphic? source, Color neutral)

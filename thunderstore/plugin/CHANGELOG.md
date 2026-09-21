@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.11
+
+- Hammer / hoe / serving-tray menu uses the shared paper wells; piece cards keep native counts, stars, arrows and the grey/red availability tint
+- Selected piece gets a compact paper card (name, description, costs, station) docked under the grid, sitting with the menu just above the hotbar; native icons and shortage colours stay
+- The piece grid scales down once to leave room; hovering another piece grows the card downward without moving the grid
+- Two or more costs sit side by side on a taller card so long recipes are not clipped
+- The card is as wide as the piece grid, with the cost half taking more of that width so resource names stay on one line
+- Build list and the two detail columns scroll on vanilla bars (narrow 10-unit tracks), not a kit scrollbar
+- Search box keeps its placeholder, caret and selection
+
 ## 0.1.10
 
 - ESC pause labels stay on the paper column (native MenuEntries text stays in the layout instead of being deactivated)

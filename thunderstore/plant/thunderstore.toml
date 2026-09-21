@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessPlant"
-versionNumber = "0.1.3"
+versionNumber = "0.1.4"
 description = "Berry bushes and forage on the cultivator, plus a planting square, bulk harvest, and replant. Needs RestlessCore."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false

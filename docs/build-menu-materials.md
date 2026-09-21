@@ -5,16 +5,17 @@ it with an owned two-column detail panel and reserves space for it in the menu.
 
 ## Layout
 
-- Compact card: maximum width 900 UI units (previously 1400), centred and docked
-  16 units below the actual fitted grid. It no longer anchors independently near
-  the hotbar or leaves a large gap beneath the menu.
+- Compact card: width matches the fitted piece grid (never wider), centred and
+  docked 16 units below it. The reserved grid+card envelope sits on the hotbar
+  clearance so a short BuildUi is not glued to the top of the HUD.
 - Height follows measured description and requirement row heights, bounded to
-  128–210 units. A short two-requirement recipe uses the compact end of that range.
-- Left 60%: 44-unit item icon, 24px title (minimum 20 for long names) and 18px
+  128–280 units. Two or more requirements sit in two columns so long recipes
+  are not clipped. A single-cost piece stays one column.
+- Left 48%: 44-unit item icon, 24px title (minimum 20 for long names) and 18px
   description. Description overflow still scrolls; body type is never shrunk.
 - Right: 30-unit requirement icons, wrapping 16px names and a separate 16px count
   column. Base row height is 38 plus 4 spacing. Station names retain the unused
-  count space; more requirements scroll within the column.
+  count space; leftover requirements still scroll.
 - Grid fitting reserves a stable maximum card height, independent of the hovered
   piece's content. Switching pieces changes the card's bottom edge, not the grid
   position or the card's top edge. The card retains the existing hotbar reserve.
@@ -65,4 +66,5 @@ Check in game before merge:
 Syntax and pure layout arithmetic are checked; neither is a Unity visual test.
 Verify the screenshot's roof piece has a compact card attached below the grid,
 then hover a long-description/many-resource recipe: the grid must stay still,
-card height may grow downward, and neither column may overlap the hotbar.
+costs sit two-across, card height may grow downward, and neither column may
+overlap the hotbar. The pair sits above the hotbar, not at the top of the HUD.

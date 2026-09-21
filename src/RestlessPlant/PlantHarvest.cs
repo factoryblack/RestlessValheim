@@ -14,6 +14,10 @@ internal static class PlantHarvest
             _remembered = piece;
     }
 
+    public static Piece? Hint() => PlantConfig.Replant.Value ? _remembered : null;
+
+    public static bool Grown(Pickable pickable) => Ours(pickable);
+
     private static bool Ours(Pickable pickable)
     {
         if (pickable == null)
@@ -47,6 +51,39 @@ internal static class PlantHarvest
             // Replant only one-shot crops. Forage and bushes regrow via Pickable.m_respawnTimeMinutes.
             if (PlantConfig.Replant.Value && __instance.m_respawnTimeMinutes <= 0f && piece?.GetComponent<Plant>() != null)
                 Replant(character as Player, __instance.transform.position, __instance.transform.rotation, piece);
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Beehive), nameof(Beehive.Interact))]
+        private static void AfterHive(Beehive __instance, Humanoid character, bool __result)
+        {
+            if (!__result || !PlantConfig.On || !PlantConfig.BulkBeehives.Value || _busy)
+                return;
+            if (character != Player.m_localPlayer)
+                return;
+            BulkHives(__instance, character);
+        }
+    }
+
+    private static void BulkHives(Beehive picked, Humanoid character)
+    {
+        var range = PlantConfig.HarvestRange.Value;
+        var origin = picked.transform.position;
+        _busy = true;
+        try
+        {
+            foreach (var other in Object.FindObjectsByType<Beehive>(FindObjectsSortMode.None))
+            {
+                if (other == null || other == picked)
+                    continue;
+                if ((other.transform.position - origin).sqrMagnitude > range * range)
+                    continue;
+                other.Interact(character, false, false);
+            }
+        }
+        finally
+        {
+            _busy = false;
         }
     }
 

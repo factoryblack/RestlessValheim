@@ -71,11 +71,11 @@ A tag named `v*` ships **RestlessCore** and the **Restless Valheim** modpack (Co
 git tag v0.1.10
 git push origin v0.1.10
 
-git tag pack-v0.1.12
-git push origin pack-v0.1.12
+git tag pack-v0.1.13
+git push origin pack-v0.1.13
 
-git tag cook-v0.1.8
-git push origin cook-v0.1.8
+git tag cook-v0.1.9
+git push origin cook-v0.1.9
 
 git tag plant-v0.1.3
 git push origin plant-v0.1.3

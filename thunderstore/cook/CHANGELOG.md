@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9
+
+- Thunderstore / r2modman installs show custom plates again. r2modman flattens the shipped `mesh/` folder next to the DLL; Cook now reads plates from either place instead of falling back to vanilla clones
+
 ## 0.1.8
 
 - Custom feast boards place again: the plate is the bigger size, the invisible vanilla table no longer blocks the serving tray

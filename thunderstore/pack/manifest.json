@@ -1,13 +1,13 @@
 {
   "name": "Restless_Valheim",
-  "version_number": "0.1.12",
+  "version_number": "0.1.13",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "The Restless table in one click: chests, cooking, piles, planting, and a quieter HUD. Valheim 1.0.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
     "ValheimModding-Jotunn-2.30.1",
     "Restless-RestlessCore-0.1.10",
-    "Restless-RestlessCook-0.1.8",
+    "Restless-RestlessCook-0.1.9",
     "Restless-RestlessPiles-0.1.4",
     "Restless-RestlessPlant-0.1.3"
   ]

@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>RestlessCook</AssemblyName>
     <RootNamespace>RestlessCook</RootNamespace>
-    <Version>0.1.8</Version>
+    <Version>0.1.9</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\..\dist\</OutputPath>
     <DebugType>embedded</DebugType>
@@ -25,13 +25,12 @@
 
   <!--
     CookMesh.cs loads custom feast/meal models from a loose "mesh" folder next
-    to the compiled DLL (Assembly.Location's directory). The Thunderstore
-    package build (thunderstore/cook/thunderstore.toml) already copies
-    art/cook/runtime -> mesh/ into the shipped zip, but a plain `dotnet build`
-    only produces the DLL in OutputPath. Copying the same source here keeps a
-    raw dist/ build (e.g. for manually dropping the DLL into BepInEx/plugins
-    during dev testing) self-sufficient instead of silently falling back to
-    vanilla meshes for every custom dish.
+    to the compiled DLL, or from the plugin directory itself when a manager
+    (r2modman) flattens that folder. The Thunderstore package build
+    (thunderstore/cook/thunderstore.toml) copies art/cook/runtime -> mesh/
+    into the shipped zip, but a plain `dotnet build` only produces the DLL in
+    OutputPath. Copying the same source here keeps a raw dist/ build
+    self-sufficient instead of silently falling back to vanilla meshes.
   -->
   <Target Name="CopyCookMeshAssets" AfterTargets="Build">
     <ItemGroup>

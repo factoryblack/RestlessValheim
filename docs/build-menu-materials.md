@@ -11,9 +11,9 @@ the current shared paper kit; it adds no gameplay, search, category or recipe lo
 | Piece card | Inset PaperControl, amber selected edge and muted hover edge | Piece icon tint, count/status labels, stars, arrows and special-piece behaviour |
 | Category and tag controls | Native-sized paper controls; centred 18px Averia with bounded fit | Original layout groups, callbacks, category population and navigation |
 | Search | Paper backing and text colours | Input component, localized placeholder, caret, text selection, focus and IME |
-| Scrolling | Visible dark track and existing scroll-thumb sprite | Native Scrollbar handle geometry, scroll mechanics and dragging |
+| Scrolling | Fully vanilla, per playtest feedback | Original artwork, colours, focus, handle geometry and dragging |
 | Key hints | Paper chips with corrected vertical padding | Source binding text and native controller artwork |
-| Requirements/detail | No content rewrite | Native material/station feedback, descriptions and mod-provided information |
+| Requirements/detail | Shared paper backing and Averia text mirrors in native positions | Live name, description, resource/station text, counts, icons and shortage colours |
 
 Selection is persistent amber; hover is muted. Existing Selectables receive the
 shared focus-corners behaviour when present, without replacing click or submit
@@ -41,8 +41,7 @@ surfaces are destroyed on undress/GUI recreation. No native rect is resized or m
 
 ## Asset decision
 
-No new textures are needed for this pass: paper-panel/chip and their rims,
-scroll-thumb, and focus-corners cover the controls. Keep native piece and category
+No new textures are needed for this pass: paper-panel/chip and their rims plus focus-corners cover the controls. Scrollbars use vanilla art. Keep native piece and category
 icons. Do not add ornate station emblems or decorative marks to each cell. Search
 retains its existing input presentation instead of adding a new magnifier asset.
 
@@ -71,3 +70,26 @@ not verified. Test before merging:
    reconnect and GUI recreation. Check no leftover panels or invisible labels.
 
 Updated onto main after the collection, ESC and map passes were merged.
+
+
+## Build-menu hover follow-up
+
+The playtest showed the selected/hovered piece details still floating over the
+world. BuildMenu.Hover now frames the live title, description, icon and requirement
+slots with one shared paper surface (18px horizontal, 14px vertical padding).
+Title uses up to 32px Averia, description up to 20px, resource names 16px and counts
+18px, bounded within their native rectangles. Native recipe cost logic is not
+duplicated. Requirement rich-text colours and non-neutral source colours remain
+live. No decorative corner is added to compete with the compact detail space.
+
+The mirrors are outside native layout participation and do not intercept clicks.
+Source text is hidden by alpha only; alpha is restored and the panel/mirrors are
+destroyed when selection closes, the style is disabled or the GUI is recreated.
+Grid backing edges are inset 3px to keep torn lips clear of adjacent controls.
+
+Follow-up runtime checks: Anvils/another station upgrade, a long description,
+no-cost special action, red missing-resource counts and station requirement;
+switch between pieces with different requirement counts to catch stale labels.
+Check the paper stays above the hotbar and below the grid at each UI scale. Long
+localized copy must fit the native text rectangles; syntax checks cannot verify
+that. Confirm the placement helper returns when the menu closes.

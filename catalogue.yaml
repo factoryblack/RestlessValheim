@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-22 — build-menu card matches grid width; two-column costs (not shipped).
+# last_audit: 2026-09-22 — pack 0.1.15 pins Jötunn 2.30.2.
 
 updated: 2026-09-22
 
@@ -36,7 +36,7 @@ items:
     decision: loader
     in_mod: n/a
     restless: ValheimModding-Jotunn
-    note: "Config sync / admin lock. Pin 2.30.1 (piece categories + 1.0 terrain ops). Hard dependency of our plugin."
+    note: "Config sync / admin lock. Pin 2.30.2 (Deep North asset overrides). Hard dependency of our plugin."
 
   - id: core.host_lock
     name: Host-locked gameplay config

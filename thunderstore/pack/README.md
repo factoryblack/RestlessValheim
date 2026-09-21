@@ -7,7 +7,7 @@ One install for the Restless table. r2modman and Thunderstore pull the stack:
 **RestlessPiles** — wood stacks and stone piles that actually hold what you cut  
 **RestlessPlant** — bushes and forage on the cultivator  
 
-Plus **BepInExPack 5.4.2350** and **Jötunn 2.30.1**.
+Plus **BepInExPack 5.4.2350** and **Jötunn 2.30.2**.
 
 This zip has no DLL. It only names those packages. Each plugin page has the full story.
 

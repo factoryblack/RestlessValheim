@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.15
+
+- One pack bump: Jötunn 2.30.2. Core, cook, plant and piles unchanged.
+
 ## 0.1.14
 
 - One pack bump: RestlessCore 0.1.11 (build-menu paper) and RestlessPlant 0.1.4 (grid snap, rows×columns, field snap, extras). Cook and piles unchanged.

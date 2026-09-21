@@ -6,10 +6,10 @@ namespace RestlessQoL.HudTweaks;
 
 public sealed partial class BuildMenu
 {
-    private static void FitBuildGrid(global::Hud hud, RectTransform host, float footerTop)
+    private static float FitBuildGrid(global::Hud hud, RectTransform host, float footerTop)
     {
         var ui = hud.m_buildUi;
-        if (ui == null || ui.transform is not RectTransform root) return;
+        if (ui == null || ui.transform is not RectTransform root) return footerTop;
         if (!MenuGeometry.ContainsKey(root)) MenuGeometry.Add(root, (root.localScale, root.localPosition));
         var original = MenuGeometry[root];
         root.localScale = original.scale;
@@ -32,7 +32,7 @@ public sealed partial class BuildMenu
             else rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 10f);
             parts.Add(rect);
         }
-        if (!GridBounds(host, parts, out var min, out var max)) return;
+        if (!GridBounds(host, parts, out var min, out var max)) return footerTop;
         var available = new Vector2(host.rect.width - 72f, host.rect.height - footerTop - 54f);
         var size = max - min;
         var scale = Mathf.Min(1f, Mathf.Min(available.x / Mathf.Max(size.x, 1f), available.y / Mathf.Max(size.y, 1f)));
@@ -42,6 +42,7 @@ public sealed partial class BuildMenu
         var target = new Vector2(host.rect.center.x, host.rect.yMax - 42f);
         var shift = new Vector3(target.x - (min.x + max.x) * 0.5f, target.y - max.y, 0f);
         root.position += host.TransformVector(shift);
+        return min.y + shift.y - host.rect.yMin;
     }
 
     private static bool GridBounds(RectTransform host, List<RectTransform> parts, out Vector2 min, out Vector2 max)

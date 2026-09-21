@@ -33,17 +33,16 @@ public sealed partial class BuildMenu
         if (host == null || host.rect.height < 200f) return;
         EnsureDetails(host);
         _hoverPaper!.SetActive(true);
-        var width = Mathf.Min(1400f, host.rect.width - 64f);
-        var height = Mathf.Clamp(host.rect.height * 0.22f, 190f, 240f);
-        var bottom = Mathf.Max(130f, host.rect.height * 0.12f);
-        RestlessUi.Pin(_hoverPaper, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-            new Vector2(0f, bottom), new Vector2(width, height));
-        FitBuildGrid(hud, host, bottom + height + 22f);
-
-        var split = width * 0.58f;
+        const float maxHeight = 210f;
+        const float gap = 16f;
+        var width = Mathf.Min(900f, host.rect.width - 64f);
+        var reserve = Mathf.Max(130f, host.rect.height * 0.12f);
+        // Reserve the maximum once: hovering a different recipe must not resize
+        // or move the grid. The actual card is measured separately below.
+        var gridBottom = FitBuildGrid(hud, host, reserve + maxHeight + gap);
+        var split = width * 0.60f;
         var title = hud.m_buildSelection.text;
         var description = hud.m_pieceDescription != null ? hud.m_pieceDescription.text : "";
-        // Reset scrolling only when the selected piece/copy changes, not on count refresh.
         var key = title + "\n" + description;
         var changed = key != _detailKey;
         _detailKey = key;
@@ -51,20 +50,31 @@ public sealed partial class BuildMenu
         _detailBody!.text = description;
         _detailIcon!.sprite = hud.m_buildIcon != null ? hud.m_buildIcon.sprite : null;
         _detailIcon.enabled = _detailIcon.sprite != null;
-        Place(_detailIcon.rectTransform, 22f, 20f, 62f, 62f);
-        Place(_detailTitle.rectTransform, 102f, 18f, split - 126f, 62f);
-        RestlessUi.BoundedLabel(_detailTitle, 28, 20);
-        Place(_bodyScroll!.GetComponent<RectTransform>(), 24f, 94f, split - 48f, height - 116f);
-        _detailBody.fontSize = 20;
+        Place(_detailIcon.rectTransform, 18f, 16f, 44f, 44f);
+        Place(_detailTitle.rectTransform, 76f, 12f, split - 96f, 52f);
+        RestlessUi.BoundedLabel(_detailTitle, 24, 20);
+        Place(_bodyScroll!.GetComponent<RectTransform>(), 18f, 76f, split - 36f, 40f);
+        _detailBody.fontSize = 18;
         _detailBody.resizeTextForBestFit = false;
         _detailBody.horizontalOverflow = HorizontalWrapMode.Wrap;
         _detailBody.verticalOverflow = VerticalWrapMode.Overflow;
-        _bodyContent!.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, split - 60f);
-        _bodyContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
-            Mathf.Max(height - 116f, _detailBody.preferredHeight + 8f));
-        Place(_costScroll!.GetComponent<RectTransform>(), split + 16f, 22f,
-            width - split - 40f, height - 44f);
-        PaintCosts(hud, width - split - 52f);
+        var bodyWidth = split - 44f;
+        _bodyContent!.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bodyWidth);
+        var bodyHeight = string.IsNullOrWhiteSpace(description) ? 0f : _detailBody.preferredHeight + 4f;
+        Place(_costScroll!.GetComponent<RectTransform>(), split + 14f, 14f,
+            width - split - 32f, 100f);
+        var costsHeight = PaintCosts(hud, width - split - 40f);
+        var height = Mathf.Clamp(Mathf.Max(76f + bodyHeight + 16f, costsHeight + 28f), 128f, maxHeight);
+        // Dock to the grid, not the hotbar. Short copy no longer leaves a large
+        // empty paper band or an unrelated gap between grid and detail card.
+        var bottom = Mathf.Max(reserve, gridBottom - gap - height);
+        RestlessUi.Pin(_hoverPaper, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+            new Vector2(0f, bottom), new Vector2(width, height));
+        Place(_bodyScroll.GetComponent<RectTransform>(), 18f, 76f, split - 36f, height - 92f);
+        _bodyContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, bodyWidth);
+        _bodyContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(height - 92f, bodyHeight));
+        Place(_costScroll.GetComponent<RectTransform>(), split + 14f, 14f,
+            width - split - 32f, height - 28f);
         if (changed)
         {
             _bodyScroll.verticalNormalizedPosition = 1f;
@@ -87,8 +97,8 @@ public sealed partial class BuildMenu
         RestlessUi.Stretch(_detailBody.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         _costScroll = DetailScroll(_hoverPaper.transform, "requirements", out _costContent);
         var divider = RestlessUi.Graphic(_hoverPaper.transform, "rule", new Color(0.55f, 0.46f, 0.31f, 0.45f), false);
-        RestlessUi.Stretch(divider, new Vector2(0.58f, 0f), new Vector2(0.58f, 1f),
-            new Vector2(0f, 22f), new Vector2(1f, -22f));
+        RestlessUi.Stretch(divider, new Vector2(0.60f, 0f), new Vector2(0.60f, 1f),
+            new Vector2(0f, 16f), new Vector2(1f, -16f));
     }
 
     private static ScrollRect DetailScroll(Transform host, string name, out RectTransform content)
@@ -120,7 +130,7 @@ public sealed partial class BuildMenu
         rect.sizeDelta = new Vector2(Mathf.Max(1f, width), Mathf.Max(1f, height));
     }
 
-    private static void PaintCosts(global::Hud hud, float width)
+    private static float PaintCosts(global::Hud hud, float width)
     {
         var slots = new List<Transform>();
         foreach (var text in hud.m_buildHud.GetComponentsInChildren<TMP_Text>(true))
@@ -157,26 +167,28 @@ public sealed partial class BuildMenu
             var hasCount = amount != null && amount.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(amount.text);
             labelFace.text = name != null ? name.text : "";
             labelFace.color = SourceColour(name, RestlessUi.Text);
-            labelFace.fontSize = 18;
+            labelFace.fontSize = 16;
             labelFace.horizontalOverflow = HorizontalWrapMode.Wrap;
             labelFace.verticalOverflow = VerticalWrapMode.Overflow;
-            var countWidth = hasCount ? Mathf.Min(110f, width * 0.3f) : 0f;
-            Place(labelFace.rectTransform, 50f, 0f, width - 58f - countWidth, 42f);
-            var rowHeight = Mathf.Max(46f, labelFace.preferredHeight + 10f);
+            var countWidth = hasCount ? Mathf.Min(94f, width * 0.3f) : 0f;
+            Place(labelFace.rectTransform, 42f, 0f, width - 50f - countWidth, 36f);
+            var rowHeight = Mathf.Max(38f, labelFace.preferredHeight + 8f);
             Place(go.GetComponent<RectTransform>(), 0f, y, width, rowHeight);
-            Place(labelFace.rectTransform, 50f, 0f, width - 58f - countWidth, rowHeight);
-            Place(iconFace.rectTransform, 0f, (rowHeight - 36f) * 0.5f, 36f, 36f);
+            Place(labelFace.rectTransform, 42f, 0f, width - 50f - countWidth, rowHeight);
+            Place(iconFace.rectTransform, 0f, (rowHeight - 30f) * 0.5f, 30f, 30f);
             iconFace.sprite = icon != null ? icon.sprite : null;
             iconFace.enabled = iconFace.sprite != null;
             iconFace.preserveAspect = true;
             countFace.text = hasCount ? amount!.text : "";
             countFace.color = SourceColour(amount, RestlessUi.Accent);
             Place(countFace.rectTransform, width - countWidth, 0f, Mathf.Max(1f, countWidth), rowHeight);
-            RestlessUi.BoundedLabel(countFace, 18, 14);
+            RestlessUi.BoundedLabel(countFace, 16, 14);
             y += rowHeight + 4f;
         }
         for (var i = slots.Count; i < CostRows.Count; i++) CostRows[i].SetActive(false);
-        _costContent!.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(1f, y));
+        var height = Mathf.Max(0f, y - 4f);
+        _costContent!.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(1f, height));
+        return height;
     }
 
     private static Color SourceColour(Graphic? source, Color neutral)

@@ -343,7 +343,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "BuildUIV2 paper controls plus owned two-column detail band above hotbar. Grid fits remaining upper region by reversible uniform transform. Description and requirement rows scroll independently; live native cost/station data and shortage colours retained. Native detail backgrounds hidden while open, alpha restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md. Syntax checked; compile and Unity input/layout verification pending."
+    note: "BuildUIV2 paper controls and compact measured detail card (max width 900, height 128–210) docked 16 below grid. Stable grid fit across hover changes. Live native requirement data, shortage colours and independent overflow scrolling retained. Native detail backgrounds suppressed; original state restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md. Syntax/arithmetic checked; Unity verification pending."
 
   - id: ui.hints
     name: Action hints

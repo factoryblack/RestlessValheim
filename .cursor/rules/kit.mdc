@@ -154,3 +154,14 @@ caret/placeholder, piece requirements and controller navigation native. Build-me
 Build hover details mirror live HUD text and preserve native icons/requirements;
 clear owned details and restore source alpha when piece selection closes. See docs/build-menu-materials.md.
 
+
+## Build detail layout revision
+
+User authorised a full build-menu resize after the native tooltip overlay failed
+playtesting. Use one owned two-column paper detail band above the hotbar; description
+and requirements have independent clipped scrolling. Mirror native requirement
+outputs without recalculation. Hide native detail graphics, including their backing,
+individually; never CanvasGroup BuildHud. Fit BuildUi as a whole into the region
+above the band and restore its original transform on close. Native scrollbar art
+is retained but its track thickness is 10 UI units. This supersedes native-position
+hover mirrors and the previous no-native-rect-change restriction for this surface.

@@ -8,138 +8,231 @@ namespace RestlessQoL.HudTweaks;
 
 public sealed partial class BuildMenu
 {
-    private sealed class HoverCopy
-    {
-        public TMP_Text Source = null!;
-        public Text Face = null!;
-        public float Alpha;
-    }
-
-    private static readonly List<HoverCopy> HoverCopies = new();
-    private static readonly List<GameObject> HoverOwned = new();
     private static GameObject? _hoverPaper;
+    private static Text? _detailTitle, _detailBody;
+    private static Image? _detailIcon;
+    private static RectTransform? _bodyContent, _costContent;
+    private static ScrollRect? _bodyScroll, _costScroll;
+    private static readonly List<GameObject> CostRows = new();
+    private static readonly Dictionary<Graphic, float> DetailAlpha = new();
+    private static readonly Dictionary<RectTransform, (Vector3 scale, Vector3 position)> MenuGeometry = new();
+    private static readonly Dictionary<RectTransform, (Vector2 min, Vector2 max, Vector2 pivot, Vector2 size, Vector3 position)> BarGeometry = new();
+    private static string _detailKey = "";
 
-    // Read the native HUD output, including resource counts supplied by other
-    // systems. Do not recalculate recipe costs or manufacture a station badge.
     private static void DressHover(global::Hud hud)
     {
         if (!global::Hud.IsPieceSelectionVisible() || hud.m_buildHud == null
-            || !hud.m_buildHud.activeInHierarchy || hud.m_buildSelection == null
-            || !hud.m_buildSelection.gameObject.activeInHierarchy
+            || hud.m_buildSelection == null || !hud.m_buildSelection.gameObject.activeInHierarchy
             || string.IsNullOrWhiteSpace(hud.m_buildSelection.text))
         {
             ClearHover();
             return;
         }
+        if (hud.m_rootObject == null) return;
+        var host = hud.m_rootObject.transform as RectTransform;
+        if (host == null || host.rect.height < 200f) return;
+        EnsureDetails(host);
+        _hoverPaper!.SetActive(true);
+        var width = Mathf.Min(1400f, host.rect.width - 64f);
+        var height = Mathf.Clamp(host.rect.height * 0.22f, 190f, 240f);
+        var bottom = Mathf.Max(130f, host.rect.height * 0.12f);
+        RestlessUi.Pin(_hoverPaper, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+            new Vector2(0f, bottom), new Vector2(width, height));
+        FitBuildGrid(hud, host, bottom + height + 22f);
 
-        var root = hud.m_buildHud.transform;
-        var bounds = new List<RectTransform>();
-        var live = new HashSet<TMP_Text>();
-        AddHoverText(hud.m_buildSelection, RestlessUi.TitleSize, TextAnchor.MiddleCenter, live, bounds);
-        AddHoverText(hud.m_pieceDescription, RestlessUi.BodySize + 2, TextAnchor.UpperLeft, live, bounds);
-        if (hud.m_buildIcon != null && hud.m_buildIcon.gameObject.activeInHierarchy && hud.m_buildIcon.enabled)
-            bounds.Add(hud.m_buildIcon.rectTransform);
-
-        // Requirements are outside BuildUi's grid. Preserve the original icons,
-        // amounts, station names, visibility and shortage colours in their slots.
-        foreach (var tmp in root.GetComponentsInChildren<TMP_Text>(true))
+        var split = width * 0.58f;
+        var title = hud.m_buildSelection.text;
+        var description = hud.m_pieceDescription != null ? hud.m_pieceDescription.text : "";
+        // Reset scrolling only when the selected piece/copy changes, not on count refresh.
+        var key = title + "\n" + description;
+        var changed = key != _detailKey;
+        _detailKey = key;
+        _detailTitle!.text = title;
+        _detailBody!.text = description;
+        _detailIcon!.sprite = hud.m_buildIcon != null ? hud.m_buildIcon.sprite : null;
+        _detailIcon.enabled = _detailIcon.sprite != null;
+        Place(_detailIcon.rectTransform, 22f, 20f, 62f, 62f);
+        Place(_detailTitle.rectTransform, 102f, 18f, split - 126f, 62f);
+        RestlessUi.BoundedLabel(_detailTitle, 28, 20);
+        Place(_bodyScroll!.GetComponent<RectTransform>(), 24f, 94f, split - 48f, height - 116f);
+        _detailBody.fontSize = 20;
+        _detailBody.resizeTextForBestFit = false;
+        _detailBody.horizontalOverflow = HorizontalWrapMode.Wrap;
+        _detailBody.verticalOverflow = VerticalWrapMode.Overflow;
+        _bodyContent!.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, split - 60f);
+        _bodyContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+            Mathf.Max(height - 116f, _detailBody.preferredHeight + 8f));
+        Place(_costScroll!.GetComponent<RectTransform>(), split + 16f, 22f,
+            width - split - 40f, height - 44f);
+        PaintCosts(hud, width - split - 52f);
+        if (changed)
         {
-            if (Owned(tmp.transform) || !tmp.gameObject.activeInHierarchy) continue;
-            if (hud.m_buildUi != null && tmp.transform.IsChildOf(hud.m_buildUi.transform)) continue;
-            var name = tmp.name.ToLowerInvariant();
-            if (name is not ("res_name" or "res_amount")) continue;
-            AddHoverText(tmp, name == "res_amount" ? RestlessUi.BodySize : RestlessUi.HintSize,
-                TextAnchor.MiddleCenter, live, bounds);
-            // Include the whole native requirement slot so its icon is framed too.
-            if (tmp.transform.parent is RectTransform slot && slot.rect.width < 220f && slot.rect.height < 180f)
-                bounds.Add(slot);
+            _bodyScroll.verticalNormalizedPosition = 1f;
+            _costScroll.verticalNormalizedPosition = 1f;
         }
-
-        foreach (var row in HoverCopies)
-        {
-            if (row.Source == null || row.Face == null) continue;
-            var show = live.Contains(row.Source);
-            row.Face.gameObject.SetActive(show);
-            if (!show) row.Source.alpha = row.Alpha;
-        }
-
-        if (_hoverPaper == null)
-        {
-            _hoverPaper = RestlessUi.Graphic(root, "RestlessBuildHoverPaper", Color.white, false);
-            _hoverPaper.AddComponent<LayoutElement>().ignoreLayout = true;
-            RestlessUi.PaperSurface(_hoverPaper);
-            HoverOwned.Add(_hoverPaper);
-        }
-        _hoverPaper.transform.SetAsFirstSibling();
-        FitHoverPaper(_hoverPaper.GetComponent<RectTransform>(), root, bounds);
+        HideNativeDetails(hud);
     }
 
-    private static void AddHoverText(TMP_Text? source, int size, TextAnchor alignment,
-        HashSet<TMP_Text> live, List<RectTransform> bounds)
+    private static void EnsureDetails(RectTransform host)
     {
-        if (source == null || !source.gameObject.activeInHierarchy || string.IsNullOrWhiteSpace(source.text)) return;
-        live.Add(source);
-        HoverCopy? copy = null;
-        foreach (var row in HoverCopies)
-            if (row.Source == source) { copy = row; break; }
-        if (copy == null)
-        {
-            var face = RestlessUi.Label(source.transform.parent, "", size, RestlessUi.Text, alignment);
-            face.name = "RestlessBuildHover" + source.GetInstanceID();
-            face.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-            HoverOwned.Add(face.gameObject);
-            copy = new HoverCopy { Source = source, Face = face, Alpha = source.alpha };
-            HoverCopies.Add(copy);
-        }
-        var label = copy.Face;
-        label.gameObject.SetActive(true);
-        RestlessUi.CopyRect(label.rectTransform, source.rectTransform);
-        label.transform.SetSiblingIndex(source.transform.GetSiblingIndex() + 1);
-        label.alignment = alignment;
-        label.text = source.text; // Keep rich-text shortage colours and live localization.
-        label.supportRichText = true;
-        var color = source.color;
-        // Neutral vanilla copy becomes cream. Preserve red/green shortage feedback.
-        var chroma = Mathf.Max(color.r, Mathf.Max(color.g, color.b)) - Mathf.Min(color.r, Mathf.Min(color.g, color.b));
-        label.color = chroma < 0.15f || source == global::Hud.instance?.m_buildSelection
-            ? RestlessUi.Text : new Color(color.r, color.g, color.b, copy.Alpha);
-        RestlessUi.BoundedLabel(label, size, RestlessUi.HintSize);
-        label.raycastTarget = false;
-        source.alpha = 0f;
-        bounds.Add(label.rectTransform);
+        if (_hoverPaper != null) return;
+        _hoverPaper = RestlessUi.Graphic(host, "RestlessBuildDetails", Color.white, false);
+        RestlessUi.PaperSurface(_hoverPaper);
+        _hoverPaper.AddComponent<LayoutElement>().ignoreLayout = true;
+        _detailIcon = RestlessUi.Graphic(_hoverPaper.transform, "portrait", Color.white, false).GetComponent<Image>();
+        _detailIcon.preserveAspect = true;
+        _detailTitle = RestlessUi.Label(_hoverPaper.transform, "", 28, RestlessUi.Text, TextAnchor.MiddleLeft);
+        _bodyScroll = DetailScroll(_hoverPaper.transform, "description", out _bodyContent);
+        _detailBody = RestlessUi.Label(_bodyContent, "", 20, RestlessUi.Text, TextAnchor.UpperLeft);
+        RestlessUi.Stretch(_detailBody.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        _costScroll = DetailScroll(_hoverPaper.transform, "requirements", out _costContent);
+        var divider = RestlessUi.Graphic(_hoverPaper.transform, "rule", new Color(0.55f, 0.46f, 0.31f, 0.45f), false);
+        RestlessUi.Stretch(divider, new Vector2(0.58f, 0f), new Vector2(0.58f, 1f),
+            new Vector2(0f, 22f), new Vector2(1f, -22f));
     }
 
-    private static void FitHoverPaper(RectTransform plate, Transform root, List<RectTransform> parts)
+    private static ScrollRect DetailScroll(Transform host, string name, out RectTransform content)
     {
-        var min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
-        var max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
-        var corners = new Vector3[4];
-        foreach (var rect in parts)
+        var viewport = RestlessUi.Graphic(host, name, Color.clear, true);
+        viewport.AddComponent<RectMask2D>();
+        content = RestlessUi.Node(viewport.transform, "content").GetComponent<RectTransform>();
+        content.anchorMin = new Vector2(0f, 1f);
+        content.anchorMax = Vector2.one;
+        content.pivot = new Vector2(0f, 1f);
+        content.anchoredPosition = Vector2.zero;
+        content.sizeDelta = Vector2.zero;
+        var scroll = viewport.AddComponent<ScrollRect>();
+        scroll.viewport = viewport.GetComponent<RectTransform>();
+        scroll.content = content;
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.inertia = false;
+        scroll.scrollSensitivity = 32f;
+        return scroll;
+    }
+
+    private static void Place(RectTransform rect, float x, float y, float width, float height)
+    {
+        rect.anchorMin = rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = new Vector2(x, -y);
+        rect.sizeDelta = new Vector2(Mathf.Max(1f, width), Mathf.Max(1f, height));
+    }
+
+    private static void PaintCosts(global::Hud hud, float width)
+    {
+        var slots = new List<Transform>();
+        foreach (var text in hud.m_buildHud.GetComponentsInChildren<TMP_Text>(true))
         {
-            rect.GetWorldCorners(corners);
-            foreach (var corner in corners)
+            if (!text.gameObject.activeInHierarchy || text.name.ToLowerInvariant() != "res_name"
+                || Owned(text.transform) || string.IsNullOrWhiteSpace(text.text)) continue;
+            if (hud.m_buildUi != null && text.transform.IsChildOf(hud.m_buildUi.transform)) continue;
+            if (text.transform.parent != null && !slots.Contains(text.transform.parent)) slots.Add(text.transform.parent);
+        }
+        var y = 0f;
+        for (var i = 0; i < slots.Count; i++)
+        {
+            var slot = slots[i];
+            var name = RestlessUi.Deep<TMP_Text>(slot, "res_name");
+            var amount = RestlessUi.Deep<TMP_Text>(slot, "res_amount");
+            Image? icon = null;
+            foreach (var image in slot.GetComponentsInChildren<Image>(true))
+                if (image.name.ToLowerInvariant().Contains("icon") && image.sprite != null) { icon = image; break; }
+            if (i == CostRows.Count)
             {
-                var p = (Vector2)root.InverseTransformPoint(corner);
-                min = Vector2.Min(min, p);
-                max = Vector2.Max(max, p);
+                var row = RestlessUi.Node(_costContent!, "requirement" + i);
+                RestlessUi.Graphic(row.transform, "icon", Color.white, false);
+                var label = RestlessUi.Label(row.transform, "", 18, RestlessUi.Text, TextAnchor.MiddleLeft);
+                label.name = "name";
+                var count = RestlessUi.Label(row.transform, "", 18, RestlessUi.Accent, TextAnchor.MiddleRight);
+                count.name = "count";
+                CostRows.Add(row);
             }
+            var go = CostRows[i];
+            go.SetActive(true);
+            var labelFace = go.transform.Find("name").GetComponent<Text>();
+            var countFace = go.transform.Find("count").GetComponent<Text>();
+            var iconFace = go.transform.Find("icon").GetComponent<Image>();
+            var hasCount = amount != null && amount.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(amount.text);
+            labelFace.text = name != null ? name.text : "";
+            labelFace.color = SourceColour(name, RestlessUi.Text);
+            labelFace.fontSize = 18;
+            labelFace.horizontalOverflow = HorizontalWrapMode.Wrap;
+            labelFace.verticalOverflow = VerticalWrapMode.Overflow;
+            var countWidth = hasCount ? Mathf.Min(110f, width * 0.3f) : 0f;
+            Place(labelFace.rectTransform, 50f, 0f, width - 58f - countWidth, 42f);
+            var rowHeight = Mathf.Max(46f, labelFace.preferredHeight + 10f);
+            Place(go.GetComponent<RectTransform>(), 0f, y, width, rowHeight);
+            Place(labelFace.rectTransform, 50f, 0f, width - 58f - countWidth, rowHeight);
+            Place(iconFace.rectTransform, 0f, (rowHeight - 36f) * 0.5f, 36f, 36f);
+            iconFace.sprite = icon != null ? icon.sprite : null;
+            iconFace.enabled = iconFace.sprite != null;
+            iconFace.preserveAspect = true;
+            countFace.text = hasCount ? amount!.text : "";
+            countFace.color = SourceColour(amount, RestlessUi.Accent);
+            Place(countFace.rectTransform, width - countWidth, 0f, Mathf.Max(1f, countWidth), rowHeight);
+            RestlessUi.BoundedLabel(countFace, 18, 14);
+            y += rowHeight + 4f;
         }
-        if (float.IsInfinity(min.x)) { plate.gameObject.SetActive(false); return; }
-        plate.gameObject.SetActive(true);
-        plate.anchorMin = plate.anchorMax = new Vector2(0.5f, 0.5f);
-        plate.pivot = new Vector2(0.5f, 0.5f);
-        plate.localPosition = new Vector3((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f, 0f);
-        plate.sizeDelta = max - min + new Vector2(36f, 28f);
+        for (var i = slots.Count; i < CostRows.Count; i++) CostRows[i].SetActive(false);
+        _costContent!.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(1f, y));
+    }
+
+    private static Color SourceColour(Graphic? source, Color neutral)
+    {
+        if (source == null) return neutral;
+        var c = source.color;
+        var chroma = Mathf.Max(c.r, Mathf.Max(c.g, c.b)) - Mathf.Min(c.r, Mathf.Min(c.g, c.b));
+        return chroma < 0.15f ? neutral : new Color(c.r, c.g, c.b, 1f);
+    }
+
+    private static void HideNativeDetails(global::Hud hud)
+    {
+        // BuildHud also owns BuildUi. Hide graphics individually, never that root
+        // CanvasGroup; otherwise the grid and search input disappear with it.
+        var detailRoot = hud.m_buildSelection != null ? hud.m_buildSelection.transform.parent : null;
+        while (detailRoot != null && hud.m_pieceDescription != null
+            && !hud.m_pieceDescription.transform.IsChildOf(detailRoot)) detailRoot = detailRoot.parent;
+        if (detailRoot == hud.m_buildHud.transform
+            || detailRoot != null && hud.m_buildUi != null && hud.m_buildUi.transform.IsChildOf(detailRoot)) detailRoot = null;
+        foreach (var graphic in hud.m_buildHud.GetComponentsInChildren<Graphic>(true))
+        {
+            if (Owned(graphic.transform)) continue;
+            if (hud.m_buildUi != null && graphic.transform.IsChildOf(hud.m_buildUi.transform)) continue;
+            if (hud.m_pieceSelectionWindow != null && graphic.transform.IsChildOf(hud.m_pieceSelectionWindow.transform)
+                && (detailRoot == null || !graphic.transform.IsChildOf(detailRoot))) continue;
+            if (!DetailAlpha.ContainsKey(graphic)) DetailAlpha.Add(graphic, graphic.color.a);
+            var c = graphic.color;
+            c.a = 0f;
+            graphic.color = c;
+        }
     }
 
     private static void ClearHover()
     {
-        foreach (var row in HoverCopies)
-            if (row.Source != null) row.Source.alpha = row.Alpha;
-        HoverCopies.Clear();
-        foreach (var go in HoverOwned)
-            if (go != null) Object.Destroy(go);
-        HoverOwned.Clear();
+        foreach (var pair in DetailAlpha)
+        {
+            if (pair.Key == null) continue;
+            var c = pair.Key.color;
+            c.a = pair.Value;
+            pair.Key.color = c;
+        }
+        DetailAlpha.Clear();
+        foreach (var pair in MenuGeometry)
+            if (pair.Key != null) { pair.Key.localScale = pair.Value.scale; pair.Key.localPosition = pair.Value.position; }
+        MenuGeometry.Clear();
+        foreach (var pair in BarGeometry)
+        {
+            if (pair.Key == null) continue;
+            var r = pair.Key; var s = pair.Value;
+            r.anchorMin = s.min; r.anchorMax = s.max; r.pivot = s.pivot;
+            r.sizeDelta = s.size; r.anchoredPosition3D = s.position;
+        }
+        BarGeometry.Clear();
+        if (_hoverPaper != null) Object.Destroy(_hoverPaper);
         _hoverPaper = null;
+        CostRows.Clear();
+        _detailKey = "";
     }
 }

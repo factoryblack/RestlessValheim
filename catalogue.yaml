@@ -343,7 +343,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "BuildUIV2 hammer/hoe/serving-tray chrome uses shared paper viewport wells, native-sized category/tag controls, larger bounded labels, preserved search input/placeholder and visible scroll-thumb artwork. Piece cards keep native counts, stars, arrows and availability tint; selection and hover have separate accents. No inventory ItemData cleanup on build pieces. Native layout, masks, callbacks and requirements stay authoritative. Changed image/TMP properties restored on undress. See docs/build-menu-materials.md; syntax checked, compilation and Unity/controller checks pending."
+    note: "BuildUIV2 uses shared paper viewport wells and native-sized category/tag controls. Build hover details now get a measured paper backing and Averia mirrors of live name/description/resource/station text; native icons/counts/shortage colours retained. Scrollbars remain entirely vanilla per playtest feedback. Viewport backings inset 3px. Native layout, masks, input and callbacks retained. See docs/build-menu-materials.md; syntax checked, Unity playtest pending."
 
   - id: ui.hints
     name: Action hints
@@ -578,6 +578,7 @@ items:
     in_mod: n/a
     restless: ASharpPen-This_Goes_Here / Smoothbrain-ShutUp
     note: "Author utilities. Not gameplay."
+
 
 
 

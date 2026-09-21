@@ -150,5 +150,7 @@ its inventory cleanup hides piece-specific labels and marks. Preserve count/star
 arrow and availability presentation. Fit InventorySurface to the viewport, never
 scrolling content or the fullscreen build HUD. Owned visuals may have ignoreLayout
 LayoutElements; never add sizing LayoutElements to native tabs. Keep masks, input
-caret/placeholder, piece requirements and controller navigation native. Scrollbars
-remain visible; reuse scroll-thumb. See docs/build-menu-materials.md.
+caret/placeholder, piece requirements and controller navigation native. Build-menu scrollbars remain entirely vanilla, including focus and handle artwork.
+Build hover details mirror live HUD text and preserve native icons/requirements;
+clear owned details and restore source alpha when piece selection closes. See docs/build-menu-materials.md.
+

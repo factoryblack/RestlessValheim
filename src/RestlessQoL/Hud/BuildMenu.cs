@@ -11,7 +11,7 @@ namespace RestlessQoL.HudTweaks;
 // 1.0 hammer / hoe / serving-tray menu (BuildUIV2). Dress in place.
 // Do not CanvasGroup m_buildHud, Ghost Masks, or ChipButton (LayoutElement
 // stretches the four category tabs into pillars and blanks the grid).
-public sealed class BuildMenu : FeatureModule
+public sealed partial class BuildMenu : FeatureModule
 {
     public override string Id => "ui.build";
     public override bool Enabled => true;
@@ -53,7 +53,10 @@ public sealed class BuildMenu : FeatureModule
             }
 
             if (!Open(__instance))
+            {
+                ClearHover();
                 return;
+            }
 
             DumpOnce(__instance);
             if (!_dressed)
@@ -131,6 +134,7 @@ public sealed class BuildMenu : FeatureModule
         DressTabs(ui);
         DressSearch(ui);
         DressKeys(ui);
+        DressHover(hud);
     }
 
     private static void KeepQuiet()
@@ -196,29 +200,17 @@ public sealed class BuildMenu : FeatureModule
                 Ours.Add(go);
                 plate = go.transform;
             }
+            plate.gameObject.SetActive(viewport.gameObject.activeInHierarchy);
             RestlessUi.CopyRect(plate.GetComponent<RectTransform>(), viewport);
+            // Keep the backing inside the viewport; its torn lip must not touch
+            // neighbouring category controls or the native scrollbar.
+            var plateRect = plate.GetComponent<RectTransform>();
+            plateRect.offsetMin += new Vector2(3f, 3f);
+            plateRect.offsetMax -= new Vector2(3f, 3f);
             var before = plate.GetSiblingIndex() < viewport.GetSiblingIndex();
             plate.SetSiblingIndex(viewport.GetSiblingIndex() - (before ? 1 : 0));
         }
-        foreach (var bar in root.GetComponentsInChildren<Scrollbar>(true))
-        {
-            var track = bar.GetComponent<Image>();
-            if (track != null)
-            {
-                RememberImage(track);
-                track.color = new Color(0.07f, 0.06f, 0.05f, 0.8f);
-            }
-            var thumb = bar.handleRect != null ? bar.handleRect.GetComponent<Image>() : null;
-            if (thumb != null)
-            {
-                RememberImage(thumb);
-                var sprite = Kit.Sprite("scroll-thumb");
-                if (sprite != null) thumb.sprite = sprite;
-                thumb.type = Image.Type.Simple;
-                thumb.color = RestlessUi.Accent;
-            }
-            AddFeedback(bar);
-        }
+        // Scrollbars retain their native art, colours, geometry and feedback.
     }
 
     // Viewport mask, typed search, and the piece grid stay vanilla.
@@ -588,6 +580,7 @@ public sealed class BuildMenu : FeatureModule
 
     private static void Undress()
     {
+        ClearHover();
         foreach (var go in Ours)
         {
             if (go != null)
@@ -606,4 +599,5 @@ public sealed class BuildMenu : FeatureModule
         _dressed = false;
     }
 }
+
 

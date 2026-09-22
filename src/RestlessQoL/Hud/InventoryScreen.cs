@@ -123,6 +123,8 @@ public sealed partial class InventoryScreen : FeatureModule
                 RefreshCollections(__instance);
             }
             KeepQuiet();
+            if (ModalOpen(__instance))
+                StatSheet.Hide();
         }
     }
 
@@ -683,6 +685,8 @@ public sealed partial class InventoryScreen : FeatureModule
         if (bkg != null && bkg != icon)
             Hide(bkg);
         Face(src, tag, RestlessUi.Text, RestlessUi.HudSize);
+        if (tag == "armor")
+            StatSheet.Hook(host);
     }
 
     private static bool ModalOpen(InventoryGui gui) =>

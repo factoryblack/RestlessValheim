@@ -1,0 +1,53 @@
+# Single pin list for loaders and Restless packages.
+# Feature decisions stay in catalogue.yaml.
+# After edits: python scripts/sync-versions.py
+# CI runs the same script with --check so Core cannot keep an old Jötunn.
+
+bepinex: "5.4.2350"
+jotunn: "2.30.2"
+
+packages:
+  core:
+    version: "0.1.13"
+    guid: "restless.core"
+    thunderstore: "RestlessCore"
+    plugin: "src/RestlessQoL/Plugin.cs"
+    csproj: "src/RestlessQoL/RestlessQoL.csproj"
+    thunderstore_dir: "thunderstore/plugin"
+  cook:
+    version: "0.1.9"
+    guid: "restless.cook"
+    thunderstore: "RestlessCook"
+    plugin: "src/RestlessCook/Plugin.cs"
+    csproj: "src/RestlessCook/RestlessCook.csproj"
+    thunderstore_dir: "thunderstore/cook"
+    needs_core: true
+  piles:
+    version: "0.1.4"
+    guid: "restless.piles"
+    thunderstore: "RestlessPiles"
+    plugin: "src/RestlessPiles/Plugin.cs"
+    csproj: "src/RestlessPiles/RestlessPiles.csproj"
+    thunderstore_dir: "thunderstore/piles"
+    needs_core: true
+  plant:
+    version: "0.1.4"
+    guid: "restless.plant"
+    thunderstore: "RestlessPlant"
+    plugin: "src/RestlessPlant/Plugin.cs"
+    csproj: "src/RestlessPlant/RestlessPlant.csproj"
+    thunderstore_dir: "thunderstore/plant"
+    needs_core: true
+  drawers:
+    version: "0.1.0"
+    guid: "restless.drawers"
+    thunderstore: "RestlessDrawers"
+    plugin: "src/RestlessDrawers/Plugin.cs"
+    csproj: "src/RestlessDrawers/RestlessDrawers.csproj"
+    thunderstore_dir: "thunderstore/drawers"
+    needs_core: true
+  pack:
+    version: "0.1.17"
+    thunderstore: "Restless_Valheim"
+    thunderstore_dir: "thunderstore/pack"
+    members: [core, cook, piles, plant, drawers]

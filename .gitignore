@@ -15,3 +15,4 @@ Environment.props
 .DS_Store
 Thumbs.db
 art/cook/mesh/*.fbx
+art/drawers/mesh/*.fbx

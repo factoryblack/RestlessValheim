@@ -57,6 +57,7 @@ public static class ModConfig
     public static ConfigEntry<bool> MapTearEnabled = null!;
     public static ConfigEntry<bool> MapBiomePlate = null!;
     public static ConfigEntry<bool> MapWindPlate = null!;
+    public static ConfigEntry<bool> MapClock = null!;
     public static ConfigEntry<bool> MapScreenEnabled = null!;
     public static ConfigEntry<bool> MapPlayerDots = null!;
     public static ConfigEntry<bool> NoticesEnabled = null!;
@@ -66,6 +67,7 @@ public static class ModConfig
     public static ConfigEntry<bool> HotbarEnabled = null!;
     public static ConfigEntry<bool> InventoryScreenEnabled = null!;
     public static ConfigEntry<bool> TooltipEnabled = null!;
+    public static ConfigEntry<bool> SheetEnabled = null!;
     public static ConfigEntry<bool> LedgerEnabled = null!;
     public static ConfigEntry<bool> MenuScreenEnabled = null!;
     public static ConfigEntry<bool> ExtraSlotsEnabled = null!;
@@ -82,6 +84,7 @@ public static class ModConfig
     public static ConfigEntry<bool> BuildMenuEnabled = null!;
     public static ConfigEntry<bool> ActionHintsEnabled = null!;
     public static ConfigEntry<bool> LookHintsEnabled = null!;
+    public static ConfigEntry<bool> LookStationTime = null!;
     public static ConfigEntry<bool> PieceHealthEnabled = null!;
     public static ConfigEntry<bool> JotunnDebug = null!;
 
@@ -104,6 +107,8 @@ public static class ModConfig
             "Biome name on a dark plate like the buff rows. Client-local.");
         MapWindPlate = config.Bind("Hud.Minimap", "WindPlate", true,
             "World-wind arrow on the right of the biome bar at all times. Helm wind ring moves left of the map. Client-local.");
+        MapClock = config.Bind("Hud.Minimap", "Clock", true,
+            "Day number and time of day on the biome bar. Client-local.");
         MapScreenEnabled = config.Bind("Hud.Map", "Enabled", true,
             "Restless chrome on the M map: torn mat, biome and pin-name plates, hint plate. Terrain stays vanilla. Client-local.");
         MapPlayerDots = config.Bind("Hud.Map", "PlayerDots", true,
@@ -123,6 +128,8 @@ public static class ModConfig
             "Torn plates and Averia on the Tab inventory. Vanilla grids, drag, and craft stay. Client-local.");
         TooltipEnabled = config.Bind("Hud.Tooltip", "Enabled", true,
             "Restless item inspect on Tab and chests, with expansion badges and sections. PgUp/PgDn scroll long details. Client-local.");
+        SheetEnabled = config.Bind("Hud.Sheet", "Enabled", true,
+            "Tab loadout totals (pools, armor, move, added attack types, resists). Click the armor chip. Hover a row for origins. Client-local.");
         LedgerEnabled = config.Bind("Hud.Character", "Enabled", true,
             "Show the F8 Character tab (vanilla PlayerStats). The ledger API stays on. Client-local.");
         MenuScreenEnabled = config.Bind("Hud.Menu", "Enabled", true,
@@ -155,6 +162,8 @@ public static class ModConfig
             "Replace the bottom-right keybind cluster (combat, fishing, hammer) with KeyChips. Client-local.");
         LookHintsEnabled = config.Bind("Hud.Look", "Enabled", true,
             "Replace world hover prompts ([E] Cook item, pick up, etc.) with KeyChips. One Hud dresser — every CookingStation and every other interactable. Client-local.");
+        LookStationTime = config.Bind("Hud.Look", "StationTime", true,
+            "Remaining time on fermenters, smelters, kilns, cooking stations, and beehives. Client-local.");
         PieceHealthEnabled = config.Bind("Hud.Debug", "PieceHealth", false,
             "Hammer hover: Jötunn piece panel (health, stability, rotation) and the vanilla health bar. Off by default. Client-local.");
         JotunnDebug = config.Bind("Hud.Debug", "JotunnDebugInfo", false,

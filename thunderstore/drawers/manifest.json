@@ -1,0 +1,11 @@
+{
+  "name": "RestlessDrawers",
+  "version_number": "0.1.0",
+  "website_url": "https://github.com/factoryblack/RestlessValheim",
+  "description": "Furniture drawers for every vanilla chest. Same slots and unlock. Fronts show what is inside. Needs RestlessCore.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350",
+    "ValheimModding-Jotunn-2.30.2",
+    "Restless-RestlessCore-0.1.13"
+  ]
+}

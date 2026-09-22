@@ -20,7 +20,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.core";
     public const string PluginName = "RestlessCore";
-    public const string PluginVersion = "0.1.12";
+    public const string PluginVersion = VersionPins.Core;
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;
@@ -59,6 +59,7 @@ public class Plugin : BaseUnityPlugin
         new Notices(),
         new Hotbar(),
         new InventoryScreen(),
+        new StatSheet(),
         new ItemTooltip(),
         new ExtraSlots(),
         new SlotLock(),

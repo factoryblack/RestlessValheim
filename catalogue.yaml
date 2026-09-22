@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-22 — UI restoration, requirement feedback, craft contributions, small dialogs and F8 ecosystem; runtime validation pending.
+# last_audit: 2026-09-23 — versions.yaml pins Jötunn/Core/pack; F8 shows live vs listed.
 
-updated: 2026-09-22
+updated: 2026-09-23
 
 items:
   # --- loader ---
@@ -271,7 +271,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "HUD minimap (not M). Shared MapStudio (disable source). Recapture when UV/size/player moves or every 0.2s — not a camera blit every frame. Pins on the torn view. Biome bar: title left, m_windMarker right always. Helm wind ring left of map while steering (buffs took below). Slides off with Tab (HudTuck). Playtest."
+    note: "HUD minimap (not M). Shared MapStudio (disable source). Recapture when UV/size/player moves or every 0.2s — not a camera blit every frame. Pins on the torn view. Biome bar: title left, day/time when Hud.Minimap.Clock, m_windMarker right always. Helm wind ring left of map while steering (buffs took below). Slides off with Tab (HudTuck). Playtest."
 
   - id: ui.map
     name: Restless large map
@@ -312,6 +312,14 @@ items:
     bite: 2
     restless: RandyKnapp-Auga
     note: "Craft preview now shares contribution badge/section rendering and API invalidation; rim tint remains inspect-only. Tab + chest inspect. Opt-in shared PaperSurface/PaperCorner/PaperDivider materials: generated torn charcoal panel/chip/corner, tintable alpha rims, separate ornaments; DressSlot retains behaviour. Measured text, two-column damage, fixed header and clipped PgUp/PgDn details. Unknown lines preserved. Client-side TooltipApi v1 accepts ordered badges, rim tint and sections with disposable registrations and exception isolation. Browser material proof in docs; no rarity mechanics or equipped comparison. Controller paging, compilation and Unity visual/input verification pending."
+
+  - id: ui.sheet
+    name: Loadout totals
+    decision: dll
+    in_mod: partial
+    bite: 2
+    restless: RandyKnapp-Auga
+    note: "Tab paper overlay of live totals (health/stamina/eitr, regen, armor, block, weight, move, added attack types, resists). Hover a row for origins. Click the armor chip to open. Reads Player / food / SEMan / equipped getters — no combat recalc and no equipped comparison. F8 toggle. Not player.ledger. Playtest slash/set stacking, food plates, and ExtraSlots armor relocate."
 
   - id: ui.menu
     name: Pause, logout, and exit
@@ -359,7 +367,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "One Hud.UpdateCrosshair dresser. Title + binds on a single torn Strip. Guardian ItemStands use SetStory (name, wrapped m_tooltip, duration, Activate). $KEY_Use as E no longer eats Eikthyr. Hidden on M and Tab only — still dresses while placing. Chest ghost input is NearbyStorage, not this. Chest hover strips EMPTY. Playtest."
+    note: "One Hud.UpdateCrosshair dresser. Title + binds on a single torn Strip. Guardian ItemStands use SetStory (name, wrapped m_tooltip, duration, Activate). $KEY_Use as E no longer eats Eikthyr. Hidden on M and Tab only — still dresses while placing. Chest ghost input is NearbyStorage, not this. Chest hover strips EMPTY. Station remaining time (fermenter / smelter / kiln / cook / hive) is a muted extra line, F8 Hud.Look.StationTime. Playtest."
 
   - id: ui.overhaul
     name: Restless inventory / HUD overhaul
@@ -367,7 +375,7 @@ items:
     in_mod: partial
     bite: 3
     restless: RandyKnapp-Auga
-    note: "Restless is the QoL+UI core. Language: Strip / Chip / Ink / Tray / TrayHead / TitleTear / Rim / HudRow / HudMeter / Wear / KeyChip / KeyStack / HudTuck. TitleTear may escape a tray top-right; never a roof. Toasts top-left (including first-item / recipe unlocks). Hotbar at Bar. Health left of Bar, stamina right. Action hints at BottomRight. World hover at Look. M map is torn mat + plates (terrain unmasked). Hammer helper above the bar. Hammer menu is ui.build. Guardian + food (empty Eat + food fork) on the buff list. Tab dresser in progress (ui.inventory). Item inspect is ui.tooltip. Character counts are player.ledger. ESC pause / logout / exit are ui.menu. Biome-found stays vanilla. Extra armor/quick slots are inventory.equipment_slots. Do not install Auga."
+    note: "Restless is the QoL+UI core. Language: Strip / Chip / Ink / Tray / TrayHead / TitleTear / Rim / HudRow / HudMeter / Wear / KeyChip / KeyStack / HudTuck. TitleTear may escape a tray top-right; never a roof. Toasts top-left (including first-item / recipe unlocks). Hotbar at Bar. Health left of Bar, stamina right. Action hints at BottomRight. World hover at Look. M map is torn mat + plates (terrain unmasked). Hammer helper above the bar. Hammer menu is ui.build. Guardian + food (empty Eat + food fork) on the buff list. Tab dresser in progress (ui.inventory). Item inspect is ui.tooltip. Loadout totals are ui.sheet. Character counts are player.ledger. ESC pause / logout / exit are ui.menu. Biome-found stays vanilla. Extra armor/quick slots are inventory.equipment_slots. Do not install Auga."
 
   - id: player.ledger
     name: Character ledger
@@ -407,7 +415,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-Azus_UnOfficial_ConfigManager
-    note: "F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Loaded plugin versions and explicit Thunderstore links; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md; compilation and Unity/host-client checks pending."
+    note: "F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
 
   # --- vanilla 1.0 ---
   - id: inventory.extra_rows
@@ -482,11 +490,19 @@ items:
     note: "Progression, not QoL."
 
   - id: skip.drawers
-    name: Item drawers
+    name: KG / BROHEIM item drawers
     decision: skip
     in_mod: n/a
     restless: KGvalheim-ItemDrawers / BROHEIM_CYBRP-ItemDrawers
-    note: "Deprecated. BROHEIM fork is also deprecated and AI-tagged. Live without drawers."
+    note: "Do not install those. RestlessDrawers is drawers.chests — chest-equivalent furniture, not a mega-stack drawer."
+
+  - id: drawers.chests
+    name: Chest-equivalent drawers
+    decision: sidecar
+    in_mod: partial
+    bite: 2
+    restless: Restless-RestlessDrawers
+    note: "RestlessDrawers 0.1.0 first ship with pack 0.1.17. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Snap pitch is the neighbour's visual size minus a 4cm overlap. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
 
   - id: skip.collectors
     name: Crystal / feather / guck / tar collectors
@@ -507,7 +523,7 @@ items:
     decision: skip
     in_mod: n/a
     restless: shudnal-MyLittleUI
-    note: "Gone. Not a sidecar. Do not pull MyLittleUI and do not rewrite timers/multicraft/chest names in this DLL."
+    note: "Still skip the product. Do not pull MyLittleUI. Clock lives on ui.minimap; station remaining time lives on ui.look. Do not rewrite multicraft, chest names, craft search, or forecast widgets."
 
   - id: skip.ui_overhaul
     name: BetterUI / MinimalUI / Auga / ValheimPlus

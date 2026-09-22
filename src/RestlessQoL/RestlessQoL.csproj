@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>RestlessCore</AssemblyName>
     <RootNamespace>RestlessQoL</RootNamespace>
-    <Version>0.1.12</Version>
+    <Version>0.1.13</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\..\dist\</OutputPath>
     <DebugType>embedded</DebugType>
@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JotunnLib" Version="2.30.1" />
+    <PackageReference Include="JotunnLib" Version="$(JotunnLibVersion)" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
 
@@ -36,6 +36,7 @@
     <EmbeddedResource Include="../../thunderstore/cook/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-cook.png" />
     <EmbeddedResource Include="../../thunderstore/plant/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-plant.png" />
     <EmbeddedResource Include="../../thunderstore/piles/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-piles.png" />
+    <EmbeddedResource Include="../../thunderstore/drawers/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-drawers.png" />
     <EmbeddedResource Include="../../thunderstore/pack/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-pack.png" />
   </ItemGroup>
   <ItemGroup>

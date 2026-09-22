@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.13
+
+- Tab and chests restore native graphics, TMP, hidden objects and CanvasGroups on undress (PR 17)
+- Recipe rows and requirement cells remember native count/quality text and CanvasGroup state so turning the inventory skin off restores them (PR 18)
+- Hammer requirement colours update even when the count text does not
+- Crafting inspect shares tooltip badges and sections, and keeps scroll
+- Split and variant dialogs use paper; native input and selection stay
+- F8 has an ecosystem overview (Core plus Cook / Plant / Piles / Drawers). Cards show the loaded BepInEx version against `versions.yaml`, and Core also shows Jötunn
+- Loadout totals overlay from the armor chip; hover a stat for origins (F8 toggle, not the ledger)
+- Day and time sit on the biome bar (F8)
+- Fermenter, smelter, kiln, cooking station, and beehive hovers show remaining time (F8)
+- Jötunn pin is 2.30.2 (same as the pack). `versions.yaml` is the single pin list
+
 ## 0.1.12
 
 - Hammer menu no longer re-dresses every piece and moves the grid on idle frames; hover, category, and live resource counts still update

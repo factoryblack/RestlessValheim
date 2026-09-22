@@ -6,6 +6,7 @@ One install for the Restless table. r2modman and Thunderstore pull the stack:
 **RestlessCook** — cook the haul, plate it, set a feast (Meadows through Ashlands)  
 **RestlessPiles** — wood stacks and stone piles that actually hold what you cut  
 **RestlessPlant** — bushes and forage on the cultivator  
+**RestlessDrawers** — workshop cabinets with the same slots as the matching chest  
 
 Plus **BepInExPack 5.4.2350** and **Jötunn 2.30.2**.
 

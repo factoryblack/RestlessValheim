@@ -4,7 +4,7 @@ The Restless table for **Valheim 1.0**. Nearby chests count as yours, the HUD st
 
 Open **F8** in-game, or Restless from the pause menu. Vanilla Settings is left alone.
 
-Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.1**.
+Needs **BepInExPack 5.4.2350** and **Jötunn 2.30.2**.
 
 ## Chests, without the running
 

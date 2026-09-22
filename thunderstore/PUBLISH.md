@@ -1,39 +1,35 @@
-# Thunderstore 0.1.16
+# Thunderstore 0.1.17
 
-Signed off 22 Sep 2026.
+Signed off 23 Sep 2026. Shipping Core 0.1.13, Drawers 0.1.0, pack 0.1.17.
 
-## Proposed versions
+Pins live in `versions.yaml`. After a Jötunn or package bump: `python scripts/sync-versions.py`.
 
-Core idle-frame skip on hammer and Tab. Pack moves once. Cook, plant and piles stay.
+## This drop
 
-| Package | Live now | Next | Why |
+| Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCore | **0.1.11** | **0.1.12** | Hammer and Tab skip a full re-dress on idle frames |
-| RestlessCook | **0.1.9** | 0.1.9 | No code this pass |
-| RestlessPiles | **0.1.4** | 0.1.4 | No code this pass |
-| RestlessPlant | **0.1.4** | 0.1.4 | No code this pass |
-| Restless Valheim pack | **0.1.15** | **0.1.16** | One pack bump for Core |
-
-`PluginVersion`, csproj, and `thunderstore/*/manifest.json` now match the **Next** column.
+| RestlessCore | 0.1.12 | **0.1.13** | F8 collection, PR 17/18 restore, clock, station time, Jötunn 2.30.2 |
+| RestlessDrawers | — | **0.1.0** | First ship. Furniture cabinets. |
+| RestlessCook | 0.1.9 | 0.1.9 | No zip |
+| RestlessPiles | 0.1.4 | 0.1.4 | No zip |
+| RestlessPlant | 0.1.4 | 0.1.4 | No zip |
+| Restless Valheim pack | 0.1.16 | **0.1.17** | Core + Drawers |
 
 ## What to tell players
 
-**Restless Valheim 0.1.16**  
-Hammer menu and Tab stay still when you are not changing anything.
+**Restless Valheim 0.1.17**  
+Core 0.1.13 and the first RestlessDrawers cabinets. Same Jötunn 2.30.2.
 
-**RestlessCore 0.1.12**  
-The hammer menu no longer rebuilds every piece on idle frames. Tab paper (bag, chest, craft, skills, collections) only refreshes when a stack, recipe, or overlay actually changes.
+**RestlessCore 0.1.13**  
+F8 shows the collection and the versions actually loaded, including Drawers. Tab and chests restore vanilla on close. Day/time on the biome bar. Station remaining time on look. Loadout totals from the armor chip.
 
-**RestlessCook / RestlessPiles / RestlessPlant**  
-No new build this drop.
+**RestlessDrawers 0.1.0**  
+Wood, personal, reinforced, and black metal cabinets. Same slots and recipes as the matching chest. They snap together and stay up.
 
 ## Tag order
 
-Core first so the pack can wait for it.
-
 ```
-git tag v0.1.12 && git push origin v0.1.12
-git tag pack-v0.1.16 && git push origin pack-v0.1.16
+git tag v0.1.13 && git push origin v0.1.13
+git tag drawers-v0.1.0 && git push origin drawers-v0.1.0
+git tag pack-v0.1.17 && git push origin pack-v0.1.17
 ```
-
-`v*` ships Core. `pack-v*` waits for Restless-* deps on Thunderstore.

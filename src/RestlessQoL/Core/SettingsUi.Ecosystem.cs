@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BepInEx.Bootstrap;
+using Jotunn;
 using RestlessQoL.Api;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,6 +30,10 @@ public sealed partial class SettingsUi
             "Your resources, stored out in the world.",
             "Wood stacks and stone piles become storage for their resource. Open a pile, take a bag's worth or deposit what you carry.",
             packageUrl: Package("RestlessPiles")));
+        EcosystemPages.Add(new SettingsPage("restless.drawers", "RestlessDrawers",
+            "Workshop cabinets. Same chests, quieter fronts.",
+            "Wood, personal, reinforced and black metal drawers clone their matching chests. One container each; the fronts show what is inside. They snap together as furniture.",
+            packageUrl: Package("RestlessDrawers")));
         // A module can supply its own details and settings action without a Core edit.
         foreach (var page in SettingsPageApi.Snapshot())
         {
@@ -41,14 +46,45 @@ public sealed partial class SettingsUi
 
     private static string Package(string name) => "https://thunderstore.io/c/valheim/p/Restless/" + name + "/";
     private static bool Loaded(SettingsPage page) => Chainloader.PluginInfos.ContainsKey(page.PluginGuid);
-    private static string Status(SettingsPage page) => Chainloader.PluginInfos.TryGetValue(page.PluginGuid, out var plugin)
-        ? "Loaded · " + plugin.Metadata.Version : "Not installed / not loaded";
+
+    private static string Status(SettingsPage page)
+    {
+        var pin = VersionPins.ForGuid(page.PluginGuid);
+        if (!Chainloader.PluginInfos.TryGetValue(page.PluginGuid, out var plugin) || plugin?.Metadata == null)
+            return pin == null ? "Not installed / not loaded" : "Not installed · this drop lists " + pin;
+
+        var line = "Loaded · " + plugin.Metadata.Version;
+        if (pin != null && !SameVersion(plugin.Metadata.Version.ToString(), pin))
+            line += " · this drop lists " + pin;
+        if (page.PluginGuid == CorePage.PluginGuid)
+            line += " · " + JotunnStatus();
+        return line;
+    }
+
+    private static string JotunnStatus()
+    {
+        if (!Chainloader.PluginInfos.TryGetValue(Main.ModGuid, out var info) || info?.Metadata == null)
+            return "Jötunn missing · expects " + VersionPins.Jotunn;
+        var loaded = info.Metadata.Version.ToString();
+        return SameVersion(loaded, VersionPins.Jotunn)
+            ? "Jötunn " + loaded
+            : "Jötunn " + loaded + " · expects " + VersionPins.Jotunn;
+    }
+
+    private static bool SameVersion(string loaded, string pin)
+    {
+        if (System.Version.TryParse(loaded, out var a) && System.Version.TryParse(pin, out var b))
+            return a.Major == b.Major && a.Minor == b.Minor && Math.Max(a.Build, 0) == Math.Max(b.Build, 0);
+        return string.Equals(loaded, pin, StringComparison.Ordinal);
+    }
+
     private static Sprite? PageIcon(SettingsPage page) => page.Icon ?? Kit.Sprite(page.PluginGuid switch
     {
         "restless.core" => "ecosystem-core",
         "restless.cook" => "ecosystem-cook",
         "restless.plant" => "ecosystem-plant",
         "restless.piles" => "ecosystem-piles",
+        "restless.drawers" => "ecosystem-drawers",
         _ => "nav-knot"
     });
 
@@ -57,6 +93,7 @@ public sealed partial class SettingsUi
         "restless.cook" => new Color(0.77f, 0.39f, 0.28f),
         "restless.plant" => new Color(0.55f, 0.69f, 0.40f),
         "restless.piles" => new Color(0.71f, 0.68f, 0.61f),
+        "restless.drawers" => new Color(0.62f, 0.48f, 0.32f),
         _ => RestlessUi.Accent
     };
 

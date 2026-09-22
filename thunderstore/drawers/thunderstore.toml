@@ -1,0 +1,39 @@
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "Restless"
+name = "RestlessDrawers"
+versionNumber = "0.1.0"
+description = "Furniture drawers for every vanilla chest. Same slots and unlock. Fronts show what is inside. Needs RestlessCore."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+containsNsfwContent = false
+
+[package.dependencies]
+denikson-BepInExPack_Valheim = "5.4.2350"
+ValheimModding-Jotunn = "2.30.2"
+Restless-RestlessCore = "0.1.13"
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "../../artifacts/tcli-drawers"
+
+[[build.copy]]
+source = "../../dist/RestlessDrawers.dll"
+target = "/"
+
+[[build.copy]]
+source = "./CHANGELOG.md"
+target = "/"
+
+[[build.copy]]
+source = "../../art/drawers/runtime"
+target = "mesh"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["valheim"]
+
+[publish.categories]
+valheim = ["building", "tweaks", "mods"]

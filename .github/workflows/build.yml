@@ -1,9 +1,10 @@
 # Compile on every PR / push. Ship GitHub + Thunderstore only when you tag:
-#   v*      RestlessCore + Restless Valheim (full pack: Core Cook Piles Plant). Addons compiled, not published.
+#   v*      RestlessCore only. Addons compiled, not published.
 #   pack-v* Restless Valheim pack only
 #   cook-v* RestlessCook only
 #   piles-v* RestlessPiles only
 #   plant-v* RestlessPlant only
+#   drawers-v* RestlessDrawers only
 # GitHub runners have no Valheim client, so this follows Jötunn's pattern:
 # SteamCMD anonymous dedicated server (app 896660) + BepInEx pack, cached by buildid.
 # Thunderstore publish needs repo secret TCLI_AUTH_TOKEN (never commit the token).
@@ -14,7 +15,7 @@ on:
   pull_request:
   push:
     branches: [main]
-    tags: ["v*", "pack-v*", "cook-v*", "piles-v*", "plant-v*"]
+    tags: ["v*", "pack-v*", "cook-v*", "piles-v*", "plant-v*", "drawers-v*"]
   workflow_dispatch:
 
 concurrency:
@@ -26,7 +27,7 @@ permissions:
 
 env:
   BEPINEX_PACK: 5.4.2350
-  JOTUNN: 2.30.1
+  JOTUNN: 2.30.2
   VHINSTALL: /home/runner/VHINSTALL
 
 jobs:
@@ -34,6 +35,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Version pins
+        run: |
+          python3 scripts/sync-versions.py --check
+          echo "JOTUNN=$(python3 scripts/sync-versions.py --print jotunn)" >> "$GITHUB_ENV"
+          echo "BEPINEX_PACK=$(python3 scripts/sync-versions.py --print bepinex)" >> "$GITHUB_ENV"
 
       - name: Valheim dedicated-server buildid
         id: valheim
@@ -89,6 +96,7 @@ jobs:
           dotnet build src/RestlessCook/RestlessCook.csproj -c Release --nologo
           dotnet build src/RestlessPiles/RestlessPiles.csproj -c Release --nologo
           dotnet build src/RestlessPlant/RestlessPlant.csproj -c Release --nologo
+          dotnet build src/RestlessDrawers/RestlessDrawers.csproj -c Release --nologo
 
       - name: Upload RestlessCore.dll
         uses: actions/upload-artifact@v4
@@ -116,6 +124,13 @@ jobs:
         with:
           name: RestlessPlant-${{ github.sha }}
           path: dist/RestlessPlant.dll
+          if-no-files-found: error
+
+      - name: Upload RestlessDrawers.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: RestlessDrawers-${{ github.sha }}
+          path: dist/RestlessDrawers.dll
           if-no-files-found: error
 
       - name: Stamp package versions from tag
@@ -200,17 +215,16 @@ jobs:
               "Restless-RestlessCook": toml_ver("thunderstore/cook/thunderstore.toml"),
               "Restless-RestlessPiles": toml_ver("thunderstore/piles/thunderstore.toml"),
               "Restless-RestlessPlant": toml_ver("thunderstore/plant/thunderstore.toml"),
+              "Restless-RestlessDrawers": toml_ver("thunderstore/drawers/thunderstore.toml"),
           }
 
           def set_toml_dep(text, key, ver):
               line = f'{key} = "{ver}"'
               if re.search(rf'{re.escape(key)} = "', text):
                   return re.sub(rf'{re.escape(key)} = ".*"', line, text, count=1)
-              return text.replace(
-                  'ValheimModding-Jotunn = "2.30.1"\n',
-                  'ValheimModding-Jotunn = "2.30.1"\n' + line + "\n",
-                  1,
-              )
+              jotunn = re.search(r'ValheimModding-Jotunn = "(.*)"', text)
+              pin = jotunn.group(0) + "\n" if jotunn else "[package.dependencies]\n"
+              return text.replace(pin, pin + line + "\n", 1)
 
           toml = Path("thunderstore/pack/thunderstore.toml")
           text = toml.read_text(encoding="utf-8")
@@ -441,3 +455,46 @@ jobs:
           export PATH="$HOME/.dotnet/tools:$PATH"
           plant_zip=$(ls artifacts/tcli-plant/*.zip | head -n 1)
           tcli publish --config-path thunderstore/plant/thunderstore.toml --file "$plant_zip"
+
+      - name: Stamp drawers package version from tag
+        if: startsWith(github.ref, 'refs/tags/drawers-v')
+        run: |
+          version="${GITHUB_REF_NAME#drawers-v}"
+          echo "version=$version" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import os, re, json
+          from pathlib import Path
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("drawers-v")
+          toml = Path("thunderstore/drawers/thunderstore.toml")
+          text = toml.read_text(encoding="utf-8")
+          text = re.sub(r'versionNumber = ".*"', f'versionNumber = "{version}"', text, count=1)
+          toml.write_text(text, encoding="utf-8")
+          manifest = Path("thunderstore/drawers/manifest.json")
+          data = json.loads(manifest.read_text(encoding="utf-8"))
+          data["version_number"] = version
+          manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          print(f"stamped drawers {version}")
+          PY
+
+      - name: Thunderstore drawers zip
+        if: startsWith(github.ref, 'refs/tags/drawers-v')
+        run: |
+          test -f thunderstore/drawers/icon.png
+          test -f dist/RestlessDrawers.dll
+          test -f art/drawers/runtime/wooden.rcm
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet tool install -g tcli
+          tcli build --config-path thunderstore/drawers/thunderstore.toml --package-version "$version"
+
+      - name: Publish drawers to Thunderstore
+        if: startsWith(github.ref, 'refs/tags/drawers-v')
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.TCLI_AUTH_TOKEN }}
+        run: |
+          if [ -z "$TCLI_AUTH_TOKEN" ]; then
+            echo "Add a repo secret named TCLI_AUTH_TOKEN (Thunderstore team service account)." >&2
+            exit 1
+          fi
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          drawers_zip=$(ls artifacts/tcli-drawers/*.zip | head -n 1)
+          tcli publish --config-path thunderstore/drawers/thunderstore.toml --file "$drawers_zip"

@@ -85,6 +85,36 @@ public sealed class LookHints : FeatureModule
             else
                 _stack.Set(title, extra, rows);
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Fermenter), nameof(Fermenter.GetHoverText))]
+        private static void AfterFerment(Fermenter __instance, ref string __result) =>
+            StationTime.Append(__instance.gameObject, ref __result);
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Smelter), "OnHoverAddOre")]
+        private static void AfterSmeltOre(Smelter __instance, ref string __result) =>
+            StationTime.Append(__instance.gameObject, ref __result);
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Smelter), "OnHoverAddFuel")]
+        private static void AfterSmeltFuel(Smelter __instance, ref string __result) =>
+            StationTime.Append(__instance.gameObject, ref __result);
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Smelter), "OnHoverEmptyOre")]
+        private static void AfterSmeltEmpty(Smelter __instance, ref string __result) =>
+            StationTime.Append(__instance.gameObject, ref __result);
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CookingStation), nameof(CookingStation.GetHoverText))]
+        private static void AfterCook(CookingStation __instance, ref string __result) =>
+            StationTime.Append(__instance.gameObject, ref __result);
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Beehive), nameof(Beehive.GetHoverText))]
+        private static void AfterHive(Beehive __instance, ref string __result) =>
+            StationTime.Append(__instance.gameObject, ref __result);
     }
 
     private static bool GuardianStone(Player player, out string title, out string body, out string extra,

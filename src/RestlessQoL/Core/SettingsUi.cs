@@ -589,6 +589,7 @@ public sealed partial class SettingsUi : FeatureModule
                 Bunch(
                     t => Bool("Restless inventory (Tab)", ModConfig.InventoryScreenEnabled, false, t),
                     t => Bool("Restless item tooltip", ModConfig.TooltipEnabled, false, t, true),
+                    t => Bool("Loadout totals", ModConfig.SheetEnabled, false, t, true),
                     t => Bool("Middle-click lock slots", ModConfig.SlotLockEnabled, false, t, true));
                 Bunch(
                     t => Bool("Armor and quick slots", ModConfig.ExtraSlotsEnabled, false, t),
@@ -614,7 +615,8 @@ public sealed partial class SettingsUi : FeatureModule
                     t => Bool("Restless minimap", ModConfig.MapChromeEnabled, false, t),
                     t => Bool("Torn edge", ModConfig.MapTearEnabled, false, t, true),
                     t => Bool("Biome name plate", ModConfig.MapBiomePlate, false, t, true),
-                    t => Bool("Wind arrow on the biome bar", ModConfig.MapWindPlate, false, t, true));
+                    t => Bool("Wind arrow on the biome bar", ModConfig.MapWindPlate, false, t, true),
+                    t => Bool("Day and time on the biome bar", ModConfig.MapClock, false, t, true));
                 Bunch(
                     t => Bool("Restless map (M)", ModConfig.MapScreenEnabled, false, t),
                     t => Bool("Player dots on the map", ModConfig.MapPlayerDots, false, t, true));
@@ -630,7 +632,8 @@ public sealed partial class SettingsUi : FeatureModule
                     t => Bool("Equipped piece helper", ModConfig.EquipHintEnabled, false, t, true),
                     t => Bool("Restless build menu", ModConfig.BuildMenuEnabled, false, t, true),
                     t => Bool("Action hints", ModConfig.ActionHintsEnabled, false, t, true),
-                    t => Bool("World hover prompts", ModConfig.LookHintsEnabled, false, t, true));
+                    t => Bool("World hover prompts", ModConfig.LookHintsEnabled, false, t, true),
+                    t => Bool("Station remaining time", ModConfig.LookStationTime, false, t, true));
                 Bunch(
                     t => Bool("Vitals on the hotbar", ModConfig.VitalsEnabled, false, t),
                     t => Bool("Always show stamina", ModConfig.VitalsStaminaAlways, false, t, true),

@@ -13,6 +13,7 @@ public sealed class MapChrome : FeatureModule
 
     private static GameObject? _biomePlate;
     private static Text? _biome;
+    private static Text? _clock;
     private static MapStudio? _studio;
     private static Transform? _shipWindHome;
     private static bool _dressed;
@@ -142,6 +143,7 @@ public sealed class MapChrome : FeatureModule
             Object.Destroy(_biomePlate);
             _biomePlate = null;
             _biome = null;
+            _clock = null;
         }
 
         if (map.m_biomeNameSmall != null)
@@ -258,6 +260,7 @@ public sealed class MapChrome : FeatureModule
         RestlessUi.Pin(_biomePlate, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(168f, 28f));
         _biome = RestlessUi.Label(_biomePlate.transform, "", RestlessUi.HudSize, RestlessUi.Text, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(_biome.gameObject, Vector2.zero, Vector2.one, new Vector2(14f, 2f), new Vector2(-28f, -2f));
+        _clock = RestlessUi.Label(_biomePlate.transform, "", RestlessUi.HudSize, RestlessUi.Muted, TextAnchor.MiddleRight);
     }
 
     private static void Sync(Minimap map)
@@ -268,10 +271,26 @@ public sealed class MapChrome : FeatureModule
         if (_biomePlate != null && _biome != null)
         {
             var text = ModConfig.MapBiomePlate.Value && map.m_biomeNameSmall != null ? map.m_biomeNameSmall.text : "";
+            var clock = ClockText();
             _biome.text = text;
-            _biomePlate.SetActive(PlateOn() && (!string.IsNullOrEmpty(text) || ModConfig.MapWindPlate.Value));
-            if (_biomePlate.activeSelf)
-                RestlessUi.Dock(_biomePlate.GetComponent<RectTransform>(), mapRt, new Vector2(0.5f, 1f), new Vector2(0f, -16f));
+            if (_clock != null)
+                _clock.text = clock;
+            var show = PlateOn() && (!string.IsNullOrEmpty(text) || ModConfig.MapWindPlate.Value || clock.Length > 0);
+            _biomePlate.SetActive(show);
+            if (show)
+            {
+                var wide = clock.Length > 0 ? 220f : 168f;
+                var plate = _biomePlate.GetComponent<RectTransform>();
+                plate.sizeDelta = new Vector2(wide, 28f);
+                var windPad = ModConfig.MapWindPlate.Value ? -28f : -10f;
+                var clockPad = clock.Length > 0 ? 88f : 0f;
+                RestlessUi.Stretch(_biome.gameObject, Vector2.zero, Vector2.one, new Vector2(14f, 2f),
+                    new Vector2(windPad - clockPad, -2f));
+                if (_clock != null)
+                    RestlessUi.Stretch(_clock.gameObject, new Vector2(1f, 0f), Vector2.one,
+                        new Vector2(-clockPad - 4f, 2f), new Vector2(windPad, -2f));
+                RestlessUi.Dock(plate, mapRt, new Vector2(0.5f, 1f), new Vector2(0f, -16f));
+            }
         }
 
         DockMinimapWind(map);
@@ -279,7 +298,18 @@ public sealed class MapChrome : FeatureModule
     }
 
     private static bool PlateOn() =>
-        ModConfig.MapBiomePlate.Value || ModConfig.MapWindPlate.Value;
+        ModConfig.MapBiomePlate.Value || ModConfig.MapWindPlate.Value || ModConfig.MapClock.Value;
+
+    private static string ClockText()
+    {
+        if (!ModConfig.MapClock.Value || EnvMan.instance == null)
+            return "";
+        var day = EnvMan.instance.GetDay();
+        var frac = Mathf.Repeat(EnvMan.instance.GetDayFraction(), 1f);
+        var hours = Mathf.FloorToInt(frac * 24f);
+        var mins = Mathf.FloorToInt((frac * 24f - hours) * 60f);
+        return "Day " + day + " · " + hours.ToString("00") + ":" + mins.ToString("00");
+    }
 
     private static void DockMinimapWind(Minimap map)
     {

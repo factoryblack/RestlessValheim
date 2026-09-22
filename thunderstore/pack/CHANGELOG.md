@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.17
+
+- RestlessCore 0.1.13 and RestlessDrawers 0.1.0. Jötunn stays 2.30.2. Cook, plant and piles unchanged.
+
 ## 0.1.16
 
 - One pack bump: RestlessCore 0.1.12 (idle hammer and Tab skip). Cook, plant and piles unchanged.

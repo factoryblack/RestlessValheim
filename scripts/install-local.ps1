@@ -41,5 +41,18 @@ if (Test-Path $plantDll) {
     Copy-Item $plantDll (Join-Path $plantPlugins 'RestlessPlant.dll') -Force
     Write-Host "installed $(Join-Path $plantPlugins 'RestlessPlant.dll')"
 }
+
+$drawersDll = Join-Path $root 'dist\RestlessDrawers.dll'
+if (Test-Path $drawersDll) {
+    $drawersPlugins = Join-Path $valheimPlugins 'RestlessDrawers'
+    New-Item -ItemType Directory -Force -Path $drawersPlugins | Out-Null
+    Copy-Item $drawersDll (Join-Path $drawersPlugins 'RestlessDrawers.dll') -Force
+    $mesh = Join-Path $drawersPlugins 'mesh'
+    New-Item -ItemType Directory -Force -Path $mesh | Out-Null
+    Get-ChildItem (Join-Path $root 'art\drawers\runtime') -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Extension -in '.rcm', '.png' } |
+        ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
+    Write-Host "installed $(Join-Path $drawersPlugins 'RestlessDrawers.dll')"
+}
 Write-Host 'Launch Valheim from Steam. This install already has BepInEx + Jotunn.'
 Write-Host 'Extra slots ship in this DLL. No sidecars.'

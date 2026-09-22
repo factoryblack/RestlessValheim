@@ -5,7 +5,7 @@
   "description": "Plant berry bushes and forage with the cultivator. Grow a square, pick a patch, see when fruit comes back. Needs RestlessCore.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2350",
-    "ValheimModding-Jotunn-2.30.1",
-    "Restless-RestlessCore-0.1.9"
+    "ValheimModding-Jotunn-2.30.2",
+    "Restless-RestlessCore-0.1.13"
   ]
 }

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+Not published.
+
+- Loadout totals: paper panel, worn-slot armour sources, multiplicative attack bonuses, and a scrollable source reader (PR 20)
+
 ## 0.1.14
 
 - Plant and Piles settings render on their F8 pages (PR 19). Cook and Drawers stay “no configurable settings.”

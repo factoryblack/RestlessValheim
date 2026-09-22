@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+Not published. Needs the matching Core build (SettingsPageApi.RegisterSettings).
+
+- Planting, harvest, grid and personal controls sit on the F8 Plant page (PR 19)
+
 ## 0.1.4
 
 - Grid extras sit on the heightmap instead of a catch-all ray, so a square no longer floats

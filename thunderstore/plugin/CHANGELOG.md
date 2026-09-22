@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+Not published. Core, Plant and Piles must ship together — the new F8 registrations need this Core API.
+
+- Plant and Piles settings render on their F8 pages (PR 19). Cook and Drawers stay “no configurable settings.”
+
 ## 0.1.13
 
 - Tab and chests restore native graphics, TMP, hidden objects and CanvasGroups on undress (PR 17)

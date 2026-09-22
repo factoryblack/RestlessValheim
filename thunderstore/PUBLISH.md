@@ -1,6 +1,8 @@
 # Thunderstore 0.1.17
 
-Signed off 23 Sep 2026. Shipping Core 0.1.13, Drawers 0.1.0, pack 0.1.17.
+Signed off 23 Sep 2026. Live: Core 0.1.13, Drawers 0.1.0, pack 0.1.17.
+
+Next drop is not signed off. PR 19 (Plant/Piles F8 controls) is on main — Core + Plant + Piles must ship together. Do not tag.
 
 Pins live in `versions.yaml`. After a Jötunn or package bump: `python scripts/sync-versions.py`.
 

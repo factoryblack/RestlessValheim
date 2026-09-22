@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+Not published. Needs the matching Core build (SettingsPageApi.RegisterSettings).
+
+- Enabled and deposit range sit on the F8 Piles page (PR 19)
+
 ## 0.1.4
 
 - Fixed stations (kiln, smelter, cooking station, fermenter) not pulling wood/ore/fuel from a nearby pile with `E` — only chests worked. FindCookableItem discovers what to feed a station through NearbyStorage.TryCloneIfPresent, which only clones an ItemData out of a chest's Inventory slot; a pile has no Inventory, just a bare stored count, so it was invisible to that lookup even though Count/TryConsume already knew about piles for crafting. Added the matching pile lookup so stations can find pile-only stock too

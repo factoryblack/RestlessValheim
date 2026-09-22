@@ -267,6 +267,8 @@ public sealed partial class StatSheet : FeatureModule
         var player = Player.m_localPlayer;
         if (player == null || _body == null || _root == null) return;
         var rows = Collect(player);
+        var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        var restoreFocus = selected != null && selected.transform.IsChildOf(_body.transform);
         var rebuild = rows.Count != Views.Count;
         if (!rebuild)
             for (var i = 0; i < rows.Count; i++)
@@ -298,7 +300,16 @@ public sealed partial class StatSheet : FeatureModule
         else
             for (var i = 0; i < rows.Count; i++)
                 if (Views[i].Value.text != rows[i].Value) Views[i].Value.text = rows[i].Value;
-        if (!rows.Exists(row => row.Key == _hover)) _hover = rows.Count > 0 ? rows[0].Key : "";
+        if (!rows.Exists(row => row.Key == _hover))
+        {
+            _hover = rows.Count > 0 ? rows[0].Key : "";
+            if (_detailScroll != null) _detailScroll.content.anchoredPosition = Vector2.zero;
+        }
+        if (rebuild && restoreFocus && EventSystem.current != null)
+        {
+            var focus = Views.Find(view => view.Key == _hover);
+            if (focus != null) EventSystem.current.SetSelectedGameObject(focus.Back.gameObject);
+        }
         PlaceOrigin();
     }
 

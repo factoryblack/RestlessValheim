@@ -387,7 +387,7 @@ public sealed partial class StatSheet
         return name == token || name.Contains("skill_") ? skill.ToString() : name;
     }
     private static string Pair(float now, float max) => N(now) + " / " + N(max);
-    private static string N(float value) => value.ToString("0.##");
+    private static string N(float value) => (Mathf.Abs(value) < 0.005f ? 0f : value).ToString("0.##");
     private static string Signed(float value) => (value > 0.0001f ? "+" : "") + N(value);
     private static string Pct(float value) => Signed(value * 100f) + "%";
     private static string ModName(HitData.DamageModifier mod) => mod switch

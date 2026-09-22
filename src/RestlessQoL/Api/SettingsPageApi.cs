@@ -6,7 +6,7 @@ namespace RestlessQoL.Api;
 
 /// <summary>Optional ecosystem pages. Register on Unity's main thread at startup;
 /// dispose at shutdown. Gameplay settings remain owned/synchronised by each mod.</summary>
-public static class SettingsPageApi
+public static partial class SettingsPageApi
 {
     private static readonly Dictionary<string, SettingsPage> Pages = new();
 

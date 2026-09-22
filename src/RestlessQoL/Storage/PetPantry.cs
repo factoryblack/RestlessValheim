@@ -28,9 +28,8 @@ public sealed class PetPantry : FeatureModule
             if (__instance.m_consumeItems == null || __instance.m_consumeItems.Count == 0)
                 return;
 
-            if (Player.m_localPlayer == null)
-                return;
-            var playerId = Player.m_localPlayer.GetPlayerID();
+            // Dedicated has no local player. playerId 0 skips access, same as stations.
+            var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
             var origin = __instance.transform.position;
             var range = ModConfig.StorageRange.Value;
 

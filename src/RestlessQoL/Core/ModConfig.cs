@@ -178,7 +178,7 @@ public static class ModConfig
         StorageEnabled = AdminBool(config, "Storage", "Enabled", true,
             "Master switch for nearby-container access.");
         StorageRange = AdminFloat(config, "Storage", "Range", 20f, 4f, 50f,
-            "How far to search for containers, in metres.");
+            "How far to search for chests and, unless Piles isolates its own range, resource piles.");
         LeaveOne = AdminBool(config, "Storage", "LeaveOne", true,
             "Leave one item in a stack when pulling, so the chest stays a valid restock target.");
 

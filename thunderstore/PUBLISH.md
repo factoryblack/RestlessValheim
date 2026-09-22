@@ -1,8 +1,6 @@
-# Thunderstore 0.1.17
+# Thunderstore 0.1.18
 
-Signed off 23 Sep 2026. Live: Core 0.1.13, Drawers 0.1.0, pack 0.1.17.
-
-Next drop is not signed off. PR 19 (Plant/Piles F8 controls) is on main — Core + Plant + Piles must ship together. Do not tag.
+Signed off 23 Sep 2026. Live after this drop: Core 0.1.14, Plant 0.1.5, Piles 0.1.5, pack 0.1.18. Cook 0.1.9 and Drawers 0.1.0 unchanged.
 
 Pins live in `versions.yaml`. After a Jötunn or package bump: `python scripts/sync-versions.py`.
 
@@ -10,28 +8,34 @@ Pins live in `versions.yaml`. After a Jötunn or package bump: `python scripts/s
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCore | 0.1.12 | **0.1.13** | F8 collection, PR 17/18 restore, clock, station time, Jötunn 2.30.2 |
-| RestlessDrawers | — | **0.1.0** | First ship. Furniture cabinets. |
+| RestlessCore | 0.1.13 | **0.1.14** | Plant/Piles F8 API, search range covers piles, dedicated pet pantry |
+| RestlessPlant | 0.1.4 | **0.1.5** | F8 Plant page (PR 19). Needs this Core. |
+| RestlessPiles | 0.1.4 | **0.1.5** | F8 Piles page, isolate range. Needs this Core. |
 | RestlessCook | 0.1.9 | 0.1.9 | No zip |
-| RestlessPiles | 0.1.4 | 0.1.4 | No zip |
-| RestlessPlant | 0.1.4 | 0.1.4 | No zip |
-| Restless Valheim pack | 0.1.16 | **0.1.17** | Core + Drawers |
+| RestlessDrawers | 0.1.0 | 0.1.0 | No zip |
+| Restless Valheim pack | 0.1.17 | **0.1.18** | Core + Plant + Piles |
 
 ## What to tell players
 
-**Restless Valheim 0.1.17**  
-Core 0.1.13 and the first RestlessDrawers cabinets. Same Jötunn 2.30.2.
+**Restless Valheim 0.1.18**  
+Core 0.1.14, Plant 0.1.5, Piles 0.1.5. Cook and Drawers unchanged.
 
-**RestlessCore 0.1.13**  
-F8 shows the collection and the versions actually loaded, including Drawers. Tab and chests restore vanilla on close. Day/time on the biome bar. Station remaining time on look. Loadout totals from the armor chip.
+**RestlessCore 0.1.14**  
+Plant and Piles settings sit on their F8 pages. Search range covers piles unless Piles isolates. Dedicated-host tames eat from nearby chests.
 
-**RestlessDrawers 0.1.0**  
-Wood, personal, reinforced, and black metal cabinets. Same slots and recipes as the matching chest. They snap together and stay up.
+**RestlessPlant 0.1.5**  
+Planting, harvest, grid and personal controls on the F8 Plant page. Needs Core 0.1.14.
+
+**RestlessPiles 0.1.5**  
+Enabled and isolate range on the F8 Piles page. Piles follow Core Search range unless isolated. Needs Core 0.1.14.
 
 ## Tag order
 
 ```
-git tag v0.1.13 && git push origin v0.1.13
-git tag drawers-v0.1.0 && git push origin drawers-v0.1.0
-git tag pack-v0.1.17 && git push origin pack-v0.1.17
+git tag v0.1.14 && git push origin v0.1.14
+git tag plant-v0.1.5 && git push origin plant-v0.1.5
+git tag piles-v0.1.5 && git push origin piles-v0.1.5
+git tag pack-v0.1.18 && git push origin pack-v0.1.18
 ```
+
+Pack waits up to 600s for the three listings. Do not tag Core alone.

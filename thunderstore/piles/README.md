@@ -19,6 +19,6 @@ A stone pile only takes stone. A wood stack only takes wood. Empty is fine: the 
 
 Wood, finewood, core wood, yggdrasil, ashwood, stone, coal, black marble, grausten, bones, skulls, and the coin piles are included — anything that is a `_stack` or `_pile` and costs one stackable resource.
 
-Host-locked toggle and range live in the BepInEx config.
+Host-locked toggle. Range follows Core Search range unless Isolate pile range is on (F8).
 
 Install the **Restless Valheim** modpack, or Core then this. This package does not replace RestlessCore.

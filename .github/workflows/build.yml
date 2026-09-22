@@ -290,7 +290,7 @@ jobs:
               latest = (listing or {}).get("latest") or {}
               return latest.get("version_number") == version
 
-          deadline = time.time() + 300
+          deadline = time.time() + 600
           while pending and time.time() < deadline:
               still = []
               for namespace, name, version in pending:

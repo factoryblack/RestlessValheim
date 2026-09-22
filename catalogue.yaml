@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-23 — expansion F8 controls bind existing Plant/Piles config; host/local scope preserved.
+# last_audit: 2026-09-23 — Shipped Core 0.1.14, Plant 0.1.5, Piles 0.1.5, pack 0.1.18.
 
 updated: 2026-09-23
 
@@ -206,7 +206,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-PetPantry
-    note: "Hungry tames pull one matching stack from chests in Storage.Range. AI owner sends RestlessPull if it does not own the chest. LeaveOne applies. Dedicated with no local player does not pull (was playerId 0 / skip access). Not playtested."
+    note: "Hungry tames pull one matching stack from chests in Storage.Range. AI owner sends RestlessPull if it does not own the chest. LeaveOne applies. Dedicated with no local player uses playerId 0 (skip access), same as stations. Playtested."
 
   - id: storage.ground_vacuum
     name: Ground loot into chests
@@ -415,7 +415,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-Azus_UnOfficial_ConfigManager
-    note: "Plant (21) and Piles (2) existing settings now render directly on module pages via disposable RegisterSettings sections. Shared switches/sliders/key capture, event-driven value refresh, independent addon host locks, personal controls and startup restart labels; Cook/Drawers show no configurable settings. See docs/expansion-settings.md; Unity/host-client tests pending. F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
+    note: "Plant (21) and Piles (3: enable, isolate range, pile range) existing settings now render directly on module pages via disposable RegisterSettings sections. Piles follow Core Search range unless isolated. Shared switches/sliders/key capture, event-driven value refresh, independent addon host locks, personal controls and startup restart labels; Cook/Drawers show no configurable settings. See docs/expansion-settings.md. F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
 
   # --- vanilla 1.0 ---
   - id: inventory.extra_rows

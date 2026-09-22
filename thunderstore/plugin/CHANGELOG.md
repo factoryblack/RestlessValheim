@@ -1,10 +1,10 @@
 # Changelog
 
-## Unreleased
-
-Not published. Core, Plant and Piles must ship together — the new F8 registrations need this Core API.
+## 0.1.14
 
 - Plant and Piles settings render on their F8 pages (PR 19). Cook and Drawers stay “no configurable settings.”
+- Core Search range also covers piles unless Piles isolates its own range
+- Dedicated-host tames eat from nearby chests again (no local player used to skip the pull)
 
 ## 0.1.13
 

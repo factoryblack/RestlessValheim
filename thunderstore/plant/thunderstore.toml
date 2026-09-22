@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessPlant"
-versionNumber = "0.1.4"
+versionNumber = "0.1.5"
 description = "Berry bushes and forage on the cultivator, plus a planting square, bulk harvest, and replant. Needs RestlessCore."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
@@ -12,7 +12,7 @@ containsNsfwContent = false
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2350"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.1.13"
+Restless-RestlessCore = "0.1.14"
 
 [build]
 icon = "./icon.png"

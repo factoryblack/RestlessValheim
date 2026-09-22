@@ -1,8 +1,6 @@
 # Changelog
 
-## Unreleased
-
-Not published. Needs the matching Core build (SettingsPageApi.RegisterSettings).
+## 0.1.5
 
 - Planting, harvest, grid and personal controls sit on the F8 Plant page (PR 19)
 

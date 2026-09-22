@@ -1,10 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.5
 
-Not published. Needs the matching Core build (SettingsPageApi.RegisterSettings).
-
-- Enabled and deposit range sit on the F8 Piles page (PR 19)
+- Enabled, isolate pile range, and pile range sit on the F8 Piles page (PR 19)
+- Piles use Core Search range unless Isolate pile range is on (no more max-of-both)
 
 ## 0.1.4
 

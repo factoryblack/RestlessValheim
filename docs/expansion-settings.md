@@ -6,7 +6,8 @@ page. There are no duplicate configuration files or new gameplay rules.
 
 - Plant: 21 current entries, grouped into Planting, Harvesting, Your planting grid,
   and Your controls and hints. The obsolete GridSize migration entry is excluded.
-- Piles: Enabled and deposit range.
+- Piles: Enabled, isolate pile range, and pile range. Piles use Core Search
+  range unless isolate is on.
 - Cook and Drawers: explicit `No configurable settings.` when loaded.
 - An older Plant/Piles build without registration prompts the player to update
   that expansion alongside Core, rather than falsely claiming it has no settings.
@@ -60,7 +61,7 @@ Install the matching Core, Plant and Piles DLLs from this build together: the ne
 addon registrations depend on the new Core API. No release versions are bumped
 by this PR. Existing config values, defaults, paths and Jotunn metadata are unchanged.
 
-Local checks cover C# parsing, all 23 current settings registered exactly once,
+Local checks cover C# parsing, all 24 current settings registered exactly once,
 and host/local classifications matching their existing config metadata. The
 repository PR workflow is the compilation gate against real Valheim assemblies.
 Unity and host/client playtests are still required:

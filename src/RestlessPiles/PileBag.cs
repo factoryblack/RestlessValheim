@@ -30,7 +30,7 @@ internal static class PileBag
         var player = Player.m_localPlayer;
         if (player == null || string.IsNullOrEmpty(sharedName) || !PileConfig.On)
             return 0;
-        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var range = PileConfig.Nearby;
         var total = 0;
         foreach (var box in PileBox.All)
         {
@@ -58,7 +58,7 @@ internal static class PileBag
         var player = Player.m_localPlayer;
         if (player == null || drop?.m_itemData?.m_shared == null || !PileConfig.On)
             return false;
-        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var range = PileConfig.Nearby;
         var name = drop.m_itemData.m_shared.m_name;
         foreach (var box in PileBox.All)
         {
@@ -81,7 +81,7 @@ internal static class PileBag
         var player = Player.m_localPlayer;
         if (player == null || amount <= 0 || !PileConfig.On)
             return 0;
-        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var range = PileConfig.Nearby;
         var taken = 0;
         foreach (var box in PileBox.All)
         {
@@ -217,7 +217,7 @@ internal static class PileBag
             return 0;
 
         var origin = player.transform.position;
-        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var range = PileConfig.Nearby;
         var moved = 0;
         ItemDrop.ItemData? last = null;
         var credit = new System.Collections.Generic.Dictionary<PileBox, (int N, ItemDrop.ItemData Sample)>();
@@ -266,7 +266,7 @@ internal static class PileBag
             return;
         _nextVacuum = Time.time + ModConfig.VacuumInterval.Value;
         var origin = player.transform.position;
-        var range = Mathf.Max(PileConfig.Range.Value, ModConfig.StorageRange.Value);
+        var range = PileConfig.Nearby;
         foreach (var drop in ItemDrop.s_instances.ToArray())
         {
             if (drop?.m_itemData?.m_shared == null || drop.m_nview == null || !drop.m_nview.IsValid())

@@ -36,7 +36,7 @@ public sealed partial class SettingsUi
         _captureEditable = null;
     }
 
-    private static void ObserveSetting(ConfigEntryBase entry, Selectable control,
+    private static void ObserveSetting<T>(ConfigEntry<T> entry, Selectable control,
         Func<bool>? editable, Action repaint)
     {
         if (editable == null) return; // Core controls retain their existing behaviour.

@@ -90,6 +90,9 @@ jobs:
           </Project>
           EOF
 
+      - name: Loadout arithmetic regressions
+        run: dotnet run --project tests/LoadoutMath.Tests -c Release
+
       - name: Release build
         run: |
           dotnet build src/RestlessQoL/RestlessQoL.csproj -c Release --nologo

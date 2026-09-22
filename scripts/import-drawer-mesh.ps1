@@ -72,3 +72,6 @@ foreach ($id in $ids) {
     }
     finally { $zip.Dispose() }
 }
+
+python (Join-Path $PSScriptRoot 'pack-drawer-surface.py')
+if ($LASTEXITCODE -ne 0) { throw "surface pack failed" }

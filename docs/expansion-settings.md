@@ -7,7 +7,7 @@ page. There are no duplicate configuration files or new gameplay rules.
 - Plant: 21 current entries, grouped into Planting, Harvesting, Your planting grid,
   and Your controls and hints. The obsolete GridSize migration entry is excluded.
 - Piles: Enabled, isolate pile range, and pile range. Piles use Core Search
-  range unless isolate is on.
+  range unless isolate is on. The pile range slider stays hidden until isolate is on.
 - Cook and Drawers: explicit `No configurable settings.` when loaded.
 - An older Plant/Piles build without registration prompts the player to update
   that expansion alongside Core, rather than falsely claiming it has no settings.

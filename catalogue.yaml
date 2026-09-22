@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-23 — loadout source attribution, modifier arithmetic and paper panel revision.
+# last_audit: 2026-09-23 — Core 0.1.15, Piles 0.1.6, Drawers 0.1.1. Layout dumps follow the Jötunn debug switch. Pile range hides until isolate. Drawer cabinets take a metal/smoothness map.
 
 updated: 2026-09-23
 
@@ -415,7 +415,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-Azus_UnOfficial_ConfigManager
-    note: "Plant (21) and Piles (3: enable, isolate range, pile range) existing settings now render directly on module pages via disposable RegisterSettings sections. Piles follow Core Search range unless isolated. Shared switches/sliders/key capture, event-driven value refresh, independent addon host locks, personal controls and startup restart labels; Cook/Drawers show no configurable settings. See docs/expansion-settings.md. F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
+    note: "Plant (21) and Piles (3: enable, isolate range, pile range) existing settings now render directly on module pages via disposable RegisterSettings sections. Piles follow Core Search range unless isolated; the pile range slider stays hidden until Isolate is on. Shared switches/sliders/key capture, event-driven value refresh, independent addon host locks, personal controls and startup restart labels; Cook/Drawers show no configurable settings. See docs/expansion-settings.md. F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
 
   # --- vanilla 1.0 ---
   - id: inventory.extra_rows
@@ -502,7 +502,31 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessDrawers
-    note: "RestlessDrawers 0.1.0 first ship with pack 0.1.17. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Snap pitch is the neighbour's visual size minus a 4cm overlap. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
+    note: "RestlessDrawers 0.1.1. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Snap pitch is the neighbour's visual size minus a 4cm overlap. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Surface map is Meshy metal (red) and flipped roughness (alpha) on that shader, so bands can catch light. Hammer icons have the black plate removed. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
+
+  - id: cook.meals
+    name: Restless cooking
+    decision: sidecar
+    in_mod: done
+    bite: 2
+    restless: Restless-RestlessCook
+    note: "RestlessCook 0.1.9. Meals, sideboards, and feasts from Meadows through Ashlands. Needs Core. No F8 settings. Deep North waits. Not in the Core DLL."
+
+  - id: piles.stacks
+    name: Uncapped resource piles
+    decision: sidecar
+    in_mod: done
+    bite: 2
+    restless: Restless-RestlessPiles
+    note: "RestlessPiles 0.1.6. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. Nearby range follows Core Search range unless Isolate pile range is on; the F8 slider hides until then. Needs Core 0.1.15. Not a chest."
+
+  - id: plant.forage
+    name: Cultivator forage and bushes
+    decision: sidecar
+    in_mod: done
+    bite: 2
+    restless: Restless-RestlessPlant
+    note: "RestlessPlant 0.1.5. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest and snap ranges stay their own settings. Needs Core."
 
   - id: skip.collectors
     name: Crystal / feather / guck / tar collectors

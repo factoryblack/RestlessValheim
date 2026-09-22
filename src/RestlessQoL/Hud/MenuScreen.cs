@@ -82,7 +82,7 @@ public sealed class MenuScreen : FeatureModule
 
     private static void DumpOnce(Menu menu)
     {
-        if (_dumped || menu.m_root == null)
+        if (_dumped || !ModConfig.JotunnDebug.Value || menu.m_root == null)
             return;
         _dumped = true;
         var root = menu.m_root;

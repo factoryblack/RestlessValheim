@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessPiles"
-versionNumber = "0.1.5"
+versionNumber = "0.1.6"
 description = "Wood stacks and stone piles become uncapped stores. E opens a tray; Take stack grabs one bag stack. Needs RestlessCore."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
@@ -12,7 +12,7 @@ containsNsfwContent = false
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2350"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.1.14"
+Restless-RestlessCore = "0.1.15"
 
 [build]
 icon = "./icon.png"

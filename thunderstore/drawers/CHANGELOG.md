@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.1
+
+- Drawer cabinets use the Meshy metal and roughness pictures, folded into the chest shader's surface map, so bands can catch light and wood stays duller
+- Hammer icons no longer carry a black plate behind the cabinet
+
 ## 0.1.0
 
 - Wood, personal, reinforced, and black metal drawers clone their matching vanilla chests

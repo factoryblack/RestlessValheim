@@ -96,6 +96,7 @@ public sealed partial class SettingsUi
                     && ReferenceEquals(sections, SettingsPageApi.SettingsFor(page.PluginGuid))
                     && (!option.HostControlled || ExpansionHostCanEdit());
                 var label = option.Label + (option.RequiresRestart ? " (restart)" : "");
+                var before = _body!.transform.childCount;
                 switch (option.Entry)
                 {
                     case ConfigEntry<bool> entry:
@@ -111,9 +112,26 @@ public sealed partial class SettingsUi
                         KeyOnly(label, entry, editable: editable);
                         break;
                 }
+                if (option.Visible != null && _body.transform.childCount > before)
+                    TrackVisible(_body.transform.GetChild(_body.transform.childCount - 1).gameObject, option.Visible);
             }
         }
         return true;
+    }
+
+    private static void TrackVisible(GameObject shell, Func<bool> visible)
+    {
+        void Apply()
+        {
+            if (shell == null) return;
+            var show = visible();
+            if (shell.activeSelf == show) return;
+            shell.SetActive(show);
+            if (_body != null)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(_body.GetComponent<RectTransform>());
+        }
+        SettingRefresh.Add(Apply);
+        Apply();
     }
 
     private static void IntegerStep(string title, string unit, ConfigEntry<int> entry, Func<bool> editable)

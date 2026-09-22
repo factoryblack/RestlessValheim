@@ -29,7 +29,7 @@ internal static class DrawerVisual
         filter.sharedMesh = mesh;
         var rend = visual.GetComponent<MeshRenderer>() ?? visual.AddComponent<MeshRenderer>();
         rend.enabled = true;
-        Paint(rend, albedo, mat);
+        Paint(rend, albedo, DrawerMesh.Surface(row.Id), mat);
 
         foreach (var other in prefab.GetComponentsInChildren<Renderer>(true))
         {
@@ -84,7 +84,7 @@ internal static class DrawerVisual
         return visual;
     }
 
-    private static void Paint(Renderer renderer, Texture2D? albedo, Material? mat)
+    private static void Paint(Renderer renderer, Texture2D? albedo, Texture2D? surface, Material? mat)
     {
         if (mat == null)
             return;
@@ -92,9 +92,6 @@ internal static class DrawerVisual
         SetColor(mat, "_Color", Color.white);
         SetColor(mat, "_BaseColor", Color.white);
         SetColor(mat, "_Tint", Color.white);
-        SetFloat(mat, "_Metallic", 0f);
-        SetFloat(mat, "_Glossiness", 0.12f);
-        SetFloat(mat, "_Smoothness", 0.12f);
         MuteGlow(mat);
         if (albedo != null)
         {
@@ -104,6 +101,26 @@ internal static class DrawerVisual
                 mat.SetTexture("_BaseMap", albedo);
             if (mat.HasProperty("_Diffuse"))
                 mat.SetTexture("_Diffuse", albedo);
+        }
+
+        if (surface != null)
+        {
+            if (mat.HasProperty("_MetallicTex"))
+                mat.SetTexture("_MetallicTex", surface);
+            if (mat.HasProperty("_MetallicGlossMap"))
+                mat.SetTexture("_MetallicGlossMap", surface);
+            // The map is the authority. A 0.12 gloss slider would crush it.
+            SetFloat(mat, "_Metallic", 1f);
+            SetFloat(mat, "_MetallicAlphaGloss", 1f);
+            SetFloat(mat, "_Glossiness", 1f);
+            SetFloat(mat, "_Smoothness", 1f);
+            mat.EnableKeyword("_METALLICGLOSSMAP");
+        }
+        else
+        {
+            SetFloat(mat, "_Metallic", 0f);
+            SetFloat(mat, "_Glossiness", 0.12f);
+            SetFloat(mat, "_Smoothness", 0.12f);
         }
 
         renderer.sharedMaterial = mat;

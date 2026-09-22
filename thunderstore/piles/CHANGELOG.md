@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Pile range stays off the F8 page until Isolate pile range is on. Needs Core 0.1.15.
+
 ## 0.1.5
 
 - Enabled, isolate pile range, and pile range sit on the F8 Piles page (PR 19)

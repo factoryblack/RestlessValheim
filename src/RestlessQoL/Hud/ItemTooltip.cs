@@ -209,6 +209,7 @@ public sealed class ItemTooltip : FeatureModule
         var inner = _width - Pad * 2f;
         var title = Soft(item.m_shared.m_name);
         var blurb = Soft(item.m_shared.m_description).Trim();
+        var set = SplitSet(ref raw, item);
         Parse(raw, title, blurb, out var stats, out var chips, out var notes);
         var category = TypeName(item.m_shared.m_itemType);
         if (category == title) category = "";
@@ -316,6 +317,7 @@ public sealed class ItemTooltip : FeatureModule
             Divider(_body.transform);
             Paragraph(_body.transform, string.Join("\n", notes), inner, RestlessUi.Text);
         }
+        if (set != null) SetPanel(_body.transform, set, inner);
         ContributionSections(_body.transform, contributions, inner);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(_body.GetComponent<RectTransform>());
@@ -517,6 +519,7 @@ public sealed class ItemTooltip : FeatureModule
     {
         var contributions = item != null ? TooltipApi.Collect(item) : new List<TooltipContribution>();
         ContributionBadges(parent, contributions, width);
+        var set = item != null ? SplitSet(ref raw, item) : null;
         Parse(raw, "", "", out var stats, out var chips, out var notes);
         if (notes.Count > 0) Paragraph(parent, string.Join("\n", notes), width, RestlessUi.PaperMuted, CopySize + 2);
         if (stats.Count > 0)
@@ -533,6 +536,7 @@ public sealed class ItemTooltip : FeatureModule
                 Hold(row, DamageChip(row.transform, chip.label, chip.value, 0f, width));
             }
         }
+        if (set != null) SetPanel(parent, set, width);
         ContributionSections(parent, contributions, width);
     }
 
@@ -544,6 +548,7 @@ public sealed class ItemTooltip : FeatureModule
         var text = new StringBuilder();
         // Length-prefix fields so arbitrary extension text cannot collide at separators.
         void Add(string value) { text.Append(value.Length).Append(':').Append(value); }
+        Add(SetStateKey(item));
         Add(raw); Add(Soft(item.m_shared.m_name)); Add(Soft(item.m_shared.m_description));
         Add(item.m_quality.ToString()); Add(item.m_stack.ToString()); Add(item.m_durability.ToString("R"));
         Add(SlotLock.Held(item).ToString()); Add(width.ToString("R")); Add(maxHeight.ToString("R"));
@@ -559,6 +564,92 @@ public sealed class ItemTooltip : FeatureModule
             }
         }
         return text.ToString();
+    }
+
+    private static readonly System.Reflection.MethodInfo? SetCountMethod =
+        AccessTools.Method(typeof(Humanoid), "GetSetCount", new[] { typeof(string) });
+
+    // Count only actually equipped native slots (including ExtraSlots), never the
+    // hovered inventory/recipe item as if it were equipped. Polling is caller-throttled.
+    internal static string SetStateKey(ItemDrop.ItemData? item)
+    {
+        if (item?.m_shared?.m_setStatusEffect == null) return "";
+        var set = item.m_shared;
+        var player = Player.m_localPlayer;
+        if (player == null) return set.m_setName + ":preview:" + set.m_setSize;
+        var count = SetCountMethod?.Invoke(player, new object[] { set.m_setName }) as int?;
+        var active = player.GetSEMan().HaveStatusEffect(set.m_setStatusEffect.NameHash());
+        return set.m_setName + ":" + count + ":" + set.m_setSize + ":" + active;
+    }
+
+    private sealed class SetPresentation
+    {
+        internal string Name = "";
+        internal string Body = "";
+        internal int Required;
+        internal int? Equipped;
+        internal bool Active;
+    }
+
+    private static SetPresentation? SplitSet(ref string raw, ItemDrop.ItemData item)
+    {
+        var shared = item.m_shared;
+        var effect = shared.m_setStatusEffect;
+        if (effect == null || shared.m_setSize <= 0) return null;
+        // GetTooltip has already set the effect's preview level. Do not mutate
+        // the effect or remove/reapply gear merely to render this section.
+        var body = Soft(effect.GetTooltipString()).Trim();
+        var name = Soft(effect.m_name).Trim();
+        var header = Soft("$item_seteffect") + " (" + shared.m_setSize + " " + Soft("$item_parts") + "): " + name;
+        if (!TooltipSetBlock.TrySplit(Soft(raw), header, body, out var remaining)) return null;
+        raw = remaining;
+        var player = Player.m_localPlayer;
+        return new SetPresentation
+        {
+            Name = name, Body = body, Required = shared.m_setSize,
+            Equipped = player != null ? SetCountMethod?.Invoke(player, new object[] { shared.m_setName }) as int? : null,
+            Active = player != null && player.GetSEMan().HaveStatusEffect(effect.NameHash())
+        };
+    }
+
+    private static void SetPanel(Transform parent, SetPresentation set, float width)
+    {
+        // One quiet inset well. The same measured rows/chips stay inside the set
+        // boundary, so percentage damage cannot look like this piece's own damage.
+        var panel = RestlessUi.Tray(parent, "setBonus", false);
+        var layout = panel.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(14, 14, 12, 12);
+        layout.spacing = 6f;
+        layout.childControlWidth = layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        var tint = set.Active ? RestlessUi.Hex(0xB2C982) : RestlessUi.PaperMuted;
+        var edge = RestlessUi.Graphic(panel.transform, "setEdge", tint, false);
+        edge.AddComponent<LayoutElement>().ignoreLayout = true;
+        RestlessUi.Stretch(edge, Vector2.zero, new Vector2(0f, 1f), Vector2.zero, new Vector2(2f, 0f));
+        var inner = Mathf.Max(80f, width - 28f);
+        Paragraph(panel.transform, "SET BONUS", inner, tint, RestlessUi.HudMeta);
+        Paragraph(panel.transform, set.Name, inner, RestlessUi.Text, CopySize + 3);
+        var state = set.Equipped.HasValue
+            ? (set.Active ? "Active" : "Inactive") + " · " + set.Equipped.Value + "/" + set.Required + " equipped"
+            : set.Required + " pieces required";
+        Paragraph(panel.transform, state, inner, tint, RestlessUi.HudMeta);
+        Paragraph(panel.transform, "Requires " + set.Required + " equipped pieces. Applies once for the set.",
+            inner, RestlessUi.PaperMuted, RestlessUi.HudMeta);
+        Parse(set.Body, "", "", out var stats, out var chips, out var notes);
+        foreach (var stat in stats) StatRow(panel.transform, stat.label, stat.value, inner);
+        var columns = inner >= 280f ? 2 : 1;
+        for (var i = 0; i < chips.Count; i += columns)
+        {
+            var row = RestlessUi.Node(panel.transform, "setDamage");
+            var cellWidth = (inner - (columns - 1) * 8f) / columns;
+            var height = DamageChip(row.transform, chips[i].label, chips[i].value, 0f, cellWidth);
+            if (columns == 2 && i + 1 < chips.Count)
+                height = Mathf.Max(height, DamageChip(row.transform, chips[i + 1].label, chips[i + 1].value, cellWidth + 8f, cellWidth));
+            Hold(row, height);
+        }
+        if (notes.Count > 0) Paragraph(panel.transform, string.Join("\n", notes), inner, RestlessUi.PaperMuted, RestlessUi.HudMeta);
+        // Parent layout measures this layout group, including all wrapped children.
     }
 
     private static void Parse(string raw, string title, string description, out List<(string label, string value)> stats,

@@ -24,6 +24,7 @@ public sealed partial class BuildMenu : FeatureModule
     private static readonly List<RestlessControlFeedback> Feedback = new();
     private static bool _dressed;
     private static bool _dumped;
+    private static int _syncStamp = int.MinValue;
 
     protected override void OnLoaded()
     {
@@ -55,6 +56,7 @@ public sealed partial class BuildMenu : FeatureModule
             if (!Open(__instance))
             {
                 ClearHover();
+                _syncStamp = int.MinValue;
                 return;
             }
 
@@ -64,7 +66,12 @@ public sealed partial class BuildMenu : FeatureModule
                 _dressed = true;
             }
 
-            Sync(__instance);
+            // Vanilla UpdateBuild runs every frame. Re-dress only when the
+            // category, hover, search, or selected piece actually changed.
+            if (NeedsSync(__instance))
+                Sync(__instance);
+            else
+                RefreshHoverLive(__instance);
             KeepQuiet();
         }
     }
@@ -119,6 +126,62 @@ public sealed partial class BuildMenu : FeatureModule
         parts.Reverse();
         return string.Join("/", parts);
     }
+
+    private static bool NeedsSync(global::Hud hud)
+    {
+        var stamp = Stamp(hud);
+        if (stamp == _syncStamp)
+            return false;
+        _syncStamp = stamp;
+        return true;
+    }
+
+    private static int Stamp(global::Hud hud)
+    {
+        unchecked
+        {
+            var h = 17;
+            h = h * 31 + Screen.width;
+            h = h * 31 + Screen.height;
+            h = MixCopy(h, hud.m_buildSelection != null ? hud.m_buildSelection.text : null);
+            h = MixCopy(h, hud.m_pieceDescription != null ? hud.m_pieceDescription.text : null);
+            var ui = hud.m_buildUi;
+            if (ui == null)
+                return h;
+            h = h * 31 + (ui.m_lastSelectedPieceBtn != null ? ui.m_lastSelectedPieceBtn.GetInstanceID() : 0);
+            h = h * 31 + (ui.m_currentHoveredPieceButton != null ? ui.m_currentHoveredPieceButton.GetInstanceID() : 0);
+            h = h * 31 + ui.m_currentTagId;
+            if (ui.m_searchField is Component field)
+            {
+                var tmp = field.GetComponent<TMP_InputField>();
+                if (tmp != null) h = MixCopy(h, tmp.text);
+                else
+                {
+                    var legacy = field.GetComponent<InputField>();
+                    if (legacy != null) h = MixCopy(h, legacy.text);
+                }
+            }
+            var live = 0;
+            if (ui.m_pieceButtons != null)
+                foreach (var piece in ui.m_pieceButtons)
+                    if (piece != null && piece.gameObject.activeInHierarchy)
+                        live++;
+            h = h * 31 + live;
+            if (ui.m_tabContainer != null)
+                for (var i = 0; i < ui.m_tabContainer.childCount; i++)
+                {
+                    var child = ui.m_tabContainer.GetChild(i);
+                    if (child == null) continue;
+                    var selected = child.Find("Selected");
+                    if (selected != null && selected.gameObject.activeInHierarchy)
+                        h = h * 31 + child.GetInstanceID();
+                }
+            return h;
+        }
+    }
+
+    private static int MixCopy(int h, string? text) =>
+        h * 31 + (string.IsNullOrEmpty(text) ? 0 : text.GetHashCode());
 
     private static void Sync(global::Hud hud)
     {
@@ -597,6 +660,7 @@ public sealed partial class BuildMenu : FeatureModule
         Hidden.Clear();
         Silenced.Clear();
         _dressed = false;
+        _syncStamp = int.MinValue;
     }
 }
 

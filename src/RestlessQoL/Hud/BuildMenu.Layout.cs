@@ -6,8 +6,16 @@ namespace RestlessQoL.HudTweaks;
 
 public sealed partial class BuildMenu
 {
+    private static Vector2 _fitSize;
+    private static float _fitFooter, _fitBottom, _fitWidth;
+
     private static float FitBuildGrid(global::Hud hud, RectTransform host, float footerTop, out float gridWidth)
     {
+        if (_fitWidth > 1f && host.rect.size == _fitSize && Mathf.Approximately(footerTop, _fitFooter))
+        {
+            gridWidth = _fitWidth;
+            return _fitBottom;
+        }
         gridWidth = 0f;
         var ui = hud.m_buildUi;
         if (ui == null || ui.transform is not RectTransform root) return footerTop;
@@ -52,6 +60,10 @@ public sealed partial class BuildMenu
             root.position += host.TransformVector(new Vector3(0f, drop, 0f));
             gridBottom = footerTop;
         }
+        _fitSize = host.rect.size;
+        _fitFooter = footerTop;
+        _fitBottom = gridBottom;
+        _fitWidth = gridWidth;
         return gridBottom;
     }
 

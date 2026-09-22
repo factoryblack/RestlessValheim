@@ -18,6 +18,9 @@ public sealed partial class BuildMenu
     private static readonly Dictionary<RectTransform, (Vector3 scale, Vector3 position)> MenuGeometry = new();
     private static readonly Dictionary<RectTransform, (Vector2 min, Vector2 max, Vector2 pivot, Vector2 size, Vector3 position)> BarGeometry = new();
     private static string _detailKey = "";
+    private static string _costScanKey = "";
+    private static readonly List<Transform> CostSlots = new();
+    private static readonly List<Graphic> NativeDetails = new();
 
     private static void DressHover(global::Hud hud)
     {
@@ -84,6 +87,14 @@ public sealed partial class BuildMenu
         HideNativeDetails(hud);
     }
 
+    private static void RefreshHoverLive(global::Hud hud)
+    {
+        if (_hoverPaper == null || !_hoverPaper.activeSelf) return;
+        for (var i = 0; i < CostSlots.Count && i < CostRows.Count; i++)
+            RefreshCostAmount(CostRows[i], CostSlots[i]);
+        HideNativeDetails(hud);
+    }
+
     private static void EnsureDetails(RectTransform host)
     {
         if (_hoverPaper != null) return;
@@ -133,14 +144,20 @@ public sealed partial class BuildMenu
 
     private static float PaintCosts(global::Hud hud, float width)
     {
-        var slots = new List<Transform>();
-        foreach (var text in hud.m_buildHud.GetComponentsInChildren<TMP_Text>(true))
+        if (_costScanKey != _detailKey)
         {
-            if (!text.gameObject.activeInHierarchy || text.name.ToLowerInvariant() != "res_name"
-                || Owned(text.transform) || string.IsNullOrWhiteSpace(text.text)) continue;
-            if (hud.m_buildUi != null && text.transform.IsChildOf(hud.m_buildUi.transform)) continue;
-            if (text.transform.parent != null && !slots.Contains(text.transform.parent)) slots.Add(text.transform.parent);
+            CostSlots.Clear();
+            foreach (var text in hud.m_buildHud.GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (!text.gameObject.activeInHierarchy || text.name.ToLowerInvariant() != "res_name"
+                    || Owned(text.transform) || string.IsNullOrWhiteSpace(text.text)) continue;
+                if (hud.m_buildUi != null && text.transform.IsChildOf(hud.m_buildUi.transform)) continue;
+                if (text.transform.parent != null && !CostSlots.Contains(text.transform.parent))
+                    CostSlots.Add(text.transform.parent);
+            }
+            _costScanKey = _detailKey;
         }
+        var slots = CostSlots;
         var cols = slots.Count >= 2 ? 2 : 1;
         var gutter = cols > 1 ? 12f : 0f;
         var colW = (width - gutter * (cols - 1)) / cols;
@@ -221,6 +238,18 @@ public sealed partial class BuildMenu
         RestlessUi.BoundedLabel(countFace, 16, 14);
     }
 
+    private static void RefreshCostAmount(GameObject go, Transform slot)
+    {
+        var amount = RestlessUi.Deep<TMP_Text>(slot, "res_amount");
+        var countFace = go.transform.Find("count")?.GetComponent<Text>();
+        if (countFace == null) return;
+        var hasCount = amount != null && amount.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(amount.text);
+        var next = hasCount ? amount!.text : "";
+        if (countFace.text == next) return;
+        countFace.text = next;
+        countFace.color = SourceColour(amount, RestlessUi.Accent);
+    }
+
     private static Color SourceColour(Graphic? source, Color neutral)
     {
         if (source == null) return neutral;
@@ -238,14 +267,23 @@ public sealed partial class BuildMenu
             && !hud.m_pieceDescription.transform.IsChildOf(detailRoot)) detailRoot = detailRoot.parent;
         if (detailRoot == hud.m_buildHud.transform
             || detailRoot != null && hud.m_buildUi != null && hud.m_buildUi.transform.IsChildOf(detailRoot)) detailRoot = null;
-        foreach (var graphic in hud.m_buildHud.GetComponentsInChildren<Graphic>(true))
+        if (NativeDetails.Count == 0)
         {
-            if (Owned(graphic.transform)) continue;
-            if (hud.m_buildUi != null && graphic.transform.IsChildOf(hud.m_buildUi.transform)) continue;
-            if (hud.m_pieceSelectionWindow != null && graphic.transform.IsChildOf(hud.m_pieceSelectionWindow.transform)
-                && (detailRoot == null || !graphic.transform.IsChildOf(detailRoot))) continue;
-            if (!DetailAlpha.ContainsKey(graphic)) DetailAlpha.Add(graphic, graphic.color.a);
+            foreach (var graphic in hud.m_buildHud.GetComponentsInChildren<Graphic>(true))
+            {
+                if (Owned(graphic.transform)) continue;
+                if (hud.m_buildUi != null && graphic.transform.IsChildOf(hud.m_buildUi.transform)) continue;
+                if (hud.m_pieceSelectionWindow != null && graphic.transform.IsChildOf(hud.m_pieceSelectionWindow.transform)
+                    && (detailRoot == null || !graphic.transform.IsChildOf(detailRoot))) continue;
+                NativeDetails.Add(graphic);
+                if (!DetailAlpha.ContainsKey(graphic)) DetailAlpha.Add(graphic, graphic.color.a);
+            }
+        }
+        foreach (var graphic in NativeDetails)
+        {
+            if (graphic == null) continue;
             var c = graphic.color;
+            if (c.a == 0f) continue;
             c.a = 0f;
             graphic.color = c;
         }
@@ -261,6 +299,10 @@ public sealed partial class BuildMenu
             pair.Key.color = c;
         }
         DetailAlpha.Clear();
+        NativeDetails.Clear();
+        CostSlots.Clear();
+        _costScanKey = "";
+        _fitWidth = 0f;
         foreach (var pair in MenuGeometry)
             if (pair.Key != null) { pair.Key.localScale = pair.Value.scale; pair.Key.localPosition = pair.Value.position; }
         MenuGeometry.Clear();

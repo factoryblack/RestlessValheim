@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.16
+
+- One pack bump: RestlessCore 0.1.12 (idle hammer and Tab skip). Cook, plant and piles unchanged.
+
 ## 0.1.15
 
 - One pack bump: Jötunn 2.30.2. Core, cook, plant and piles unchanged.

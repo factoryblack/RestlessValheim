@@ -111,14 +111,18 @@ public sealed partial class InventoryScreen : FeatureModule
 
             if (!_dressed)
                 Dress(__instance);
+            // Vanilla Update writes TMP back every frame. Re-dress paper only
+            // when a stack, recipe, overlay or readout actually changed.
             if (NeedsSync(__instance))
+            {
                 Sync(__instance);
+                RefreshCraftFeedback(__instance);
+                RefreshInventoryMaterials(__instance);
+                RefreshContainerMaterials(__instance);
+                RefreshSkillsMaterials(__instance);
+                RefreshCollections(__instance);
+            }
             KeepQuiet();
-            RefreshCraftFeedback(__instance);
-            RefreshInventoryMaterials(__instance);
-            RefreshContainerMaterials(__instance);
-            RefreshSkillsMaterials(__instance);
-            RefreshCollections(__instance);
         }
     }
 
@@ -921,12 +925,16 @@ public sealed partial class InventoryScreen : FeatureModule
             }
         }
         if (gui.m_trophiesPanel != null && gui.m_trophiesPanel.activeInHierarchy)
+        {
             h = h * 31 + 7;
+            h = MixSelected(h, gui.m_trophieListRoot);
+        }
         var ach = gui.m_achievementsPanel;
         if (ach != null && ach.gameObject.activeInHierarchy)
         {
             h = MixTmp(h, gui.m_achievementsCompletionRateText);
             h = h * 31 + (ach.m_achievementDetails != null && ach.m_achievementDetails.activeInHierarchy ? 11 : 13);
+            h = MixSelected(h, gui.m_achievementsListRoot);
         }
 
         foreach (var root in new[] { gui.m_textsDialog != null ? gui.m_textsDialog.transform : null,
@@ -937,6 +945,21 @@ public sealed partial class InventoryScreen : FeatureModule
             var copies = root.GetComponentsInChildren<TMP_Text>(true);
             foreach (var copy in copies) h = MixTmp(h, copy);
             h = h * 31 + copies.Length;
+        }
+        return h;
+    }
+
+    private static int MixSelected(int h, Transform? root)
+    {
+        if (root == null)
+            return h * 31;
+        for (var i = 0; i < root.childCount; i++)
+        {
+            var child = root.GetChild(i);
+            if (child == null) continue;
+            var selected = child.Find("selected");
+            if (selected != null && selected.gameObject.activeSelf)
+                h = h * 31 + i + 1;
         }
         return h;
     }

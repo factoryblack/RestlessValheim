@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.12
+
+- Hammer menu no longer re-dresses every piece and moves the grid on idle frames; hover, category, and live resource counts still update
+- Tab inventory paper (bag, chest, craft, skills, collections) only re-dresses when a stack, recipe, or overlay actually changes
+
 ## 0.1.11
 
 - Hammer / hoe / serving-tray menu uses the shared paper wells; piece cards keep native counts, stars, arrows and the grey/red availability tint

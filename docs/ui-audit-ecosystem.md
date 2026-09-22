@@ -70,8 +70,7 @@ this pass does not pretend to provide their settings controls.
 
 ## Validation
 
-Local checks: C# syntax parsing; project XML parsing; all old F8 ModConfig
-references retained; embedded icon paths verified against the pinned repo tree;
+Local checks: C# syntax parsing; project XML parsing; all 67 F8 control calls (including lock arguments) retained; embedded icon paths verified against the pinned repo tree;
 catalogue canvas regenerated. The local environment has no .NET SDK or Valheim
 assemblies. GitHub's existing PR workflow supplies the actual compilation gate.
 No Unity render or in-game verification is claimed. Binary icon previews could

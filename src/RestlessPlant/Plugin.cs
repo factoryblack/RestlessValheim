@@ -21,12 +21,14 @@ public class Plugin : BaseUnityPlugin
     internal static ManualLogSource Log { get; private set; } = null!;
 
     private Harmony? _harmony;
+    private System.IDisposable? _settings;
 
     private void Awake()
     {
         Instance = this;
         Log = Logger;
         PlantConfig.Bind(Config);
+        _settings = PlantSettings.Register();
         CropPieces.Load();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();
@@ -42,6 +44,7 @@ public class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
+        _settings?.Dispose();
         PlantGrid.Clear();
         _harmony?.UnpatchSelf();
     }

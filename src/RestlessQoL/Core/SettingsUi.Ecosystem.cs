@@ -114,7 +114,8 @@ public sealed partial class SettingsUi
         {
             ModuleHero(page);
             EcosystemCopy(page.Details);
-            Head(Loaded(page) ? "Part of your world" : "Expand your world");
+            var hasSettings = Loaded(page) && PaintExpansionSettings(page);
+            Head(Loaded(page) ? "About this expansion" : "Expand your world");
             EcosystemCopy(Loaded(page)
                 ? "This plugin is loaded locally. Multiplayer still follows the server's mod requirements and gameplay configuration."
                 : "This is an optional expansion. Install it through your mod manager, then restart the game. This menu does not install or enable mods.");
@@ -128,8 +129,10 @@ public sealed partial class SettingsUi
                     };
                     Close();
                 });
-            else if (Loaded(page))
-                EcosystemCopy("Use this mod's BepInEx configuration for its gameplay settings.");
+            else if (Loaded(page) && !hasSettings)
+                EcosystemCopy(page.PluginGuid is "restless.plant" or "restless.piles"
+                    ? "This version has not registered its settings. Update the expansion alongside RestlessCore to use its controls here."
+                    : "No configurable settings.");
             if (page.PackageUrl != null)
                 EcosystemAction("View " + page.Name + " on Thunderstore ↗", () => Application.OpenURL(page.PackageUrl));
             return;

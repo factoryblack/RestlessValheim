@@ -70,6 +70,7 @@ public sealed partial class SettingsUi : FeatureModule
     {
         GUIManager.OnCustomGUIAvailable += () =>
         {
+            ClearSettingBindings();
             _afterClose = null;
             _root = null;
             _body = null;
@@ -107,6 +108,7 @@ public sealed partial class SettingsUi : FeatureModule
         StepFade();
         if (IsOpen)
         {
+            RefreshSettingBindings();
             FitSheet();
             UpdateListFades();
         }
@@ -134,6 +136,7 @@ public sealed partial class SettingsUi : FeatureModule
             Build();
         if (_root == null)
             return;
+        _closing = false;
         RefreshEcosystem();
         FillTabs();
         Highlight();
@@ -148,6 +151,7 @@ public sealed partial class SettingsUi : FeatureModule
 
     internal static void Close()
     {
+        ClearSettingBindings();
         _capturing = false;
         _captureEntry = null;
         _captureLabel = null;
@@ -383,7 +387,7 @@ public sealed partial class SettingsUi : FeatureModule
     {
         if (_lock == null)
             return;
-        _lock.text = CanEditGameplay() ? "" : "Host locked";
+        _lock.text = (_expHasHost ? ExpansionHostCanEdit() : CanEditGameplay()) ? "" : "Host locked";
         var icon = _lock.transform.Find("RestlessLock");
         if (icon != null) icon.gameObject.SetActive(_lock.text.Length > 0);
     }
@@ -518,6 +522,9 @@ public sealed partial class SettingsUi : FeatureModule
         _hintNow = "";
         if (_hint != null)
             _hint.text = "";
+        ClearSettingBindings();
+        _settingsRevision = RestlessQoL.Api.SettingsPageApi.ControlsRevision;
+        _settingsHost = ExpansionHostCanEdit();
         RestlessUi.Wipe(_body.transform);
 
         var locked = !CanEditGameplay();
@@ -757,7 +764,7 @@ public sealed partial class SettingsUi : FeatureModule
     private static string Hint(ConfigEntryBase entry) => entry.Description.Description;
 
     private static void Bool(string title, ConfigEntry<bool> entry, bool locked, Transform? parent = null,
-        bool nested = false, Action? after = null)
+        bool nested = false, Action? after = null, Func<bool>? editable = null)
     {
         var row = Row(parent, nested);
         Titles(row, title, Hint(entry), 88f);
@@ -769,10 +776,12 @@ public sealed partial class SettingsUi : FeatureModule
         toggle.interactable = !locked;
         toggle.onClick.AddListener(() =>
         {
+            if (editable != null && !editable()) return;
             entry.Value = !entry.Value;
             RestlessUi.PaperSwitch(toggle, entry.Value);
             after?.Invoke();
         });
+        ObserveSetting(entry, toggle, editable, () => RestlessUi.PaperSwitch(toggle, entry.Value));
     }
 
     private static void PaintCharacter()
@@ -834,7 +843,7 @@ public sealed partial class SettingsUi : FeatureModule
         return Mathf.RoundToInt(metres) + " m";
     }
 
-    private static void Step(string title, string unit, ConfigEntry<float> entry, bool locked, Transform? parent = null, bool nested = false)
+    private static void Step(string title, string unit, ConfigEntry<float> entry, bool locked, Transform? parent = null, bool nested = false, Func<bool>? editable = null)
     {
         var row = Row(parent, nested);
         Titles(row, title, Hint(entry), 320f);
@@ -859,11 +868,21 @@ public sealed partial class SettingsUi : FeatureModule
         slider.SetValueWithoutNotify(Snap(entry, entry.Value));
         slider.onValueChanged.AddListener(v =>
         {
+            if (editable != null && !editable())
+            {
+                slider.SetValueWithoutNotify(entry.Value);
+                return;
+            }
             var snapped = Snap(entry, v);
             if (!Mathf.Approximately(slider.value, snapped))
                 slider.SetValueWithoutNotify(snapped);
             entry.Value = snapped;
             value.text = Format(snapped, unit, entry);
+        });
+        ObserveSetting(entry, slider, editable, () =>
+        {
+            slider.SetValueWithoutNotify(entry.Value);
+            value.text = Format(entry.Value, unit, entry);
         });
     }
 
@@ -886,11 +905,11 @@ public sealed partial class SettingsUi : FeatureModule
     }
 
     private static void KeyOnly(string title, ConfigEntry<KeyboardShortcut> key, Transform? parent = null,
-        bool nested = false)
+        bool nested = false, Func<bool>? editable = null)
     {
         var row = Row(parent, nested);
         Titles(row, title, Hint(key), 160f);
-        AddKey(row.transform, key, false);
+        AddKey(row.transform, key, false, editable: editable);
     }
 
     private static void Words(string title, ConfigEntry<string> entry, bool locked, Transform? parent = null,
@@ -919,7 +938,7 @@ public sealed partial class SettingsUi : FeatureModule
         field.onEndEdit.AddListener(value => entry.Value = value);
     }
 
-    private static void AddKey(Transform parent, ConfigEntry<KeyboardShortcut> entry, bool locked, float fromRight = -14f)
+    private static void AddKey(Transform parent, ConfigEntry<KeyboardShortcut> entry, bool locked, float fromRight = -14f, Func<bool>? editable = null)
     {
         var plate = RestlessUi.Chip(parent, "key");
         RestlessUi.PaperControl(plate);
@@ -936,17 +955,23 @@ public sealed partial class SettingsUi : FeatureModule
         button.interactable = !locked;
         button.onClick.AddListener(() =>
         {
+            if (editable != null && !editable()) return;
+            _captureEditable = editable;
             _capturing = true;
             _captureEntry = entry;
             _captureLabel = label;
             label.text = "Press a key";
             label.color = RestlessUi.Accent;
         });
+        ObserveSetting(entry, button, editable, () =>
+        {
+            if (!_capturing || _captureEntry != entry) label.text = Pretty(entry.Value);
+        });
     }
 
     private static void PollCapture()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) || _captureEditable != null && !_captureEditable())
         {
             if (_captureLabel != null && _captureEntry != null)
             {

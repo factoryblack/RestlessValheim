@@ -30,6 +30,7 @@ internal static class PlantGrid
 
     public static void Tick()
     {
+        if (RestlessQoL.Api.SettingsPageApi.IsMenuOpen) return;
         if (!PlantConfig.On || !PlantConfig.Grid.Value)
             return;
         var player = Player.m_localPlayer;

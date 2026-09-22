@@ -22,12 +22,14 @@ public class Plugin : BaseUnityPlugin
     internal static ManualLogSource Log { get; private set; } = null!;
 
     private Harmony? _harmony;
+    private System.IDisposable? _settings;
 
     private void Awake()
     {
         Instance = this;
         Log = Logger;
         PileConfig.Bind(Config);
+        _settings = PileSettings.Register();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();
         GUIManager.OnCustomGUIAvailable += PileUi.TearDown;
@@ -43,6 +45,7 @@ public class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
+        _settings?.Dispose();
         GUIManager.OnCustomGUIAvailable -= PileUi.TearDown;
         _harmony?.UnpatchSelf();
     }

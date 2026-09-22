@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-23 — versions.yaml pins Jötunn/Core/pack; F8 shows live vs listed.
+# last_audit: 2026-09-23 — expansion F8 controls bind existing Plant/Piles config; host/local scope preserved.
 
 updated: 2026-09-23
 
@@ -415,7 +415,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-Azus_UnOfficial_ConfigManager
-    note: "F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
+    note: "Plant (21) and Piles (2) existing settings now render directly on module pages via disposable RegisterSettings sections. Shared switches/sliders/key capture, event-driven value refresh, independent addon host locks, personal controls and startup restart labels; Cook/Drawers show no configurable settings. See docs/expansion-settings.md; Unity/host-client tests pending. F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
 
   # --- vanilla 1.0 ---
   - id: inventory.extra_rows

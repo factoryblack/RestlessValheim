@@ -32,6 +32,13 @@
     <EmbeddedResource Include="Assets\*.png" LogicalName="RestlessQoL.Assets.%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="../../thunderstore/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-core.png" />
+    <EmbeddedResource Include="../../thunderstore/cook/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-cook.png" />
+    <EmbeddedResource Include="../../thunderstore/plant/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-plant.png" />
+    <EmbeddedResource Include="../../thunderstore/piles/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-piles.png" />
+    <EmbeddedResource Include="../../thunderstore/pack/icon.png" LogicalName="RestlessQoL.Assets.ecosystem-pack.png" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="RestlessPiles" />
   </ItemGroup>
 </Project>

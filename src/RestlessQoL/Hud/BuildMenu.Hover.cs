@@ -245,9 +245,16 @@ public sealed partial class BuildMenu
         if (countFace == null) return;
         var hasCount = amount != null && amount.gameObject.activeInHierarchy && !string.IsNullOrWhiteSpace(amount.text);
         var next = hasCount ? amount!.text : "";
-        if (countFace.text == next) return;
-        countFace.text = next;
-        countFace.color = SourceColour(amount, RestlessUi.Accent);
+        var colour = SourceColour(amount, RestlessUi.Accent);
+        if (countFace.text != next) countFace.text = next;
+        if (countFace.color != colour) countFace.color = colour;
+        var labelFace = go.transform.Find("name")?.GetComponent<Text>();
+        var name = RestlessUi.Deep<TMP_Text>(slot, "res_name");
+        if (labelFace != null)
+        {
+            var labelColour = SourceColour(name, RestlessUi.Text);
+            if (labelFace.color != labelColour) labelFace.color = labelColour;
+        }
     }
 
     private static Color SourceColour(Graphic? source, Color neutral)
@@ -320,3 +327,4 @@ public sealed partial class BuildMenu
         _detailKey = "";
     }
 }
+

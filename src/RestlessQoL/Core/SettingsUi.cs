@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace RestlessQoL.Core;
 
-public sealed class SettingsUi : FeatureModule
+public sealed partial class SettingsUi : FeatureModule
 {
     public override string Id => "ui.settings";
     public override bool Enabled => true;
@@ -31,6 +31,7 @@ public sealed class SettingsUi : FeatureModule
     private static readonly List<Text> TabLabels = new();
     private static readonly List<GameObject> TabGlows = new();
     private static int _tab;
+    private static Action? _afterClose;
     private static bool _capturing;
     private static bool _closing;
     private static float _alpha;
@@ -41,11 +42,13 @@ public sealed class SettingsUi : FeatureModule
 
     private static readonly (string Id, string Name)[] AllTabs =
     {
+        ("ecosystem", "Overview"),
         ("storage", "Storage"),
         ("building", "Building"),
         ("player", "Player"),
         ("world", "World"),
-        ("hud", "Hud"),
+        ("hud", "HUD"),
+        ("interface", "Screens & slots"),
         ("character", "Character"),
     };
 
@@ -59,6 +62,7 @@ public sealed class SettingsUi : FeatureModule
             list.Add(tab);
         }
 
+        foreach (var page in EcosystemPages) list.Add((page.PluginGuid, page.Name));
         return list;
     }
 
@@ -66,6 +70,7 @@ public sealed class SettingsUi : FeatureModule
     {
         GUIManager.OnCustomGUIAvailable += () =>
         {
+            _afterClose = null;
             _root = null;
             _body = null;
             _fade = null;
@@ -129,6 +134,8 @@ public sealed class SettingsUi : FeatureModule
             Build();
         if (_root == null)
             return;
+        RefreshEcosystem();
+        FillTabs();
         Highlight();
         Rebuild();
         UpdateLock();
@@ -178,6 +185,9 @@ public sealed class SettingsUi : FeatureModule
             IsOpen = false;
             _root!.SetActive(false);
             GUIManager.BlockInput(false);
+            var action = _afterClose;
+            _afterClose = null;
+            action?.Invoke();
         }
     }
 
@@ -225,6 +235,7 @@ public sealed class SettingsUi : FeatureModule
         tray.GetComponent<Image>().raycastTarget = true;
         RestlessUi.Stretch(tray, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
+        RefreshEcosystem();
         BuildBar(tray.transform);
         BuildList(card.transform);
         BuildHint(card.transform);
@@ -266,63 +277,89 @@ public sealed class SettingsUi : FeatureModule
         RestlessUi.PaperSelectable(escBtn);
         escBtn.onClick.AddListener(Close);
 
-        var row = RestlessUi.Node(bar.transform, "tabs");
+        var navigation = RestlessUi.Node(bar.transform, "navigation");
+        RestlessUi.Pin(navigation, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+            new Vector2(-160f, 0f), new Vector2(88f, 36f));
+        var navLayout = navigation.AddComponent<HorizontalLayoutGroup>();
+        navLayout.spacing = 8f;
+        Chip(navigation.transform, "Q");
+        Chip(navigation.transform, "E");
+        var subtitle = RestlessUi.Label(bar.transform, "YOUR RESTLESS WORLD", RestlessUi.HintSize,
+            RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
+        RestlessUi.Pin(subtitle.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+            new Vector2(284f, 0f), new Vector2(370f, 36f));
+
+        var rail = RestlessUi.Graphic(tray, "module-navigation", Color.clear, true);
+        RestlessUi.Stretch(rail, Vector2.zero, new Vector2(0f, 1f),
+            new Vector2(22f, 74f), new Vector2(218f, -78f));
+        rail.AddComponent<RectMask2D>();
+        var scroll = rail.AddComponent<ScrollRect>();
+        scroll.horizontal = false;
+        scroll.inertia = false;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 44f;
+        scroll.viewport = rail.GetComponent<RectTransform>();
+        var row = RestlessUi.Node(rail.transform, "tabs");
         _tabRow = row.transform;
-        RestlessUi.Pin(row, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-            new Vector2(36f, 0f), new Vector2(650f, 38f));
-        var layout = row.AddComponent<HorizontalLayoutGroup>();
-        layout.childAlignment = TextAnchor.MiddleCenter;
+        RestlessUi.Stretch(row, new Vector2(0f, 1f), Vector2.one, Vector2.zero, Vector2.zero);
+        var rect = row.GetComponent<RectTransform>();
+        rect.pivot = new Vector2(0.5f, 1f);
+        var layout = row.AddComponent<VerticalLayoutGroup>();
         layout.spacing = 4f;
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandWidth = false;
-        layout.childForceExpandHeight = true;
+        layout.childControlWidth = layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        row.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        scroll.content = rect;
         FillTabs();
     }
 
     private static void FillTabs()
     {
-        if (_tabRow == null)
-            return;
+        if (_tabRow == null) return;
         RestlessUi.Wipe(_tabRow);
         TabLabels.Clear();
         TabGlows.Clear();
-        Chip(_tabRow, "Q");
         var tabs = CurrentTabs();
-        if (_tab >= tabs.Count)
-            _tab = Math.Max(0, tabs.Count - 1);
+        _tab = Mathf.Clamp(_tab, 0, tabs.Count - 1);
         for (var i = 0; i < tabs.Count; i++)
         {
             var index = i;
-            var tab = RestlessUi.Graphic(_tabRow, tabs[i].Id, Color.clear);
-            var tabLe = tab.AddComponent<LayoutElement>();
-            tabLe.preferredWidth = tabs[i].Id == "character" ? 98f : 82f;
-            tabLe.minWidth = 56f;
-            tabLe.preferredHeight = 28f;
-
-            var glow = RestlessUi.Chip(tab.transform, "selected");
-            RestlessUi.ForgedTab(glow, true);
-            glow.GetComponent<Image>().raycastTarget = false;
-            RestlessUi.Stretch(glow, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            glow.SetActive(false);
-            TabGlows.Add(glow);
-
-            var label = RestlessUi.Label(tab.transform, tabs[i].Name, RestlessUi.HintSize, RestlessUi.PaperMuted, TextAnchor.MiddleCenter);
-            RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            TabLabels.Add(label);
-
-            var button = tab.AddComponent<Button>();
-            button.targetGraphic = label;
-            RestlessUi.PaperSelectable(button);
-            button.onClick.AddListener(() =>
+            if (tabs[i].Id == "storage" || i == tabs.Count - EcosystemPages.Count)
             {
-                _tab = index;
-                Highlight();
-                Rebuild();
-            });
+                var heading = RestlessUi.Label(_tabRow, tabs[i].Id == "storage" ? "CORE SETTINGS" : "EXPANSIONS",
+                    14, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
+                heading.gameObject.AddComponent<LayoutElement>().preferredHeight = 26f;
+            }
+            var tab = RestlessUi.Graphic(_tabRow, tabs[i].Id, Color.clear, true);
+            tab.AddComponent<LayoutElement>().preferredHeight = 38f;
+            var glow = RestlessUi.Chip(tab.transform, "selected");
+            RestlessUi.PaperSurface(glow, true);
+            RestlessUi.Stretch(glow, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            glow.SetActive(i == _tab);
+            TabGlows.Add(glow);
+            var page = EcosystemPages.Find(p => p.PluginGuid == tabs[i].Id);
+            var inset = 12f;
+            if (page != null)
+            {
+                var icon = RestlessUi.Graphic(tab.transform, "module-icon", Color.white, false).GetComponent<Image>();
+                icon.sprite = PageIcon(page);
+                icon.preserveAspect = true;
+                RestlessUi.Pin(icon.gameObject, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+                    new Vector2(6f, 0f), new Vector2(30f, 30f));
+                inset = 44f;
+            }
+            var label = RestlessUi.Label(tab.transform, tabs[i].Name, RestlessUi.HintSize,
+                RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
+            RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one,
+                new Vector2(inset, 2f), new Vector2(-8f, -2f));
+            RestlessUi.BoundedLabel(label, RestlessUi.HintSize, 14);
+            TabLabels.Add(label);
+            var button = tab.AddComponent<Button>();
+            button.targetGraphic = tab.GetComponent<Image>();
+            RestlessUi.PaperSelectable(button);
+            button.onClick.AddListener(() => { _tab = index; Highlight(); Rebuild(); });
         }
-
-        Chip(_tabRow, "E");
         Highlight();
     }
 
@@ -390,7 +427,7 @@ public sealed class SettingsUi : FeatureModule
         var top = 78f;
         var sheet = RestlessUi.Node(card, "sheet");
         RestlessUi.Stretch(sheet, Vector2.zero, Vector2.one,
-            new Vector2(inset, 70f),
+            new Vector2(238f, 70f),
             new Vector2(-inset, -top));
 
         var scroll = RestlessUi.Graphic(sheet.transform, "scroll", Color.clear);
@@ -547,21 +584,7 @@ public sealed class SettingsUi : FeatureModule
             case "character":
                 PaintCharacter();
                 break;
-            default:
-                Head("Buffs");
-                Bunch(
-                    t => Bool("Buff list under the map", ModConfig.BuffListEnabled, false, t),
-                    t => Bool("Include food", ModConfig.BuffListFood, false, t, true),
-                    t => Bool("Empty food slots", ModConfig.BuffListFoodEmpty, false, t, true));
-                Head("Map");
-                Bunch(
-                    t => Bool("Restless minimap", ModConfig.MapChromeEnabled, false, t),
-                    t => Bool("Torn edge", ModConfig.MapTearEnabled, false, t, true),
-                    t => Bool("Biome name plate", ModConfig.MapBiomePlate, false, t, true),
-                    t => Bool("Wind arrow on the biome bar", ModConfig.MapWindPlate, false, t, true));
-                Bunch(
-                    t => Bool("Restless map (M)", ModConfig.MapScreenEnabled, false, t),
-                    t => Bool("Player dots on the map", ModConfig.MapPlayerDots, false, t, true));
+            case "interface":
                 Head("Inventory");
                 Bunch(
                     t => Bool("Restless inventory (Tab)", ModConfig.InventoryScreenEnabled, false, t),
@@ -579,6 +602,22 @@ public sealed class SettingsUi : FeatureModule
                 });
                 Head("Menu");
                 Bool("Restless pause / logout / exit", ModConfig.MenuScreenEnabled, false);
+                break;
+            case "hud":
+                Head("Buffs");
+                Bunch(
+                    t => Bool("Buff list under the map", ModConfig.BuffListEnabled, false, t),
+                    t => Bool("Include food", ModConfig.BuffListFood, false, t, true),
+                    t => Bool("Empty food slots", ModConfig.BuffListFoodEmpty, false, t, true));
+                Head("Map");
+                Bunch(
+                    t => Bool("Restless minimap", ModConfig.MapChromeEnabled, false, t),
+                    t => Bool("Torn edge", ModConfig.MapTearEnabled, false, t, true),
+                    t => Bool("Biome name plate", ModConfig.MapBiomePlate, false, t, true),
+                    t => Bool("Wind arrow on the biome bar", ModConfig.MapWindPlate, false, t, true));
+                Bunch(
+                    t => Bool("Restless map (M)", ModConfig.MapScreenEnabled, false, t),
+                    t => Bool("Player dots on the map", ModConfig.MapPlayerDots, false, t, true));
                 Head("Notices");
                 Bunch(
                     t => Bool("Message toasts", ModConfig.NoticesEnabled, false, t),
@@ -602,6 +641,9 @@ public sealed class SettingsUi : FeatureModule
                 Bunch(
                     t => Bool("Jötunn debug overlay", ModConfig.JotunnDebug, false, t),
                     t => Bool("Hammer piece hover (health / stability)", ModConfig.PieceHealthEnabled, false, t, true));
+                break;
+            default:
+                PaintEcosystem(id);
                 break;
         }
 

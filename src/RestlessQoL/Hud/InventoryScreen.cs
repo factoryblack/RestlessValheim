@@ -67,7 +67,7 @@ public sealed partial class InventoryScreen : FeatureModule
                 continue;
             behaviour.enabled = false;
             if (behaviour is GuiBar)
-                behaviour.gameObject.SetActive(false);
+                ShelfNative(behaviour.gameObject);
         }
 
         foreach (var pair in Ghosted)
@@ -174,6 +174,7 @@ public sealed partial class InventoryScreen : FeatureModule
 
     private static void Dress(InventoryGui gui)
     {
+        FindSmallDialogs(gui);
         QuietChrome(gui);
         DropWell(gui.m_crafting);
         HideTitle(gui.m_info);
@@ -189,6 +190,7 @@ public sealed partial class InventoryScreen : FeatureModule
 
     private static void Sync(InventoryGui gui)
     {
+        DressSmallDialogs();
         KeepQuiet();
         HideTitle(gui.m_info);
         HideTitle(gui.m_crafting);
@@ -263,6 +265,7 @@ public sealed partial class InventoryScreen : FeatureModule
         unchecked
         {
             var h = 17;
+            h = h * 31 + RestlessQoL.Api.TooltipApi.Revision;
             h = h * 31 + Screen.width;
             h = h * 31 + Screen.height;
             if (gui.m_inventoryRoot != null) h = h * 31 + gui.m_inventoryRoot.transform.lossyScale.GetHashCode();
@@ -293,6 +296,7 @@ public sealed partial class InventoryScreen : FeatureModule
                     h = MixTmp(h, RestlessUi.Deep<TMP_Text>(requirement.transform, "res_name"));
                 }
             h = MixOverlay(h, gui);
+            h = MixSmallDialogs(h);
             var recipes = gui.m_recipeListRoot;
             if (recipes != null)
             {
@@ -414,6 +418,7 @@ public sealed partial class InventoryScreen : FeatureModule
         try
         {
             var item = inv?.GetItemAt(element.Position.x, element.Position.y);
+            RememberCell(element.gameObject, element.m_icon);
             Ours.Add(RestlessUi.DressSlot(element.gameObject, element.m_icon, item is { m_equipped: true }, item, Hidden, true,
                 grid == InventoryGui.instance?.m_playerGrid && SlotLock.Held(element.Position), inventory: true));
         }
@@ -455,7 +460,7 @@ public sealed partial class InventoryScreen : FeatureModule
                 if (n is "bkg" or "background" || n.Contains("selected") || n.Contains("border"))
                 {
                     Hide(image);
-                    image.gameObject.SetActive(false);
+                    ShelfNative(image.gameObject);
                 }
             }
 
@@ -558,7 +563,7 @@ public sealed partial class InventoryScreen : FeatureModule
         {
             var copy = RestlessUi.Bare(gui.m_minStationLevelText != null ? gui.m_minStationLevelText.text : "");
             if (string.IsNullOrEmpty(copy))
-                RestlessUi.Quiet(level.gameObject);
+                QuietNative(level.gameObject);
             else
                 RestlessUi.Loud(level.gameObject);
         }
@@ -1298,7 +1303,7 @@ public sealed partial class InventoryScreen : FeatureModule
         var title = root.Find("TitlePanel") ?? RestlessUi.Deep(root, "TitlePanel");
         if (title == null)
             return;
-        RestlessUi.Quiet(title.gameObject);
+        QuietNative(title.gameObject);
         foreach (var tmp in title.GetComponentsInChildren<TMP_Text>(true))
             SilenceTmp(tmp);
         var face = title.Find("Restless_playerName");
@@ -1430,9 +1435,9 @@ public sealed partial class InventoryScreen : FeatureModule
             var n = child.name.ToLowerInvariant();
             if (n.Contains("selected") || n.Contains("gamepad"))
             {
-                RestlessUi.Quiet(child.gameObject);
+                QuietNative(child.gameObject);
                 if (n.Contains("gamepad"))
-                    child.gameObject.SetActive(false);
+                    ShelfNative(child.gameObject);
             }
         }
 
@@ -1503,7 +1508,7 @@ public sealed partial class InventoryScreen : FeatureModule
 
         SilenceTmp(qualityTmp);
         if (qualityTmp != null)
-            qualityTmp.gameObject.SetActive(false);
+            ShelfNative(qualityTmp.gameObject);
         RestlessUi.HideVanillaSlotText(row.gameObject);
         RestlessUi.DressQuality(row, quality, false);
         return true;
@@ -1600,7 +1605,7 @@ public sealed partial class InventoryScreen : FeatureModule
                 && name.Length > 0;
             if (!live)
             {
-                RestlessUi.Quiet(go);
+                QuietNative(go);
                 var stale = go.transform.Find("RestlessSlot");
                 if (stale != null)
                 {
@@ -1614,6 +1619,7 @@ public sealed partial class InventoryScreen : FeatureModule
             }
 
             RestlessUi.Loud(go);
+            RememberCell(go, icon);
             var plate = RestlessUi.DressSlot(go, icon, false, null, Hidden, true);
             plate.SetActive(true);
             if (!Ours.Contains(plate))
@@ -1638,7 +1644,7 @@ public sealed partial class InventoryScreen : FeatureModule
         if (RestlessUi.HintNode(src.transform))
         {
             SilenceTmp(src);
-            src.gameObject.SetActive(false);
+            ShelfNative(src.gameObject);
             return;
         }
 
@@ -1774,7 +1780,7 @@ public sealed partial class InventoryScreen : FeatureModule
             SilenceTmp(tmp);
             if (RestlessUi.HintNode(tmp.transform)
                 || tmp.gameObject.name.Equals("help_Text", System.StringComparison.OrdinalIgnoreCase))
-                tmp.gameObject.SetActive(false);
+                ShelfNative(tmp.gameObject);
         }
     }
 
@@ -1881,6 +1887,7 @@ public sealed partial class InventoryScreen : FeatureModule
     {
         if (image == null || !image.enabled)
             return;
+        RememberPaint(image);
         Hidden.Add(image);
         image.enabled = false;
     }
@@ -1889,6 +1896,7 @@ public sealed partial class InventoryScreen : FeatureModule
     {
         if (image == null)
             return;
+        RememberPaint(image);
         if (!Ghosted.ContainsKey(image))
             Ghosted[image] = image.color;
         image.color = Color.clear;
@@ -1900,6 +1908,7 @@ public sealed partial class InventoryScreen : FeatureModule
     {
         if (tmp == null || tmp.transform.name.StartsWith("Restless"))
             return;
+        RememberPaint(tmp);
         if (!TmpAlpha.ContainsKey(tmp))
             TmpAlpha[tmp] = tmp.alpha;
         RestlessUi.SilenceTmp(tmp);
@@ -1948,6 +1957,7 @@ public sealed partial class InventoryScreen : FeatureModule
         }
 
         TmpAlpha.Clear();
+        RestoreNativePaint();
         Silenced.Clear();
         Readouts.Clear();
         _dressed = false;
@@ -1994,6 +2004,7 @@ public sealed partial class InventoryScreen : FeatureModule
             Hidden.Clear();
             Ghosted.Clear();
             TmpAlpha.Clear();
+            RestoreNativePaint();
             Silenced.Clear();
             Readouts.Clear();
             _dressed = false;
@@ -2001,4 +2012,5 @@ public sealed partial class InventoryScreen : FeatureModule
         }
     }
 }
+
 

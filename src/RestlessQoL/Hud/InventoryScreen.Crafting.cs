@@ -25,6 +25,22 @@ public sealed partial class InventoryScreen
     private static string _recipeCopy = "";
     private static string _recipeIdentity = "";
     private static float _recipeWidth;
+    private static int _recipeRevision = -1;
+    private static readonly System.Reflection.FieldInfo? SelectedRecipeField =
+        HarmonyLib.AccessTools.Field(typeof(InventoryGui), "m_selectedRecipe");
+
+    // Resolve only when recipe content is invalidated; providers see an isolated
+    // preview at the resulting quality, never a mutable inventory item/prefab.
+    private static ItemDrop.ItemData? RecipePreview(InventoryGui gui)
+    {
+        if (SelectedRecipeField?.GetValue(gui) is not KeyValuePair<Recipe, ItemDrop.ItemData> selected)
+            return null;
+        var source = selected.Value ?? selected.Key?.m_item?.m_itemData;
+        if (source == null) return null;
+        var preview = source.Clone();
+        preview.m_quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
+        return preview;
+    }
 
     private static void DressCraftMaterials(InventoryGui gui)
     {
@@ -209,7 +225,8 @@ public sealed partial class InventoryScreen
         var copy = ItemTooltip.RecipeCopy(source.text ?? "");
         var identity = gui.GetSelectedRecipeIndex(false) + ":" + gui.InCraftTab() + ":" + gui.m_recipeName?.text;
         var changedSelection = identity != _recipeIdentity;
-        if (!changedSelection && scroller.content != null && copy == _recipeCopy && Mathf.Abs(width - _recipeWidth) < 0.5f) return;
+        if (!changedSelection && scroller.content != null && copy == _recipeCopy
+            && _recipeRevision == RestlessQoL.Api.TooltipApi.Revision && Mathf.Abs(width - _recipeWidth) < 0.5f) return;
         var offset = !changedSelection && scroller.content != null ? scroller.content.anchoredPosition.y : 0f;
         foreach (Transform child in view.transform)
         {
@@ -226,7 +243,8 @@ public sealed partial class InventoryScreen
         layout.childForceExpandHeight = false;
         layout.childForceExpandWidth = true;
         content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        ItemTooltip.RecipeBody(content.transform, copy, width);
+        ItemTooltip.RecipeBody(content.transform, copy, width, RecipePreview(gui));
+        _recipeRevision = RestlessQoL.Api.TooltipApi.Revision;
         scroller.content = rect;
         LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
         scroller.StopMovement();
@@ -448,9 +466,11 @@ public sealed partial class InventoryScreen
         foreach (var pair in CraftIconScales)
             if (pair.Key != null) pair.Key.localScale = pair.Value;
         CraftIconScales.Clear();
+        _recipeRevision = -1;
         _recipeCopy = "";
         _recipeIdentity = "";
         _recipeWidth = 0f;
     }
 }
+
 

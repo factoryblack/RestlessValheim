@@ -117,3 +117,13 @@ following checks pass on the existing Windows development setup:
 Controller-specific overflow navigation is not implemented in this pass. Existing
 hover discovery is unchanged; this does not claim support for additional equipment,
 crafting, world or skill-tree surfaces.
+
+## Craft preview integration (22 September 2026)
+
+Craft detail now renders the same contribution badges and sections as inspect.
+Providers receive a cloned result item at quality 1 for crafting or next quality
+for upgrades. They must still treat it as read-only; it is not an owned inventory
+item. RimTint remains inspect-only. Call TooltipApi.Invalidate when extension
+data changes; craft detail then rebuilds while preserving its scroll position.
+The craft path samples providers on content/selection/API invalidation, not every
+frame. The F8 module-page API is documented in ui-audit-ecosystem.md.

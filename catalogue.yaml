@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-22 — hammer + Tab idle frames skip full re-dress (Core 0.1.12 / pack 0.1.16).
+# last_audit: 2026-09-22 — UI restoration, requirement feedback, craft contributions, small dialogs and F8 ecosystem; runtime validation pending.
 
 updated: 2026-09-22
 
@@ -303,7 +303,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Idle Tab frames skip paper refresh; stamp still covers stacks, recipes, nearby-storage counts and overlay selection. Compendium/trophies/achievements adopt shared collection shells and card typography; dedicated compendium readers have measured padding, native progress/status copy is preserved and live collection text triggers refresh. See docs/collection-screens.md; compile/playtest pending. Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting uses inventory charcoal paper. Place() was painting RowTint over that face every Sync while PaperSurface early-out left the stone black; skip that retint once paperAccent is on, keep the face cream, and use InventorySurface on the craft body. Amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
+    note: "Audit pass: reversible native graphic/TMP/renderer/active/CanvasGroup state; dedicated split/variant dialog material pass preserving native inputs and selection. Crafting consumes TooltipApi badges/sections with result-item previews and revision invalidation. See docs/ui-audit-ecosystem.md; compile/runtime checks pending. Idle Tab frames skip paper refresh; stamp still covers stacks, recipes, nearby-storage counts and overlay selection. Compendium/trophies/achievements adopt shared collection shells and card typography; dedicated compendium readers have measured padding, native progress/status copy is preserved and live collection text triggers refresh. See docs/collection-screens.md; compile/playtest pending. Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting uses inventory charcoal paper. Place() was painting RowTint over that face every Sync while PaperSurface early-out left the stone black; skip that retint once paperAccent is on, keep the face cream, and use InventorySurface on the craft body. Amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
 
   - id: ui.tooltip
     name: Restless item tooltip
@@ -311,7 +311,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Tab + chest inspect. Opt-in shared PaperSurface/PaperCorner/PaperDivider materials: generated torn charcoal panel/chip/corner, tintable alpha rims, separate ornaments; DressSlot retains behaviour. Measured text, two-column damage, fixed header and clipped PgUp/PgDn details. Unknown lines preserved. Client-side TooltipApi v1 accepts ordered badges, rim tint and sections with disposable registrations and exception isolation. Browser material proof in docs; no rarity mechanics or equipped comparison. Controller paging, compilation and Unity visual/input verification pending."
+    note: "Craft preview now shares contribution badge/section rendering and API invalidation; rim tint remains inspect-only. Tab + chest inspect. Opt-in shared PaperSurface/PaperCorner/PaperDivider materials: generated torn charcoal panel/chip/corner, tintable alpha rims, separate ornaments; DressSlot retains behaviour. Measured text, two-column damage, fixed header and clipped PgUp/PgDn details. Unknown lines preserved. Client-side TooltipApi v1 accepts ordered badges, rim tint and sections with disposable registrations and exception isolation. Browser material proof in docs; no rarity mechanics or equipped comparison. Controller paging, compilation and Unity visual/input verification pending."
 
   - id: ui.menu
     name: Pause, logout, and exit
@@ -343,7 +343,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "BuildUIV2 paper controls and compact measured detail card (width matches the piece grid, height 128–280) docked 16 below it. Costs take just over half the card (48/52) in two columns. Grid+card sit on the hotbar clearance, not the top of the HUD. Idle frames skip a full re-dress; hover/category/search and live resource counts still refresh. Live native requirement data, shortage colours and independent overflow scrolling retained. Native detail backgrounds suppressed; original state restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md."
+    note: "Requirement count and label colours refresh even when count text is unchanged. BuildUIV2 paper controls and compact measured detail card (width matches the piece grid, height 128–280) docked 16 below it. Costs take just over half the card (48/52) in two columns. Grid+card sit on the hotbar clearance, not the top of the HUD. Idle frames skip a full re-dress; hover/category/search and live resource counts still refresh. Live native requirement data, shortage colours and independent overflow scrolling retained. Native detail backgrounds suppressed; original state restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md."
 
   - id: ui.hints
     name: Action hints
@@ -407,7 +407,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-Azus_UnOfficial_ConfigManager
-    note: "F8 / pause Restless. Shared paper materials on panel, overhanging 1120px header, selected tabs, rows, keybinds and inputs. PaperSwitch round knobs; PaperSlider filled track and diamond handle. Six existing tab definitions, config bindings and ScrollRelay retained. Sheet fits canvas; Q/E navigation suspended during text editing; personal keybinds remain editable under gameplay lock. No new gameplay settings. Compilation, Unity appearance, host/client controls and keyboard navigation need validation."
+    note: "F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Loaded plugin versions and explicit Thunderstore links; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md; compilation and Unity/host-client checks pending."
 
   # --- vanilla 1.0 ---
   - id: inventory.extra_rows
@@ -578,6 +578,7 @@ items:
     in_mod: n/a
     restless: ASharpPen-This_Goes_Here / Smoothbrain-ShutUp
     note: "Author utilities. Not gameplay."
+
 
 
 

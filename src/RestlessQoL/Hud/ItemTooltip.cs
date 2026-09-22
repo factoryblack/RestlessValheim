@@ -275,11 +275,7 @@ public sealed class ItemTooltip : FeatureModule
         layout.childForceExpandHeight = false;
         layout.childAlignment = TextAnchor.UpperLeft;
 
-        // Extensions contribute rarity/set badges; actual quality lives in the fixed header.
-        foreach (var contribution in contributions)
-            foreach (var badge in contribution.Badges)
-                if (!string.IsNullOrWhiteSpace(badge.Text))
-                    Badge(_body.transform, Soft(badge.Text), badge.Tint ?? RestlessUi.Accent, inner);
+        ContributionBadges(_body.transform, contributions, inner);
 
         if (blurb.Length > 0)
             Paragraph(_body.transform, blurb, inner, RestlessUi.PaperMuted);
@@ -320,21 +316,7 @@ public sealed class ItemTooltip : FeatureModule
             Divider(_body.transform);
             Paragraph(_body.transform, string.Join("\n", notes), inner, RestlessUi.Text);
         }
-        foreach (var contribution in contributions)
-        {
-            foreach (var section in contribution.Sections)
-            {
-                if (string.IsNullOrWhiteSpace(section.Title) && string.IsNullOrWhiteSpace(section.Body)
-                    && section.Rows.Count == 0) continue;
-                Divider(_body.transform);
-                if (!string.IsNullOrWhiteSpace(section.Title))
-                    Paragraph(_body.transform, Soft(section.Title), inner, RestlessUi.Accent);
-                foreach (var stat in section.Rows)
-                    StatRow(_body.transform, Soft(stat.Label), Soft(stat.Value), inner);
-                if (!string.IsNullOrWhiteSpace(section.Body))
-                    Paragraph(_body.transform, Soft(section.Body), inner, RestlessUi.PaperMuted);
-            }
-        }
+        ContributionSections(_body.transform, contributions, inner);
 
         LayoutRebuilder.ForceRebuildLayoutImmediate(_body.GetComponent<RectTransform>());
         var contentHeight = LayoutUtility.GetPreferredHeight(_body.GetComponent<RectTransform>());
@@ -502,10 +484,39 @@ public sealed class ItemTooltip : FeatureModule
         return null;
     }
 
+    private static void ContributionBadges(Transform parent, List<TooltipContribution> contributions, float width)
+    {
+        foreach (var contribution in contributions)
+            foreach (var badge in contribution.Badges)
+                if (!string.IsNullOrWhiteSpace(badge.Text))
+                    Badge(parent, Soft(badge.Text), badge.Tint ?? RestlessUi.Accent, width);
+    }
+
+    private static void ContributionSections(Transform parent, List<TooltipContribution> contributions, float width)
+    {
+        foreach (var contribution in contributions)
+        {
+            foreach (var section in contribution.Sections)
+            {
+                if (string.IsNullOrWhiteSpace(section.Title) && string.IsNullOrWhiteSpace(section.Body)
+                    && section.Rows.Count == 0) continue;
+                Divider(parent);
+                if (!string.IsNullOrWhiteSpace(section.Title))
+                    Paragraph(parent, Soft(section.Title), width, RestlessUi.Accent);
+                foreach (var stat in section.Rows)
+                    StatRow(parent, Soft(stat.Label), Soft(stat.Value), width);
+                if (!string.IsNullOrWhiteSpace(section.Body))
+                    Paragraph(parent, Soft(section.Body), width, RestlessUi.PaperMuted);
+            }
+        }
+    }
+
     // Crafting consumes the same text parser and measured rows as inspect.
     // Unknown mod lines are retained, and the caller supplies a clipped scroll area.
-    internal static void RecipeBody(Transform parent, string raw, float width)
+    internal static void RecipeBody(Transform parent, string raw, float width, ItemDrop.ItemData? item)
     {
+        var contributions = item != null ? TooltipApi.Collect(item) : new List<TooltipContribution>();
+        ContributionBadges(parent, contributions, width);
         Parse(raw, "", "", out var stats, out var chips, out var notes);
         if (notes.Count > 0) Paragraph(parent, string.Join("\n", notes), width, RestlessUi.PaperMuted, CopySize + 2);
         if (stats.Count > 0)
@@ -522,6 +533,7 @@ public sealed class ItemTooltip : FeatureModule
                 Hold(row, DamageChip(row.transform, chip.label, chip.value, 0f, width));
             }
         }
+        ContributionSections(parent, contributions, width);
     }
 
     internal static string RecipeCopy(string raw) => Soft(raw);
@@ -776,3 +788,4 @@ public sealed class ItemTooltip : FeatureModule
 
     private static void TearDown() => DropCard();
 }
+

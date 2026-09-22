@@ -57,7 +57,7 @@ public sealed partial class InventoryScreen
     }
 
     private static readonly Dictionary<GameObject, (CanvasGroup? group, float alpha, bool blocks, bool interactable)> NativeGroups = new();
-    private static void QuietNative(GameObject go)
+    private static void RememberGroup(GameObject go)
     {
         if (!RestlessUi.Owned(go.transform) && !NativeGroups.ContainsKey(go))
         {
@@ -65,7 +65,18 @@ public sealed partial class InventoryScreen
             NativeGroups.Add(go, (group, group != null ? group.alpha : 1f,
                 group == null || group.blocksRaycasts, group == null || group.interactable));
         }
+    }
+
+    private static void QuietNative(GameObject go)
+    {
+        RememberGroup(go);
         RestlessUi.Quiet(go);
+    }
+
+    private static void LoudNative(GameObject go)
+    {
+        RememberGroup(go);
+        RestlessUi.Loud(go);
     }
 
     private static void RememberPaint(Graphic graphic)

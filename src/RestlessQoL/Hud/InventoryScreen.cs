@@ -565,7 +565,7 @@ public sealed partial class InventoryScreen : FeatureModule
             if (string.IsNullOrEmpty(copy))
                 QuietNative(level.gameObject);
             else
-                RestlessUi.Loud(level.gameObject);
+                LoudNative(level.gameObject);
         }
 
         if (!PaperOn())
@@ -1516,6 +1516,7 @@ public sealed partial class InventoryScreen : FeatureModule
 
     private static void DressRecipeRow(Transform row, bool lit)
     {
+        RememberCell(row.gameObject, RestlessUi.Deep<Image>(row, "icon"));
         if (PaintRecipeRow(row, lit))
             return;
 
@@ -1618,7 +1619,7 @@ public sealed partial class InventoryScreen : FeatureModule
                 continue;
             }
 
-            RestlessUi.Loud(go);
+            LoudNative(go);
             RememberCell(go, icon);
             var plate = RestlessUi.DressSlot(go, icon, false, null, Hidden, true);
             plate.SetActive(true);

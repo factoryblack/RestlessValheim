@@ -92,7 +92,7 @@ public sealed partial class BuildMenu : FeatureModule
 
     private static void DumpOnce(global::Hud hud)
     {
-        if (_dumped)
+        if (_dumped || !ModConfig.JotunnDebug.Value)
             return;
         var root = RootOf(hud.m_buildUi) ?? RootOf(hud.m_pieceSelectionWindow);
         if (root == null)

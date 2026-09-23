@@ -10,6 +10,7 @@ internal static class DrawerMesh
 {
     private static readonly Dictionary<string, Mesh> Meshes = new();
     private static readonly Dictionary<string, Texture2D> Albedos = new();
+    private static readonly Dictionary<string, Texture2D> Surfaces = new();
     private static readonly Dictionary<string, Sprite> Icons = new();
     private static string? _folder;
     private static MethodInfo? _loadImage;
@@ -105,6 +106,24 @@ internal static class DrawerMesh
         return tex;
     }
 
+    // Metal in red, smoothness in alpha. Linear so the chest shader does not gamma it.
+    public static Texture2D? Surface(string id)
+    {
+        if (Surfaces.TryGetValue(id, out var tex) && tex != null)
+            return tex;
+        var path = Path.Combine(Folder(), id + ".metal.png");
+        if (!File.Exists(path))
+        {
+            Plugin.Log.LogWarning("drawer surface missing " + id);
+            return null;
+        }
+
+        tex = DecodePng(File.ReadAllBytes(path), id + ".metal", linear: true);
+        if (tex != null)
+            Surfaces[id] = tex;
+        return tex;
+    }
+
     public static Sprite? Icon(string id)
     {
         if (Icons.TryGetValue(id, out var sprite) && sprite != null)
@@ -195,9 +214,11 @@ internal static class DrawerMesh
         return mesh;
     }
 
-    private static Texture2D? DecodePng(byte[] bytes, string name)
+    private static Texture2D? DecodePng(byte[] bytes, string name, bool linear = false)
     {
-        var tex = new Texture2D(2, 2, TextureFormat.RGBA32, true);
+        var tex = linear
+            ? new Texture2D(2, 2, TextureFormat.RGBA32, true, true)
+            : new Texture2D(2, 2, TextureFormat.RGBA32, true);
         var load = LoadImage();
         if (load == null || !(bool)load.Invoke(null, new object[] { tex, bytes }))
         {

@@ -167,7 +167,7 @@ public static class ModConfig
         PieceHealthEnabled = config.Bind("Hud.Debug", "PieceHealth", false,
             "Hammer hover: Jötunn piece panel (health, stability, rotation) and the vanilla health bar. Off by default. Client-local.");
         JotunnDebug = config.Bind("Hud.Debug", "JotunnDebugInfo", false,
-            "Jötunn corner overlay (version, FPS, position). Client-local.");
+            "Jötunn corner overlay (version, FPS, position). Also writes the first pause, inventory, and hammer layout to the log. Client-local.");
         JotunnDebug.SettingChanged += (_, _) => ApplyJotunnDebug();
         PieceHealthEnabled.SettingChanged += (_, _) => ApplyJotunnDebug();
         ApplyJotunnDebug();

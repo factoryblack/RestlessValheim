@@ -1,6 +1,6 @@
 {
   "name": "RestlessCore",
-  "version_number": "0.1.14",
+  "version_number": "0.1.15",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "Nearby chests count as yours. Extra armour and Z/X/C. A quieter HUD. Host-locked F8. Valheim 1.0.",
   "dependencies": [

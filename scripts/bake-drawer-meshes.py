@@ -69,6 +69,9 @@ def bake_one(fbx: Path):
     png = src_dir / f"{fbx.stem}.png"
     if png.exists():
         shutil.copy2(png, out_dir / f"{fbx.stem}.png")
+    surface = src_dir / f"{fbx.stem}.metal.png"
+    if surface.exists():
+        shutil.copy2(surface, out_dir / f"{fbx.stem}.metal.png")
 
     xs = [v[0] for v in verts]
     ys = [v[1] for v in verts]

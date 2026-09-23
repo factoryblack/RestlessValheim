@@ -1,10 +1,11 @@
 # Changelog
 
-## Unreleased
-
-Not published.
+## 0.1.15
 
 - Loadout totals: paper panel, worn-slot armour sources, multiplicative attack bonuses, and a scrollable source reader (PR 20)
+- Pause, inventory, and hammer layout dumps only run while the Jötunn debug overlay is on
+- Expansion settings can hide a row until another setting is on (pile range waits for isolate)
+- Already published Plant 0.1.5 and Piles 0.1.5 still start on this Core
 
 ## 0.1.14
 

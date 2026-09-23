@@ -131,7 +131,7 @@ public sealed partial class InventoryScreen : FeatureModule
     // Live names/sizes before plates. Do not invent a second tree.
     private static void DumpOnce(InventoryGui gui)
     {
-        if (_dumped || gui.m_inventoryRoot == null)
+        if (_dumped || !ModConfig.JotunnDebug.Value || gui.m_inventoryRoot == null)
             return;
         _dumped = true;
 

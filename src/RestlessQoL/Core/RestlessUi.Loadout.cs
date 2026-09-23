@@ -29,6 +29,7 @@ internal static partial class RestlessUi
     public static GameObject SetWell(Transform parent)
     {
         var panel = Tray(parent, "setBonus", false);
+        PaperSurface(panel);
         var layout = panel.AddComponent<VerticalLayoutGroup>();
         layout.padding = new RectOffset(14, 14, 12, 12);
         layout.spacing = 6f;
@@ -62,15 +63,18 @@ internal static partial class RestlessUi
         if (required > 0 && equipped.HasValue)
         {
             var marks = Node(parent, "setPieces");
-            marks.AddComponent<LayoutElement>().preferredHeight = 12f;
+            marks.AddComponent<LayoutElement>().preferredHeight = 10f;
+            var rail = Node(marks.transform, "rail");
+            Pin(rail, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), Vector2.zero,
+                new Vector2(Mathf.Min(width, 160f), 6f));
             // A bounded progress rail, not quality gems. Numeric count stays exact
             // for unusually large addon sets without creating hundreds of objects.
             var count = Mathf.Min(required, 12);
             for (var i = 0; i < count; i++)
             {
-                var mark = Graphic(marks.transform, "piece", (i + 1) * required <= equipped.Value * count ? tint : Ink, false);
+                var mark = Graphic(rail.transform, "piece", (i + 1) * required <= equipped.Value * count ? tint : Ink, false);
                 Stretch(mark, new Vector2((float)i / count, 0f), new Vector2((float)(i + 1) / count, 1f),
-                    new Vector2(1f, 2f), new Vector2(-3f, -2f));
+                    new Vector2(1f, 0f), new Vector2(-3f, 0f));
             }
         }
     }

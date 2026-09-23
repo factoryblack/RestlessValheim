@@ -397,7 +397,7 @@ public sealed partial class StatSheet : FeatureModule
         foreach (var part in row.Parts) sb.Append('\n').Append(part.Name).Append('\n').Append(part.Value);
         sb.Append('\n').Append(row.Note);
         var stamp = sb.ToString();
-        _originTitle.text = row.Label;
+        _originTitle.text = row.SetRequired > 0 ? "Equipment set" : row.Label;
         _originValue.text = row.Value;
         _originValue.color = row.SetRequired > 0 && row.SetActive ? RestlessUi.SetActiveTint : RestlessUi.Accent;
         if (_detailCopy == stamp) return;

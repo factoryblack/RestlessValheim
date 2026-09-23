@@ -483,127 +483,12 @@ public sealed partial class InventoryScreen : FeatureModule
 
     private static void DressHeader(InventoryGui gui)
     {
-        if (gui.m_crafting == null)
-            return;
-        var craft = gui.m_crafting;
-        if (!PaperOn())
-        {
-            DropNamed(craft, "RestlessHeader");
-            DropNamed(craft, "RestlessCraftPaper");
-            return;
-        }
-        DropNamed(craft, "RestlessCraftTray");
-        DropNamed(craft, "RestlessCraftHead");
-        var list = ListHost(gui);
-        var desc = RestlessUi.Deep(craft, "Decription");
-        if (!WorldBox(list, out var lx0, out _, out var lx1, out var ly1)
-            && !WorldBox(gui.m_recipeListRoot, out lx0, out _, out lx1, out ly1))
-            return;
-        if (!WorldBox(desc, out var dx0, out _, out var dx1, out var dy1))
-        {
-            dx0 = lx1;
-            dx1 = lx1;
-            dy1 = ly1;
-        }
-
-        var left = Mathf.Min(lx0, dx0);
-        var right = Mathf.Max(lx1, dx1);
-        var topic = RestlessUi.Deep(craft, "topic");
-        if (!WorldBox(topic, out _, out var titleBot, out _, out var titleTop)
-            && gui.m_craftingStationName != null
-            && !WorldBox(gui.m_craftingStationName.rectTransform, out _, out titleBot, out _,
-                out titleTop))
-        {
-            titleTop = Mathf.Max(ly1, dy1) + 30f;
-            titleBot = titleTop - 30f;
-        }
-
-        const float topPad = 24f;
-        const float mid = 12f;
-        const float tabBand = 36f;
-        const float botPad = 8f;
-        var headerTop = titleTop + topPad;
-        var headerBot = titleBot - mid - tabBand - botPad;
-        var header = EnsureStrip(craft, "RestlessHeader");
-        Place(header.GetComponent<RectTransform>(), left, headerBot, right, headerTop, 0f, 0f);
-        ParkCraftTabs(gui, header.GetComponent<RectTransform>());
-    }
-
-    // Craft / Upgrade sit on the header's bottom edge, inset, not on the lip.
-    private static void ParkCraftTabs(InventoryGui gui, RectTransform header)
-    {
-        if (!WorldBox(header, out _, out var hy0, out _, out _))
-            return;
-        var tabs = new List<RectTransform>();
-        if (gui.m_tabCraft != null)
-            AddRt(tabs, gui.m_tabCraft.GetComponent<RectTransform>());
-        if (gui.m_tabUpgrade != null)
-            AddRt(tabs, gui.m_tabUpgrade.GetComponent<RectTransform>());
-        if (!Union(tabs, out _, out var ty0, out _, out var ty1))
-            return;
-        var want = hy0 + 6f + (ty1 - ty0) * 0.5f;
-        var have = (ty0 + ty1) * 0.5f;
-        var dy = want - have;
-        if (Mathf.Abs(dy) < 0.5f)
-            return;
-        foreach (var tab in tabs)
-        {
-            if (!CraftTabPositions.ContainsKey(tab)) CraftTabPositions.Add(tab, tab.anchoredPosition3D);
-            tab.position = new Vector3(tab.position.x, tab.position.y + dy, tab.position.z);
-        }
+        if (PaperOn()) ComposeCraftHeader(gui);
     }
 
     private static void DressRecipeChrome(InventoryGui gui)
     {
-        var desc = RestlessUi.Deep(gui.m_crafting, "Decription");
-        if (desc == null)
-            return;
-        DropNamed(desc, "RestlessRecipeFoot");
-        DropNamed(desc, "RestlessRecipeTitle");
-        var level = desc.Find("requirements")?.Find("level");
-        if (level != null)
-        {
-            var copy = RestlessUi.Bare(gui.m_minStationLevelText != null ? gui.m_minStationLevelText.text : "");
-            if (string.IsNullOrEmpty(copy))
-                QuietNative(level.gameObject);
-            else
-                LoudNative(level.gameObject);
-        }
-
-        if (!PaperOn())
-        {
-            DropNamed(desc, "RestlessRecipe");
-            return;
-        }
-
-        var parts = new List<RectTransform>();
-        if (gui.m_recipeIcon != null)
-            AddRt(parts, gui.m_recipeIcon.rectTransform);
-        if (gui.m_recipeName != null)
-            AddRt(parts, gui.m_recipeName.rectTransform);
-        if (gui.m_recipeDecription != null)
-            AddRt(parts, gui.m_recipeDecription.rectTransform);
-        if (gui.m_itemCraftType != null)
-            AddRt(parts, gui.m_itemCraftType.rectTransform);
-        if (!Union(parts, out var minX, out var minY, out var maxX, out var maxY))
-            return;
-        if (WorldBox(desc, out var dx0, out _, out var dx1, out _))
-        {
-            minX = dx0;
-            maxX = dx1;
-        }
-
-        var gap = RestlessUi.RowGap;
-        var list = ListHost(gui);
-        if (WorldBox(list, out _, out _, out var listRight, out _)
-            || WorldBox(gui.m_recipeListRoot, out _, out _, out listRight, out _))
-            minX = Mathf.Max(minX, listRight + gap);
-        var header = gui.m_crafting != null ? gui.m_crafting.Find("RestlessHeader") : null;
-        if (WorldBox(header, out _, out var headerBot, out _, out _))
-            maxY = Mathf.Min(maxY, headerBot - gap);
-
-        minY -= gap;
-        TallBox(desc, "RestlessRecipe", minX, minY, maxX, maxY, 0f, 0f);
+        if (PaperOn()) ComposeCraftDetail(gui);
     }
 
     private static void ParkStationTitle(InventoryGui gui)
@@ -615,18 +500,12 @@ public sealed partial class InventoryScreen : FeatureModule
         var face = node.GetComponent<Text>();
         if (face == null)
             return;
-        var from = header.GetComponent<RectTransform>();
-        var rt = face.GetComponent<RectTransform>();
-        RestlessUi.CopyRect(rt, from);
-        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
-        rt.pivot = new Vector2(0.5f, 1f);
-        rt.anchoredPosition = new Vector2(0f, -12f);
-        rt.sizeDelta = new Vector2(Mathf.Max(from.rect.width - 24f, 80f), 52f);
-        face.alignment = TextAnchor.UpperCenter;
-        face.fontSize = RestlessUi.TitleSize;
+        if (!CraftArea(gui, out var area, out var sx, out var sy)) return;
+        CraftBounds(face.rectTransform, area.xMin + 84f * sx, area.yMax - 60f * sy,
+            area.xMax - 88f * sx, area.yMax - 12f * sy);
+        face.alignment = TextAnchor.MiddleLeft;
         face.font = RestlessUi.Face(true);
-        face.horizontalOverflow = HorizontalWrapMode.Overflow;
-        face.verticalOverflow = VerticalWrapMode.Overflow;
+        RestlessUi.BoundedLabel(face, 30, 22);
         node.SetAsLastSibling();
     }
 
@@ -1635,7 +1514,7 @@ public sealed partial class InventoryScreen : FeatureModule
             if (nameFace != null)
                 nameFace.gameObject.SetActive(false);
             RestlessUi.HideVanillaSlotText(go);
-            RestlessUi.PaperSurface(plate, accent: RestlessUi.PaperMuted * 0.5f);
+            RestlessUi.MaterialSocket(plate);
             plate.GetComponent<Image>().raycastTarget = true;
             // Keep the original count format and shortage colour, including mod-provided have/need.
             PaintRequirement(go, amountTmp);

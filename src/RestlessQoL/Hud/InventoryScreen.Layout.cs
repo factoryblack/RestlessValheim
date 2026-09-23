@@ -41,7 +41,7 @@ public sealed partial class InventoryScreen
 
     private static float LayoutCraftIdentity(InventoryGui gui, float left, float top, float right, float sx, float sy)
     {
-        const float inset = 24f, portrait = 64f, gap = 18f;
+        const float inset = 12f, portrait = 56f, gap = 12f;
         var height = portrait;
         if (gui.m_recipeIcon != null)
         {
@@ -60,9 +60,25 @@ public sealed partial class InventoryScreen
             name.verticalOverflow = VerticalWrapMode.Overflow;
             CraftBounds(name.rectTransform, left + (inset + portrait + gap) * sx,
                 top - (inset + portrait) * sy, right - inset * sx, top - inset * sy);
-            height = Mathf.Max(portrait, name.preferredHeight);
+            var titleHeight = name.preferredHeight;
+            var selected = SelectedRecipeField?.GetValue(gui) is KeyValuePair<Recipe, ItemDrop.ItemData> pair ? pair : default;
+            var categoryCopy = ItemTooltip.RecipeCategory(selected.Value ?? selected.Key?.m_item?.m_itemData);
+            var category = name.transform.parent.Find("RestlessCraftCategory")?.GetComponent<Text>();
+            if (category == null)
+            {
+                category = RestlessUi.Label(name.transform.parent, "", 17, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
+                category.gameObject.name = "RestlessCraftCategory";
+                Ours.Add(category.gameObject);
+            }
+            category.text = categoryCopy;
+            category.gameObject.SetActive(categoryCopy.Length > 0 && name.gameObject.activeInHierarchy);
+            RestlessUi.BoundedLabel(category, 17, 14);
+            CraftBounds(category.rectTransform, left + (inset + portrait + gap) * sx,
+                top - (inset + titleHeight + 28f) * sy, right - inset * sx,
+                top - (inset + titleHeight + 4f) * sy);
+            height = Mathf.Max(portrait, titleHeight + (categoryCopy.Length > 0 ? 28f : 0f));
             CraftBounds(name.rectTransform, left + (inset + portrait + gap) * sx,
-                top - (inset + height) * sy, right - inset * sx, top - inset * sy);
+                top - (inset + titleHeight) * sy, right - inset * sx, top - inset * sy);
         }
         return top - (inset + height + gap) * sy;
     }
@@ -73,17 +89,19 @@ public sealed partial class InventoryScreen
         var sx = Mathf.Abs(plate.lossyScale.x);
         var sy = Mathf.Abs(plate.lossyScale.y);
         RememberCraftRect(icon.rectTransform);
-        // The socket's baked ledge occupies the bottom quarter. Fit both zones
-        // relative to the native cell, including smaller UI scales.
-        var ledge = (y1 - y0) * 0.27f;
-        CraftBounds(icon.rectTransform, x0 + 7f * sx, y0 + ledge + 3f * sy,
+        // A fixed text-safe count lane. The previous proportional lane was
+        // shorter than the font's minimum line height, so Unity emitted no text.
+        const float countHeight = 26f;
+        CraftBounds(icon.rectTransform, x0 + 7f * sx, y0 + (countHeight + 3f) * sy,
             x1 - 7f * sx, y1 - 6f * sy);
         var oldStrip = plate.Find("RestlessCountStrip");
         if (oldStrip != null) oldStrip.gameObject.SetActive(false);
         face.alignment = TextAnchor.MiddleCenter;
-        RestlessUi.BoundedLabel(face, 20, RestlessUi.HintSize);
-        CraftBounds(face.rectTransform, x0 + 5f * sx, y0 + 3f * sy,
-            x1 - 5f * sx, y0 + ledge);
+        RestlessUi.BoundedLabel(face, 18, 12);
+        face.horizontalOverflow = HorizontalWrapMode.Wrap;
+        face.verticalOverflow = VerticalWrapMode.Overflow;
+        CraftBounds(face.rectTransform, x0 + 4f * sx, y0 + 2f * sy,
+            x1 - 4f * sx, y0 + countHeight * sy);
 
     }
 

@@ -49,37 +49,7 @@ public sealed partial class InventoryScreen
     {
         var craft = gui.m_crafting;
         if (craft == null) return;
-        var header = craft.Find("RestlessHeader");
-        var desc = RestlessUi.Deep(craft, "Decription");
-        var detail = desc != null ? desc.Find("RestlessRecipe") : null;
-        var parts = new List<RectTransform>();
-        AddRt(parts, header);
-        AddRt(parts, ListHost(gui));
-        AddRt(parts, detail);
-        AddRt(parts, gui.m_craftButton != null ? gui.m_craftButton.transform : null);
-        AddRt(parts, RestlessUi.Deep(craft, "UpgradePanel"));
-        if (gui.m_recipeRequirementList != null)
-            foreach (var requirement in gui.m_recipeRequirementList)
-                if (requirement != null) AddRt(parts, requirement.transform);
-        if (Kit.Sprite("paper-panel") == null)
-        {
-            DropNamed(craft, "RestlessCraftPaper");
-            if (header != null) DropNamed(header, "paperAccent");
-            if (detail != null) DropNamed(detail, "paperAccent");
-        }
-        else if (Union(parts, out var x0, out var y0, out var x1, out var y1))
-        {
-            var body = EnsureStrip(craft, "RestlessCraftPaper");
-            Place(body.GetComponent<RectTransform>(), x0, y0, x1, y1, 14f, 14f, false);
-            RestlessUi.InventorySurface(body.gameObject);
-            if (header != null)
-            {
-                RestlessUi.InventorySurface(header.gameObject);
-                var rule = header.Find("RestlessPaperRule");
-                if (rule != null) rule.gameObject.SetActive(false);
-            }
-            if (detail != null) RestlessUi.InventorySurface(detail.gameObject);
-        }
+        ComposeCraftPaper(gui);
         DressStructuredRecipe(gui);
         if (gui.m_recipeIcon != null && gui.m_recipeIcon.transform.Find("RestlessPortrait") == null)
         {
@@ -91,7 +61,7 @@ public sealed partial class InventoryScreen
         DressStationRequirement(gui);
         if (gui.m_repairButton != null)
             CraftArtwork(RestlessUi.Deep<Image>(gui.m_repairButton.transform, "Icon"), "utility-repair");
-        CompactStationIcon(gui.m_craftingStationIcon);
+
         if (gui.m_craftingStationIcon != null)
         {
             var corner = RestlessUi.StationCorner(gui.m_craftingStationIcon.transform);
@@ -99,7 +69,7 @@ public sealed partial class InventoryScreen
         }
         if (gui.m_craftingStationLevel != null && gui.m_craftingStationLevel.transform.parent != null)
         {
-            CompactStationIcon(gui.m_craftingStationLevel.transform.parent.GetComponent<Image>());
+
             CraftArtwork(gui.m_craftingStationLevel.transform.parent.GetComponent<Image>(), "station-socket");
         }
 
@@ -226,8 +196,8 @@ public sealed partial class InventoryScreen
         }
         view.SetActive(source.gameObject.activeInHierarchy);
         var barWidth = bar != null ? bar.GetComponent<RectTransform>().rect.width : 0f;
-        Place(view.GetComponent<RectTransform>(), x0 + 24f * sx, y0 + 24f * sy,
-            x1 - (barWidth + 36f) * sx, Mathf.Max(y0 + 50f * sy, identityBottom), 0f, 0f, false);
+        Place(view.GetComponent<RectTransform>(), x0 + 12f * sx, y0 + 12f * sy,
+            x1 - (barWidth + 24f) * sx, Mathf.Max(y0 + 50f * sy, identityBottom), 0f, 0f, false);
         var width = Mathf.Max(80f, view.GetComponent<RectTransform>().rect.width);
         var copy = ItemTooltip.RecipeCopy(source.text ?? "");
         var identity = gui.GetSelectedRecipeIndex(false) + ":" + gui.InCraftTab() + ":" + gui.m_recipeName?.text;
@@ -289,66 +259,43 @@ public sealed partial class InventoryScreen
         var srcRt = src.transform as RectTransform;
         var width = srcRt != null && srcRt.rect.width > 1f ? srcRt.rect.width : 16f;
         RestlessUi.Stretch(go, new Vector2(1f, 0f), Vector2.one,
-            new Vector2(-width - 12f, 24f), new Vector2(-12f, -topInset));
+            new Vector2(-width - 4f, 12f), new Vector2(-4f, -topInset));
         return go.GetComponent<Scrollbar>();
     }
 
     private static void DressStationRequirement(InventoryGui gui)
     {
         var source = gui.m_minStationLevelText;
-        if (source == null || source.transform.parent == null) return;
+        if (source == null || gui.m_crafting == null) return;
         var host = source.transform.parent;
-        var face = host.Find("Restless_minStation")?.GetComponent<Text>();
+        var oldFace = host.Find("Restless_minStation");
+        if (oldFace != null) oldFace.gameObject.SetActive(false);
+        foreach (var name in new[] { "RestlessStationMedal", "RestlessSlot" })
+        {
+            var old = host.Find(name);
+            if (old != null) old.gameObject.SetActive(false);
+        }
+        if (gui.m_minStationLevelIcon != null) Hide(gui.m_minStationLevelIcon);
+        var background = host.GetComponent<Image>();
+        if (background != null && background.GetComponent<Mask>() == null) Hide(background);
+        var face = gui.m_crafting.Find("RestlessStationRequirement")?.GetComponent<Text>();
         if (face == null)
         {
-            face = RestlessUi.Label(host, "", 20, RestlessUi.Accent, TextAnchor.MiddleCenter);
-            face.gameObject.name = "Restless_minStation";
+            face = RestlessUi.Label(gui.m_crafting, "", 17, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
+            face.gameObject.name = "RestlessStationRequirement";
             Ours.Add(face.gameObject);
         }
-        var copy = RestlessUi.Bare(source.text);
-        face.text = copy;
-        face.fontSize = 20;
-        face.alignment = TextAnchor.MiddleCenter;
-        face.horizontalOverflow = HorizontalWrapMode.Overflow;
-        var colour = source.color;
-        face.color = colour.r > colour.g * 1.3f && colour.r > colour.b * 1.3f
-            ? RestlessUi.HealthTint : RestlessUi.Accent;
-        if (gui.m_minStationLevelIcon != null) Hide(gui.m_minStationLevelIcon);
-        var oldBackground = host.GetComponent<Image>();
-        if (oldBackground != null && oldBackground.GetComponent<Mask>() == null) Hide(oldBackground);
-        var oldSlot = host.Find("RestlessSlot");
-        if (oldSlot != null) oldSlot.gameObject.SetActive(false);
-        var medal = host.Find("RestlessStationMedal")?.gameObject;
-        if (medal == null)
-        {
-            medal = RestlessUi.Picture(host, "RestlessStationMedal", "station-socket");
-            Ours.Add(medal);
-            RestlessUi.Pin(medal, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(52f, 52f));
-            medal.GetComponent<Image>().raycastTarget = true;
-            medal.AddComponent<RestlessHint>();
-            var glyph = RestlessUi.Graphic(medal.transform, "glyph", Color.white, false);
-            RestlessUi.Pin(glyph, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -5f), new Vector2(28f, 28f));
-            glyph.GetComponent<Image>().preserveAspect = true;
-            glyph.GetComponent<Image>().color = Color.white;
-            glyph.GetComponent<Image>().raycastTarget = false;
-        }
-        var stationGlyph = medal.transform.Find("glyph")?.GetComponent<Image>();
-        if (stationGlyph != null)
-        {
-            // Use the selected recipe's station, including modded stations, rather
-            // than suggesting every requirement is a workbench/hammer.
-            var selected = SelectedRecipeField?.GetValue(gui) is KeyValuePair<Recipe, ItemDrop.ItemData> pair
-                ? pair : default;
-            var quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
-            var station = selected.Key != null ? selected.Key.GetRequiredStation(quality) : null;
-            stationGlyph.sprite = station != null ? station.m_icon : gui.m_craftingStationIcon?.sprite;
-            stationGlyph.gameObject.SetActive(stationGlyph.sprite != null);
-        }
-        medal.SetActive(copy.Length > 0 && source.gameObject.activeInHierarchy);
-        face.gameObject.SetActive(medal.activeSelf);
-        medal.GetComponent<RestlessHint>().Copy = "Requires station level " + copy;
-        RestlessUi.Pin(face.gameObject, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -12f), new Vector2(44f, 22f));
-        face.transform.SetAsLastSibling();
+        var selected = SelectedRecipeField?.GetValue(gui) is KeyValuePair<Recipe, ItemDrop.ItemData> pair ? pair : default;
+        var quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
+        var station = selected.Key != null ? selected.Key.GetRequiredStation(quality) : null;
+        var level = RestlessUi.Bare(source.text);
+        var stationName = station != null ? Localization.instance.Localize(station.m_name) : "Station";
+        face.text = "Requires " + stationName + " · " + level;
+        face.gameObject.SetActive(level.Length > 0 && station != null && source.gameObject.activeInHierarchy);
+        face.color = source.color.r > source.color.g * 1.3f && source.color.r > source.color.b * 1.3f
+            ? RestlessUi.HealthTint : RestlessUi.PaperMuted;
+        RestlessUi.BoundedLabel(face, 17, 13);
+        ComposeCraftDetail(gui);
     }
 
     private static void PaperCraftButton(Button? button, bool primary, bool ribbon = false)
@@ -500,5 +447,6 @@ public sealed partial class InventoryScreen
         _recipeCopy = "";
         _recipeIdentity = "";
         _recipeWidth = 0f;
+        _craftAreaReady = false;
     }
 }

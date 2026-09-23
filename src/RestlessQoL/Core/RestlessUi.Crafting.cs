@@ -5,6 +5,23 @@ namespace RestlessQoL.Core;
 
 internal static partial class RestlessUi
 {
+    // Nested crafting regions share the outer sheet instead of stacking paper
+    // textures, rims and translucent backgrounds over one another.
+    public static void CraftInset(GameObject target)
+    {
+        var image = target.GetComponent<Image>();
+        image.sprite = null;
+        image.type = Image.Type.Simple;
+        image.color = Color.clear;
+        image.raycastTarget = false;
+        Rim(target, on: false);
+        foreach (var name in new[] { "paperAccent", "RestlessPaperRule" })
+        {
+            var old = target.transform.Find(name);
+            if (old != null) old.gameObject.SetActive(false);
+        }
+    }
+
     // Material artwork is independent of native controls, item icons and live text.
     public static void CraftTab(GameObject target, bool selected)
     {
@@ -27,11 +44,16 @@ internal static partial class RestlessUi
         image.preserveAspect = false;
         image.color = Color.white;
         Rim(target, on: false);
+        var rim = target.transform.Find("paperAccent");
+        if (rim != null) rim.gameObject.SetActive(false);
     }
 
     public static void RecipeSelection(GameObject target, bool selected)
     {
-        PaperControl(target, selected ? Accent : null);
+        CraftInset(target);
+        var image = target.GetComponent<Image>();
+        image.raycastTarget = true;
+        image.color = selected ? new Color(0.65f, 0.51f, 0.28f, 0.22f) : new Color(0f, 0f, 0f, 0.1f);
         var clasp = target.transform.Find("RestlessRecipeClasp")?.gameObject;
         if (clasp == null && selected)
         {

@@ -521,6 +521,8 @@ public sealed class ItemTooltip : FeatureModule
         ContributionBadges(parent, contributions, width);
         var set = item != null ? SplitSet(ref raw, item) : null;
         Parse(raw, "", "", out var stats, out var chips, out var notes);
+        var category = RecipeCategory(item);
+        notes.RemoveAll(line => Handedness(line) || category.Length > 0 && line == category);
         if (notes.Count > 0) Paragraph(parent, string.Join("\n", notes), width, RestlessUi.PaperMuted, CopySize + 2);
         if (stats.Count > 0)
         {
@@ -539,6 +541,8 @@ public sealed class ItemTooltip : FeatureModule
         if (set != null) SetPanel(parent, set, width);
         ContributionSections(parent, contributions, width);
     }
+
+    internal static string RecipeCategory(ItemDrop.ItemData? item) => item?.m_shared != null ? TypeName(item.m_shared.m_itemType) : "";
 
     internal static string RecipeCopy(string raw) => Soft(raw);
 

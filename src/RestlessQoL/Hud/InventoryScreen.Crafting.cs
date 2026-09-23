@@ -26,6 +26,9 @@ public sealed partial class InventoryScreen
     private static string _recipeIdentity = "";
     private static float _recipeWidth;
     private static int _recipeRevision = -1;
+    private static ItemDrop.ItemData? _recipeSetItem;
+    private static string _recipeSetState = "";
+    private static float _recipeNextSetCheck;
     private static readonly System.Reflection.FieldInfo? SelectedRecipeField =
         HarmonyLib.AccessTools.Field(typeof(InventoryGui), "m_selectedRecipe");
 
@@ -225,7 +228,13 @@ public sealed partial class InventoryScreen
         var copy = ItemTooltip.RecipeCopy(source.text ?? "");
         var identity = gui.GetSelectedRecipeIndex(false) + ":" + gui.InCraftTab() + ":" + gui.m_recipeName?.text;
         var changedSelection = identity != _recipeIdentity;
-        if (!changedSelection && scroller.content != null && copy == _recipeCopy
+        var setChanged = false;
+        if (!changedSelection && Time.unscaledTime >= _recipeNextSetCheck)
+        {
+            _recipeNextSetCheck = Time.unscaledTime + 0.25f;
+            setChanged = ItemTooltip.SetStateKey(_recipeSetItem) != _recipeSetState;
+        }
+        if (!changedSelection && !setChanged && scroller.content != null && copy == _recipeCopy
             && _recipeRevision == RestlessQoL.Api.TooltipApi.Revision && Mathf.Abs(width - _recipeWidth) < 0.5f) return;
         var offset = !changedSelection && scroller.content != null ? scroller.content.anchoredPosition.y : 0f;
         foreach (Transform child in view.transform)
@@ -243,7 +252,10 @@ public sealed partial class InventoryScreen
         layout.childForceExpandHeight = false;
         layout.childForceExpandWidth = true;
         content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        ItemTooltip.RecipeBody(content.transform, copy, width, RecipePreview(gui));
+        _recipeSetItem = RecipePreview(gui);
+        ItemTooltip.RecipeBody(content.transform, copy, width, _recipeSetItem);
+        _recipeSetState = ItemTooltip.SetStateKey(_recipeSetItem);
+        _recipeNextSetCheck = Time.unscaledTime + 0.25f;
         _recipeRevision = RestlessQoL.Api.TooltipApi.Revision;
         scroller.content = rect;
         LayoutRebuilder.ForceRebuildLayoutImmediate(rect);

@@ -92,7 +92,11 @@ public sealed partial class InventoryScreen
         if (gui.m_repairButton != null)
             CraftArtwork(RestlessUi.Deep<Image>(gui.m_repairButton.transform, "Icon"), "utility-repair");
         CompactStationIcon(gui.m_craftingStationIcon);
-        CraftArtwork(gui.m_craftingStationIcon, "craft-hammer");
+        if (gui.m_craftingStationIcon != null)
+        {
+            var corner = RestlessUi.StationCorner(gui.m_craftingStationIcon.transform);
+            if (!Ours.Contains(corner)) Ours.Add(corner);
+        }
         if (gui.m_craftingStationLevel != null && gui.m_craftingStationLevel.transform.parent != null)
         {
             CompactStationIcon(gui.m_craftingStationLevel.transform.parent.GetComponent<Image>());
@@ -140,8 +144,8 @@ public sealed partial class InventoryScreen
                 RestlessUi.ControlFeedback(button).Icon = icon;
             }
 
-        PaperCraftButton(gui.m_tabCraft, gui.InCraftTab());
-        PaperCraftButton(gui.m_tabUpgrade, gui.InUpradeTab());
+        PaperCraftButton(gui.m_tabCraft, gui.InCraftTab(), ribbon: true);
+        PaperCraftButton(gui.m_tabUpgrade, gui.InUpradeTab(), ribbon: true);
         PaperCraftButton(gui.m_craftButton, true);
         var action = gui.m_craftButton != null ? gui.m_craftButton.transform.Find("RestlessChip") : null;
         if (action != null)
@@ -322,11 +326,23 @@ public sealed partial class InventoryScreen
             RestlessUi.Pin(medal, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(52f, 52f));
             medal.GetComponent<Image>().raycastTarget = true;
             medal.AddComponent<RestlessHint>();
-            var glyph = RestlessUi.Picture(medal.transform, "glyph", "craft-hammer");
+            var glyph = RestlessUi.Graphic(medal.transform, "glyph", Color.white, false);
             RestlessUi.Pin(glyph, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -5f), new Vector2(28f, 28f));
             glyph.GetComponent<Image>().preserveAspect = true;
             glyph.GetComponent<Image>().color = Color.white;
             glyph.GetComponent<Image>().raycastTarget = false;
+        }
+        var stationGlyph = medal.transform.Find("glyph")?.GetComponent<Image>();
+        if (stationGlyph != null)
+        {
+            // Use the selected recipe's station, including modded stations, rather
+            // than suggesting every requirement is a workbench/hammer.
+            var selected = SelectedRecipeField?.GetValue(gui) is KeyValuePair<Recipe, ItemDrop.ItemData> pair
+                ? pair : default;
+            var quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
+            var station = selected.Key != null ? selected.Key.GetRequiredStation(quality) : null;
+            stationGlyph.sprite = station != null ? station.m_icon : gui.m_craftingStationIcon?.sprite;
+            stationGlyph.gameObject.SetActive(stationGlyph.sprite != null);
         }
         medal.SetActive(copy.Length > 0 && source.gameObject.activeInHierarchy);
         face.gameObject.SetActive(medal.activeSelf);
@@ -335,11 +351,12 @@ public sealed partial class InventoryScreen
         face.transform.SetAsLastSibling();
     }
 
-    private static void PaperCraftButton(Button? button, bool primary)
+    private static void PaperCraftButton(Button? button, bool primary, bool ribbon = false)
     {
         var chip = button != null ? button.transform.Find("RestlessChip") : null;
         if (button == null || chip == null) return;
-        RestlessUi.ForgedTab(chip.gameObject, primary);
+        if (ribbon) RestlessUi.CraftTab(chip.gameObject, primary);
+        else RestlessUi.ForgedTab(chip.gameObject, primary);
         var face = chip.GetComponentInChildren<Text>(true);
         if (face != null)
         {
@@ -432,6 +449,7 @@ public sealed partial class InventoryScreen
                 new Vector2(3f, 3f), new Vector2(-3f, -3f));
         }
         face.text = RestlessUi.Bare(source.text);
+        RestlessUi.MaterialSocket(plate.gameObject);
         LayoutMaterialCell(plate, icon, face);
         face.gameObject.SetActive(face.text.Length > 0 && face.text != "0");
         var colour = source.color;
@@ -484,5 +502,3 @@ public sealed partial class InventoryScreen
         _recipeWidth = 0f;
     }
 }
-
-

@@ -9,6 +9,7 @@ internal static class Kit
 {
     private static readonly string[] Library =
     {
+        "craft-station-corner", "craft-material-socket", "craft-tab-ribbon", "craft-selection-clasp",
         "row-idle", "btn-small", "diamond", "map-player", "eat-fork",
         "inventory-slot", "empty-head", "empty-chest", "empty-legs", "empty-cape",
         "empty-utility", "empty-trinket", "carry-weight",

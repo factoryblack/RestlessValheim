@@ -86,7 +86,7 @@ public sealed partial class InventoryScreen
             foreach (var requirement in gui.m_recipeRequirementList)
                 if (LiveMaterial(requirement)) count++;
         var rows = Mathf.Max(1, Mathf.CeilToInt((float)count / columns));
-        var footer = 100f + rows * 90f;
+        var footer = 100f + rows * 112f;
         var detail = EnsureStrip(desc, "RestlessRecipe");
         Place(detail.GetComponent<RectTransform>(), left, a.yMin + footer * sy, right,
             a.yMax - 116f * sy, 0f, 0f, false);
@@ -104,8 +104,8 @@ public sealed partial class InventoryScreen
             {
                 if (!LiveMaterial(requirement)) continue;
                 var x = left + (slot % columns) * (cell + gap);
-                var y = a.yMin + (78f + (rows - 1 - slot / columns) * 90f) * sy;
-                MoveCraft(requirement.transform, x, y, x + cell, y + 82f * sy);
+                var y = a.yMin + (78f + (rows - 1 - slot / columns) * 112f) * sy;
+                MoveCraft(requirement.transform, x, y, x + cell, y + 104f * sy);
                 slot++;
             }
         }

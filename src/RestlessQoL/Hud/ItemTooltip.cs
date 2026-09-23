@@ -429,15 +429,16 @@ public sealed class ItemTooltip : FeatureModule
     private static void StatRow(Transform parent, string label, string value, float width, bool supporting = false, int size = CopySize)
     {
         var row = RestlessUi.Node(parent, "stat");
-        var labelWidth = (width - 14f) * 0.52f;
-        var valueWidth = width - 14f - labelWidth;
+        const float gutter = 20f;
+        var labelWidth = (width - gutter) * 0.48f;
+        var valueWidth = width - gutter - labelWidth;
         var left = RestlessUi.Label(row.transform, label, size, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
         var right = RestlessUi.Label(row.transform, value, supporting ? RestlessUi.HudMeta : size,
             supporting ? RestlessUi.PaperMuted : RestlessUi.Accent, TextAnchor.UpperRight);
         if (supporting) left.fontSize = RestlessUi.HudMeta;
         var height = Mathf.Max(Measure(left, labelWidth), Measure(right, valueWidth));
         Place(left.gameObject, 0f, 0f, labelWidth, height);
-        Place(right.gameObject, labelWidth + 14f, 0f, valueWidth, height);
+        Place(right.gameObject, labelWidth + gutter, 0f, valueWidth, height);
         Hold(row, height);
     }
 

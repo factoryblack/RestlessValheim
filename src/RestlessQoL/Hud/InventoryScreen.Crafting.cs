@@ -62,9 +62,9 @@ public sealed partial class InventoryScreen
         if (gui.m_repairButton != null)
             CraftArtwork(RestlessUi.Deep<Image>(gui.m_repairButton.transform, "Icon"), "utility-repair");
 
-        if (gui.m_craftingStationIcon != null)
+        if (craft.Find("RestlessCraftPaper") != null)
         {
-            var corner = RestlessUi.StationCorner(gui.m_craftingStationIcon.transform);
+            var corner = RestlessUi.StationCorner(craft.Find("RestlessCraftPaper"));
             if (!Ours.Contains(corner)) Ours.Add(corner);
         }
         if (gui.m_craftingStationLevel != null && gui.m_craftingStationLevel.transform.parent != null)
@@ -291,7 +291,7 @@ public sealed partial class InventoryScreen
         var level = RestlessUi.Bare(source.text);
         var stationName = station != null ? Localization.instance.Localize(station.m_name) : "Station";
         face.text = "Requires " + stationName + " · " + level;
-        face.gameObject.SetActive(level.Length > 0 && station != null && source.gameObject.activeInHierarchy);
+        face.gameObject.SetActive(level.Length > 0 && station != null);
         face.color = source.color.r > source.color.g * 1.3f && source.color.r > source.color.b * 1.3f
             ? RestlessUi.HealthTint : RestlessUi.PaperMuted;
         RestlessUi.BoundedLabel(face, 17, 13);
@@ -361,7 +361,18 @@ public sealed partial class InventoryScreen
                 if (feedback != null) feedback.Selected = selected;
             }
             if (pair.Value.Face == null) continue;
-            pair.Value.Face.color = !pair.Key.IsInteractable() ? RestlessUi.PaperMuted * 0.65f
+            // Vanilla disables the selected tab to prevent redundant clicks.
+            // That is selection, not an unavailable crafting action.
+            var selectedTab = (pair.Key == gui.m_tabCraft && gui.InCraftTab())
+                || (pair.Key == gui.m_tabUpgrade && !gui.InCraftTab());
+            if (pair.Key == gui.m_tabCraft || pair.Key == gui.m_tabUpgrade)
+            {
+                var colours = pair.Key.colors;
+                colours.disabledColor = selectedTab ? Color.white : new Color(0.55f, 0.55f, 0.55f, 0.65f);
+                pair.Key.colors = colours;
+            }
+            pair.Value.Face.color = selectedTab ? RestlessUi.Accent
+                : !pair.Key.IsInteractable() ? RestlessUi.PaperMuted * 0.65f
                 : pair.Value.Primary ? RestlessUi.Accent : RestlessUi.Text;
         }
         // Requirements can change from nearby storage without the player's grid changing.

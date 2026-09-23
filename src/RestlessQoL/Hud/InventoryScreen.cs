@@ -501,7 +501,8 @@ public sealed partial class InventoryScreen : FeatureModule
         if (face == null)
             return;
         if (!CraftArea(gui, out var area, out var sx, out var sy)) return;
-        CraftBounds(face.rectTransform, area.xMin + 84f * sx, area.yMax - 60f * sy,
+        var hasStationIcon = gui.m_craftingStationIcon != null && gui.m_craftingStationIcon.gameObject.activeInHierarchy;
+        CraftBounds(face.rectTransform, area.xMin + (hasStationIcon ? 84f : 24f) * sx, area.yMax - 60f * sy,
             area.xMax - 88f * sx, area.yMax - 12f * sy);
         face.alignment = TextAnchor.MiddleLeft;
         face.font = RestlessUi.Face(true);

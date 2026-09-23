@@ -34,3 +34,21 @@ and Upgrade including multi-quality controls; long descriptions; zero/one/many
 requirements and shortages; cancelling a craft; scrolling both panes; gamepad
 selection; UI scaling and toggling Restless inventory off/on. Compare native
 control restoration. No new imagery or gameplay/stat calculation is introduced.
+
+## September 23 containment correction
+
+The paper rim now opts out of Unity layout groups. It was participating as a
+blank row inside set wells and consuming their content space. Tooltip and loadout
+corner graphics share the sheet's top-right anchor, and the crafting corner is
+attached to the sheet instead of the station icon.
+
+Material sockets use the full 80 by 104 requirement cell, with a bounded 12–14px
+count in the artwork's bottom ledge. Icon and text bounds are separate. Set stat
+columns have a 20px gutter and independently measured wrapping. Selected native
+Craft/Upgrade buttons retain their disabled click behaviour but show selected
+colours. Station requirement visibility follows recipe data, not suppressed
+native text visibility; handcraft titles reclaim the missing icon's space.
+
+No new update loop or gameplay calculation. Build validation is not Unity
+visual validation: check long names, four-digit material counts, shortages,
+Craft/Upgrade selection, handcraft/station transitions, set wells and UI scales.

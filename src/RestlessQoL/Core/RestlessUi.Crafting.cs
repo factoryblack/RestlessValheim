@@ -38,6 +38,9 @@ internal static partial class RestlessUi
 
     public static void MaterialSocket(GameObject target)
     {
+        // DressSlot initially makes a square. The material frame has a count
+        // ledge and must use the entire portrait-shaped requirement cell.
+        Stretch(target, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var image = target.GetComponent<Image>();
         image.sprite = Kit.Sprite("craft-material-socket");
         image.type = Image.Type.Simple;
@@ -65,12 +68,12 @@ internal static partial class RestlessUi
         if (clasp != null) clasp.SetActive(selected);
     }
 
-    public static GameObject StationCorner(Transform icon)
+    public static GameObject StationCorner(Transform sheet)
     {
-        var corner = icon.Find("RestlessStationCorner")?.gameObject;
+        var corner = sheet.Find("RestlessStationCorner")?.gameObject;
         if (corner != null) return corner;
-        corner = Picture(icon, "RestlessStationCorner", "craft-station-corner");
-        Stretch(corner, Vector2.zero, Vector2.one, new Vector2(-8f, -8f), new Vector2(8f, 8f));
+        corner = Picture(sheet, "RestlessStationCorner", "craft-station-corner");
+        Pin(corner, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(76f, 76f));
         corner.GetComponent<Image>().raycastTarget = false;
         return corner;
     }

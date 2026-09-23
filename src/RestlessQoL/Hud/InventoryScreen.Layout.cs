@@ -71,7 +71,7 @@ public sealed partial class InventoryScreen
                 Ours.Add(category.gameObject);
             }
             category.text = categoryCopy;
-            category.gameObject.SetActive(categoryCopy.Length > 0 && name.gameObject.activeInHierarchy);
+            category.gameObject.SetActive(categoryCopy.Length > 0);
             RestlessUi.BoundedLabel(category, 17, 14);
             CraftBounds(category.rectTransform, left + (inset + portrait + gap) * sx,
                 top - (inset + titleHeight + 28f) * sy, right - inset * sx,
@@ -97,11 +97,11 @@ public sealed partial class InventoryScreen
         var oldStrip = plate.Find("RestlessCountStrip");
         if (oldStrip != null) oldStrip.gameObject.SetActive(false);
         face.alignment = TextAnchor.MiddleCenter;
-        RestlessUi.BoundedLabel(face, 18, 12);
+        RestlessUi.BoundedLabel(face, 14, 12);
         face.horizontalOverflow = HorizontalWrapMode.Wrap;
-        face.verticalOverflow = VerticalWrapMode.Overflow;
-        CraftBounds(face.rectTransform, x0 + 4f * sx, y0 + 2f * sy,
-            x1 - 4f * sx, y0 + countHeight * sy);
+        face.verticalOverflow = VerticalWrapMode.Truncate;
+        CraftBounds(face.rectTransform, x0 + 9f * sx, y0 + 4f * sy,
+            x1 - 9f * sx, y0 + 24f * sy);
 
     }
 

@@ -19,6 +19,9 @@ internal static partial class RestlessUi
         var image = target.GetComponent<Image>();
         if (image == null) return;
         var rim = target.transform.Find("paperAccent")?.gameObject;
+        // Decorative children must never become rows in a content layout group.
+        if (rim != null)
+            (rim.GetComponent<LayoutElement>() ?? rim.AddComponent<LayoutElement>()).ignoreLayout = true;
         var overlayColor = accent ?? new Color(0.18f, 0.16f, 0.13f, 0.88f);
         if (image.sprite == sprite && image.type == Image.Type.Tiled && rim != null)
         {
@@ -36,6 +39,7 @@ internal static partial class RestlessUi
         Rim(target, on: false);
 
         if (rim == null) rim = Graphic(target.transform, "paperAccent", Color.white, false);
+        (rim.GetComponent<LayoutElement>() ?? rim.AddComponent<LayoutElement>()).ignoreLayout = true;
         Stretch(rim, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var overlay = rim.GetComponent<Image>();
         overlay.sprite = Kit.Sprite(name + "-rim", border);
@@ -54,7 +58,7 @@ internal static partial class RestlessUi
         image.sprite = Kit.Sprite("corner-overlay");
         if (image.sprite == null) { corner.SetActive(false); return; }
         image.preserveAspect = true;
-        Pin(corner, Vector2.one, Vector2.one, new Vector2(4f, 5f), new Vector2(112f, 112f));
+        Pin(corner, Vector2.one, Vector2.one, Vector2.zero, new Vector2(112f, 112f));
         // Decoration behind all text; title layout reserves space on the right.
         corner.transform.SetAsFirstSibling();
         var tree = corner.transform.Find("emblem")?.gameObject

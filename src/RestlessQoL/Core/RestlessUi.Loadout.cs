@@ -20,7 +20,7 @@ internal static partial class RestlessUi
     public static void LoadoutCorner(Transform parent)
     {
         var corner = Picture(parent, "loadoutCorner", "loadout-corner");
-        Pin(corner, Vector2.one, Vector2.one, new Vector2(-8f, -8f), new Vector2(96f, 96f));
+        Pin(corner, Vector2.one, Vector2.one, Vector2.zero, new Vector2(96f, 96f));
         var crest = Picture(corner.transform, "characterCrest", "loadout-crest");
         Pin(crest, Vector2.one, Vector2.one, new Vector2(-9f, -9f), new Vector2(40f, 40f));
         corner.GetComponent<Image>().raycastTarget = crest.GetComponent<Image>().raycastTarget = false;

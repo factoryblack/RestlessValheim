@@ -73,18 +73,18 @@ public sealed partial class InventoryScreen
         var sx = Mathf.Abs(plate.lossyScale.x);
         var sy = Mathf.Abs(plate.lossyScale.y);
         RememberCraftRect(icon.rectTransform);
-        // Native item image stays above its own count strip, never behind the number.
-        CraftBounds(icon.rectTransform, x0 + 8f * sx, y0 + 27f * sy, x1 - 8f * sx, y1 - 5f * sy);
-        var strip = plate.Find("RestlessCountStrip")?.gameObject;
-        if (strip == null)
-        {
-            strip = RestlessUi.Graphic(plate, "RestlessCountStrip", new Color(0.08f, 0.07f, 0.06f, 0.8f), false);
-            strip.transform.SetAsFirstSibling();
-        }
-        RestlessUi.Stretch(strip, Vector2.zero, new Vector2(1f, 0f), new Vector2(4f, 3f), new Vector2(-4f, 27f));
+        // The socket's baked ledge occupies the bottom quarter. Fit both zones
+        // relative to the native cell, including smaller UI scales.
+        var ledge = (y1 - y0) * 0.27f;
+        CraftBounds(icon.rectTransform, x0 + 7f * sx, y0 + ledge + 3f * sy,
+            x1 - 7f * sx, y1 - 6f * sy);
+        var oldStrip = plate.Find("RestlessCountStrip");
+        if (oldStrip != null) oldStrip.gameObject.SetActive(false);
         face.alignment = TextAnchor.MiddleCenter;
         RestlessUi.BoundedLabel(face, 20, RestlessUi.HintSize);
-        RestlessUi.Stretch(face.gameObject, Vector2.zero, new Vector2(1f, 0f), new Vector2(4f, 3f), new Vector2(-4f, 27f));
+        CraftBounds(face.rectTransform, x0 + 5f * sx, y0 + 3f * sy,
+            x1 - 5f * sx, y0 + ledge);
+
     }
 
     private static void LayoutStationBadge(InventoryGui gui)

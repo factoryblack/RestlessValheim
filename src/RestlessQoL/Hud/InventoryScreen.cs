@@ -1498,7 +1498,7 @@ public sealed partial class InventoryScreen : FeatureModule
         var plate = row.Find("RestlessSlot");
         if (plate == null)
             return false;
-        RestlessUi.PaperControl(plate.gameObject, lit ? RestlessUi.Accent : null);
+        RestlessUi.RecipeSelection(plate.gameObject, lit);
         var nameTmp = row.Find("name")?.GetComponent<TMP_Text>();
         var qualityTmp = row.Find("QualityLevel")?.GetComponent<TMP_Text>();
         var title = RestlessUi.Bare(nameTmp != null ? nameTmp.text : "");
@@ -1575,7 +1575,7 @@ public sealed partial class InventoryScreen : FeatureModule
         plate.SetAsFirstSibling();
         RestlessUi.Stretch(plate.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         plate.GetComponent<Image>().raycastTarget = true;
-        RestlessUi.PaperControl(plate.gameObject, lit ? RestlessUi.Accent : null);
+        RestlessUi.RecipeSelection(plate.gameObject, lit);
 
         var label = plate.Find("label")?.GetComponent<Text>();
         if (label == null)

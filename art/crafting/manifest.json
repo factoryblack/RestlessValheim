@@ -1,0 +1,50 @@
+[
+  {
+    "name": "craft-station-corner",
+    "width": 260,
+    "height": 258,
+    "bytes": 44342,
+    "crop": {
+      "left": 38,
+      "top": 43,
+      "width": 1174,
+      "height": 1166
+    }
+  },
+  {
+    "name": "craft-material-socket",
+    "width": 196,
+    "height": 225,
+    "bytes": 55337,
+    "crop": {
+      "left": 54,
+      "top": 55,
+      "width": 1064,
+      "height": 1227
+    }
+  },
+  {
+    "name": "craft-tab-ribbon",
+    "width": 516,
+    "height": 95,
+    "bytes": 93823,
+    "crop": {
+      "left": 25,
+      "top": 137,
+      "width": 2122,
+      "height": 378
+    }
+  },
+  {
+    "name": "craft-selection-clasp",
+    "width": 52,
+    "height": 233,
+    "bytes": 22548,
+    "crop": {
+      "left": 220,
+      "top": 280,
+      "width": 338,
+      "height": 1612
+    }
+  }
+]

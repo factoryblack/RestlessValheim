@@ -24,6 +24,7 @@ internal static class Kit
         "nav-raven", "nav-knot", "nav-shield", "nav-trophy", "nav-swords",
         "utility-lock", "utility-equipped", "utility-repair", "utility-missing",
         "utility-expand", "utility-collapse", "utility-close", "quality-lozenge", "selection-marker", "focus-corners",
+        "loadout-corner", "loadout-crest", "loadout-stat-plaque", "equipment-set-seal",
     };
 
     private static readonly Dictionary<string, Sprite> Cache = new();

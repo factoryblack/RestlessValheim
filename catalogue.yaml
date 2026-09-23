@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-23 — Core 0.1.15, Piles 0.1.6, Drawers 0.1.1. Layout dumps follow the Jötunn debug switch. Pile range hides until isolate. Drawer cabinets take a metal/smoothness map. Set bonus tooltips now separate conditional effects from individual stats.
+# last_audit: 2026-09-23 — shared loadout/set material and source-reader pass.
 
 updated: 2026-09-23
 
@@ -311,7 +311,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Native set bonuses are extracted before stat/damage sorting and rendered in one inset Set bonus well, with required/equipped count and active state. Set benefits, penalties and damage chips remain inside that boundary in inspect and crafting. State refresh is throttled; no hypothetical equip or stat changes. See docs/set-tooltip.md; Unity check pending. Craft preview now shares contribution badge/section rendering and API invalidation; rim tint remains inspect-only. Tab + chest inspect. Opt-in shared PaperSurface/PaperCorner/PaperDivider materials: generated torn charcoal panel/chip/corner, tintable alpha rims, separate ornaments; DressSlot retains behaviour. Measured text, two-column damage, fixed header and clipped PgUp/PgDn details. Unknown lines preserved. Client-side TooltipApi v1 accepts ordered badges, rim tint and sections with disposable registrations and exception isolation. Browser material proof in docs; no rarity mechanics or equipped comparison. Controller paging, compilation and Unity visual/input verification pending."
+    note: "Set presentation now shares the linked seal, measured identity and bounded piece rail with loadout totals; explicit Active/Inactive and once-per-set copy retained. See docs/loadout-materials.md. Native set bonuses are extracted before stat/damage sorting and rendered in one inset Set bonus well, with required/equipped count and active state. Set benefits, penalties and damage chips remain inside that boundary in inspect and crafting. State refresh is throttled; no hypothetical equip or stat changes. See docs/set-tooltip.md; Unity check pending. Craft preview now shares contribution badge/section rendering and API invalidation; rim tint remains inspect-only. Tab + chest inspect. Opt-in shared PaperSurface/PaperCorner/PaperDivider materials: generated torn charcoal panel/chip/corner, tintable alpha rims, separate ornaments; DressSlot retains behaviour. Measured text, two-column damage, fixed header and clipped PgUp/PgDn details. Unknown lines preserved. Client-side TooltipApi v1 accepts ordered badges, rim tint and sections with disposable registrations and exception isolation. Browser material proof in docs; no rarity mechanics or equipped comparison. Controller paging, compilation and Unity visual/input verification pending."
 
   - id: ui.sheet
     name: Loadout totals
@@ -319,7 +319,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Paper-backed totals with an in-panel, scrollable source reader and native scrollbar art. Armour/resistance sources use actual worn armour slots (never arrows). Multiplicative, skill-scoped attack bonuses; ordered armour/recovery arithmetic; food, live capacities, modified skills, active effects and active/inactive set progress. Live getters win and unexplained deltas remain visible. Samples at 4 Hz only while open; rows reused. Attack percentages cover SE_Stats fields, not custom hit-time effects. See docs/loadout-totals.md; Unity playtest pending."
+    note: "Loadout material pass: compact folded character corner, selected-total plaque, larger set rows, shared set identity/progress and collapsible measured source reader. Existing arithmetic and sample cadence retained. See docs/loadout-materials.md; Unity playtest pending. Paper-backed totals with an in-panel, scrollable source reader and native scrollbar art. Armour/resistance sources use actual worn armour slots (never arrows). Multiplicative, skill-scoped attack bonuses; ordered armour/recovery arithmetic; food, live capacities, modified skills, active effects and active/inactive set progress. Live getters win and unexplained deltas remain visible. Samples at 4 Hz only while open; rows reused. Attack percentages cover SE_Stats fields, not custom hit-time effects. See docs/loadout-totals.md; Unity playtest pending."
 
   - id: ui.menu
     name: Pause, logout, and exit

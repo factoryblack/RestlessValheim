@@ -16,13 +16,14 @@ public sealed partial class StatSheet : FeatureModule
     public override bool Enabled => true;
     public override bool TickInMenus => true;
 
-    private const float SheetWidth = 780f;
-    private const float SheetHeight = 570f;
-    private const float RowH = 36f;
+    private const float SheetWidth = 920f;
+    private const float SheetHeight = 640f;
+    private const float RowH = 44f;
 
     private static GameObject? _root;
     private static GameObject? _body;
-    private static Text? _originFace;
+    private static GameObject? _sourceBody;
+    private static bool _sourcesOpen = true;
     private static Text? _originTitle;
     private static Text? _originValue;
     private static ScrollRect? _scroll;
@@ -100,6 +101,7 @@ public sealed partial class StatSheet : FeatureModule
         Ensure(gui);
         _open = true;
         _detailCopy = "";
+        _sourcesOpen = true;
         _hover = "";
         if (_root != null)
         {
@@ -125,7 +127,8 @@ public sealed partial class StatSheet : FeatureModule
         if (_root != null)
             Object.Destroy(_root);
         _root = _body = null;
-        _originFace = _originTitle = _originValue = null;
+        _originTitle = _originValue = null;
+        _sourceBody = null;
         _scroll = _detailScroll = null;
         Views.Clear();
         Rows.Clear();
@@ -160,16 +163,17 @@ public sealed partial class StatSheet : FeatureModule
             Vector2.zero, new Vector2(SheetWidth, SheetHeight));
         RestlessUi.PaperSurface(_root);
         _root.GetComponent<Image>().raycastTarget = true;
+        RestlessUi.LoadoutCorner(_root.transform);
         var title = RestlessUi.Label(_root.transform, "Loadout totals", 30, RestlessUi.Text, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(title.gameObject, new Vector2(0f, 1f), Vector2.one,
-            new Vector2(28f, -58f), new Vector2(-112f, -14f));
+            new Vector2(28f, -58f), new Vector2(-228f, -14f));
         var caption = RestlessUi.Label(_root.transform, "Equipped gear · food · active effects", 18,
             RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(caption.gameObject, new Vector2(0f, 1f), Vector2.one,
-            new Vector2(28f, -86f), new Vector2(-28f, -58f));
+            new Vector2(28f, -86f), new Vector2(-132f, -58f));
         var close = RestlessUi.Chip(_root.transform, "close");
         RestlessUi.PaperControl(close);
-        RestlessUi.Pin(close, Vector2.one, Vector2.one, new Vector2(-28f, -26f), new Vector2(76f, 32f));
+        RestlessUi.Pin(close, Vector2.one, Vector2.one, new Vector2(-126f, -26f), new Vector2(76f, 32f));
         var closeLabel = RestlessUi.Label(close.transform, "Close", 18, RestlessUi.Text, TextAnchor.MiddleCenter);
         RestlessUi.Stretch(closeLabel.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var button = close.AddComponent<Button>();
@@ -180,7 +184,7 @@ public sealed partial class StatSheet : FeatureModule
         var rule = RestlessUi.Graphic(_root.transform, "rule", new Color(0.58f, 0.46f, 0.30f, 0.45f), false);
         RestlessUi.Stretch(rule, new Vector2(0f, 1f), Vector2.one, new Vector2(28f, -98f), new Vector2(-28f, -97f));
         var list = RestlessUi.Node(_root.transform, "totals");
-        RestlessUi.Stretch(list, Vector2.zero, Vector2.one, new Vector2(24f, 32f), new Vector2(-326f, -110f));
+        RestlessUi.Stretch(list, Vector2.zero, Vector2.one, new Vector2(24f, 32f), new Vector2(-484f, -110f));
         _scroll = Scroller(gui, list.transform, out var body);
         _body = body;
         var layout = body.AddComponent<VerticalLayoutGroup>();
@@ -192,24 +196,33 @@ public sealed partial class StatSheet : FeatureModule
 
         var divider = RestlessUi.Graphic(_root.transform, "columnRule", new Color(0.58f, 0.46f, 0.30f, 0.28f), false);
         RestlessUi.Stretch(divider, new Vector2(1f, 0f), Vector2.one,
-            new Vector2(-309f, 32f), new Vector2(-308f, -112f));
+            new Vector2(-469f, 32f), new Vector2(-468f, -112f));
         var detail = RestlessUi.Node(_root.transform, "sources");
         RestlessUi.Stretch(detail, new Vector2(1f, 0f), Vector2.one,
-            new Vector2(-288f, 32f), new Vector2(-24f, -110f));
-        _originTitle = RestlessUi.Label(detail.transform, "Sources", 22, RestlessUi.Text, TextAnchor.UpperLeft);
+            new Vector2(-448f, 32f), new Vector2(-24f, -110f));
+        var plaque = RestlessUi.Graphic(detail.transform, "selectedTotal", Color.white, false);
+        RestlessUi.LoadoutPlaque(plaque);
+        RestlessUi.Stretch(plaque, new Vector2(0f, 1f), Vector2.one,
+            new Vector2(0f, -108f), new Vector2(-24f, 0f));
+        _originTitle = RestlessUi.Label(plaque.transform, "Sources", 23, RestlessUi.Text, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(_originTitle.gameObject, new Vector2(0f, 1f), Vector2.one,
-            new Vector2(0f, -56f), Vector2.zero);
-        _originTitle.horizontalOverflow = HorizontalWrapMode.Wrap;
-        _originValue = RestlessUi.Label(detail.transform, "", 26, RestlessUi.Accent, TextAnchor.MiddleLeft);
+            new Vector2(24f, -55f), new Vector2(-24f, -12f));
+        RestlessUi.BoundedLabel(_originTitle, 23, 18);
+        _originValue = RestlessUi.Label(plaque.transform, "", 32, RestlessUi.Accent, TextAnchor.MiddleLeft);
         RestlessUi.Stretch(_originValue.gameObject, new Vector2(0f, 1f), Vector2.one,
-            new Vector2(0f, -92f), new Vector2(0f, -56f));
+            new Vector2(24f, -94f), new Vector2(-24f, -54f));
+        RestlessUi.BoundedLabel(_originValue, 32, 20);
         var detailView = RestlessUi.Node(detail.transform, "reader");
-        RestlessUi.Stretch(detailView, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0f, -108f));
+        RestlessUi.Stretch(detailView, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(0f, -122f));
         _detailScroll = Scroller(gui, detailView.transform, out var copy);
-        _originFace = RestlessUi.Label(copy.transform, "", 18, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
-        RestlessUi.Stretch(_originFace.gameObject, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-        _originFace.horizontalOverflow = HorizontalWrapMode.Wrap;
-        _originFace.verticalOverflow = VerticalWrapMode.Overflow;
+        _sourceBody = copy;
+        var sourceLayout = copy.AddComponent<VerticalLayoutGroup>();
+        sourceLayout.spacing = 10f;
+        sourceLayout.padding = new RectOffset(4, 8, 4, 8);
+        sourceLayout.childControlWidth = sourceLayout.childControlHeight = true;
+        sourceLayout.childForceExpandWidth = true;
+        sourceLayout.childForceExpandHeight = false;
+        copy.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         // The viewport receives wheel/drag events even between rows and paragraphs.
         _parentSize = Vector2.zero;
         Fit();
@@ -299,7 +312,14 @@ public sealed partial class StatSheet : FeatureModule
         }
         else
             for (var i = 0; i < rows.Count; i++)
+            {
                 if (Views[i].Value.text != rows[i].Value) Views[i].Value.text = rows[i].Value;
+                if (Views[i].SetState != null)
+                {
+                    Views[i].SetState!.text = rows[i].SetActive ? "Active set" : "Inactive set";
+                    Views[i].SetState!.color = rows[i].SetActive ? RestlessUi.SetActiveTint : RestlessUi.PaperMuted;
+                }
+            }
         if (!rows.Exists(row => row.Key == _hover))
         {
             _hover = rows.Count > 0 ? rows[0].Key : "";
@@ -324,9 +344,25 @@ public sealed partial class StatSheet : FeatureModule
     private static void Line(StatRow row)
     {
         var go = RestlessUi.Graphic(_body!.transform, "row", Color.clear);
-        go.AddComponent<LayoutElement>().preferredHeight = RowH;
-        RestlessUi.Metric(go.transform, row.Label, row.Value);
-        var texts = go.GetComponentsInChildren<Text>();
+        go.AddComponent<LayoutElement>().preferredHeight = row.SetRequired > 0 ? 68f : RowH;
+        var metricHost = go.transform;
+        Text? setState = null;
+        if (row.SetRequired > 0)
+        {
+            var seal = RestlessUi.Picture(go.transform, "setSeal", "equipment-set-seal");
+            RestlessUi.Pin(seal, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
+                new Vector2(12f, 0f), new Vector2(30f, 30f));
+            seal.GetComponent<Image>().raycastTarget = false;
+            var inset = RestlessUi.Node(go.transform, "setMetric");
+            RestlessUi.Stretch(inset, Vector2.zero, Vector2.one, new Vector2(38f, 20f), Vector2.zero);
+            metricHost = inset.transform;
+            setState = RestlessUi.Label(go.transform, row.SetActive ? "Active set" : "Inactive set", 16,
+                row.SetActive ? RestlessUi.SetActiveTint : RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
+            RestlessUi.Stretch(setState.gameObject, Vector2.zero, new Vector2(1f, 0f),
+                new Vector2(58f, 4f), new Vector2(-12f, 24f));
+        }
+        RestlessUi.Metric(metricHost, row.Label, row.Value);
+        var texts = metricHost.Find("RestlessMetric").GetComponentsInChildren<Text>();
         var button = go.AddComponent<Button>();
         button.targetGraphic = go.GetComponent<Image>();
         var colors = button.colors;
@@ -336,13 +372,14 @@ public sealed partial class StatSheet : FeatureModule
         var hover = go.AddComponent<SheetHover>();
         hover.Key = row.Key;
         button.onClick.AddListener(() => Select(row.Key));
-        Views.Add(new RowView { Key = row.Key, Value = texts[texts.Length - 1], Back = go.GetComponent<Image>() });
+        Views.Add(new RowView { Key = row.Key, Value = texts[texts.Length - 1], Back = go.GetComponent<Image>(), SetState = setState });
     }
 
     private static void Select(string key)
     {
         if (_hover == key) return;
         _hover = key;
+        _sourcesOpen = true;
         _detailCopy = "";
         if (_detailScroll != null) _detailScroll.content.anchoredPosition = Vector2.zero;
         PlaceOrigin();
@@ -350,27 +387,79 @@ public sealed partial class StatSheet : FeatureModule
 
     private static void PlaceOrigin()
     {
-        if (_originFace == null || _originTitle == null || _originValue == null || _detailScroll == null) return;
+        if (_sourceBody == null || _originTitle == null || _originValue == null || _detailScroll == null) return;
         var row = Rows.Find(r => r.Key == _hover);
         if (row == null) return;
         foreach (var view in Views)
-            view.Back.color = view.Key == _hover ? new Color(0.72f, 0.57f, 0.34f, 0.12f) : Color.clear;
-        var sb = new StringBuilder();
-        foreach (var part in row.Parts)
-            sb.Append(part.Name).Append('\n').Append(part.Value).Append("\n\n");
-        if (row.Parts.Count == 0) sb.Append("No additional sources.\n\n");
-        sb.Append(row.Note);
-        var copy = sb.ToString();
+            view.Back.color = view.Key == _hover ? new Color(0.72f, 0.57f, 0.34f, 0.18f) : Color.clear;
+        var sb = new StringBuilder(row.Key).Append('|').Append(row.SetEquipped).Append('|')
+            .Append(row.SetRequired).Append('|').Append(row.SetActive).Append('|').Append(_sourcesOpen);
+        foreach (var part in row.Parts) sb.Append('\n').Append(part.Name).Append('\n').Append(part.Value);
+        sb.Append('\n').Append(row.Note);
+        var stamp = sb.ToString();
         _originTitle.text = row.Label;
         _originValue.text = row.Value;
-        if (_detailCopy == copy) return;
-        _detailCopy = copy;
-        _originFace.text = copy;
-        var height = _originFace.preferredHeight + 8f;
-        _detailScroll.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+        _originValue.color = row.SetRequired > 0 && row.SetActive ? RestlessUi.SetActiveTint : RestlessUi.Accent;
+        if (_detailCopy == stamp) return;
+        _detailCopy = stamp;
+        RebuildSources(row);
+    }
+
+    private static void RebuildSources(StatRow row)
+    {
+        if (_sourceBody == null || _detailScroll == null) return;
         var position = _detailScroll.content.anchoredPosition;
-        position.y = Mathf.Clamp(position.y, 0f, Mathf.Max(0f, height - _detailScroll.viewport.rect.height));
+        var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        var restoreFocus = selected != null && selected.transform.IsChildOf(_sourceBody.transform);
+        foreach (Transform child in _sourceBody.transform)
+        {
+            child.gameObject.SetActive(false);
+            Object.Destroy(child.gameObject);
+        }
+        var width = Mathf.Max(100f, _detailScroll.viewport.rect.width - 12f);
+        var parent = _sourceBody.transform;
+        if (row.SetRequired > 0)
+        {
+            var well = RestlessUi.SetWell(parent);
+            RestlessUi.SetIdentity(well.transform, row.Label, row.SetEquipped, row.SetRequired, row.SetActive, width - 28f);
+            RestlessUi.LoadoutCopy(well.transform, "Applies once for the set.", width - 28f, 17, RestlessUi.PaperMuted);
+        }
+        var toggle = RestlessUi.Strip(parent, "sourceToggle");
+        toggle.AddComponent<LayoutElement>().preferredHeight = 40f;
+        RestlessUi.PaperControl(toggle);
+        var label = RestlessUi.Label(toggle.transform,
+            (row.SetRequired > 0 ? "Equipped pieces" : "Sources") + " (" + row.Parts.Count + ")",
+            20, RestlessUi.Text, TextAnchor.MiddleLeft);
+        RestlessUi.Stretch(label.gameObject, Vector2.zero, Vector2.one, new Vector2(12f, 4f), new Vector2(-38f, -4f));
+        var glyph = RestlessUi.Picture(toggle.transform, "expand", _sourcesOpen ? "utility-collapse" : "utility-expand");
+        RestlessUi.Pin(glyph, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-12f, 0f), new Vector2(16f, 16f));
+        glyph.GetComponent<Image>().raycastTarget = false;
+        var button = toggle.AddComponent<Button>();
+        button.targetGraphic = toggle.GetComponent<Image>();
+        RestlessUi.PaperSelectable(button);
+        button.onClick.AddListener(() => { _sourcesOpen = !_sourcesOpen; _detailCopy = ""; PlaceOrigin(); });
+        if (_sourcesOpen)
+        {
+            foreach (var part in row.Parts)
+            {
+                var entry = RestlessUi.Node(parent, "contribution");
+                var layout = entry.AddComponent<VerticalLayoutGroup>();
+                layout.padding = new RectOffset(12, 12, 4, 6);
+                layout.spacing = 3f;
+                layout.childControlWidth = layout.childControlHeight = true;
+                layout.childForceExpandWidth = true;
+                layout.childForceExpandHeight = false;
+                RestlessUi.LoadoutCopy(entry.transform, part.Name, width - 24f, 20, RestlessUi.Text);
+                RestlessUi.LoadoutCopy(entry.transform, part.Value, width - 24f, 20, RestlessUi.Accent);
+            }
+            if (row.Parts.Count == 0)
+                RestlessUi.LoadoutCopy(parent, "No additional sources.", width, 18, RestlessUi.PaperMuted);
+        }
+        RestlessUi.LoadoutCopy(parent, row.Note, width, 18, RestlessUi.PaperMuted);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_sourceBody.GetComponent<RectTransform>());
+        position.y = Mathf.Clamp(position.y, 0f, Mathf.Max(0f, _detailScroll.content.rect.height - _detailScroll.viewport.rect.height));
         _detailScroll.content.anchoredPosition = position;
+        if (restoreFocus && EventSystem.current != null) EventSystem.current.SetSelectedGameObject(toggle);
     }
 
     private sealed class RowView
@@ -378,6 +467,7 @@ public sealed partial class StatSheet : FeatureModule
         public string Key = "";
         public Text Value = null!;
         public Image Back = null!;
+        public Text? SetState;
     }
     private sealed class SheetOpener : MonoBehaviour { }
     private sealed class SheetHover : MonoBehaviour, IPointerEnterHandler, ISelectHandler

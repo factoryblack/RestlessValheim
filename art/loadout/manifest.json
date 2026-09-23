@@ -1,0 +1,50 @@
+[
+  {
+    "name": "loadout-corner",
+    "width": 260,
+    "height": 258,
+    "bytes": 75115,
+    "crop": {
+      "left": 65,
+      "top": 54,
+      "width": 1136,
+      "height": 1126
+    }
+  },
+  {
+    "name": "loadout-crest",
+    "width": 132,
+    "height": 131,
+    "bytes": 41578,
+    "crop": {
+      "left": 126,
+      "top": 128,
+      "width": 1001,
+      "height": 994
+    }
+  },
+  {
+    "name": "loadout-stat-plaque",
+    "width": 772,
+    "height": 195,
+    "bytes": 247188,
+    "crop": {
+      "left": 30,
+      "top": 96,
+      "width": 2113,
+      "height": 525
+    }
+  },
+  {
+    "name": "equipment-set-seal",
+    "width": 132,
+    "height": 127,
+    "bytes": 31681,
+    "crop": {
+      "left": 79,
+      "top": 99,
+      "width": 1097,
+      "height": 1051
+    }
+  }
+]

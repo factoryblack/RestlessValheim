@@ -614,26 +614,9 @@ public sealed class ItemTooltip : FeatureModule
 
     private static void SetPanel(Transform parent, SetPresentation set, float width)
     {
-        // One quiet inset well. The same measured rows/chips stay inside the set
-        // boundary, so percentage damage cannot look like this piece's own damage.
-        var panel = RestlessUi.Tray(parent, "setBonus", false);
-        var layout = panel.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(14, 14, 12, 12);
-        layout.spacing = 6f;
-        layout.childControlWidth = layout.childControlHeight = true;
-        layout.childForceExpandWidth = true;
-        layout.childForceExpandHeight = false;
-        var tint = set.Active ? RestlessUi.Hex(0xB2C982) : RestlessUi.PaperMuted;
-        var edge = RestlessUi.Graphic(panel.transform, "setEdge", tint, false);
-        edge.AddComponent<LayoutElement>().ignoreLayout = true;
-        RestlessUi.Stretch(edge, Vector2.zero, new Vector2(0f, 1f), Vector2.zero, new Vector2(2f, 0f));
+        var panel = RestlessUi.SetWell(parent);
         var inner = Mathf.Max(80f, width - 28f);
-        Paragraph(panel.transform, "SET BONUS", inner, tint, RestlessUi.HudMeta);
-        Paragraph(panel.transform, set.Name, inner, RestlessUi.Text, CopySize + 3);
-        var state = set.Equipped.HasValue
-            ? (set.Active ? "Active" : "Inactive") + " · " + set.Equipped.Value + "/" + set.Required + " equipped"
-            : set.Required + " pieces required";
-        Paragraph(panel.transform, state, inner, tint, RestlessUi.HudMeta);
+        RestlessUi.SetIdentity(panel.transform, set.Name, set.Equipped, set.Required, set.Active, inner);
         Paragraph(panel.transform, "Requires " + set.Required + " equipped pieces. Applies once for the set.",
             inner, RestlessUi.PaperMuted, RestlessUi.HudMeta);
         Parse(set.Body, "", "", out var stats, out var chips, out var notes);

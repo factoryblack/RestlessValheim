@@ -53,6 +53,8 @@ public sealed partial class StatSheet
             Add(rows, "Vitals", "Adrenaline", Pair(player.GetAdrenaline(), player.GetMaxAdrenaline()),
                 note: "Current / maximum, as reported by the player.");
 
+        Sets(rows, equipped, effects);
+
         var armor = 0f;
         var armorParts = new List<Part>();
         foreach (var item in armorItems)
@@ -194,7 +196,6 @@ public sealed partial class StatSheet
                 Add(rows, "Resistances", TypeName(type), ModName(mod), parts,
                     "The total is the player's effective resistance. Listed sources are candidates; vanilla resistance priority rules decide the result, so they do not simply add. Other mods can change those rules.");
         }
-        Sets(rows, equipped, effects);
         foreach (var effect in effects)
         {
             var copy = Clean(effect.GetTooltipString());
@@ -332,6 +333,11 @@ public sealed partial class StatSheet
                 (active ? "Active. Counted once in totals, not once per set piece." :
                     "Inactive. The bonus printed on the item is not contributing to live totals.") +
                 "\n\n" + Clean(effect.GetTooltipString()), id: shared.m_setName);
+            var row = rows[rows.Count - 1];
+            row.SetRequired = shared.m_setSize;
+            row.SetEquipped = count;
+            row.SetActive = active;
+
         }
     }
 
@@ -430,6 +436,8 @@ public sealed partial class StatSheet
         public string Value = "";
         public string Note = "";
         public string Id = "";
+        public int SetRequired, SetEquipped;
+        public bool SetActive;
         public string Key => Group + "/" + (Id.Length > 0 ? Id : Label);
         public List<Part> Parts = new();
     }

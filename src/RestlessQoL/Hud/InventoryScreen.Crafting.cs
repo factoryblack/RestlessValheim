@@ -298,7 +298,9 @@ public sealed partial class InventoryScreen
         }
         // Suppress the whole isolated native slot, including unnamed backing
         // graphics, without deactivating its data sources or a requirements panel.
-        var isolated = host != gui.m_crafting && gui.m_minStationLevelIcon != null
+        var isolated = host != gui.m_crafting && host is RectTransform nativeSlot
+            && nativeSlot.rect.width <= 128f && nativeSlot.rect.height <= 128f
+            && gui.m_minStationLevelIcon != null
             && gui.m_minStationLevelIcon.transform.IsChildOf(host);
         if (gui.m_recipeRequirementList != null)
             foreach (var requirement in gui.m_recipeRequirementList)

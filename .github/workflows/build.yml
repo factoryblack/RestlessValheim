@@ -93,6 +93,8 @@ jobs:
       - name: Loadout arithmetic regressions
         run: dotnet run --project tests/LoadoutMath.Tests -c Release
 
+      - name: Wheel motion regressions
+        run: dotnet run --project tests/WheelMotion.Tests -c Release
       - name: Set tooltip regressions
         run: dotnet run --project tests/TooltipSetBlock.Tests -c Release
 

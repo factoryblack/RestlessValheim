@@ -80,8 +80,12 @@ public sealed partial class InventoryScreen
         var right = a.xMax - 20f * sx;
         // Pack the selected recipe's visible materials. The outer sheet stays
         // fixed; only the inner reading area gives way when another row is needed.
-        var columns = Mathf.Max(1, Mathf.FloorToInt((right - left) / sx / 76f));
-        var count = 0;
+        var station = gui.m_crafting.Find("RestlessStationSocket");
+        var hasStation = RequiredStation(gui, out _) != null;
+        // Reserve an extra gutter after the non-consumable station socket.
+        var available = (right - left) / sx - (hasStation ? 8f : 0f);
+        var columns = Mathf.Max(1, Mathf.FloorToInt((available + 8f) / 88f));
+        var count = hasStation ? 1 : 0;
         if (gui.m_recipeRequirementList != null)
             foreach (var requirement in gui.m_recipeRequirementList)
                 if (LiveMaterial(requirement)) count++;
@@ -98,20 +102,23 @@ public sealed partial class InventoryScreen
         if (requirements != null)
         {
             var gap = 8f * sx;
-            var cell = Mathf.Min(80f * sx, (right - left - (columns - 1) * gap) / columns);
-            var slot = 0;
+            var cell = Mathf.Min(80f * sx, (available * sx - (columns - 1) * gap) / columns);
+            if (hasStation && station != null)
+            {
+                var y = a.yMin + (78f + (rows - 1) * 112f) * sy;
+                CraftBounds(station.GetComponent<RectTransform>(), left, y, left + cell, y + 104f * sy);
+            }
+            var slot = hasStation ? 1 : 0;
             foreach (var requirement in requirements)
             {
                 if (!LiveMaterial(requirement)) continue;
-                var x = left + (slot % columns) * (cell + gap);
+                var x = left + (slot % columns) * (cell + gap)
+                    + (hasStation && slot < columns ? 8f * sx : 0f);
                 var y = a.yMin + (78f + (rows - 1 - slot / columns) * 112f) * sy;
                 MoveCraft(requirement.transform, x, y, x + cell, y + 104f * sy);
                 slot++;
             }
         }
-        var station = gui.m_crafting.Find("RestlessStationRequirement");
-        if (station != null) CraftBounds(station.GetComponent<RectTransform>(), left,
-            a.yMin + (footer - 26f) * sy, right, a.yMin + (footer - 2f) * sy);
     }
 
     private static bool LiveMaterial(GameObject? requirement)

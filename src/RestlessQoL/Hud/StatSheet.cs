@@ -234,12 +234,12 @@ public sealed partial class StatSheet : FeatureModule
         var view = RestlessUi.Graphic(parent, "viewport", Color.clear);
         RestlessUi.Stretch(view, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-24f, 0f));
         view.AddComponent<RectMask2D>();
-        var scroll = view.AddComponent<ScrollRect>();
+        var scroll = view.AddComponent<RestlessScrollRect>();
         scroll.horizontal = false;
         scroll.vertical = true;
         scroll.movementType = ScrollRect.MovementType.Clamped;
         scroll.inertia = false;
-        scroll.scrollSensitivity = 36f;
+        scroll.RowHeight = RowH + 2f;
         scroll.viewport = view.GetComponent<RectTransform>();
         body = RestlessUi.Node(view.transform, "content");
         var rt = body.GetComponent<RectTransform>();
@@ -473,7 +473,13 @@ public sealed partial class StatSheet : FeatureModule
     private sealed class SheetHover : MonoBehaviour, IPointerEnterHandler, ISelectHandler
     {
         public string Key = "";
-        public void OnPointerEnter(PointerEventData eventData) => Select(Key);
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            // Moving rows under a stationary pointer must not rebuild the source
+            // reader repeatedly. Click and controller selection still work.
+            if (_scroll is RestlessScrollRect reader && reader.IsWheelMoving) return;
+            Select(Key);
+        }
         public void OnSelect(BaseEventData eventData)
         {
             Select(Key);

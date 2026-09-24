@@ -278,24 +278,52 @@ public sealed partial class InventoryScreen
         if (gui.m_minStationLevelIcon != null) Hide(gui.m_minStationLevelIcon);
         var background = host.GetComponent<Image>();
         if (background != null && background.GetComponent<Mask>() == null) Hide(background);
-        var face = gui.m_crafting.Find("RestlessStationRequirement")?.GetComponent<Text>();
-        if (face == null)
+        var oldLine = gui.m_crafting.Find("RestlessStationRequirement");
+        if (oldLine != null) oldLine.gameObject.SetActive(false);
+        var station = RequiredStation(gui, out var requiredLevel);
+        var socket = gui.m_crafting.Find("RestlessStationSocket")?.gameObject;
+        if (station == null)
         {
-            face = RestlessUi.Label(gui.m_crafting, "", 17, RestlessUi.PaperMuted, TextAnchor.MiddleLeft);
-            face.gameObject.name = "RestlessStationRequirement";
-            Ours.Add(face.gameObject);
+            if (socket != null) socket.SetActive(false);
+            ComposeCraftDetail(gui);
+            return;
         }
-        var selected = SelectedRecipeField?.GetValue(gui) is KeyValuePair<Recipe, ItemDrop.ItemData> pair ? pair : default;
-        var quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
-        var station = selected.Key != null ? selected.Key.GetRequiredStation(quality) : null;
-        var level = RestlessUi.Bare(source.text);
-        var stationName = station != null ? Localization.instance.Localize(station.m_name) : "Station";
-        face.text = "Requires " + stationName + " · " + level;
-        face.gameObject.SetActive(level.Length > 0 && station != null);
-        face.color = source.color.r > source.color.g * 1.3f && source.color.r > source.color.b * 1.3f
-            ? RestlessUi.HealthTint : RestlessUi.PaperMuted;
-        RestlessUi.BoundedLabel(face, 17, 13);
+        if (socket == null)
+        {
+            socket = RestlessUi.Node(gui.m_crafting, "RestlessStationSocket");
+            Ours.Add(socket);
+            var plate = RestlessUi.Graphic(socket.transform, "plate", Color.white, true);
+            RestlessUi.MaterialSocket(plate);
+            var icon = RestlessUi.Graphic(plate.transform, "stationIcon", Color.white, false).GetComponent<Image>();
+            icon.preserveAspect = true;
+            var count = RestlessUi.Label(plate.transform, "", 14, RestlessUi.Accent, TextAnchor.MiddleCenter);
+            count.gameObject.name = "level";
+            plate.AddComponent<RestlessHint>();
+        }
+        socket.SetActive(true);
+        var frame = socket.transform.Find("plate");
+        var stationIcon = frame.Find("stationIcon").GetComponent<Image>();
+        stationIcon.sprite = station.m_icon;
+        var face = frame.Find("level").GetComponent<Text>();
+        face.text = "Lv " + requiredLevel;
+        // Mirror the native requirement's availability colour.
+        var missing = source.color.r > source.color.g * 1.3f && source.color.r > source.color.b * 1.3f;
+        face.color = missing ? RestlessUi.HealthTint : RestlessUi.Accent;
+        var stationName = Localization.instance.Localize(station.m_name);
+        frame.GetComponent<RestlessHint>().Copy = stationName + " level " + requiredLevel
+            + " required" + (missing ? " (unmet)" : "");
         ComposeCraftDetail(gui);
+        LayoutMaterialCell(frame, stationIcon, face);
+    }
+
+    private static CraftingStation? RequiredStation(InventoryGui gui, out int level)
+    {
+        level = 1;
+        if (SelectedRecipeField?.GetValue(gui) is not KeyValuePair<Recipe, ItemDrop.ItemData> selected
+            || selected.Key == null) return null;
+        var quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
+        level = selected.Key.GetRequiredStationLevel(quality);
+        return selected.Key.GetRequiredStation(quality);
     }
 
     private static void PaperCraftButton(Button? button, bool primary, bool ribbon = false)

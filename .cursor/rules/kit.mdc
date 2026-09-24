@@ -78,8 +78,8 @@ shared kit. Quality gems sit beside category without a Quality caption; PaperQua
 delegates to those assets. Text/glyph/tint layers remain independent from backing art.
 The crafted detail viewport must be inset within its owned plate, never copied from
 the vanilla TMP rectangle. Craft detail uses a clone of the vanilla recipe-list
-scrollbar, not ForgedScrollbar. RestlessScrollRect moves about one viewport per
-wheel notch without inertia; same-recipe refreshes retain scroll position. See
+scrollbar, not ForgedScrollbar. RestlessScrollRect moves about three rows per
+wheel notch with brief easing and no inertial tail; same-recipe refreshes retain scroll position. See
 docs/forged-kit.md.
 
 ## Material polish integration
@@ -176,3 +176,14 @@ requirements share a row. Grid fitting reserves a constant maximum so hovering
 does not move the menu. Use 24px title, 18px description and 16px requirement
 copy; retain scrolling for overflow. No new artwork or scrollbar changes in
 this refinement.
+
+## Shared reader wheel motion
+
+Owned vertical readers use RestlessScrollRect and its RowHeight/RowsPerNotch
+parameters. Wheel input retains fractional magnitude; pending travel accumulates,
+reversals start from the visible position, and motion settles in 100ms. Native
+scrollbar artwork and direct dragging remain. Drag, focus navigation, external
+position changes and disable cancel wheel motion. No forced layout or scene scan
+in the animation path. Loadout totals opts into this existing shared component.
+Station requirements use the material socket with the real station icon and level;
+they are spaced from consumable resources and disappear for handcraft recipes.

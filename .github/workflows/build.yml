@@ -71,7 +71,10 @@ jobs:
         run: |
           wget -q -O bepinex.zip "https://thunderstore.io/package/download/denikson/BepInExPack_Valheim/${BEPINEX_PACK}/"
           unzip -q bepinex.zip -d "$HOME/BepInExRaw"
-          steamcmd +force_install_dir "$VHINSTALL" +login anonymous +app_info_update 1 +app_update 896660 validate +exit
+          # app_info_update in the same session makes app_update return "Missing configuration".
+          # The first anonymous install can still fail once; the second uses the cached app info.
+          steamcmd +force_install_dir "$VHINSTALL" +login anonymous +app_update 896660 validate +quit || \
+            steamcmd +force_install_dir "$VHINSTALL" +login anonymous +app_update 896660 validate +quit
           mv "$VHINSTALL/valheim_server_Data" "$VHINSTALL/Valheim_Data"
           ln -sfn Valheim_Data "$VHINSTALL/valheim_Data"
           mv "$HOME/BepInExRaw/BepInExPack_Valheim/"* "$VHINSTALL/"

@@ -2,8 +2,8 @@
 
 RestlessScrollRect is the shared opt-in vertical reader component, now used by
 both loadout columns as well as the existing crafting/tooltip consumers.
-Default travel is 3 x 32 UI units per notch; loadout uses its 46-unit row pitch
-(138 units). Travel is capped at 85% of the viewport. Fractional trackpad input
+Default travel is 4 x 32 UI units per notch; loadout uses its 46-unit row pitch
+(184 units). Travel is capped at 85% of the viewport. Fractional trackpad input
 and multiple notches are retained. The first quarter of travel is immediate;
 the remainder eases out over 100ms using unscaled time. Repeated input adds to
 the destination; reversal discards pending travel in the old direction.
@@ -31,3 +31,9 @@ content, frame partition and cancellation. CI also compiles all plugins and runs
 existing loadout/set tests. Unity checks still required: mouse wheel, trackpad,
 scrollbar drag, controller focus, live stat changes, UI scale, recipes with
 several materials, upgrades and unmet station levels.
+
+Selection fix: native InventoryGui.m_selectedRecipe is RecipeDataPair. The
+old KeyValuePair cast silently suppressed the station, category and recipe
+preview. A cached typed-field lookup now reads the actual container. CI checks
+the game's managed assembly for exactly one Recipe and ItemData instance field
+in the selected container, so a game update cannot silently invalidate it.

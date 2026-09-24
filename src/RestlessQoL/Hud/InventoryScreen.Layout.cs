@@ -61,8 +61,8 @@ public sealed partial class InventoryScreen
             CraftBounds(name.rectTransform, left + (inset + portrait + gap) * sx,
                 top - (inset + portrait) * sy, right - inset * sx, top - inset * sy);
             var titleHeight = name.preferredHeight;
-            var selected = SelectedRecipeField?.GetValue(gui) is KeyValuePair<Recipe, ItemDrop.ItemData> pair ? pair : default;
-            var categoryCopy = ItemTooltip.RecipeCategory(selected.Value ?? selected.Key?.m_item?.m_itemData);
+            TrySelectedRecipe(gui, out var recipe, out var item);
+            var categoryCopy = ItemTooltip.RecipeCategory(item ?? recipe?.m_item?.m_itemData);
             var category = name.transform.parent.Find("RestlessCraftCategory")?.GetComponent<Text>();
             if (category == null)
             {

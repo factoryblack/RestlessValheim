@@ -5,6 +5,7 @@ using var stream = File.OpenRead(Path.Combine(Environment.GetEnvironmentVariable
 using var pe = new PEReader(stream);
 var reader = pe.GetMetadataReader();
 var provider = new Types();
+string? selectionType = null;
 foreach (var handle in reader.TypeDefinitions)
 {
     var type = reader.GetTypeDefinition(handle);
@@ -12,11 +13,29 @@ foreach (var handle in reader.TypeDefinitions)
     foreach (var fh in type.GetFields())
     {
         var field = reader.GetFieldDefinition(fh);
-        var name = reader.GetString(field.Name);
-        if (name.Contains("Recipe", StringComparison.OrdinalIgnoreCase) || name.Contains("Station"))
-            Console.WriteLine(name + ": " + field.DecodeSignature(provider, (object?)null));
+        if (reader.GetString(field.Name) == "m_selectedRecipe")
+            selectionType = field.DecodeSignature(provider, (object?)null);
     }
 }
+if (selectionType == null) throw new Exception("Native selected recipe field is missing.");
+var recipes = 0; var items = 0;
+foreach (var handle in reader.TypeDefinitions)
+{
+    var type = reader.GetTypeDefinition(handle);
+    if (reader.GetString(type.Name) != selectionType) continue;
+    foreach (var fh in type.GetFields())
+    {
+        var field = reader.GetFieldDefinition(fh);
+        if ((field.Attributes & System.Reflection.FieldAttributes.Static) != 0) continue;
+        var signature = field.DecodeSignature(provider, (object?)null);
+        Console.WriteLine(selectionType + "." + reader.GetString(field.Name) + ": " + signature);
+        if (signature == "Recipe") recipes++;
+        if (signature == "ItemData") items++;
+    }
+}
+if (recipes != 1 || items != 1)
+    throw new Exception($"Selected recipe contract changed: {selectionType}, Recipe fields={recipes}, ItemData fields={items}");
+Console.WriteLine("Native recipe selection contract passed.");
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";

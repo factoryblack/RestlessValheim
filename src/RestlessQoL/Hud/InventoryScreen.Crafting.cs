@@ -31,17 +31,38 @@ public sealed partial class InventoryScreen
     private static float _recipeNextSetCheck;
     private static readonly System.Reflection.FieldInfo? SelectedRecipeField =
         HarmonyLib.AccessTools.Field(typeof(InventoryGui), "m_selectedRecipe");
+    // Valheim 1.0 uses RecipeDataPair, not KeyValuePair. Resolve its typed
+    // fields once, including private/backing fields, rather than guessing names.
+    private static readonly System.Reflection.FieldInfo? SelectionRecipe = SelectionField(typeof(Recipe));
+    private static readonly System.Reflection.FieldInfo? SelectionItem = SelectionField(typeof(ItemDrop.ItemData));
+
+    private static System.Reflection.FieldInfo? SelectionField(System.Type type)
+    {
+        if (SelectedRecipeField == null) return null;
+        foreach (var field in SelectedRecipeField.FieldType.GetFields(System.Reflection.BindingFlags.Instance
+            | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic))
+            if (field.FieldType == type) return field;
+        return null;
+    }
+
+    private static bool TrySelectedRecipe(InventoryGui gui, out Recipe? recipe, out ItemDrop.ItemData? item)
+    {
+        var selection = SelectedRecipeField?.GetValue(gui);
+        recipe = selection != null ? SelectionRecipe?.GetValue(selection) as Recipe : null;
+        item = selection != null ? SelectionItem?.GetValue(selection) as ItemDrop.ItemData : null;
+        return recipe != null;
+    }
+
 
     // Resolve only when recipe content is invalidated; providers see an isolated
     // preview at the resulting quality, never a mutable inventory item/prefab.
     private static ItemDrop.ItemData? RecipePreview(InventoryGui gui)
     {
-        if (SelectedRecipeField?.GetValue(gui) is not KeyValuePair<Recipe, ItemDrop.ItemData> selected)
-            return null;
-        var source = selected.Value ?? selected.Key?.m_item?.m_itemData;
+        if (!TrySelectedRecipe(gui, out var recipe, out var item)) return null;
+        var source = item ?? recipe?.m_item?.m_itemData;
         if (source == null) return null;
         var preview = source.Clone();
-        preview.m_quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
+        preview.m_quality = item != null ? item.m_quality + 1 : 1;
         return preview;
     }
 
@@ -275,6 +296,14 @@ public sealed partial class InventoryScreen
             var old = host.Find(name);
             if (old != null) old.gameObject.SetActive(false);
         }
+        // Suppress the whole isolated native slot, including unnamed backing
+        // graphics, without deactivating its data sources or a requirements panel.
+        var isolated = host != gui.m_crafting && gui.m_minStationLevelIcon != null
+            && gui.m_minStationLevelIcon.transform.IsChildOf(host);
+        if (gui.m_recipeRequirementList != null)
+            foreach (var requirement in gui.m_recipeRequirementList)
+                if (requirement != null && requirement.transform.IsChildOf(host)) isolated = false;
+        if (isolated) QuietNative(host.gameObject);
         if (gui.m_minStationLevelIcon != null) Hide(gui.m_minStationLevelIcon);
         var background = host.GetComponent<Image>();
         if (background != null && background.GetComponent<Mask>() == null) Hide(background);
@@ -319,11 +348,10 @@ public sealed partial class InventoryScreen
     private static CraftingStation? RequiredStation(InventoryGui gui, out int level)
     {
         level = 1;
-        if (SelectedRecipeField?.GetValue(gui) is not KeyValuePair<Recipe, ItemDrop.ItemData> selected
-            || selected.Key == null) return null;
-        var quality = selected.Value != null ? selected.Value.m_quality + 1 : 1;
-        level = selected.Key.GetRequiredStationLevel(quality);
-        return selected.Key.GetRequiredStation(quality);
+        if (!TrySelectedRecipe(gui, out var recipe, out var item) || recipe == null) return null;
+        var quality = item != null ? item.m_quality + 1 : 1;
+        level = recipe.GetRequiredStationLevel(quality);
+        return recipe.GetRequiredStation(quality);
     }
 
     private static void PaperCraftButton(Button? button, bool primary, bool ribbon = false)

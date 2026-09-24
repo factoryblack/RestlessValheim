@@ -8,7 +8,7 @@ namespace RestlessQoL.Core;
 public sealed class RestlessScrollRect : ScrollRect
 {
     public float RowHeight = 32f;
-    public float RowsPerNotch = 3f;
+    public float RowsPerNotch = 4f;
     private readonly WheelMotion _wheel = new();
     private Vector2 _lastPosition;
     public bool IsWheelMoving => _wheel.Active;

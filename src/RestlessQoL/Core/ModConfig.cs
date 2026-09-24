@@ -221,7 +221,7 @@ public static class ModConfig
         CrossbowStateEnabled = AdminBool(config, "Player.Crossbow", "Enabled", true,
             "Keep a loaded crossbow loaded when you swap off it.");
         FriendlyFireEnabled = AdminBool(config, "Player.FriendlyFire", "Enabled", true,
-            "Ballistae ignore tames. Tames do not hurt each other or players. Players do not hurt tames.");
+            "Ballistae ignore tames. Tames do not hurt each other or players. You can still kill your own.");
         AxeComboEnabled = AdminBool(config, "Player.AxeCombo", "Enabled", true,
             "Do not interrupt the axe combo when chopping trees.");
         AutoRepairEnabled = AdminBool(config, "Player.AutoRepair", "Enabled", true,

@@ -296,19 +296,9 @@ public sealed partial class InventoryScreen
             var old = host.Find(name);
             if (old != null) old.gameObject.SetActive(false);
         }
-        // Suppress the whole isolated native slot, including unnamed backing
-        // graphics, without deactivating its data sources or a requirements panel.
-        var isolated = host != gui.m_crafting && host is RectTransform nativeSlot
-            && nativeSlot.rect.width <= 128f && nativeSlot.rect.height <= 128f
-            && gui.m_minStationLevelIcon != null
-            && gui.m_minStationLevelIcon.transform.IsChildOf(host);
-        if (gui.m_recipeRequirementList != null)
-            foreach (var requirement in gui.m_recipeRequirementList)
-                if (requirement != null && requirement.transform.IsChildOf(host)) isolated = false;
-        if (isolated) QuietNative(host.gameObject);
-        if (gui.m_minStationLevelIcon != null) Hide(gui.m_minStationLevelIcon);
-        var background = host.GetComponent<Image>();
-        if (background != null && background.GetComponent<Mask>() == null) Hide(background);
+        // The native level plate is a small dark image beside the icon. Quiet
+        // that slot, and hide any leftover plate images that are not material cells.
+        HideNativeStationPlate(gui, host);
         var oldLine = gui.m_crafting.Find("RestlessStationRequirement");
         if (oldLine != null) oldLine.gameObject.SetActive(false);
         var station = RequiredStation(gui, out var requiredLevel);
@@ -345,6 +335,43 @@ public sealed partial class InventoryScreen
             + " required" + (missing ? " (unmet)" : "");
         ComposeCraftDetail(gui);
         LayoutMaterialCell(frame, stationIcon, face);
+    }
+
+    private static void HideNativeStationPlate(InventoryGui gui, Transform host)
+    {
+        if (gui.m_minStationLevelIcon != null)
+            Hide(gui.m_minStationLevelIcon);
+        var iconParent = gui.m_minStationLevelIcon != null ? gui.m_minStationLevelIcon.transform.parent : null;
+        foreach (var scope in new[] { host, iconParent })
+        {
+            if (scope == null || scope == gui.m_crafting)
+                continue;
+            var holdsMaterials = false;
+            if (gui.m_recipeRequirementList != null)
+                foreach (var requirement in gui.m_recipeRequirementList)
+                    if (requirement != null && requirement.transform.IsChildOf(scope))
+                        holdsMaterials = true;
+            if (!holdsMaterials && scope is RectTransform slot
+                && slot.rect.width <= 160f && slot.rect.height <= 160f)
+            {
+                QuietNative(scope.gameObject);
+                continue;
+            }
+
+            foreach (var image in scope.GetComponentsInChildren<Image>(true))
+            {
+                if (image == null || RestlessUi.Owned(image.transform))
+                    continue;
+                if (image == gui.m_craftingStationIcon || image == gui.m_recipeIcon)
+                    continue;
+                if (UnderRequirements(image, gui))
+                    continue;
+                var rect = image.rectTransform.rect;
+                if (rect.width > 160f || rect.height > 160f)
+                    continue;
+                Hide(image);
+            }
+        }
     }
 
     private static CraftingStation? RequiredStation(InventoryGui gui, out int level)

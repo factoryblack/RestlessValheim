@@ -8,7 +8,7 @@ One install for the Restless table. r2modman and Thunderstore pull the stack:
 **RestlessPlant** — bushes and forage on the cultivator  
 **RestlessDrawers** — workshop cabinets with the same slots as the matching chest  
 
-Plus **BepInExPack 5.4.2350** and **Jötunn 2.30.2**.
+Plus **BepInExPack 5.4.2351** and **Jötunn 2.30.2**.
 
 This zip has no DLL. It only names those packages. Each plugin page has the full story.
 

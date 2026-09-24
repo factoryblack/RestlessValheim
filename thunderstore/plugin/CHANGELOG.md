@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.16
+
+- Crafting is one paper sheet on the native envelope: station header, recipe list, scrolling detail, and material sockets with their own count lanes (PR 24)
+- The station requirement sits in a material socket with the native icon, level, and unmet hint. The old dark station-level plate stays hidden
+- Selected recipes read Valheim's RecipeDataPair, so the station, category, and preview follow the real recipe
+- Recipe and loadout readers share a four-row wheel motion that takes a fractional notch and eases
+- BepInExPack pin is 5.4.2351. Jötunn stays 2.30.2
+- Selected Craft/Upgrade keeps its selected colour. The station line follows the recipe, including handcraft
+- You can kill your own tames again, including with the butcher knife. Ballistae still ignore them, and tames still do not hurt you or each other
+- Building from chests no longer skips a required station. A stonecutter piece still needs a stonecutter in range
+
 ## 0.1.15
 
 - Loadout totals: paper panel, worn-slot armour sources, multiplicative attack bonuses, and a scrollable source reader (PR 20)

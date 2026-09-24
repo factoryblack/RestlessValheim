@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Snap-to-field aligns to the crop itself. A location parent was throwing the cultivator ghost off the bed
+
 ## 0.1.5
 
 - Planting, harvest, grid and personal controls sit on the F8 Plant page (PR 19)

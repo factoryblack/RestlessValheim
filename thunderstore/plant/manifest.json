@@ -1,11 +1,11 @@
 {
   "name": "RestlessPlant",
-  "version_number": "0.1.5",
+  "version_number": "0.1.6",
   "website_url": "https://github.com/factoryblack/RestlessValheim",
   "description": "Plant berry bushes and forage with the cultivator. Grow a square, pick a patch, see when fruit comes back. Needs RestlessCore.",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.2350",
+    "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",
-    "Restless-RestlessCore-0.1.15"
+    "Restless-RestlessCore-0.1.16"
   ]
 }

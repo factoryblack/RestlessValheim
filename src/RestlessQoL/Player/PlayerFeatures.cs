@@ -119,9 +119,7 @@ public sealed class FriendlyFire : FeatureModule
     {
         if (a.IsTamed() && b.IsTamed())
             return true;
-        if (a.IsTamed() && b.IsPlayer())
-            return true;
-        return a.IsPlayer() && b.IsTamed();
+        return a.IsTamed() && b.IsPlayer();
     }
 }
 

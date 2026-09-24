@@ -1,6 +1,6 @@
-# Thunderstore 0.1.19
+# Thunderstore 0.1.20
 
-Signed off 23 Sep 2026. Live after this drop: Core 0.1.15, Piles 0.1.6, Drawers 0.1.1, pack 0.1.19. Cook 0.1.9 and Plant 0.1.5 unchanged.
+Signed off 25 Sep 2026. Live after this drop: Core 0.1.16, Plant 0.1.6, pack 0.1.20. Cook 0.1.9, Piles 0.1.6, and Drawers 0.1.1 unchanged. BepInExPack 5.4.2351. Jötunn stays 2.30.2.
 
 Pins live in `versions.yaml`. After a Jötunn or package bump: `python scripts/sync-versions.py`.
 
@@ -8,36 +8,32 @@ Pins live in `versions.yaml`. After a Jötunn or package bump: `python scripts/s
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCore | 0.1.14 | **0.1.15** | Loadout totals, debug-only layout dumps, hideable expansion rows |
-| RestlessPiles | 0.1.5 | **0.1.6** | Pile range stays hidden until isolate. Needs this Core. |
-| RestlessDrawers | 0.1.0 | **0.1.1** | Metal/roughness on the chest shader. Hammer icons lose the black plate. |
+| RestlessCore | 0.1.15 | **0.1.16** | Crafting sheet, station sockets, reader wheel, tame damage, station-gated building |
+| RestlessPlant | 0.1.5 | **0.1.6** | Cultivator snap stays on the crop |
 | RestlessCook | 0.1.9 | 0.1.9 | No zip |
-| RestlessPlant | 0.1.5 | 0.1.5 | No zip |
-| Restless Valheim pack | 0.1.18 | **0.1.19** | Core + Piles + Drawers |
+| RestlessPiles | 0.1.6 | 0.1.6 | No zip |
+| RestlessDrawers | 0.1.1 | 0.1.1 | No zip |
+| Restless Valheim pack | 0.1.19 | **0.1.20** | Core + Plant. BepInExPack 5.4.2351 |
 
 ## What to tell players
 
-**Restless Valheim 0.1.19**  
-Core 0.1.15, Piles 0.1.6, Drawers 0.1.1. Cook and Plant unchanged.
+**Restless Valheim 0.1.20**  
+Core 0.1.16, Plant 0.1.6. Cook, Piles, and Drawers unchanged. BepInExPack 5.4.2351.
 
-**RestlessCore 0.1.15**  
-Loadout totals on the character sheet. Layout dumps only while the Jötunn debug overlay is on. Expansion rows can hide. Plant 0.1.5 and Piles 0.1.5 still start.
+**RestlessCore 0.1.16**  
+Crafting is one paper sheet. Station requirements sit in a material socket. You can kill your own tames. Chest building still needs the station.
 
-**RestlessPiles 0.1.6**  
-The pile range slider stays off F8 until Isolate pile range is on. Needs Core 0.1.15.
-
-**RestlessDrawers 0.1.1**  
-Cabinet bands can catch light. Hammer icons are no longer sitting on a black square.
+**RestlessPlant 0.1.6**  
+Cultivator snap stays on the crop. Needs Core 0.1.16.
 
 ## Tag order
 
-Core first. Piles and Drawers after that listing exists. Pack last.
+Core first. Plant after that listing exists. Pack last.
 
 ```
-git tag v0.1.15 && git push origin v0.1.15
-git tag piles-v0.1.6 && git push origin piles-v0.1.6
-git tag drawers-v0.1.1 && git push origin drawers-v0.1.1
-git tag pack-v0.1.19 && git push origin pack-v0.1.19
+git tag v0.1.16 && git push origin v0.1.16
+git tag plant-v0.1.6 && git push origin plant-v0.1.6
+git tag pack-v0.1.20 && git push origin pack-v0.1.20
 ```
 
-Pack waits up to 600s for Core, Piles, and Drawers. Cook 0.1.9 and Plant 0.1.5 are already listed.
+Pack waits up to 600s for Core and Plant. Cook 0.1.9, Piles 0.1.6, and Drawers 0.1.1 are already listed.

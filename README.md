@@ -63,7 +63,7 @@ r2modman: install the **Restless Valheim** modpack, or BepInEx + Jötunn then Im
 
 ## GitHub Actions
 
-Pushes and pull requests compile Release `RestlessCore.dll`, `RestlessCook.dll`, `RestlessPiles.dll`, and `RestlessPlant.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2350`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
+Pushes and pull requests compile Release `RestlessCore.dll`, `RestlessCook.dll`, `RestlessPiles.dll`, and `RestlessPlant.dll` on Ubuntu. Runners have no Steam client, so the job downloads the **dedicated server** (Steam app `896660`) plus BepInEx `5.4.2351`, then caches that tree by Valheim buildid. That is the same approach Jötunn uses.
 
 A tag named `v*` ships **RestlessCore** and the **Restless Valheim** modpack (Core + Cook + Piles + Plant). A tag named `pack-v*` ships the pack only. `cook-v*`, `piles-v*`, and `plant-v*` ship those plugins only.
 

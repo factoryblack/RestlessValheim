@@ -4,13 +4,13 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessCore"
-versionNumber = "0.1.15"
+versionNumber = "0.1.16"
 description = "Valheim 1.0 QoL: nearby chests for craft, build and stations; extra armor and Z/X/C slots; F8 host-locked settings. HUD and inventory are mid-migration — vanilla and Restless currently mix."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
 
 [package.dependencies]
-denikson-BepInExPack_Valheim = "5.4.2350"
+denikson-BepInExPack_Valheim = "5.4.2351"
 ValheimModding-Jotunn = "2.30.2"
 
 [build]

@@ -151,7 +151,11 @@ internal static class PlantGrid
         if (PlantGrow.Free)
             return true;
         if (plant != null)
+        {
+            if (Heightmap.FindHeightmap(pos) == null)
+                return false;
             return Probe(ghost, plant, pos) == Plant.Status.Healthy;
+        }
 
         var map = Heightmap.FindHeightmap(pos);
         if (map == null)
@@ -175,12 +179,24 @@ internal static class PlantGrid
             cols[i].enabled = false;
         }
 
-        t.position = pos;
-        var status = plant.GetStatus();
-        t.position = saved;
-        for (var i = 0; i < cols.Length; i++)
-            cols[i].enabled = on[i];
-        return status;
+        try
+        {
+            t.position = pos;
+            return plant.GetStatus();
+        }
+        catch (System.Exception)
+        {
+            return Plant.Status.NoSpace;
+        }
+        finally
+        {
+            t.position = saved;
+            for (var i = 0; i < cols.Length; i++)
+            {
+                if (cols[i] != null)
+                    cols[i].enabled = on[i];
+            }
+        }
     }
 
     private static void Align(Player player, GameObject ghost)
@@ -223,20 +239,33 @@ internal static class PlantGrid
         {
             if (hit == null)
                 continue;
-            var root = hit.transform.root;
-            if (root == ghost.transform || IsGhost(root.gameObject))
+            var anchor = Anchor(hit, ghost);
+            if (anchor == null)
                 continue;
-            if (root.GetComponentInChildren<Plant>(true) == null &&
-                root.GetComponentInChildren<Pickable>(true) == null)
+            var d = (anchor.position - from).sqrMagnitude;
+            if (d > bestD)
                 continue;
-            var d = (root.position - from).sqrMagnitude;
-            if (d < 0.01f || d > bestD)
-                continue;
-            best = root;
+            best = anchor;
             bestD = d;
         }
 
         return best;
+    }
+
+    // Snap to the crop itself. A pickable's transform.root is often the whole
+    // location, and aligning to that flings the cultivator ghost across the field.
+    private static Transform? Anchor(Collider hit, GameObject ghost)
+    {
+        var plant = hit.GetComponentInParent<Plant>();
+        var pick = plant == null ? hit.GetComponentInParent<Pickable>() : null;
+        var anchor = plant != null ? plant.transform : pick != null ? pick.transform : null;
+        if (anchor == null)
+            return null;
+        if (anchor == ghost.transform || anchor.IsChildOf(ghost.transform))
+            return null;
+        if (IsGhost(anchor.gameObject) || IsGhost(anchor.root.gameObject))
+            return null;
+        return anchor;
     }
 
     private static bool IsGhost(GameObject go) =>

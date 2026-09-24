@@ -148,8 +148,20 @@ public sealed class BuildFromStorage : FeatureModule
                 return;
             if (mode == Player.RequirementMode.IsKnown)
                 return;
+            if (!StationInRange(__instance, piece))
+                return;
             if (NearbyStorage.HasRequirements(__instance, piece.m_resources, 1, 1))
                 __result = true;
+        }
+
+        // Chest stock only covers materials. A missing stonecutter (or any
+        // other required station) still blocks the ghost and the place.
+        private static bool StationInRange(Player player, Piece piece)
+        {
+            if (piece.m_craftingStation == null)
+                return true;
+            return CraftingStation.HaveBuildStationInRange(
+                piece.m_craftingStation.m_name, player.transform.position) != null;
         }
 
         [HarmonyPrefix]

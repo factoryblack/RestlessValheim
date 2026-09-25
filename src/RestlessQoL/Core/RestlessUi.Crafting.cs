@@ -73,7 +73,7 @@ internal static partial class RestlessUi
         var corner = sheet.Find("RestlessStationCorner")?.gameObject;
         if (corner != null) return corner;
         corner = Picture(sheet, "RestlessStationCorner", "craft-station-corner");
-        Pin(corner, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(76f, 76f));
+        Pin(corner, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(96f, 96f));
         corner.GetComponent<Image>().raycastTarget = false;
         return corner;
     }

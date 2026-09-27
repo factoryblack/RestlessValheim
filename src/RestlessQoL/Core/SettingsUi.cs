@@ -527,6 +527,7 @@ public sealed partial class SettingsUi : FeatureModule
         _hintNow = "";
         if (_hint != null)
             _hint.text = "";
+        (_scroll as RestlessScrollRect)?.CancelWheel();
         ClearSettingBindings();
         _settingsRevision = RestlessQoL.Api.SettingsPageApi.ControlsRevision;
         _settingsHost = ExpansionHostCanEdit();

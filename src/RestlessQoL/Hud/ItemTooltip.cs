@@ -176,7 +176,8 @@ public sealed class ItemTooltip : FeatureModule
             _revision = TooltipApi.Revision;
             var raw = item.GetTooltip();
             var contributions = TooltipApi.Collect(item);
-            var signature = Signature(item, raw, contributions, width, maxHeight);
+            var signature = Signature(item, raw, contributions, width, maxHeight)
+                + ":canvas:" + parent.rect.width.ToString("R");
             if (changedItem || !_card.activeSelf || signature != _signature)
             {
                 _signature = signature;

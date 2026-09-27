@@ -14,6 +14,7 @@ public sealed partial class SettingsUi
     private static readonly List<Action> SettingRefresh = new();
     private static volatile bool _settingsDirty;
     private static bool _settingsHost;
+    private static bool _settingsCoreHost;
     private static bool _expHasHost;
     private static int _settingsRevision;
     private static Func<bool>? _captureEditable;
@@ -39,7 +40,7 @@ public sealed partial class SettingsUi
     private static void ObserveSetting<T>(ConfigEntry<T> entry, Selectable control,
         Func<bool>? editable, Action repaint)
     {
-        if (editable == null) return; // Core controls retain their existing behaviour.
+        editable ??= () => !_closing;
         void Refresh()
         {
             if (control == null) return;
@@ -63,7 +64,9 @@ public sealed partial class SettingsUi
         }
         if (SettingRefresh.Count == 0) return;
         var host = ExpansionHostCanEdit();
-        if (!_settingsDirty && host == _settingsHost) return;
+        var coreHost = CanEditGameplay();
+        if (!_settingsDirty && host == _settingsHost && coreHost == _settingsCoreHost) return;
+        _settingsCoreHost = coreHost;
         _settingsHost = host;
         _settingsDirty = false;
         foreach (var refresh in SettingRefresh) refresh();

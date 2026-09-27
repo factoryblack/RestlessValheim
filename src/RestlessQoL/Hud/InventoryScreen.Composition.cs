@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RestlessQoL.Core;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,6 +9,32 @@ public sealed partial class InventoryScreen
 {
     private static bool _craftAreaReady;
     private static Rect _craftArea;
+    private static readonly Dictionary<Transform, (Transform parent, int sibling)> RequirementParents = new();
+    private static string _requirementsSelection = "";
+
+    private static void RestoreRequirementParents()
+    {
+        foreach (var pair in RequirementParents)
+            if (pair.Key != null && pair.Value.parent != null)
+            {
+                pair.Key.SetParent(pair.Value.parent, false);
+            }
+        var ordered = new List<KeyValuePair<Transform, (Transform parent, int sibling)>>(RequirementParents);
+        ordered.Sort((a, b) => a.Value.sibling.CompareTo(b.Value.sibling));
+        foreach (var pair in ordered)
+            if (pair.Key != null && pair.Value.parent != null) pair.Key.SetSiblingIndex(pair.Value.sibling);
+        RequirementParents.Clear();
+        _requirementsSelection = "";
+    }
+
+    private static void ParentRequirement(Transform child, Transform content)
+    {
+        if (child.parent == content) return;
+        if (child is RectTransform rect) RememberCraftRect(rect);
+        if (!RequirementParents.ContainsKey(child))
+            RequirementParents.Add(child, (child.parent, child.GetSiblingIndex()));
+        child.SetParent(content, true);
+    }
 
     // Capture native stationary bounds once. Never derive the next layout from
     // an already moved portrait, wrapped description or scrolling recipe row.
@@ -80,7 +107,7 @@ public sealed partial class InventoryScreen
         var right = a.xMax - 20f * sx;
         // Pack the selected recipe's visible materials. The outer sheet stays
         // fixed; only the inner reading area gives way when another row is needed.
-        var station = gui.m_crafting.Find("RestlessStationSocket");
+        var station = RestlessUi.Deep(gui.m_crafting, "RestlessStationSocket");
         var hasStation = RequiredStation(gui, out _) != null;
         // Reserve an extra gutter after the non-consumable station socket.
         var available = (right - left) / sx - (hasStation ? 8f : 0f);
@@ -90,7 +117,51 @@ public sealed partial class InventoryScreen
             foreach (var requirement in gui.m_recipeRequirementList)
                 if (LiveMaterial(requirement)) count++;
         var rows = Mathf.Max(1, Mathf.CeilToInt((float)count / columns));
-        var footer = 100f + rows * 112f;
+        // Keep at least 260 units for identity + reader at normal canvas sizes.
+        // Surplus requirement rows scroll independently instead of consuming it.
+        var sheetHeight = a.height / sy;
+        var rowBudget = Mathf.Max(104f, sheetHeight - 116f - 260f - 108f);
+        var overflowing = rows * 112f - 8f > rowBudget;
+        if (overflowing)
+        {
+            available -= 24f; // Native-width scrollbar and a clear content gutter.
+            columns = Mathf.Max(1, Mathf.FloorToInt((available + 8f) / 88f));
+            rows = Mathf.Max(1, Mathf.CeilToInt((float)count / columns));
+        }
+        var requirementHeight = rows * 112f - 8f;
+        var viewportHeight = Mathf.Min(requirementHeight, rowBudget);
+        var footer = 108f + viewportHeight;
+        var view = gui.m_crafting.Find("RestlessRequirementsViewport")?.gameObject;
+        if (view == null)
+        {
+            view = RestlessUi.Graphic(gui.m_crafting, "RestlessRequirementsViewport", Color.clear, true);
+            Ours.Add(view);
+            view.AddComponent<RectMask2D>();
+            var reader = view.AddComponent<RestlessScrollRect>();
+            reader.horizontal = false;
+            reader.RowHeight = 112f;
+            reader.RowsPerNotch = 1f;
+            reader.viewport = view.GetComponent<RectTransform>();
+            reader.content = RestlessUi.Node(view.transform, "content").GetComponent<RectTransform>();
+        }
+        var requirementsScroll = view.GetComponent<RestlessScrollRect>();
+        var bar = RecipeScrollbar(gui, view.transform, 4f);
+        if (bar != null)
+        {
+            requirementsScroll.verticalScrollbar = bar;
+            requirementsScroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+            bar.transform.SetAsLastSibling();
+        }
+        var content = requirementsScroll.content;
+        Place(view.GetComponent<RectTransform>(), left, a.yMin + 78f * sy, right,
+            a.yMin + (78f + viewportHeight) * sy, 0f, 0f, false);
+        var selection = gui.GetSelectedRecipeIndex(false) + ":" + gui.InCraftTab();
+        var offset = selection == _requirementsSelection ? content.anchoredPosition.y : 0f;
+        _requirementsSelection = selection;
+        requirementsScroll.CancelWheel();
+        RestlessUi.Pin(content.gameObject, new Vector2(0f, 1f), new Vector2(0f, 1f),
+            Vector2.zero, new Vector2((right - left) / sx, requirementHeight));
+        var contentTop = a.yMin + (78f + viewportHeight) * sy;
         var detail = EnsureStrip(desc, "RestlessRecipe");
         Place(detail.GetComponent<RectTransform>(), left, a.yMin + footer * sy, right,
             a.yMax - 116f * sy, 0f, 0f, false);
@@ -101,11 +172,20 @@ public sealed partial class InventoryScreen
         var requirements = gui.m_recipeRequirementList;
         if (requirements != null)
         {
+            // Snapshot every sibling before moving the first native cell.
+            foreach (var requirement in requirements)
+                if (requirement != null && !RequirementParents.ContainsKey(requirement.transform))
+                {
+                    var child = requirement.transform;
+                    RequirementParents.Add(child, (child.parent, child.GetSiblingIndex()));
+                    if (child is RectTransform rect) RememberCraftRect(rect);
+                }
             var gap = 8f * sx;
             var cell = Mathf.Min(80f * sx, (available * sx - (columns - 1) * gap) / columns);
             if (hasStation && station != null)
             {
-                var y = a.yMin + (78f + (rows - 1) * 112f) * sy;
+                ParentRequirement(station, content);
+                var y = contentTop - 104f * sy;
                 CraftBounds(station.GetComponent<RectTransform>(), left, y, left + cell, y + 104f * sy);
             }
             var slot = hasStation ? 1 : 0;
@@ -114,11 +194,14 @@ public sealed partial class InventoryScreen
                 if (!LiveMaterial(requirement)) continue;
                 var x = left + (slot % columns) * (cell + gap)
                     + (hasStation && slot < columns ? 8f * sx : 0f);
-                var y = a.yMin + (78f + (rows - 1 - slot / columns) * 112f) * sy;
+                ParentRequirement(requirement.transform, content);
+                var y = contentTop - (104f + slot / columns * 112f) * sy;
                 MoveCraft(requirement.transform, x, y, x + cell, y + 104f * sy);
                 slot++;
             }
         }
+        content.anchoredPosition = new Vector2(0f, Mathf.Clamp(offset, 0f,
+            Mathf.Max(0f, requirementHeight - viewportHeight)));
     }
 
     private static bool LiveMaterial(GameObject? requirement)

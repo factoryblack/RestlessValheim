@@ -205,6 +205,8 @@ public sealed partial class SettingsUi : FeatureModule
         Rebuild();
     }
 
+    private static bool CoreEditable() => !_closing && CanEditGameplay();
+
     private static bool CanEditGameplay()
     {
         if (!ModConfig.LockConfiguration.Value)
@@ -297,7 +299,8 @@ public sealed partial class SettingsUi : FeatureModule
         RestlessUi.Stretch(rail, Vector2.zero, new Vector2(0f, 1f),
             new Vector2(22f, 74f), new Vector2(218f, -78f));
         rail.AddComponent<RectMask2D>();
-        var scroll = rail.AddComponent<ScrollRect>();
+        var scroll = rail.AddComponent<RestlessScrollRect>();
+        scroll.RowHeight = 44f;
         scroll.horizontal = false;
         scroll.inertia = false;
         scroll.movementType = ScrollRect.MovementType.Clamped;
@@ -438,7 +441,9 @@ public sealed partial class SettingsUi : FeatureModule
         RestlessUi.Stretch(scroll, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(-14f, 0f));
         _mask = scroll.AddComponent<RectMask2D>();
         _mask.softness = new Vector2Int(0, ListFade);
-        _scroll = scroll.AddComponent<ScrollRect>();
+        var reader = scroll.AddComponent<RestlessScrollRect>();
+        reader.RowHeight = RestlessUi.RowHeight + RestlessUi.RowGap;
+        _scroll = reader;
         _scroll.horizontal = false;
         _scroll.movementType = ScrollRect.MovementType.Clamped;
         _scroll.scrollSensitivity = (RestlessUi.RowHeight + RestlessUi.RowGap) * 4f;
@@ -525,6 +530,7 @@ public sealed partial class SettingsUi : FeatureModule
         ClearSettingBindings();
         _settingsRevision = RestlessQoL.Api.SettingsPageApi.ControlsRevision;
         _settingsHost = ExpansionHostCanEdit();
+        _settingsCoreHost = CanEditGameplay();
         RestlessUi.Wipe(_body.transform);
 
         var locked = !CanEditGameplay();
@@ -535,57 +541,57 @@ public sealed partial class SettingsUi : FeatureModule
             case "storage":
                 Head("Chests");
                 Bunch(
-                    t => Bool("Use nearby chests", ModConfig.StorageEnabled, locked, t),
-                    t => Step("Search range", "m", ModConfig.StorageRange, locked, t, true),
-                    t => Bool("Leave one when pulling", ModConfig.LeaveOne, locked, t, true));
-                Bool("Craft from chests", ModConfig.CraftFromStorageEnabled, locked);
-                Bool("Build from chests", ModConfig.BuildFromStorageEnabled, locked);
+                    t => Bool("Use nearby chests", ModConfig.StorageEnabled, locked, t, editable: CoreEditable),
+                    t => Step("Search range", "m", ModConfig.StorageRange, locked, t, true, editable: CoreEditable),
+                    t => Bool("Leave one when pulling", ModConfig.LeaveOne, locked, t, true, editable: CoreEditable));
+                Bool("Craft from chests", ModConfig.CraftFromStorageEnabled, locked, editable: CoreEditable);
+                Bool("Build from chests", ModConfig.BuildFromStorageEnabled, locked, editable: CoreEditable);
                 Head("Carry");
-                Step("Stack size multiplier", "×", ModConfig.StackSizeMultiplier, locked);
-                Bool("Clear cheated item marks", ModConfig.HonestItemsEnabled, locked);
+                Step("Stack size multiplier", "×", ModConfig.StackSizeMultiplier, locked, editable: CoreEditable);
+                Bool("Clear cheated item marks", ModConfig.HonestItemsEnabled, locked, editable: CoreEditable);
                 Keyed("Quick stack", ModConfig.QuickStackEnabled, ModConfig.QuickStackHotkey, locked);
                 Keyed("Restock", ModConfig.RestockEnabled, ModConfig.RestockHotkey, locked);
                 Bunch(
-                    t => Bool("Ground piles into matching chests", ModConfig.VacuumEnabled, locked, t),
-                    t => Step("Vacuum interval", "s", ModConfig.VacuumInterval, locked, t, true));
-                Bool("Tames eat from chests", ModConfig.PetPantryEnabled, locked);
+                    t => Bool("Ground piles into matching chests", ModConfig.VacuumEnabled, locked, t, editable: CoreEditable),
+                    t => Step("Vacuum interval", "s", ModConfig.VacuumInterval, locked, t, true, editable: CoreEditable));
+                Bool("Tames eat from chests", ModConfig.PetPantryEnabled, locked, editable: CoreEditable);
                 break;
             case "building":
                 Head("Hammer");
                 Bunch(
-                    t => Bool("Area repair", ModConfig.AreaRepairEnabled, locked, t),
-                    t => Step("Repair radius", "m", ModConfig.AreaRepairRadius, locked, t, true));
+                    t => Bool("Area repair", ModConfig.AreaRepairEnabled, locked, t, editable: CoreEditable),
+                    t => Step("Repair radius", "m", ModConfig.AreaRepairRadius, locked, t, true, editable: CoreEditable));
                 Head("Stations");
                 Bunch(
-                    t => Bool("Workbench range override", ModConfig.WorkbenchTweaksEnabled, locked, t),
-                    t => Step("Station range", "m", ModConfig.WorkbenchRange, locked, t, true));
-                Bool("Stations pull ore and fuel", ModConfig.StationPullEnabled, locked);
-                Bool("Fires and held torches stay lit", ModConfig.EternalFireEnabled, locked);
-                Bool("Repair on station use", ModConfig.AutoRepairEnabled, locked);
+                    t => Bool("Workbench range override", ModConfig.WorkbenchTweaksEnabled, locked, t, editable: CoreEditable),
+                    t => Step("Station range", "m", ModConfig.WorkbenchRange, locked, t, true, editable: CoreEditable));
+                Bool("Stations pull ore and fuel", ModConfig.StationPullEnabled, locked, editable: CoreEditable);
+                Bool("Fires and held torches stay lit", ModConfig.EternalFireEnabled, locked, editable: CoreEditable);
+                Bool("Repair on station use", ModConfig.AutoRepairEnabled, locked, editable: CoreEditable);
                 break;
             case "player":
                 Head("Combat");
-                Bool("Keep tools in water", ModConfig.SwimWieldEnabled, locked);
-                Bool("Keep a loaded crossbow loaded", ModConfig.CrossbowStateEnabled, locked);
-                Bool("No friendly fire on tames", ModConfig.FriendlyFireEnabled, locked);
-                Bool("Axe combo while chopping", ModConfig.AxeComboEnabled, locked);
+                Bool("Keep tools in water", ModConfig.SwimWieldEnabled, locked, editable: CoreEditable);
+                Bool("Keep a loaded crossbow loaded", ModConfig.CrossbowStateEnabled, locked, editable: CoreEditable);
+                Bool("No friendly fire on tames", ModConfig.FriendlyFireEnabled, locked, editable: CoreEditable);
+                Bool("Axe combo while chopping", ModConfig.AxeComboEnabled, locked, editable: CoreEditable);
                 Head("Camp");
-                Bool("Clear death pin when the tomb is empty", ModConfig.DeathPinsEnabled, locked);
+                Bool("Clear death pin when the tomb is empty", ModConfig.DeathPinsEnabled, locked, editable: CoreEditable);
                 break;
             case "world":
                 Head("Terrain");
                 Bunch(
-                    t => Bool("Dig and raise past the vanilla cap", ModConfig.DigDeeperEnabled, locked, t),
-                    t => Step("Max terrain delta", "m", ModConfig.DigMaxDelta, locked, t, true));
+                    t => Bool("Dig and raise past the vanilla cap", ModConfig.DigDeeperEnabled, locked, t, editable: CoreEditable),
+                    t => Step("Max terrain delta", "m", ModConfig.DigMaxDelta, locked, t, true, editable: CoreEditable));
                 Head("Water");
                 Bunch(
-                    t => Bool("Floating items", ModConfig.FloatingItemsEnabled, locked, t),
-                    t => Bool("Float everything except the sink list", ModConfig.FloatingEverything, locked, t, true),
+                    t => Bool("Floating items", ModConfig.FloatingItemsEnabled, locked, t, editable: CoreEditable),
+                    t => Bool("Float everything except the sink list", ModConfig.FloatingEverything, locked, t, true, editable: CoreEditable),
                     t => Words("Always sink", ModConfig.FloatingSinkList, locked, t, true),
                     t => Words("Also float", ModConfig.FloatingExtraList, locked, t, true));
                 Head("Host");
-                Bool("Uncap network send", ModConfig.NetworkUncapEnabled, locked);
-                Bool("Host-lock gameplay config", ModConfig.LockConfiguration, locked);
+                Bool("Uncap network send", ModConfig.NetworkUncapEnabled, locked, editable: CoreEditable);
+                Bool("Host-lock gameplay config", ModConfig.LockConfiguration, locked, editable: CoreEditable);
                 KeyOnly("Open this panel", ModConfig.SettingsHotkey);
                 break;
             case "character":
@@ -766,6 +772,7 @@ public sealed partial class SettingsUi : FeatureModule
     private static void Bool(string title, ConfigEntry<bool> entry, bool locked, Transform? parent = null,
         bool nested = false, Action? after = null, Func<bool>? editable = null)
     {
+        editable ??= () => !_closing && !locked;
         var row = Row(parent, nested);
         Titles(row, title, Hint(entry), 88f);
         var toggle = RestlessUi.Switch(row.transform, entry.Value);
@@ -845,6 +852,7 @@ public sealed partial class SettingsUi : FeatureModule
 
     private static void Step(string title, string unit, ConfigEntry<float> entry, bool locked, Transform? parent = null, bool nested = false, Func<bool>? editable = null)
     {
+        editable ??= () => !_closing && !locked;
         var row = Row(parent, nested);
         Titles(row, title, Hint(entry), 320f);
         var value = RestlessUi.Label(row.transform, Format(entry.Value, unit, entry), RestlessUi.BodySize, RestlessUi.Accent, TextAnchor.MiddleRight);
@@ -899,9 +907,11 @@ public sealed partial class SettingsUi : FeatureModule
         toggle.interactable = !locked;
         toggle.onClick.AddListener(() =>
         {
+            if (!CoreEditable()) return;
             enabled.Value = !enabled.Value;
             RestlessUi.PaperSwitch(toggle, enabled.Value);
         });
+        ObserveSetting(enabled, toggle, CoreEditable, () => RestlessUi.PaperSwitch(toggle, enabled.Value));
     }
 
     private static void KeyOnly(string title, ConfigEntry<KeyboardShortcut> key, Transform? parent = null,
@@ -935,11 +945,20 @@ public sealed partial class SettingsUi : FeatureModule
         field.interactable = !locked;
         field.caretColor = RestlessUi.Accent;
         field.selectionColor = new Color(RestlessUi.Accent.r, RestlessUi.Accent.g, RestlessUi.Accent.b, 0.25f);
-        field.onEndEdit.AddListener(value => entry.Value = value);
+        field.onEndEdit.AddListener(value =>
+        {
+            if (CoreEditable()) entry.Value = value;
+            field.SetTextWithoutNotify(entry.Value);
+        });
+        ObserveSetting(entry, field, CoreEditable, () =>
+        {
+            if (!field.isFocused || !CoreEditable()) field.SetTextWithoutNotify(entry.Value);
+        });
     }
 
     private static void AddKey(Transform parent, ConfigEntry<KeyboardShortcut> entry, bool locked, float fromRight = -14f, Func<bool>? editable = null)
     {
+        editable ??= () => !_closing && !locked;
         var plate = RestlessUi.Chip(parent, "key");
         RestlessUi.PaperControl(plate);
         RestlessUi.Pin(plate, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(fromRight, 0f),

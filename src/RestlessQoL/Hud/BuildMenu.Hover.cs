@@ -81,6 +81,8 @@ public sealed partial class BuildMenu
             width - split - 32f, height - 28f);
         if (changed)
         {
+            (_bodyScroll as RestlessScrollRect)?.CancelWheel();
+            (_costScroll as RestlessScrollRect)?.CancelWheel();
             _bodyScroll.verticalNormalizedPosition = 1f;
             _costScroll.verticalNormalizedPosition = 1f;
         }
@@ -123,7 +125,7 @@ public sealed partial class BuildMenu
         content.pivot = new Vector2(0f, 1f);
         content.anchoredPosition = Vector2.zero;
         content.sizeDelta = Vector2.zero;
-        var scroll = viewport.AddComponent<ScrollRect>();
+        var scroll = viewport.AddComponent<RestlessScrollRect>();
         scroll.viewport = viewport.GetComponent<RectTransform>();
         scroll.content = content;
         scroll.horizontal = false;

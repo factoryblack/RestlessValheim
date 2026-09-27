@@ -161,20 +161,10 @@ public sealed partial class InventoryScreen
         var height = Mathf.Max(RestlessUi.BodySize + 4f, face.preferredHeight);
         scroll.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
             Mathf.Max(scroll.viewport.rect.height, height + 40f));
-        if (!direct)
-        {
-            RestlessUi.Pin(face.gameObject, new Vector2(0f, 1f), new Vector2(0f, 1f),
-                new Vector2(20f, -20f), new Vector2(width, height));
-            return;
-        }
-        // The mirror is a sibling of the source; copy its scroll position, then inset.
-        RestlessUi.CopyRect(face.rectTransform, source.rectTransform);
-        face.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
-        face.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
-        var corners = new Vector3[4];
-        source.rectTransform.GetWorldCorners(corners);
-        face.rectTransform.pivot = new Vector2(0f, 1f);
-        face.rectTransform.position = corners[1] + new Vector3(20f * source.transform.lossyScale.x,
-            -20f * source.transform.lossyScale.y, 0f);
+        // Keep the owned mirror inside the moving content in both prefab shapes.
+        // Only the mirror is reparented; native hierarchy and ScrollRect stay intact.
+        if (face.transform.parent != scroll.content) face.transform.SetParent(scroll.content, false);
+        RestlessUi.Pin(face.gameObject, new Vector2(0f, 1f), new Vector2(0f, 1f),
+            new Vector2(20f, -20f), new Vector2(width, height));
     }
 }

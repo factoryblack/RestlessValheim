@@ -39,7 +39,7 @@ public sealed partial class InventoryScreen
             (top - bottom) / Mathf.Max(0.01f, Mathf.Abs(r.lossyScale.y)));
     }
 
-    private static float LayoutCraftIdentity(InventoryGui gui, float left, float top, float right, float sx, float sy)
+    private static float LayoutCraftIdentity(InventoryGui gui, float left, float top, float right, float sx, float sy, float maxHeight)
     {
         const float inset = 12f, portrait = 56f, gap = 12f;
         var height = portrait;
@@ -60,7 +60,11 @@ public sealed partial class InventoryScreen
             name.verticalOverflow = VerticalWrapMode.Overflow;
             CraftBounds(name.rectTransform, left + (inset + portrait + gap) * sx,
                 top - (inset + portrait) * sy, right - inset * sx, top - inset * sy);
-            var titleHeight = name.preferredHeight;
+            var titleHeight = Mathf.Min(name.preferredHeight, Mathf.Max(28f, maxHeight - 52f));
+            // Keep pathological names inside the identity band; the full name is
+            // still available on the item tooltip. Never overlap the reader.
+            RestlessUi.BoundedLabel(name, 24, 18);
+            name.verticalOverflow = VerticalWrapMode.Truncate;
             TrySelectedRecipe(gui, out var recipe, out var item);
             var categoryCopy = ItemTooltip.RecipeCategory(item ?? recipe?.m_item?.m_itemData);
             var category = name.transform.parent.Find("RestlessCraftCategory")?.GetComponent<Text>();
@@ -148,6 +152,7 @@ public sealed partial class InventoryScreen
 
     private static void RestoreCraftLayout()
     {
+        RestoreRequirementParents();
         foreach (var pair in CraftRects)
             if (pair.Key != null) pair.Value.Restore(pair.Key);
         CraftRects.Clear();

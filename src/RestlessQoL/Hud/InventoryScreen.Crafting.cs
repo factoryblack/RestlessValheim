@@ -195,7 +195,8 @@ public sealed partial class InventoryScreen
         var scale = host.lossyScale;
         var sx = Mathf.Abs(scale.x);
         var sy = Mathf.Abs(scale.y);
-        var identityBottom = LayoutCraftIdentity(gui, x0, y1, x1, sx, sy);
+        var identityBottom = LayoutCraftIdentity(gui, x0, y1, x1, sx, sy,
+            Mathf.Max(80f, (y1 - y0) / Mathf.Max(0.01f, sy) - 96f));
         var view = host.Find("RestlessRecipeBody")?.gameObject;
         if (view == null)
         {
@@ -254,7 +255,7 @@ public sealed partial class InventoryScreen
         _recipeRevision = RestlessQoL.Api.TooltipApi.Revision;
         scroller.content = rect;
         LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
-        scroller.StopMovement();
+        scroller.CancelWheel();
         rect.anchoredPosition = new Vector2(0f, Mathf.Clamp(offset, 0f, Mathf.Max(0f, rect.rect.height - scroller.viewport.rect.height)));
         _recipeCopy = copy;
         _recipeWidth = width;
@@ -302,7 +303,7 @@ public sealed partial class InventoryScreen
         var oldLine = gui.m_crafting.Find("RestlessStationRequirement");
         if (oldLine != null) oldLine.gameObject.SetActive(false);
         var station = RequiredStation(gui, out var requiredLevel);
-        var socket = gui.m_crafting.Find("RestlessStationSocket")?.gameObject;
+        var socket = RestlessUi.Deep(gui.m_crafting, "RestlessStationSocket")?.gameObject;
         if (station == null)
         {
             if (socket != null) socket.SetActive(false);

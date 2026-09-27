@@ -126,3 +126,14 @@ Suggested verification order:
 
 Performance constraint: use event-driven position/config updates and existing
 content invalidation. No new hierarchy scans or layout rebuilds per idle frame.
+
+
+## Implementation follow-up — 27 September 2026
+
+PR #25 now implements the compendium mirror fix by parenting only the owned text to the moving content. Core bool, slider, key and text controls use the existing config-event repaint path, with live core/expansion permission checks and no routine page rebuild.
+
+Owned F8 body/navigation and build detail readers now use RestlessScrollRect. Native recipe/collection/skills lists retain their native handlers; item tooltips retain explicit PgUp/PgDn input without taking inventory raycasts. This is a staged scroll adoption, not a claim that all game scrolling is unified.
+
+Hints measure wrapped text and clamp the resulting plate. Tooltips keep a valid 360-unit internal minimum width and scale the complete card to narrow canvases. Crafting caps the requirements region to preserve a 260-unit detail allowance when the sheet is at least 588 units tall; overflow has an independent reader and native scrollbar. Native requirement parents, sibling order and geometry are restored before owned objects are destroyed. Long crafting names are bounded to their identity band; extreme names can truncate there, while the full item tooltip remains available. Very small crafting sheets still need a separate compact composition if the existing inventory scale permits them.
+
+In-game verification still required: compendium wheel/drag after changing entries; open F8 while host changes settings and permissions; switch core/expansion pages and rebind keys; overflow requirements with station present/absent; repeated recipe/upgrade selection; toggle Restless inventory off/on; longest item/station names and narrow/high-scale layouts. CI is build/regression coverage, not Unity visual verification.

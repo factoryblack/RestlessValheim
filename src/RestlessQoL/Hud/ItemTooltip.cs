@@ -166,7 +166,7 @@ public sealed class ItemTooltip : FeatureModule
             input.interactable = false;
         }
 
-        var width = Mathf.Min(CardWidth, Mathf.Max(180f, parent.rect.width - 36f - RestlessUi.HeadOverhang));
+        var width = Mathf.Min(CardWidth, Mathf.Max(360f, parent.rect.width - 36f - RestlessUi.HeadOverhang));
         var maxHeight = Mathf.Max(100f, parent.rect.height - 32f - RestlessUi.HeadLift);
         var changedItem = !ReferenceEquals(_item, item);
         if (changedItem || !_card.activeSelf || TooltipApi.Revision != _revision
@@ -332,7 +332,9 @@ public sealed class ItemTooltip : FeatureModule
         var height = top + viewportHeight + Pad + (needsScroll ? 25f : 0f);
         // Extremely small canvases still keep the entire surface within the screen.
         _card.GetComponent<RectTransform>().sizeDelta = new Vector2(_width, height);
-        _card.transform.localScale = Vector3.one * Mathf.Min(1f, maxHeight / height);
+        var canvasWidth = (_card.transform.parent as RectTransform)?.rect.width ?? _width;
+        var widthScale = Mathf.Max(0.01f, (canvasWidth - 36f) / (_width + RestlessUi.HeadOverhang));
+        _card.transform.localScale = Vector3.one * Mathf.Min(1f, maxHeight / height, widthScale);
         if (needsScroll)
         {
             _footer = RestlessUi.Node(_card.transform, "paging");

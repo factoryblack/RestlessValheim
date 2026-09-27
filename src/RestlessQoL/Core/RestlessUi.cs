@@ -782,7 +782,10 @@ internal static partial class RestlessUi
     public static bool Owned(Transform? node)
     {
         for (var t = node; t != null; t = t.parent)
-            if (t.name.StartsWith("Restless"))
+            // This owned viewport deliberately hosts native material cells.
+            // Their TMP/icon paint must keep its native identity for suppression
+            // and restoration; actual Restless descendants still match first.
+            if (t.name.StartsWith("Restless") && t.name != "RestlessRequirementsViewport")
                 return true;
         return false;
     }

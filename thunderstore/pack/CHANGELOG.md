@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.21
+
+- RestlessCore 0.1.17, RestlessPlant 0.1.7, and RestlessPiles 0.1.7. Cook 0.1.9 and Drawers 0.1.1 stay. BepInExPack 5.4.2351. Jötunn stays 2.30.2.
+
 ## 0.1.20
 
 - RestlessCore 0.1.16 and RestlessPlant 0.1.6. Cook 0.1.9, Piles 0.1.6, and Drawers 0.1.1 stay. BepInExPack 5.4.2351. Jötunn stays 2.30.2.

@@ -229,7 +229,7 @@ public static class ModConfig
         StackSizeMultiplier = AdminFloat(config, "Inventory.StackSize", "Multiplier", 2f, 1f, 10f,
             "Multiply vanilla max stacks. 1 is vanilla. Gear that does not stack stays at 1. The host value applies to everyone.");
         HonestItemsEnabled = AdminBool(config, "Inventory.Honest", "Enabled", true,
-            "Clear Valheim 1.0 cheated marks on items. Storage clones, extra-slot moves, and custom crafts were stamping them. Does not un-flag a character that used devcommands.");
+            "Clear cheated marks on items, the character, and the world so achievements still unlock. A modded game is not a cheat. Host-locked.");
 
         NetworkUncapEnabled = AdminBool(config, "Server", "NetworkUncap", true,
             "Raise the ZDO send window (10 KB → 32 KB) and Steam send max (150 KB/s → 512 KB/s). Stops players/mobs freezing then snapping. Host-locked.");

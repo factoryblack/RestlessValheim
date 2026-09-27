@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.17
+
+- A dedicated server can feed tames from a chest a player owns. A client still cannot send player id 0 to open a private chest
+- A split stack remembers how many you threw. Vacuum will not delete that drop when its stack has been cleared
+- Compendium text follows the native scroll. Settings repaint when a value changes. F8 and build-detail readers use the shared wheel, and that wheel stops when you change settings page
+- Hover hints measure their text. A narrow tooltip rescales when the canvas width changes. Extra craft requirements scroll on their own. The crafting corner stays 96
+- Cheated marks on items, characters, and worlds no longer block achievements. A modded game is not a cheat mark
+- The character page shows the lifetime record. Deaths, distance, crafts, and hunts stay put when achievements start counting
+- Character adds run, day streak, longest streak, comfort, pieces built, trees, ore, crops, fish, tames, tallest build, and highest place built
+
 ## 0.1.16
 
 - Crafting is one paper sheet on the native envelope: station header, recipe list, scrolling detail, and material sockets with their own count lanes (PR 24)

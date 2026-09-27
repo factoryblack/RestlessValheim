@@ -21,7 +21,7 @@ internal static class PlantSettings
             new SettingsOption("Grid planting", PlantConfig.Grid, false),
             new SettingsOption("Columns", PlantConfig.GridColumns, false),
             new SettingsOption("Rows", PlantConfig.GridRows, false),
-            new SettingsOption("Spacing", PlantConfig.Spacing, false, "m"),
+            new SettingsOption("Minimum spacing", PlantConfig.Spacing, false, "m"),
             new SettingsOption("Snap to existing field", PlantConfig.SnapToField, false),
             new SettingsOption("Snap range", PlantConfig.SnapRange, false, "m")),
         new SettingsSection("Your controls and hints",

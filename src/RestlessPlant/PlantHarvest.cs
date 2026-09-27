@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
@@ -72,11 +73,9 @@ internal static class PlantHarvest
         _busy = true;
         try
         {
-            foreach (var other in Object.FindObjectsByType<Beehive>(FindObjectsSortMode.None))
+            foreach (var other in Nearby<Beehive>(origin, range))
             {
-                if (other == null || other == picked)
-                    continue;
-                if ((other.transform.position - origin).sqrMagnitude > range * range)
+                if (other == picked)
                     continue;
                 other.Interact(character, false, false);
             }
@@ -89,19 +88,16 @@ internal static class PlantHarvest
 
     private static void Bulk(Pickable picked, Humanoid character)
     {
-        var name = Utils.GetPrefabName(picked.gameObject);
         var range = PlantConfig.HarvestRange.Value;
         var origin = picked.transform.position;
         _busy = true;
         try
         {
-            foreach (var other in Object.FindObjectsByType<Pickable>(FindObjectsSortMode.None))
+            foreach (var other in Nearby<Pickable>(origin, range))
             {
-                if (other == null || other == picked || !other.CanBePicked())
+                if (other == picked || !other.CanBePicked())
                     continue;
-                if (Utils.GetPrefabName(other.gameObject) != name || !Ours(other))
-                    continue;
-                if ((other.transform.position - origin).sqrMagnitude > range * range)
+                if (!Ours(other))
                     continue;
                 var pos = other.transform.position;
                 var rot = other.transform.rotation;
@@ -115,6 +111,23 @@ internal static class PlantHarvest
         finally
         {
             _busy = false;
+        }
+    }
+
+    private static readonly HashSet<int> Seen = new();
+
+    private static IEnumerable<T> Nearby<T>(Vector3 origin, float range) where T : Component
+    {
+        Seen.Clear();
+        var hits = Physics.OverlapSphere(origin, range, ~0, QueryTriggerInteraction.Collide);
+        foreach (var hit in hits)
+        {
+            if (hit == null)
+                continue;
+            var item = hit.GetComponentInParent<T>();
+            if (item == null || !Seen.Add(item.GetInstanceID()))
+                continue;
+            yield return item;
         }
     }
 

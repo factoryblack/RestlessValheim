@@ -549,7 +549,7 @@ public sealed partial class SettingsUi : FeatureModule
                 Bool("Build from chests", ModConfig.BuildFromStorageEnabled, locked, editable: CoreEditable);
                 Head("Carry");
                 Step("Stack size multiplier", "×", ModConfig.StackSizeMultiplier, locked, editable: CoreEditable);
-                Bool("Clear cheated item marks", ModConfig.HonestItemsEnabled, locked, editable: CoreEditable);
+                Bool("Clear cheat marks", ModConfig.HonestItemsEnabled, locked, editable: CoreEditable);
                 Keyed("Quick stack", ModConfig.QuickStackEnabled, ModConfig.QuickStackHotkey, locked);
                 Keyed("Restock", ModConfig.RestockEnabled, ModConfig.RestockHotkey, locked);
                 Bunch(
@@ -795,13 +795,20 @@ public sealed partial class SettingsUi : FeatureModule
     private static void PaintCharacter()
     {
         Head("Journey");
-        MetricPair("Walked", Distance(PlayerStatType.DistanceWalk), "Sailed", Distance(PlayerStatType.DistanceSail));
-        MetricPair("Jumps", Count(PlayerStatType.Jumps), "Portals used", Count(PlayerStatType.PortalsUsed));
+        MetricPair("Walked", Distance(PlayerStatType.DistanceWalk), "Run", Distance(PlayerStatType.DistanceRun));
+        MetricPair("Sailed", Distance(PlayerStatType.DistanceSail), "Jumps", Count(PlayerStatType.Jumps));
+        Stat("Portals used", Count(PlayerStatType.PortalsUsed));
         Head("Survival");
         MetricPair("Deaths", Count(PlayerStatType.Deaths), "Food eaten", Count(PlayerStatType.FoodEaten));
-        Stat("Boss kills", Count(PlayerStatType.BossKills));
+        MetricPair("Boss kills", Count(PlayerStatType.BossKills), "Day streak", Count(PlayerStatType.ConsecutiveDaysSurvived));
+        MetricPair("Longest streak", Count(PlayerStatType.ConsecutiveDaysSurvivedMax), "Comfort", Count(PlayerStatType.MaxComfort));
         Head("Craft and gather");
         MetricPair("Items crafted", Count(PlayerStatType.Crafts), "Picked up", Count(PlayerStatType.ItemsPickedUp));
+        MetricPair("Pieces built", Count(PlayerStatType.BuiltPieces), "Trees felled", Count(PlayerStatType.Tree));
+        MetricPair("Ore mined", Count(PlayerStatType.Mines), "Crops harvested", Count(PlayerStatType.HarvestCrop));
+        MetricPair("Fish caught", Count(PlayerStatType.FishCaught), "Creatures tamed", Count(PlayerStatType.CreatureTamed));
+        Head("Records");
+        MetricPair("Tallest build", Metres(PlayerStatType.MaxBuildingHeight), "Highest built", Metres(PlayerStatType.MaxBuildingHeightWorld));
 
         Head("Hunts");
         var hunts = 0;
@@ -850,6 +857,9 @@ public sealed partial class SettingsUi : FeatureModule
             return (metres / 1000f).ToString("0.0") + " km";
         return Mathf.RoundToInt(metres) + " m";
     }
+
+    private static string Metres(PlayerStatType stat) =>
+        Mathf.RoundToInt(Ledger.Get(stat)) + " m";
 
     private static void Step(string title, string unit, ConfigEntry<float> entry, bool locked, Transform? parent = null, bool nested = false, Func<bool>? editable = null)
     {

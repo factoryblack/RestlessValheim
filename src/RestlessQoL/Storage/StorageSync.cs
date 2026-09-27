@@ -137,7 +137,7 @@ public sealed class StorageSync : FeatureModule
         var worldLevel = pkg.ReadBool();
         var honorLeave = pkg.ReadBool();
         var taken = 0;
-        if (ModConfig.StorageEnabled.Value && container.CheckAccess(playerId))
+        if (ModConfig.StorageEnabled.Value && MayUse(container, playerId, sender))
             taken = NearbyStorage.PullOwned(container, name, amount, honorLeave, quality, worldLevel);
         Reply(container, sender, PulledRpc, id, taken);
     }
@@ -152,9 +152,19 @@ public sealed class StorageSync : FeatureModule
         var dropId = pkg.ReadZDOID();
         var item = ReadItem(pkg.ReadPackage());
         var taken = 0;
-        if (ModConfig.StorageEnabled.Value && item != null && container.CheckAccess(playerId))
+        if (ModConfig.StorageEnabled.Value && item != null && MayUse(container, playerId, sender))
             taken = NearbyStorage.PushOwned(container, item, FindDrop(dropId));
         Reply(container, sender, PushedRpc, id, taken);
+    }
+
+    // A dedicated tame has no player id. Accept that only from the server peer,
+    // so a client cannot send 0 and open a private chest.
+    private static bool MayUse(Container container, long playerId, long sender)
+    {
+        if (playerId != 0)
+            return container.CheckAccess(playerId);
+        var server = ZNet.instance?.GetServerPeer();
+        return server != null && sender == server.m_uid;
     }
 
     private static void Reply(Container container, long sender, string rpc, int id, int taken)

@@ -314,13 +314,17 @@ internal static class PileBag
 
             if (drop == null || drop.m_nview == null || !drop.m_nview.IsValid() || !drop.m_nview.IsOwner())
                 yield break;
-            if (drop.m_itemData == null || drop.m_itemData.m_stack <= 0)
+            if (drop.m_itemData == null)
                 yield break;
             if (!Matches(drop.m_itemData, box.Item))
                 yield break;
 
-            var n = drop.m_itemData.m_stack;
+            DroppedStack.Apply(drop);
+            var n = DroppedStack.Count(drop);
+            if (n <= 0)
+                yield break;
             Pile.Write(box.View, box.Stored + n);
+            DroppedStack.Forget(drop);
             drop.m_nview.Destroy();
         }
         finally

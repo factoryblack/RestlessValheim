@@ -68,9 +68,20 @@ internal static class PlantConfig
             GridRows.Value = legacy.Value;
         }
 
-        Spacing = config.Bind("Grid", "Spacing", 2f,
-            new ConfigDescription("Metres between grid cells. Plant pieces use their grow radius when larger.",
-                new AcceptableValueRange<float>(1f, 4f)));
+        Spacing = config.Bind("Grid", "Spacing", 0f,
+            new ConfigDescription(
+                "Minimum metres between plants. 0 uses the space that crop needs to grow. A crop that needs more room still uses that.",
+                new AcceptableValueRange<float>(0f, 4f)));
+        // The old default was a hard 2m floor, which pushed carrots and the like apart.
+        // Clear that once so 0 can mean "use the crop". A value they actually changed stays.
+        var followed = config.Bind("Grid", "SpacingFollowsCrop", false,
+            new ConfigDescription("Internal. The old 2m spacing default was cleared once.", null, Hidden));
+        if (!followed.Value)
+        {
+            if (Mathf.Abs(Spacing.Value - 2f) < 0.01f)
+                Spacing.Value = 0f;
+            followed.Value = true;
+        }
         SnapToField = config.Bind("Grid", "SnapToField", true,
             "Snap the cultivator ghost onto a nearby plant's spacing. Client-local.");
         SnapRange = config.Bind("Grid", "SnapRange", 3f,
@@ -78,7 +89,7 @@ internal static class PlantConfig
                 new AcceptableValueRange<float>(1f, 8f)));
 
         BulkHarvest = config.Bind("Harvest", "BulkHarvest", true,
-            new ConfigDescription("Picking a player-grown plant also picks matching neighbours. Host-locked.",
+            new ConfigDescription("Picking a player-grown plant also picks every ripe player-grown crop in range, not only the same kind. Host-locked.",
                 null, Admin));
         BulkBeehives = config.Bind("Harvest", "BulkBeehives", true,
             new ConfigDescription("Using a beehive also takes honey from matching neighbours. Host-locked.",

@@ -75,8 +75,12 @@ internal static class PlantGrid
     {
         if (!PlantConfig.On || !PlantConfig.Grid.Value || player == null || !Wide)
             return false;
-        return Cultivating(player) && player.m_placementGhost != null;
+        return Cultivating(player) && Crop(player.GetSelectedPiece()) && player.m_placementGhost != null;
     }
+
+    // Ground till is a cultivator piece with no plant. A wide grid must not stamp that.
+    private static bool Crop(Piece? piece) =>
+        piece != null && (piece.GetComponent<Plant>() != null || piece.GetComponentInChildren<Pickable>(true) != null);
 
     public static bool Cultivating(Player player)
     {
@@ -118,11 +122,19 @@ internal static class PlantGrid
         return axis.sqrMagnitude > 0.0001f ? axis.normalized : Vector3.forward;
     }
 
+    // A hair past the grow diameter so a neighbour's collider is outside the grow sphere.
+    private const float GrowGap = 0.1f;
+
     private static float Spacing(Piece? piece)
     {
         var grow = piece != null ? piece.GetComponent<Plant>() : null;
-        var radius = grow != null ? grow.m_growRadius * 2f : 0f;
-        return Mathf.Max(PlantConfig.Spacing.Value, radius);
+        var natural = grow != null && grow.m_growRadius > 0.05f
+            ? grow.m_growRadius * 2f + GrowGap
+            : 1f;
+        var chosen = PlantConfig.Spacing.Value;
+        if (chosen <= 0.01f)
+            return natural;
+        return Mathf.Max(chosen, natural);
     }
 
     private static bool Sit(Vector3 pos, out Vector3 grounded)
@@ -150,22 +162,26 @@ internal static class PlantGrid
     {
         if (PlantGrow.Free)
             return true;
-        if (plant != null)
-        {
-            if (Heightmap.FindHeightmap(pos) == null)
-                return false;
-            return Probe(ghost, plant, pos) == Plant.Status.Healthy;
-        }
-
         var map = Heightmap.FindHeightmap(pos);
         if (map == null)
             return false;
-        if ((piece == null || piece.m_cultivatedGroundOnly) && !map.IsCultivated(pos))
+        if (NeedsTill(piece, plant) && !map.IsCultivated(pos))
             return false;
+        if (plant != null)
+            return Probe(ghost, plant, pos) == Plant.Status.Healthy;
         if (piece != null && piece.m_onlyInBiome != 0 && (map.GetBiome(pos) & piece.m_onlyInBiome) == 0)
             return false;
         return !Physics.CheckSphere(pos, 0.4f, Plant.m_spaceMask, QueryTriggerInteraction.Ignore);
     }
+
+    private static bool NeedsTill(Piece? piece, Plant? plant)
+    {
+        if (plant != null)
+            return plant.m_needCultivatedGround || (piece != null && piece.m_cultivatedGroundOnly);
+        return piece == null || piece.m_cultivatedGroundOnly;
+    }
+
+    private static bool _probeLogged;
 
     private static Plant.Status Probe(GameObject ghost, Plant plant, Vector3 pos)
     {
@@ -179,17 +195,28 @@ internal static class PlantGrid
             cols[i].enabled = false;
         }
 
+        var status = plant.m_status;
         try
         {
             t.position = pos;
+            // GetStatus is the last result. Ask again at this cell, or every
+            // extra copies the centre and an oversized grid plants wild ground.
+            plant.UpdateHealth(11.0);
             return plant.GetStatus();
         }
-        catch (System.Exception)
+        catch (System.Exception ex)
         {
+            if (!_probeLogged)
+            {
+                _probeLogged = true;
+                Plugin.Log.LogWarning($"Plant grow check failed; later cells stay quiet. {ex}");
+            }
+
             return Plant.Status.NoSpace;
         }
         finally
         {
+            plant.m_status = status;
             t.position = saved;
             for (var i = 0; i < cols.Length; i++)
             {
@@ -355,7 +382,8 @@ internal static class PlantGrid
             }
 
             var ghost = __instance.m_placementGhost;
-            if (ghost != null && Cultivating(__instance) && PlantConfig.On && PlantConfig.Grid.Value)
+            if (ghost != null && Cultivating(__instance) && PlantConfig.On && PlantConfig.Grid.Value
+                && Crop(__instance.GetSelectedPiece()))
                 Align(__instance, ghost);
 
             if (!Active(__instance) || (__instance.m_placementStatus != Player.PlacementStatus.Valid && !PlantGrow.Free))

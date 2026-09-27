@@ -1,4 +1,5 @@
 using System.Linq;
+using HarmonyLib;
 using RestlessQoL.Core;
 using UnityEngine;
 
@@ -36,5 +37,25 @@ public sealed class GroundVacuum : FeatureModule
                 continue;
             NearbyStorage.TryDepositDrop(player, drop);
         }
+    }
+
+    [HarmonyPatch]
+    private static class Patches
+    {
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ItemDrop), nameof(ItemDrop.DropItem))]
+        private static void AfterDrop(int amount, ItemDrop __result)
+        {
+            DroppedStack.Remember(__result, amount);
+            DroppedStack.Apply(__result);
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ItemDrop), "Start")]
+        private static void AfterStart(ItemDrop __instance) => DroppedStack.Apply(__instance);
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ItemDrop), "OnDestroy")]
+        private static void AfterDestroy(ItemDrop __instance) => DroppedStack.Forget(__instance);
     }
 }

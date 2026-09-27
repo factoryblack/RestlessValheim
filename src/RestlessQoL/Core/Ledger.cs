@@ -31,49 +31,35 @@ public sealed class Ledger : FeatureModule
 
     public override void Tick() => Bind(Player.m_localPlayer);
 
+    // Valheim's GetStat follows the achievement record once achievements are
+    // allowed. That record stayed empty while the game was marked modded.
+    // The character page wants the lifetime record, which is always index 0.
     public static float Get(PlayerStatType stat)
     {
-        var profile = Game.instance?.GetPlayerProfile();
-        return profile != null ? profile.GetStat(stat) : 0f;
+        var bag = Lifetime();
+        return bag != null ? bag[stat] : 0f;
     }
 
     public static float Enemy(string prefab)
     {
         if (string.IsNullOrEmpty(prefab))
             return 0f;
-        var n = 0f;
-        foreach (var bag in Bags())
-        {
-            if (bag.m_enemyStats == null)
-                continue;
-            foreach (var dict in bag.m_enemyStats)
-            {
-                if (dict != null && dict.TryGetValue(prefab, out var v))
-                    n += v;
-            }
-        }
-
-        return n;
+        var total = Kills();
+        return total != null && total.TryGetValue(prefab, out var n) ? n : 0f;
     }
 
     public static IEnumerable<KeyValuePair<string, float>> Hunts()
     {
         var totals = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
-        foreach (var bag in Bags())
+        var total = Kills();
+        if (total != null)
         {
-            if (bag.m_enemyStats == null)
-                continue;
-            foreach (var dict in bag.m_enemyStats)
+            foreach (var pair in total)
             {
-                if (dict == null)
+                if (string.IsNullOrEmpty(pair.Key) || pair.Value <= 0f)
                     continue;
-                foreach (var pair in dict)
-                {
-                    if (string.IsNullOrEmpty(pair.Key) || pair.Value <= 0f)
-                        continue;
-                    totals.TryGetValue(pair.Key, out var cur);
-                    totals[pair.Key] = cur + pair.Value;
-                }
+                totals.TryGetValue(pair.Key, out var cur);
+                totals[pair.Key] = cur + pair.Value;
             }
         }
 
@@ -170,16 +156,16 @@ public sealed class Ledger : FeatureModule
         return sb.ToString();
     }
 
-    private static IEnumerable<PlayerProfile.PlayerStats> Bags()
+    private static PlayerProfile.PlayerStats? Lifetime()
     {
         var all = Game.instance?.GetPlayerProfile()?.m_playerStats;
-        if (all == null)
-            yield break;
-        foreach (var bag in all)
-        {
-            if (bag != null)
-                yield return bag;
-        }
+        return all != null && all.Length > 0 ? all[0] : null;
+    }
+
+    private static Dictionary<string, float>? Kills()
+    {
+        var stats = Lifetime()?.m_enemyStats;
+        return stats != null && stats.Length > 0 ? stats[0] : null;
     }
 
     private static void Bind(Player? player)

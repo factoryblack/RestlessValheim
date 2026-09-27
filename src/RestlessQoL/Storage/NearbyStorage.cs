@@ -359,11 +359,15 @@ public static class NearbyStorage
         var id = drop.m_nview.GetZDO().m_uid;
         if (!BeginDeposit(id))
             return 0;
+        DroppedStack.Apply(drop);
         var item = drop.m_itemData;
         var moved = TryDeposit(player, item);
         if (item.m_stack <= 0)
         {
-            FinishDrop(drop, item);
+            if (moved > 0)
+                FinishDrop(drop, item);
+            else
+                DroppedStack.Apply(drop);
             EndDeposit(id);
             return moved;
         }

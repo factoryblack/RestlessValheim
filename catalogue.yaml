@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-27 — UI consistency fixes; in-game layout and restoration checks pending.
+# last_audit: 2026-09-28 — shipped Core 0.1.17, Plant 0.1.7, Piles 0.1.7, pack 0.1.21.
 
-updated: 2026-09-27
+updated: 2026-09-28
 
 items:
   # --- loader ---
@@ -160,12 +160,12 @@ items:
     note: "ObjectDB shared m_maxStackSize × F8 slider (default 2, 1–10). Remembers vanilla so the slider cannot compound. Max 1 (gear, trophies) stays 1. Existing piles do not split; they can merge further. Host value syncs to clients (F8 no longer says they must match). Weight multiplier is still misc.azu_leftovers. Playtest."
 
   - id: inventory.honest
-    name: Clear cheated item flag
+    name: Clear cheat marks
     decision: dll
     in_mod: done
     bite: 1
     restless: n/a
-    note: "Valheim 1.0 ItemData.m_cheated. Storage clones, extra-slot moves, and Jötunn crafts were inheriting it. Cleared on Inventory.Changed, player load, and world drops. Host-locked F8. Does not un-flag a character that already used devcommands. Playtest."
+    note: "Items, the character (m_usedCheats), and the world-modifier cheat check no longer block achievements. Existing character flags are cleared and saved. World keys stay; they are just not an achievement ban. Game.isModded still labels the menu, and it does not count. Host-locked F8. Playtest."
 
   - id: production.eternal_fire
     name: Fires stay lit
@@ -206,7 +206,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-PetPantry
-    note: "Hungry tames pull one matching stack from chests in Storage.Range. AI owner sends RestlessPull if it does not own the chest. LeaveOne applies. Dedicated with no local player uses playerId 0 (skip access), same as stations. Playtested."
+    note: "Hungry tames pull one matching stack from chests in Storage.Range. AI owner sends RestlessPull if it does not own the chest. LeaveOne applies. Dedicated playerId 0 is accepted only when the sender is the server peer, so a client cannot open a private chest with 0. Playtested on listen-host; dedicated pull is untested."
 
   - id: storage.ground_vacuum
     name: Ground loot into chests
@@ -214,7 +214,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-AzuAutoStore
-    note: "Ground piles into chests that already HaveItem that stack. Local write if we own the chest; else RestlessPush. FinishDrop always runs after the walk so a partial local take cannot leave the world drop. Interval 0.75 s. Quest items skipped."
+    note: "Ground piles into chests that already HaveItem that stack. Local write if we own the chest; else RestlessPush. FinishDrop runs after a real take so a partial deposit cannot leave the world drop. A drop whose stack was cleared without a deposit is left in the world. Split drops remember the thrown count. Interval 0.75 s. Quest items skipped."
 
   - id: inventory.mouse_tweaks
     name: Shift-click / stack-split inventory
@@ -383,7 +383,7 @@ items:
     in_mod: partial
     bite: 2
     restless: (vanilla PlayerStats)
-    note: "Character presentation groups Journey/Survival/Craft records into reusable Metric rows, shows all recorded hunts and hides empty extras; compile/playtest pending. Wraps PlayerProfile.GetStat / per-enemy IncrementStatEnemy store. F8 Character tab is view-only. Extras bag on player.m_customData for later modules. Not a skill tree — no bonuses, XP, or unlocks."
+    note: "Character page reads the lifetime record (player stats index 0). Journey adds run. Survival adds the day streak, longest streak, and comfort. Craft adds pieces built, trees, ore, crops, fish, and tames. Records shows tallest build and highest world height built. Hunts list every recorded enemy. F8 Character tab is view-only. Extras bag on player.m_customData for later modules. Not a skill tree — no bonuses, XP, or unlocks."
 
   - id: misc.azu_leftovers
     name: Cherry-picks from AzuMiscPatches
@@ -518,7 +518,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPiles
-    note: "RestlessPiles 0.1.6. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. Nearby range follows Core Search range unless Isolate pile range is on; the F8 slider hides until then. Needs Core 0.1.15. Not a chest."
+    note: "RestlessPiles 0.1.7. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. A split stack thrown back keeps the thrown count if the world item reloads as 0 or 1. Nearby range follows Core Search range unless Isolate pile range is on; the F8 slider hides until then. Needs Core 0.1.17. Not a chest."
 
   - id: plant.forage
     name: Cultivator forage and bushes
@@ -526,7 +526,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPlant
-    note: "RestlessPlant 0.1.6. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest and snap ranges stay their own settings. Needs Core."
+    note: "RestlessPlant 0.1.7. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Harvest range picks every ripe player-grown crop in range, not only the same kind, and searches that radius instead of every loaded pickable. A wide grid stamps crops only; the till tool stays one patch. Spacing follows the crop's grow radius unless minimum spacing is set (the old 2m default was cleared). Each extra cell is checked again, so an oversized grid plants only the cells that can grow, including cultivated ground, and paints the rest red. A failed grow check logs once and still puts the ghost back. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest and snap ranges stay their own settings. Needs Core."
 
   - id: skip.collectors
     name: Crystal / feather / guck / tar collectors

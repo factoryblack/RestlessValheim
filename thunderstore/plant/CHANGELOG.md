@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.7
+
+- Grid spacing follows the crop. Minimum spacing 0 uses the room that plant needs to grow
+- An oversized grid plants the cells that sit on cultivated ground and can grow. The rest stay red and are skipped
+- Harvest range picks every ripe player-grown crop nearby, not only the same kind, and only searches that radius
+- A wide cultivator grid stamps crops. The till tool still cultivates one patch
+- A failed grow check logs once and still puts the ghost back
+
 ## 0.1.6
 
 - Snap-to-field aligns to the crop itself. A location parent was throwing the cultivator ghost off the bed

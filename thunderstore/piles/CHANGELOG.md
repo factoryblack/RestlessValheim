@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7
+
+- Vacuuming a split stack back onto a pile adds the amount you threw. Needs Core 0.1.17.
+
 ## 0.1.6
 
 - Pile range stays off the F8 page until Isolate pile range is on. Needs Core 0.1.15.

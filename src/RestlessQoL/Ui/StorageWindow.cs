@@ -51,11 +51,20 @@ internal sealed partial class StorageWindow : MonoBehaviour
         var window = go.AddComponent<StorageWindow>();
         _current = window;
         window._source = source;
-        window.Build();
-        window._blocked = true;
-        GUIManager.BlockInput(true);
-        window.RefreshSnapshot(true);
-        return IsOpen;
+        try
+        {
+            window.Build();
+            window._blocked = true;
+            GUIManager.BlockInput(true);
+            window.RefreshSnapshot(true);
+            return IsOpen;
+        }
+        catch (Exception error)
+        {
+            Debug.LogException(error);
+            window.Dismiss();
+            return false;
+        }
     }
 
     internal static void Close(IStorageWindowSource source)
@@ -112,11 +121,15 @@ internal sealed partial class StorageWindow : MonoBehaviour
             return order != 0 ? order : StringComparer.Ordinal.Compare(a.Id, b.Id);
         });
         if (!_filtered.Exists(r => r.Id == _selected)) _selected = _filtered.Count > 0 ? _filtered[0].Id : "";
-        _grid.CancelWheel();
         var height = Mathf.Max(_grid.viewport.rect.height, ((_filtered.Count + Columns - 1) / Columns) * PitchY);
         _grid.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
         var y = resetScroll ? 0f : Mathf.Clamp(_grid.content.anchoredPosition.y, 0f, height - _grid.viewport.rect.height);
-        _grid.content.anchoredPosition = new Vector2(0f, y);
+        // A count-only refresh must not interrupt an active wheel animation.
+        if (resetScroll || !Mathf.Approximately(y, _grid.content.anchoredPosition.y))
+        {
+            _grid.CancelWheel();
+            _grid.content.anchoredPosition = new Vector2(0f, y);
+        }
         _empty.text = _snapshot?.StoreCount == 0 ? "No accessible stores nearby."
             : _snapshot?.Resources.Count == 0 ? "These stores are empty." : "No matching resources.";
         _empty.gameObject.SetActive(_filtered.Count == 0);
@@ -195,7 +208,13 @@ internal sealed partial class StorageWindow : MonoBehaviour
         { _sourceRows[i].name.gameObject.SetActive(false); _sourceRows[i].count.gameObject.SetActive(false); }
         _detail.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
             Mathf.Max(_detail.viewport.rect.height, sourceY + 8f));
-        if (resetScroll) { _detail.CancelWheel(); _detail.content.anchoredPosition = Vector2.zero; }
+        var detailY = resetScroll ? 0f : Mathf.Clamp(_detail.content.anchoredPosition.y, 0f,
+            Mathf.Max(0f, _detail.content.rect.height - _detail.viewport.rect.height));
+        if (resetScroll || !Mathf.Approximately(detailY, _detail.content.anchoredPosition.y))
+        {
+            _detail.CancelWheel();
+            _detail.content.anchoredPosition = new Vector2(0f, detailY);
+        }
         PaintAmount();
     }
 
@@ -204,6 +223,8 @@ internal sealed partial class StorageWindow : MonoBehaviour
         var item = Selected();
         var max = item == null ? 1 : (int)Math.Min(int.MaxValue, Math.Max(1L, item.Count));
         _amount = Math.Max(1, Math.Min(max, amount));
+        // onEndEdit can run before InputField has cleared isFocused.
+        _quantity.SetTextWithoutNotify(_amount.ToString());
         PaintAmount();
     }
 
@@ -267,10 +288,10 @@ internal sealed partial class StorageWindow : MonoBehaviour
     }
     private void OnDisable()
     {
+        if (_current == this) _current = null;
         if (!_blocked) return;
         _blocked = false;
         if (!SettingsUi.IsOpen) GUIManager.BlockInput(false);
-        if (_current == this) _current = null;
     }
     private sealed class Cell
     {

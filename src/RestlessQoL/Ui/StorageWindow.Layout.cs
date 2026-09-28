@@ -23,12 +23,12 @@ internal sealed partial class StorageWindow
 
         var search = Field(_sheet, "Search resources…", 28, 118, 596, 40);
         search.onValueChanged.AddListener(value => { _query = value; Filter(true); });
-        var sort = Button(_sheet, "Name ↓", 638, 118, 182, 40, () => { });
+        var sort = Button(_sheet, "Name A–Z", 638, 118, 182, 40, () => { });
         sort.onClick.RemoveAllListeners();
         sort.onClick.AddListener(() =>
         {
             _sort = (_sort + 1) % 3;
-            sort.GetComponentInChildren<Text>().text = new[] { "Name ↓", "Quantity ↓", "Unit weight ↓" }[_sort];
+            sort.GetComponentInChildren<Text>().text = new[] { "Name A–Z", "Quantity ↓", "Unit weight ↓" }[_sort];
             Filter(true);
         });
         for (var i = 0; i < _categories.Length; i++)
@@ -83,7 +83,8 @@ internal sealed partial class StorageWindow
         _quantity.textComponent.fontSize = 24;
         _quantity.onEndEdit.AddListener(value =>
         {
-            if (!_paintingAmount) SetAmount(int.TryParse(value, out var count) ? count : 1);
+            if (!_paintingAmount) SetAmount(long.TryParse(value, out var count)
+                ? (int)Math.Max(1L, Math.Min(int.MaxValue, count)) : 1);
         });
         _plus = Button(_sheet, "+", 1120, 568, 48, 42, () => SetAmount(_amount == int.MaxValue ? int.MaxValue : _amount + 1));
         _presets.Add(Button(_sheet, "1", 872, 620, 90, 30, () => SetAmount(1)));
@@ -155,6 +156,8 @@ internal sealed partial class StorageWindow
         if (native != null)
         {
             var bar = Instantiate(native, root.transform, false);
+            // Borrow artwork, never the native control's event bindings.
+            bar.onValueChanged = new Scrollbar.ScrollEvent();
             At(bar.gameObject, width - 10, 0, 10, height);
             scroll.verticalScrollbar = bar;
             scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;

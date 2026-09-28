@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-29 — a picked bush keeps its size and only the berries grow back.
+# last_audit: 2026-09-29 — the food preparation table runs kitchen orders; the cookbook UI is separate.
 
 updated: 2026-09-29
 
@@ -518,7 +518,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessCook
-    note: "RestlessCook 0.1.9. Meals, sideboards, and feasts from Meadows through Ashlands. Needs Core. No F8 settings. Deep North waits. Not in the Core DLL."
+    note: "RestlessCook 0.1.9. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table no longer opens the vanilla craft list. It keeps orders, pulls stock, loads nearby racks and ovens, collects finished food before it burns, and assembles the next recipe into a pantry on the table. Cauldron level, fuel, fire and station capacity still apply. The cookbook screen is not in this pass. Needs Core. No F8 settings. Deep North waits. Not in the Core DLL."
 
   - id: piles.stacks
     name: Uncapped resource piles

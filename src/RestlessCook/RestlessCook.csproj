@@ -19,6 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RestlessQoL\RestlessQoL.csproj">
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="..\..\cook.yaml" LogicalName="RestlessCook.cook.yaml" />
     <EmbeddedResource Include="Assets\*.png" LogicalName="RestlessCook.Assets.%(Filename)%(Extension)" />
   </ItemGroup>

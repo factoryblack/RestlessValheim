@@ -146,21 +146,36 @@ internal static class PlantHover
 }
 
 // Picked forage used to switch its mesh off, so a mushroom patch looked empty.
-// The same mesh stays, small at the moment of the pick, and reaches its real
-// size when the respawn timer finishes.
+// A mushroom is one mesh, so that mesh grows back from a sprout. A bush hides
+// only its berry cluster, and that cluster is what changes size.
 internal sealed class PickSprout : MonoBehaviour
 {
     private const float Tiny = 0.2f;
 
     private Pickable? _pick;
     private Transform? _visual;
+    private Transform? _bush;
     private Vector3 _full = Vector3.one;
+    private Vector3 _bushFull = Vector3.one;
     private float _next;
 
     public void Bind(Pickable pick)
     {
         _pick = pick;
-        _visual = pick.m_hideWhenPicked.transform;
+        var hidden = pick.m_hideWhenPicked.transform;
+        var fruit = FruitCluster(hidden);
+        if (fruit != null)
+        {
+            _bush = hidden;
+            _bushFull = hidden.localScale;
+            _visual = fruit;
+        }
+        else
+        {
+            _bush = null;
+            _visual = hidden;
+        }
+
         _full = _visual.localScale;
         Apply();
     }
@@ -178,6 +193,13 @@ internal sealed class PickSprout : MonoBehaviour
         if (_pick == null || _visual == null || _pick.m_respawnTimeMinutes <= 0f || _pick.m_enabled == 0)
             return;
 
+        if (_bush != null)
+        {
+            if (!_bush.gameObject.activeSelf)
+                _bush.gameObject.SetActive(true);
+            _bush.localScale = _bushFull;
+        }
+
         if (!_pick.m_picked)
         {
             _visual.localScale = _full;
@@ -191,4 +213,23 @@ internal sealed class PickSprout : MonoBehaviour
         var grown = Mathf.Clamp01(1f - (float)(left / _pick.m_respawnTimeMinutes));
         _visual.localScale = _full * Mathf.Lerp(Tiny, 1f, grown);
     }
+
+    // Raspberry, blueberry, and cloudberry call the cluster Berrys. Lingonberry
+    // calls it Berries. The bush mesh is a sibling, so it is left alone.
+    private static Transform? FruitCluster(Transform hidden)
+    {
+        foreach (var child in hidden.GetComponentsInChildren<Transform>(true))
+        {
+            if (child == hidden)
+                continue;
+            if (IsFruit(child.name))
+                return child;
+        }
+
+        return null;
+    }
+
+    private static bool IsFruit(string name) =>
+        name.Equals("Berrys", StringComparison.OrdinalIgnoreCase)
+        || name.Equals("Berries", StringComparison.OrdinalIgnoreCase);
 }

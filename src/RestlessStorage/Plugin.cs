@@ -39,7 +39,7 @@ public class Plugin : BaseUnityPlugin
             PluginGuid,
             PluginName,
             "A table for the stores around you.",
-            "Build a Storekeeper's Table at the workbench to browse nearby accessible stores. Search resources, inspect combined totals and see where they are stored. Withdrawal is not available in this preview."));
+            "Build a Storekeeper's Table at the workbench. Browse nearby stores, then take a stack into your inventory. The chest owner moves the items. Whatever does not fit goes back."));
         StorekeeperPiece.Load();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();

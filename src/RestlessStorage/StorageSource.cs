@@ -8,14 +8,15 @@ using UnityEngine;
 
 namespace RestlessStorage;
 
-// Read-only adapter. This is a view of accessible, loaded nearby containers,
-// not a global network and not a client-side clone-and-consume transfer.
+// Nearby containers the player can already open. Take asks the chest owner
+// for the real stacks. This is not a claim on unloaded storage.
 internal sealed class StorageSource : IStorageWindowSource
 {
     private readonly Storekeeper _table;
     private readonly Player _player;
     private string _signature = "";
     private long _revision;
+    private bool _busy;
     internal StorageSource(Storekeeper table, Player player) { _table = table; _player = player; }
     public bool IsAvailable => Plugin.WindowEnabled.Value && _table != null && _player != null
         && Player.m_localPlayer == _player && !_player.IsDead()
@@ -36,7 +37,7 @@ internal sealed class StorageSource : IStorageWindowSource
             foreach (var item in inventory.GetAllItems())
             {
                 if (item?.m_shared == null || item.m_stack <= 0) continue;
-                var id = Identity(item);
+                var id = ItemKey.Of(item);
                 if (!groups.TryGetValue(id, out var group)) groups.Add(id, group = new Group(item));
                 group.Count += item.m_stack;
                 quantities.TryGetValue(id, out var count);
@@ -64,14 +65,122 @@ internal sealed class StorageSource : IStorageWindowSource
         }
         var stamp = signature.ToString();
         if (stamp != _signature) { _signature = stamp; _revision++; }
+        var open = ModConfig.StorageEnabled.Value;
         return new StorageSnapshot(_revision, "Storage network", "Storekeeper's Table · nearby storage",
-            stores, _player.GetInventory().GetTotalWeight(), _player.GetMaxCarryWeight(), false,
-            ModConfig.StorageEnabled.Value ? "Browsing only · withdrawals unavailable" : "Nearby storage is disabled by the host",
+            stores, _player.GetInventory().GetTotalWeight(), _player.GetMaxCarryWeight(), open,
+            open ? "Take from nearby stores" : "Nearby storage is disabled by the host",
             resources.ToArray());
     }
 
     public void Withdraw(string resourceId, int amount, Action<string> completed)
-        => completed("Withdrawals are unavailable.");
+    {
+        if (completed == null)
+            return;
+        if (_busy)
+            return;
+        if (!IsAvailable)
+        {
+            completed("The table is out of reach.");
+            return;
+        }
+
+        if (!ModConfig.StorageEnabled.Value)
+        {
+            completed("Nearby storage is disabled by the host.");
+            return;
+        }
+
+        if (amount < 1 || string.IsNullOrEmpty(resourceId))
+        {
+            completed("Nothing nearby.");
+            return;
+        }
+
+        var chests = new List<Container>(NearbyStorage.ForLocalPlayer());
+        var origin = _player.transform.position;
+        chests.Sort((a, b) =>
+            (a.transform.position - origin).sqrMagnitude.CompareTo((b.transform.position - origin).sqrMagnitude));
+        var label = LabelFor(chests, resourceId);
+        _busy = true;
+        Walk(chests, resourceId, 0, amount, 0, false, false, label, message =>
+        {
+            _busy = false;
+            completed(message);
+        });
+    }
+
+    private void Walk(List<Container> chests, string resourceId, int index, int left, int moved, bool blocked,
+        bool timedOut, string label, Action<string> completed)
+    {
+        if (blocked || timedOut || left <= 0 || index >= chests.Count)
+        {
+            completed(Result(label, moved, blocked, timedOut));
+            return;
+        }
+
+        var chest = chests[index];
+        StorageWithdraw.Request(chest, _player.GetPlayerID(), resourceId, left, batch =>
+        {
+            if (batch.TimedOut)
+            {
+                Walk(chests, resourceId, index + 1, left, moved, blocked, true, label, completed);
+                return;
+            }
+
+            var bag = _player != null ? _player.GetInventory() : null;
+            if (bag == null)
+            {
+                if (batch.Id == 0)
+                    StorageWithdraw.ReturnTo(chest, batch.Items);
+                else if (batch.Items.Count > 0)
+                    StorageWithdraw.Acknowledge(chest, batch.Id, batch.Items);
+                completed("The table is out of reach.");
+                return;
+            }
+
+            var overflow = new List<ItemDrop.ItemData>();
+            var added = StorageWithdraw.Give(bag, batch.Items, overflow);
+            if (batch.Id == 0)
+                StorageWithdraw.ReturnTo(chest, overflow);
+            else if (batch.Items.Count > 0)
+                StorageWithdraw.Acknowledge(chest, batch.Id, overflow);
+            Walk(chests, resourceId, index + 1, left - added, moved + added, overflow.Count > 0, false, label, completed);
+        });
+    }
+
+    private static string LabelFor(List<Container> chests, string resourceId)
+    {
+        foreach (var chest in chests)
+        {
+            var inventory = chest.GetInventory();
+            if (inventory == null)
+                continue;
+            foreach (var item in inventory.GetAllItems())
+            {
+                if (item?.m_shared == null || ItemKey.Of(item) != resourceId)
+                    continue;
+                var name = Local(item.m_shared.m_name);
+                return item.m_quality > 1 ? name + " " + item.m_quality : name;
+            }
+        }
+
+        return "items";
+    }
+
+    private static string Result(string label, int moved, bool blocked, bool timedOut)
+    {
+        if (timedOut && moved <= 0)
+            return "The chest did not answer. Nothing was taken.";
+        if (timedOut)
+            return "Took " + moved.ToString("N0") + " " + label + ". A later chest did not answer.";
+        if (moved <= 0 && blocked)
+            return "No room in your inventory.";
+        if (moved <= 0)
+            return "Nothing nearby.";
+        if (blocked)
+            return "Took " + moved.ToString("N0") + " " + label + ". No room for the rest.";
+        return "Took " + moved.ToString("N0") + " " + label + ".";
+    }
 
     private static string Local(string value) => Localization.instance != null ? Localization.instance.Localize(value) : value;
     private static string Category(ItemDrop.ItemData item)
@@ -86,22 +195,6 @@ internal sealed class StorageSource : IStorageWindowSource
                 or "Helmet" or "Chest" or "Legs" or "Shoulder" or "Utility" or "Tool" => "Equipment",
             _ => "Other"
         };
-    }
-    private static string Identity(ItemDrop.ItemData item)
-    {
-        // Preserve variants/custom data in the provider's opaque key. A later
-        // transfer adapter must not collapse unlike equipment into one request.
-        var b = new StringBuilder();
-        void Part(string value) => b.Append(value.Length).Append(':').Append(value);
-        Part(item.m_dropPrefab != null ? item.m_dropPrefab.name : item.m_shared.m_name);
-        Part(item.m_quality.ToString()); Part(item.m_variant.ToString()); Part(item.m_worldLevel.ToString());
-        Part(item.m_durability.ToString("R")); Part(item.m_crafterID.ToString());
-        if (item.m_customData != null)
-        {
-            var keys = new List<string>(item.m_customData.Keys); keys.Sort(StringComparer.Ordinal);
-            foreach (var key in keys) { Part(key); Part(item.m_customData[key]); }
-        }
-        return b.ToString();
     }
     private sealed class Group
     {

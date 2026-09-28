@@ -228,6 +228,12 @@ public sealed class StorageSync : FeatureModule
             view.Register<ZPackage>(PushRpc, (long sender, ZPackage pkg) => OnPush(__instance, sender, pkg));
             view.Register<int, int>(PulledRpc, (_, id, taken) => Finish(id, taken));
             view.Register<int, int>(PushedRpc, (_, id, taken) => Finish(id, taken));
+            view.Register<ZPackage>(StorageWithdraw.RequestRpc,
+                (long sender, ZPackage pkg) => StorageWithdraw.OnRequest(__instance, sender, pkg));
+            view.Register<ZPackage>(StorageWithdraw.ReplyRpc,
+                (long sender, ZPackage pkg) => StorageWithdraw.OnReply(sender, pkg));
+            view.Register<ZPackage>(StorageWithdraw.AckRpc,
+                (long sender, ZPackage pkg) => StorageWithdraw.OnAck(__instance, sender, pkg));
         }
     }
 

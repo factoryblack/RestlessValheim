@@ -7,6 +7,7 @@ One install for the Restless table. r2modman and Thunderstore pull the stack:
 **RestlessPiles** — wood stacks and stone piles that actually hold what you cut  
 **RestlessPlant** — bushes and forage on the cultivator  
 **RestlessDrawers** — workshop cabinets with the same slots as the matching chest  
+**RestlessStorage** — a Storekeeper's Table that lists nearby chests and takes what you need  
 
 Plus **BepInExPack 5.4.2351** and **Jötunn 2.30.2**.
 

@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-28 — RestlessStorage browser preview and shared UI API; withdrawal service remains pending.
+# last_audit: 2026-09-28 — shipped Core 0.1.18, Storage 0.1.0, pack 0.1.22. Take playtested locally. Multiplayer still open.
 
 updated: 2026-09-28
 
@@ -502,7 +502,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessStorage
-    note: "RestlessStorage 0.1.0 table opens a live read-only browser through Core StorageWindowApi. Search, game-type filters, sorting, pooled visible resource cards, source breakdown, quantity and carry-weight preview; local F8 toggle. Uses existing nearby access/range rules and no global network claim. Withdrawal intentionally disabled until an acknowledged owner-authoritative transfer provider exists. Shared paper/portrait/controls and native scrollbar; no new assets. No per-frame storage scan. Needs both updated DLLs and Unity playtest. Not in the pack."
+    note: "RestlessStorage 0.1.0. Storekeeper's Table opens the shared browser: search, game-type filters, sorting, pooled cards, source rows, quantity and carry weight. Take asks the chest owner for the matching stacks (prefab, quality, variant, world level, durability, crafter, custom data) and adds those items. Overflow goes back into that chest; if the owner never hears the acknowledgement the whole take goes back. Leave-one is not applied. Nearby range and access follow Core. No unloaded-storage claim. Local F8 toggle. Mouse and keyboard. Controller grid navigation is still open. Local take playtested. Multiplayer not yet. Needs Core 0.1.18. In the 0.1.22 pack."
 
   - id: drawers.chests
     name: Chest-equivalent drawers

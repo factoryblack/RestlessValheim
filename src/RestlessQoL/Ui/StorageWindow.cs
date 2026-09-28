@@ -266,7 +266,10 @@ internal sealed partial class StorageWindow : MonoBehaviour
         catch (Exception error)
         {
             // An ambiguous transport error is not safe to retry automatically.
-            Debug.LogException(error); _status.text = "Transfer status unknown. Close and check your inventory.";
+            Debug.LogException(error);
+            _pending = false;
+            _status.text = "Transfer status unknown. Close and check your inventory.";
+            PaintAmount();
         }
     }
 

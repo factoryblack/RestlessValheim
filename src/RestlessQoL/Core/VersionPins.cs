@@ -5,7 +5,7 @@ internal static class VersionPins
 {
     public const string BepInEx = "5.4.2351";
     public const string Jotunn = "2.30.2";
-    public const string Core = "0.1.17";
+    public const string Core = "0.1.18";
     public const string Cook = "0.1.9";
     public const string Piles = "0.1.7";
     public const string Plant = "0.1.7";

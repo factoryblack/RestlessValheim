@@ -4,19 +4,20 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "Restless_Valheim"
-versionNumber = "0.1.21"
-description = "Restless Valheim: BepInEx, Jötunn, RestlessCore, RestlessCook, RestlessPiles, RestlessPlant, and RestlessDrawers."
+versionNumber = "0.1.22"
+description = "Restless Valheim: BepInEx, Jötunn, RestlessCore, RestlessCook, RestlessPiles, RestlessPlant, RestlessDrawers, and RestlessStorage."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
 
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2351"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.1.17"
+Restless-RestlessCore = "0.1.18"
 Restless-RestlessCook = "0.1.9"
 Restless-RestlessPiles = "0.1.7"
 Restless-RestlessPlant = "0.1.7"
 Restless-RestlessDrawers = "0.1.1"
+Restless-RestlessStorage = "0.1.0"
 
 [build]
 icon = "./icon.png"

@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.18
 
-- Shared storage browser for RestlessStorage. Read-only. The table plugin owns what is nearby; Core draws the window
+- Storage browser for the Storekeeper's Table. Take is answered by the chest owner, and a missed reply puts the stacks back
 
 ## 0.1.17
 

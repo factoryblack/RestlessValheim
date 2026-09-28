@@ -1,6 +1,6 @@
 # Storage window — UI integration
 
-The Storekeeper's Table now opens the shared Core storage browser. This is a live read-only preview, not a completed storage network or transfer system. Use matching builds of RestlessCore.dll and RestlessStorage.dll from this PR.
+The Storekeeper's Table opens the shared Core storage browser and can take items from accessible nearby containers. Use matching builds of RestlessCore.dll and RestlessStorage.dll.
 
 ## Ownership
 
@@ -18,13 +18,15 @@ Snapshot revisions repaint changed content; scrolling only rebinds visible cells
 
 This is a mouse/keyboard preview. Controller navigation across virtualised offscreen grid rows remains a follow-up; visible Unity controls retain normal selectable navigation.
 
-## Transfer handoff
+## Transfer
 
-Implement `IStorageWindowSource.Withdraw(resourceId, amount, completed)` and only then advertise `StorageSnapshot.CanWithdraw = true`. The implementation must validate the current player, table/session, actual accessible sources, item identity and destination capacity at commit time. Respect locked destinations and the chosen reservation policy. Remove/create only through acknowledged owner-authoritative transfer logic. Handle concurrent players, partial results and timeout/duplicate delivery without loss or duplication.
+`StorageSnapshot.CanWithdraw` is true while nearby storage is enabled. Take calls `Withdraw` with the opaque item key from `ItemKey`.
 
-Do not implement this using `RequestConsume` followed by an unconditional local AddItem. That API is a crafting-consumption path, and a quantity acknowledgement does not carry the original item's full data or transactional inventory capacity.
+The chest owner removes up to the asked amount of matching stacks and replies with those items. The taker adds what fits, then acknowledges. The acknowledgement carries anything that did not fit, and the owner puts that back. A second acknowledgement is ignored. If the owner hears nothing for 10 seconds, the whole take goes back into the chest. A late reply after the taker has given up is ignored, so it is not added twice.
 
-Call completion once on Unity's main thread, with a player-facing result message. Accepted transfers outlive closing the UI. The window blocks repeated requests while pending and ignores callbacks after disposal. It does not retry ambiguous failures. The backend must ensure these semantics; the UI is not a security boundary.
+Leave-one is a crafting reservation. A deliberate take does not keep one behind. This does not use `RequestConsume`.
+
+The window shows one result message. Closing it does not cancel a take that already reached the owner. It does not retry a chest that did not answer.
 
 ## Playtest
 
@@ -33,6 +35,6 @@ Call completion once on Unity's main thread, with a player-facing result message
 - Change quantities in nearby chests while browsing. Check selection, totals, source rows and retained scroll.
 - Test long names/descriptions, different quality/custom-data items, 16:9/ultrawide and increased UI scale.
 - Disable browser in F8; disable nearby storage as host; destroy the table; die or move away.
-- Confirm Take stays disabled and both player and source inventories remain unchanged.
+- Take a stack, a partial amount, and more than the inventory can hold. The overflow returns to that chest. Quality, variant, and custom data stay with the item.
 
 CI compilation/regressions do not substitute for the Unity visual/input checks above.

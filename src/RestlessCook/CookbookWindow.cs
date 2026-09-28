@@ -103,6 +103,9 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         if (tab == 0) { _order = 0; RecipeList(); }
         if (tab == 1) OrderList();
         _trail.Clear(); _focus = 0; Refresh(true);
+        Size(_tree, _tree.content.rect.height, true);
+        Size(_details, _details.content.rect.height, true);
+        Size(_recipes, _recipes.content.rect.height, true);
     }
     private void RecipeList()
     {

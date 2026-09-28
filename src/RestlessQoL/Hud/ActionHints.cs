@@ -136,15 +136,22 @@ public sealed class ActionHints : FeatureModule
         ("Inventory", new[] { "Inventory", "JoyInventory" })
     ];
 
-    private static (string verb, string[] buttons)[] BuildRows() =>
-    [
-        ("Place", new[] { "Attack", "JoyPlace", "JoyAttack" }),
-        ("Remove", new[] { "Remove", "JoyRemove", "SecondaryAttack", "SecondAttack" }),
-        ("Snap", new[] { "AltPlace", "JoyAltPlace" }),
-        ("Cycle", new[] { "NextSnap", "PrevSnap" }),
-        ("Rotate", new[] { "JoyRotate" }),
-        ("Menu", new[] { "BuildMenu" })
-    ];
+    private static (string verb, string[] buttons)[] BuildRows()
+    {
+        var rows = new List<(string verb, string[] buttons)>
+        {
+            ("Place", new[] { "Attack", "JoyPlace", "JoyAttack" }),
+            ("Remove", new[] { "Remove", "JoyRemove", "SecondaryAttack", "SecondAttack" }),
+            ("Snap", new[] { "AltPlace", "JoyAltPlace" }),
+            ("Cycle", new[] { "NextSnap", "PrevSnap" }),
+            ("Rotate", new[] { "JoyRotate" }),
+            ("Menu", new[] { "BuildMenu" })
+        };
+        var player = Player.m_localPlayer;
+        if (ModConfig.AreaSealEnabled.Value && !ZInput.IsGamepadActive() && player != null && player.InRepairMode())
+            rows.Insert(1, ("Seal", System.Array.Empty<string>()));
+        return rows.ToArray();
+    }
 
     private static (string verb, string[] buttons)[] CombatRows(Player player)
     {
@@ -171,7 +178,7 @@ public sealed class ActionHints : FeatureModule
         var kept = new List<(string verb, string[] buttons)>();
         foreach (var row in rows)
         {
-            if (row.verb == "Rotate" || RestlessUi.Bound(row.buttons))
+            if (row.verb == "Rotate" || row.verb == "Seal" || RestlessUi.Bound(row.buttons))
                 kept.Add(row);
         }
 

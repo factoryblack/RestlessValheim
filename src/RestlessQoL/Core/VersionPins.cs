@@ -5,12 +5,12 @@ internal static class VersionPins
 {
     public const string BepInEx = "5.4.2351";
     public const string Jotunn = "2.30.2";
-    public const string Core = "0.1.18";
-    public const string Cook = "0.1.9";
-    public const string Piles = "0.1.7";
-    public const string Plant = "0.1.7";
-    public const string Drawers = "0.1.1";
-    public const string Storage = "0.1.0";
+    public const string Core = "0.1.19";
+    public const string Cook = "0.1.10";
+    public const string Piles = "0.1.8";
+    public const string Plant = "0.1.8";
+    public const string Drawers = "0.1.2";
+    public const string Storage = "0.1.1";
 
     public static string? ForGuid(string guid) => guid switch
     {

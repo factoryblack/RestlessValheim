@@ -10,7 +10,7 @@ The food preparation table and serving tray are the vanilla pieces, unlocked in 
 
 1. Cook the raw meat and fish first. A few vanilla recipes now ask for the cooked cut instead of the raw one.
 2. Turn those cuts and forage into prepared meals at the cauldron.
-3. Carry the meals to the food preparation table, then place the board with the **serving tray** and eat off it.
+3. Use the food preparation table to order a feast. It loads nearby racks and ovens, then hands you the finished board. Place that board with the **serving tray** and eat off it.
 
 Every custom meal still lands on a feast. Vanilla boards stay in the game; they are still the balanced white fork. Each biome gets two Restless boards — one leans health, one leans stamina. Mistlands and Ashlands boards also carry eitr. Those boards eat finished meals, so they outpace the vanilla spread instead of copying it.
 

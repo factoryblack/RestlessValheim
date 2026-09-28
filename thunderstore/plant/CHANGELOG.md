@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.8
+
+- A picked mushroom shrinks to a sprout and grows back. On a bush only the berries do that; the bush stays full size
+- Field snap lines up with the crop itself
+- Each extra grid cell pays for its own seed
+- Area harvest includes ripe farm crops you planted
+- Grow-anywhere no longer leaves the plant unable to grow in its biome
+- A bird nest keeps its own text and feathers, and does not pull nearby hives
+
 ## 0.1.7
 
 - Grid spacing follows the crop. Minimum spacing 0 uses the room that plant needs to grow

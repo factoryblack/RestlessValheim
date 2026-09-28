@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.19
+
+- Hold Alt with the repair tool to seal wooden pieces against rain. One resin each, from your inventory and nearby chests. Already sealed pieces are skipped. F8 has the switch and the radius
+- A death that leaves nothing to recover drops the map pin
+- Extra-slot hotkeys stay quiet while you are typing
+- The F8 storage page uses the storage emblem
+
 ## 0.1.18
 
 - Storage browser for the Storekeeper's Table. Take is answered by the chest owner, and a missed reply puts the stacks back

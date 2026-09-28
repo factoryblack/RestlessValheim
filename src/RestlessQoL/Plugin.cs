@@ -36,6 +36,7 @@ public class Plugin : BaseUnityPlugin
         new GroundVacuum(),
         new StationPull(),
         new AreaRepair(),
+        new AreaSeal(),
         new WorkbenchTweaks(),
         new DeathPins(),
         new SwimWield(),

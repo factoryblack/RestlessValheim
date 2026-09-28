@@ -30,6 +30,8 @@ public static class ModConfig
     public static ConfigEntry<float> VacuumInterval = null!;
     public static ConfigEntry<bool> AreaRepairEnabled = null!;
     public static ConfigEntry<float> AreaRepairRadius = null!;
+    public static ConfigEntry<bool> AreaSealEnabled = null!;
+    public static ConfigEntry<float> AreaSealRadius = null!;
     public static ConfigEntry<bool> WorkbenchTweaksEnabled = null!;
     public static ConfigEntry<float> WorkbenchRange = null!;
 
@@ -209,6 +211,10 @@ public static class ModConfig
             "Hammer repair also repairs pieces in a radius.");
         AreaRepairRadius = AdminFloat(config, "Building.AreaRepair", "Radius", 15f, 2f, 40f,
             "Area repair radius in metres.");
+        AreaSealEnabled = AdminBool(config, "Building.AreaSeal", "Enabled", true,
+            "Hold Alt and use the repair click to seal wooden pieces in a radius. One resin each, from your inventory and nearby chests. Already sealed pieces are skipped.");
+        AreaSealRadius = AdminFloat(config, "Building.AreaSeal", "Radius", 15f, 2f, 40f,
+            "Area seal radius in metres.");
         WorkbenchTweaksEnabled = AdminBool(config, "Building.Workbench", "Enabled", true,
             "Override crafting-station use range.");
         WorkbenchRange = AdminFloat(config, "Building.Workbench", "Range", 20f, 4f, 40f,

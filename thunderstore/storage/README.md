@@ -6,11 +6,11 @@ Use the table to browse accessible nearby containers, search and sort their cont
 
 The chest that holds the stack is the one that removes it. If your inventory cannot take the lot, the rest goes back. If that chest never hears back, the whole take goes back. Nothing is cloned on your machine and then hoped away.
 
-Range and access follow Core's nearby storage. It does not scan unloaded storage. Needs RestlessCore 0.1.18 as well as RestlessStorage.dll.
+Range and access follow Core's nearby storage. It does not scan unloaded storage. Nearby piles show on the same sheet. Needs RestlessCore 0.1.19 as well as RestlessStorage.dll.
 
 Built at the workbench from wood, fine wood, and bronze nails. Furniture, under the hammer. It is not a chest.
 
 Needs **RestlessCore**, plus BepInEx and Jötunn. Everyone on the server should be on the same minor version.
 
-Not in the Restless Valheim pack yet.
+Included in the Restless Valheim pack.
 

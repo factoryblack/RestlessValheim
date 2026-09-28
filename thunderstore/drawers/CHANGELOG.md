@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Each cabinet is the same 1.1 m cube, so a mixed grid shares one pitch. The old 4 cm overlap is gone
+
 ## 0.1.1
 
 - Drawer cabinets use the Meshy metal and roughness pictures, folded into the chest shader's surface map, so bands can catch light and wood stays duller

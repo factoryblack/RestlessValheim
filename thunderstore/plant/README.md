@@ -17,7 +17,7 @@ The cultivator gains raspberry, blueberry, cloudberry, lingonberry, mushrooms (i
 - Extra cells snap to the soil. A cell that cannot grow (untilled, wrong biome, no sun, no room) shows red and is left empty, unless **Grow anywhere** is on.
 - Picking a **player-grown** plant also picks matching neighbours. Using a hive can take neighbouring hives too. Wild meadow raspberries stay wild.
 - Carrots and other one-shot crops **replant** if you still have the seed. Hover a ripe one-shot to see what goes back in.
-- Bushes and mushrooms keep their fruit cycle. They are not ripped up on pick. Hover the bare plant for the wait, or a sapling still growing.
+- Bushes and mushrooms keep their fruit cycle. They are not ripped up on pick. A picked mushroom shrinks and grows back. On a bush only the berries do that. Hover the bare plant for the wait, or a sapling still growing.
 
 Host-locked extras, grow-anywhere, harvest, and replant live in `restless.plant.cfg`. Grid size and snap are yours.
 

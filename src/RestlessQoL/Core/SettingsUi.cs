@@ -562,6 +562,9 @@ public sealed partial class SettingsUi : FeatureModule
                 Bunch(
                     t => Bool("Area repair", ModConfig.AreaRepairEnabled, locked, t, editable: CoreEditable),
                     t => Step("Repair radius", "m", ModConfig.AreaRepairRadius, locked, t, true, editable: CoreEditable));
+                Bunch(
+                    t => Bool("Area seal", ModConfig.AreaSealEnabled, locked, t, editable: CoreEditable),
+                    t => Step("Seal radius", "m", ModConfig.AreaSealRadius, locked, t, true, editable: CoreEditable));
                 Head("Stations");
                 Bunch(
                     t => Bool("Workbench range override", ModConfig.WorkbenchTweaksEnabled, locked, t, editable: CoreEditable),

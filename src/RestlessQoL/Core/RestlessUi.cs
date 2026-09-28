@@ -1565,7 +1565,12 @@ internal static partial class RestlessUi
             foreach (var row in rows)
             {
                 var key = Bind(row.buttons);
-                if (string.IsNullOrEmpty(key) && row.verb == "Rotate")
+                if (row.verb == "Seal")
+                {
+                    var attack = Bind("Attack", "JoyPlace", "JoyAttack");
+                    key = string.IsNullOrEmpty(attack) ? "Alt" : "Alt + " + attack;
+                }
+                else if (string.IsNullOrEmpty(key) && row.verb == "Rotate")
                     key = "Q / E";
                 if (string.IsNullOrEmpty(key))
                     continue;

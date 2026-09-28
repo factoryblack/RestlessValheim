@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8
+
+- The Storekeeper's Table lists nearby piles and can take from them. Needs Core 0.1.19
+
 ## 0.1.7
 
 - Vacuuming a split stack back onto a pile adds the amount you threw. Needs Core 0.1.17.

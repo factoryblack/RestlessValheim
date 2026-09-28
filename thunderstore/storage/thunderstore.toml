@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessStorage"
-versionNumber = "0.1.0"
+versionNumber = "0.1.1"
 description = "A Storekeeper's Table for the chests around you. The network window comes next. Needs RestlessCore."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim"
 containsNsfwContent = false
@@ -12,7 +12,7 @@ containsNsfwContent = false
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2351"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.1.18"
+Restless-RestlessCore = "0.1.19"
 
 [build]
 icon = "./icon.png"

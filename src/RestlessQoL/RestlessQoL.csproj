@@ -43,5 +43,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="RestlessPiles" />
     <InternalsVisibleTo Include="RestlessStorage" />
+    <InternalsVisibleTo Include="RestlessCook" />
   </ItemGroup>
 </Project>

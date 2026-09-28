@@ -53,6 +53,7 @@ public sealed class KitchenStep
     public string StationPrefab = "";
     public int StationLevel = 1;
     public string Note = "";
+    public int ParentIndex = -1;
     public readonly List<KitchenUse> Uses = new();
 }
 
@@ -64,6 +65,15 @@ public sealed class KitchenOrder
     public int Count;
     public long PlayerId;
     public int Ready;
+    public int Collected;
+}
+
+public sealed class KitchenPantryItem
+{
+    public string Prefab = "";
+    public string Name = "";
+    public int Count;
+    public int Reserved;
 }
 
 public sealed class KitchenStationInfo
@@ -109,9 +119,13 @@ public static class Kitchen
     public static void Cancel(CraftingStation table, int orderId) => KitchenRun.Cancel(table, orderId);
 
     // Moves that order's finished feasts into the player's inventory.
+    // Those feasts count as delivered. A fully delivered order is removed.
     public static int Collect(CraftingStation table, int orderId) => KitchenRun.Collect(table, orderId);
 
-    // Finished food left in the pantry after an order is cancelled.
+    // Everything stored on the table. Reserved is ready food an active order is waiting to collect.
+    public static IReadOnlyList<KitchenPantryItem> Pantry(CraftingStation table) => KitchenRun.Pantry(table);
+
+    // Takes unreserved pantry food. Ready feasts stay until Collect.
     public static int Take(CraftingStation table, string prefab, int count) =>
         KitchenRun.Take(table, prefab, count);
 

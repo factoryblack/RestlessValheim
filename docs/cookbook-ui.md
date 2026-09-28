@@ -15,9 +15,9 @@ Core supplies the existing material, type, controls and scrolling helpers via th
 
 ## Backend integration limits
 This screen displays Kitchen state as supplied; it does not independently promise multiplayer transactional safety or recalculate availability. Kitchen.Plan/Live/Stations currently perform their own discovery scans, so overall scan cost remains a backend concern.
-Kitchen exposes Take for a known prefab but no pantry enumeration: cancelled-order leftovers have no complete pantry browsing/collection UI yet.
+Kitchen.Pantry lists every stack on the table. Count is the stored amount. Reserved is ready food an active order is still waiting to collect. Kitchen.Take moves only the unreserved remainder, so cancelled leftovers can be taken without pulling an order's finished feasts. Those stay on Collect.
+Collect delivers that order's ready feasts, adds them to KitchenOrder.Collected, and removes the order once Collected reaches Count and nothing is still waiting. Tick plans Count minus Collected. A step that is already satisfied does not keep cooking its ingredients.
 There is no queue priority API or per-player permission/result contract. Cancel is void; the UI reports a request and refreshes actual orders.
-KitchenRun.Tick increments order.Ready for root production and Collect reduces it without reducing Count/removing the order. Finite completion semantics need backend verification before calling this production-ready.
 The backend's planning and station scanning may claim ownership, and it has no dedicated server-authorised order command interface. Multiplayer contention remains a backend validation item.
 Search/filter and order quantity apply to recipe planning, not active orders. Controller navigation into offscreen list entries remains a follow-up.
 This is a functional first UI pass, not pixel-identical to the illustrative mockup. It uses real game icons and actual cookbook relationships.

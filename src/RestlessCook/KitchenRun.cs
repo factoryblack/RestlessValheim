@@ -111,7 +111,7 @@ internal static class KitchenRun
         var cooking = OnStations(table.transform.position);
         foreach (var order in ledger.Orders)
         {
-            var prior = Expand(order.Feast, order.Count, 0, "");
+            var prior = Expand(order.Feast, Outstanding(order), 0, "");
             Assign(table, prior, free, cooking, order.PlayerId);
         }
 
@@ -135,7 +135,7 @@ internal static class KitchenRun
         var player = order.PlayerId;
         var free = Stock(table.transform.position, player, ledger);
         var cooking = OnStations(table.transform.position);
-        var steps = Expand(order.Feast, order.Count, 0, "");
+        var steps = Expand(order.Feast, Outstanding(order), 0, "");
         Assign(table, steps, free, cooking, player);
         return steps;
     }
@@ -186,7 +186,16 @@ internal static class KitchenRun
 
     internal static int Collect(CraftingStation table, int orderId)
     {
-        var ledger = Read(table != null ? table.m_nview : null);
+        var player = Player.m_localPlayer;
+        var view = View(table);
+        if (player == null || view == null)
+            return 0;
+        if (!view.IsOwner())
+            view.ClaimOwnership();
+        if (!view.IsOwner())
+            return 0;
+
+        var ledger = Read(view);
         KitchenOrder? order = null;
         foreach (var row in ledger.Orders)
         {
@@ -196,20 +205,45 @@ internal static class KitchenRun
 
         if (order == null || order.Ready <= 0)
             return 0;
-        var taken = Take(table, order.Feast, order.Ready);
+        var taken = Give(player, ledger, order.Feast, order.Ready);
         if (taken <= 0)
             return 0;
-        var view = table!.m_nview;
-        ledger = Read(view);
-        foreach (var row in ledger.Orders)
-        {
-            if (row.Id != orderId)
-                continue;
-            row.Ready = Math.Max(0, row.Ready - taken);
-        }
-
+        order.Ready -= taken;
+        order.Collected += taken;
+        if (order.Collected >= order.Count && order.Ready <= 0)
+            ledger.Orders.Remove(order);
         Write(view, ledger);
         return taken;
+    }
+
+    internal static IReadOnlyList<KitchenPantryItem> Pantry(CraftingStation table)
+    {
+        var ledger = Read(table != null ? table.m_nview : null);
+        var reserved = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var order in ledger.Orders)
+        {
+            if (order.Ready <= 0 || string.IsNullOrEmpty(order.Feast))
+                continue;
+            reserved.TryGetValue(order.Feast, out var held);
+            reserved[order.Feast] = held + order.Ready;
+        }
+
+        var list = new List<KitchenPantryItem>();
+        foreach (var pair in ledger.Pantry)
+        {
+            if (pair.Value <= 0)
+                continue;
+            reserved.TryGetValue(pair.Key, out var held);
+            list.Add(new KitchenPantryItem
+            {
+                Prefab = pair.Key,
+                Name = Label(pair.Key),
+                Count = pair.Value,
+                Reserved = Math.Min(Math.Max(0, held), pair.Value)
+            });
+        }
+
+        return list;
     }
 
     internal static int Take(CraftingStation table, string prefab, int count)
@@ -225,6 +259,42 @@ internal static class KitchenRun
 
         var ledger = Read(view);
         if (!ledger.Pantry.TryGetValue(prefab, out var have) || have <= 0)
+            return 0;
+        var reserved = 0;
+        foreach (var order in ledger.Orders)
+        {
+            if (order.Feast == prefab)
+                reserved += order.Ready;
+        }
+
+        var free = Math.Max(0, have - reserved);
+        var given = Give(player, ledger, prefab, Math.Min(count, free));
+        if (given <= 0)
+            return 0;
+        Write(view, ledger);
+        return given;
+    }
+
+    private static int Outstanding(KitchenOrder order) => Math.Max(0, order.Count - order.Collected);
+
+    private static void Deliver(KitchenOrder order, Ledger ledger)
+    {
+        if (order.Ready <= 0)
+            return;
+        var player = Player.m_localPlayer;
+        if (player == null || player.GetPlayerID() != order.PlayerId)
+            return;
+        var taken = Give(player, ledger, order.Feast, order.Ready);
+        if (taken <= 0)
+            return;
+        order.Ready -= taken;
+        order.Collected += taken;
+        player.Message(MessageHud.MessageType.Center, order.Name);
+    }
+
+    private static int Give(Player player, Ledger ledger, string prefab, int count)
+    {
+        if (!ledger.Pantry.TryGetValue(prefab, out var have) || have <= 0 || count < 1)
             return 0;
         var drop = Item(prefab);
         if (drop?.m_itemData == null)
@@ -247,7 +317,6 @@ internal static class KitchenRun
         ledger.Pantry[prefab] = have - given;
         if (ledger.Pantry[prefab] <= 0)
             ledger.Pantry.Remove(prefab);
-        Write(view, ledger);
         return given;
     }
 
@@ -271,10 +340,14 @@ internal static class KitchenRun
         var cooking = OnStations(origin);
         foreach (var order in ledger.Orders)
         {
-            var steps = Expand(order.Feast, order.Count, 0, "");
+            var outstanding = Outstanding(order);
+            if (outstanding < 1)
+                continue;
+            var steps = Expand(order.Feast, outstanding, 0, "");
             Assign(table, steps, shared, cooking, order.PlayerId);
-            foreach (var step in steps)
+            for (var i = steps.Count - 1; i >= 0; i--)
             {
+                var step = steps[i];
                 if (step.State != KitchenStepState.Ready && step.State != KitchenStepState.Queued)
                     continue;
                 if (step.Station == KitchenStationKind.Rack || step.Station == KitchenStationKind.Oven)
@@ -296,13 +369,21 @@ internal static class KitchenRun
                     continue;
                 if (!Pay(step, ledger))
                     continue;
-                Add(ledger, step.Output, Math.Max(1, OutputAmount(step)));
+                var made = Math.Max(1, OutputAmount(step));
+                Add(ledger, step.Output, made);
                 if (step.Depth == 0)
-                    order.Ready += Math.Max(1, OutputAmount(step));
+                {
+                    var room = Math.Max(0, order.Count - order.Collected - order.Ready);
+                    order.Ready += Math.Min(made, room);
+                }
+
                 crafts++;
             }
+
+            Deliver(order, ledger);
         }
 
+        ledger.Orders.RemoveAll(order => order.Collected >= order.Count && order.Ready <= 0);
         Write(view, ledger);
     }
 
@@ -317,11 +398,11 @@ internal static class KitchenRun
     {
         var steps = new List<KitchenStep>();
         var guard = new HashSet<string>(StringComparer.Ordinal);
-        Walk(output, need, depth, parent, steps, guard);
+        Walk(output, need, depth, parent, -1, steps, guard);
         return steps;
     }
 
-    private static void Walk(string output, int need, int depth, string parent, List<KitchenStep> steps, HashSet<string> guard)
+    private static void Walk(string output, int need, int depth, string parent, int parentIndex, List<KitchenStep> steps, HashSet<string> guard)
     {
         if (need < 1 || depth > 12 || string.IsNullOrEmpty(output) || !guard.Add(output + "#" + parent))
             return;
@@ -338,8 +419,10 @@ internal static class KitchenRun
             Need = need,
             Station = row != null ? KindOf(row.Station) : conversion != null ? conversion.Kind : KitchenStationKind.None,
             StationPrefab = row != null ? row.Station : "",
-            StationLevel = row != null && row.StationLevel > 0 ? row.StationLevel : 1
+            StationLevel = row != null && row.StationLevel > 0 ? row.StationLevel : 1,
+            ParentIndex = parentIndex
         };
+        var index = steps.Count;
         steps.Add(step);
         if (row != null)
         {
@@ -350,7 +433,7 @@ internal static class KitchenRun
                     continue;
                 var want = crafts * use.Amount;
                 step.Uses.Add(new KitchenUse { Item = use.Item, Amount = want, Name = Label(use.Item) });
-                Walk(use.Item, want, depth + 1, output, steps, guard);
+                Walk(use.Item, want, depth + 1, output, index, steps, guard);
             }
 
             return;
@@ -359,15 +442,26 @@ internal static class KitchenRun
         if (conversion == null || string.IsNullOrEmpty(conversion.From))
             return;
         step.Uses.Add(new KitchenUse { Item = conversion.From, Amount = need, Name = Label(conversion.From) });
-        Walk(conversion.From, need, depth + 1, output, steps, guard);
+        Walk(conversion.From, need, depth + 1, output, index, steps, guard);
     }
 
     private static void Assign(CraftingStation table, List<KitchenStep> steps, Dictionary<string, int> free, Dictionary<string, int> cooking, long? playerId)
     {
         var hits = Scan(table.transform.position);
-        for (var i = steps.Count - 1; i >= 0; i--)
+        var covered = new bool[steps.Count];
+        for (var i = 0; i < steps.Count; i++)
         {
             var step = steps[i];
+            if (step.ParentIndex >= 0 && step.ParentIndex < covered.Length && covered[step.ParentIndex])
+            {
+                covered[i] = true;
+                step.Have = step.Need;
+                step.Cooking = 0;
+                step.State = KitchenStepState.Prepared;
+                step.Note = "Prepared";
+                continue;
+            }
+
             free.TryGetValue(step.Output, out var stock);
             var have = Math.Min(stock, step.Need);
             step.Have = have;
@@ -378,6 +472,7 @@ internal static class KitchenRun
             cooking[step.Output] = onFire - step.Cooking;
             if (step.Have >= step.Need)
             {
+                covered[i] = true;
                 step.State = KitchenStepState.Prepared;
                 step.Note = "Prepared";
                 continue;
@@ -385,11 +480,17 @@ internal static class KitchenRun
 
             if (step.Have + step.Cooking >= step.Need)
             {
+                covered[i] = true;
                 step.State = KitchenStepState.Cooking;
                 step.Note = step.Cooking + " cooking";
-                continue;
             }
+        }
 
+        for (var i = steps.Count - 1; i >= 0; i--)
+        {
+            if (covered[i])
+                continue;
+            var step = steps[i];
             if (step.Uses.Count == 0)
             {
                 step.State = KitchenStepState.Missing;
@@ -442,10 +543,16 @@ internal static class KitchenRun
         var n = 0;
         foreach (var step in steps)
         {
-            if (step.Output != item || step.Have >= step.Need)
-                continue;
-            if (step.State == KitchenStepState.Cooking || step.State == KitchenStepState.Queued || step.State == KitchenStepState.Ready)
-                n += Math.Max(0, step.Need - step.Have);
+        if (step.Output != item)
+            continue;
+        if (step.Have >= step.Need)
+        {
+            n += step.Have;
+            continue;
+        }
+
+        if (step.State == KitchenStepState.Cooking || step.State == KitchenStepState.Queued || step.State == KitchenStepState.Ready)
+            n += Math.Max(0, step.Need - step.Have);
         }
 
         return n;
@@ -1068,6 +1175,9 @@ internal static class KitchenRun
                 continue;
             if (!int.TryParse(parts[1], out var id) || !int.TryParse(parts[3], out var orderCount) || !long.TryParse(parts[4], out var player) || !int.TryParse(parts[5], out var ready))
                 continue;
+            var collected = 0;
+            if (parts.Length >= 7)
+                int.TryParse(parts[6], out collected);
             ledger.Orders.Add(new KitchenOrder
             {
                 Id = id,
@@ -1075,7 +1185,8 @@ internal static class KitchenRun
                 Name = Find(parts[2])?.Name ?? parts[2],
                 Count = orderCount,
                 PlayerId = player,
-                Ready = ready
+                Ready = ready,
+                Collected = Math.Max(0, collected)
             });
         }
 
@@ -1092,7 +1203,7 @@ internal static class KitchenRun
         }
 
         foreach (var order in ledger.Orders)
-            text.Append("O\t").Append(order.Id).Append('\t').Append(order.Feast).Append('\t').Append(order.Count).Append('\t').Append(order.PlayerId).Append('\t').Append(order.Ready).Append('\n');
+            text.Append("O\t").Append(order.Id).Append('\t').Append(order.Feast).Append('\t').Append(order.Count).Append('\t').Append(order.PlayerId).Append('\t').Append(order.Ready).Append('\t').Append(order.Collected).Append('\n');
         view.GetZDO().Set(Key, text.ToString());
     }
 }

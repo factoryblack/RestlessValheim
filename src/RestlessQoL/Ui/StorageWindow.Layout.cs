@@ -46,12 +46,14 @@ internal sealed partial class StorageWindow
             var oldLabel = cell.Button.GetComponentInChildren<Text>();
             Destroy(oldLabel.gameObject);
             cell.Icon = RestlessUi.Graphic(cell.Button.transform, "icon", Color.white, false).GetComponent<Image>();
-            cell.Icon.preserveAspect = true; At(cell.Icon.gameObject, 24, 6, 74, 58);
-            cell.Name = Label(cell.Button.transform, "", 16, 8, 66, 106, 36);
+            // Keep icon, two-line name and quantity in separate bands. Averia's
+            // line metrics need more than 36px for two 16px lines.
+            cell.Icon.preserveAspect = true; At(cell.Icon.gameObject, 24, 6, 74, 50);
+            cell.Name = Label(cell.Button.transform, "", 16, 8, 58, 106, 46);
             cell.Name.alignment = TextAnchor.UpperCenter;
             cell.Name.verticalOverflow = VerticalWrapMode.Truncate;
             cell.Name.resizeTextForBestFit = false;
-            cell.Count = Label(cell.Button.transform, "", 16, 8, 104, 106, 18);
+            cell.Count = Label(cell.Button.transform, "", 16, 8, 106, 106, 18);
             cell.Count.alignment = TextAnchor.MiddleRight; cell.Count.color = RestlessUi.Accent;
             _cells.Add(cell);
         }

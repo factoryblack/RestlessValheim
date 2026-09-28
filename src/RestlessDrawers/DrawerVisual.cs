@@ -63,13 +63,13 @@ internal static class DrawerVisual
     private static GameObject FindOrCreate(GameObject prefab, Mesh mesh)
     {
         var t = prefab.transform.Find(ChildName);
-        var scale = DrawerGrid.Fit(mesh);
+        DrawerGrid.Fit(mesh, out var scale, out var offset);
         if (t != null)
         {
             t.SetParent(prefab.transform, false);
-            t.localPosition = Vector3.zero;
+            t.localPosition = offset;
             t.localRotation = Quaternion.identity;
-            t.localScale = Vector3.one * scale;
+            t.localScale = scale;
             t.gameObject.layer = prefab.layer;
             t.gameObject.SetActive(true);
             return t.gameObject;
@@ -78,9 +78,9 @@ internal static class DrawerVisual
         var visual = new GameObject(ChildName);
         visual.layer = prefab.layer;
         visual.transform.SetParent(prefab.transform, false);
-        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localPosition = offset;
         visual.transform.localRotation = Quaternion.identity;
-        visual.transform.localScale = Vector3.one * scale;
+        visual.transform.localScale = scale;
         return visual;
     }
 

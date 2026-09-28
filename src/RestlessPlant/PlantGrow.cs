@@ -10,7 +10,6 @@ internal static class PlantGrow
     private static bool _till;
     private static bool _ground;
     private static bool _need;
-    private static Heightmap.Biome _biome;
 
     public static void Relax(GameObject? ghost)
     {
@@ -24,10 +23,7 @@ internal static class PlantGrow
         }
 
         foreach (var plant in ghost.GetComponentsInChildren<Plant>(true))
-        {
             plant.m_needCultivatedGround = false;
-            plant.m_biome = 0;
-        }
     }
 
     [HarmonyPatch]
@@ -66,9 +62,7 @@ internal static class PlantGrow
             if (plant == null)
                 return;
             _need = plant.m_needCultivatedGround;
-            _biome = plant.m_biome;
             plant.m_needCultivatedGround = false;
-            plant.m_biome = 0;
         }
 
         [HarmonyPostfix]
@@ -83,7 +77,32 @@ internal static class PlantGrow
             if (plant == null)
                 return;
             plant.m_needCultivatedGround = _need;
-            plant.m_biome = _biome;
+        }
+
+        // The placed copy used to keep a cleared biome from the piece table.
+        // Only the planter runs the health check, so only they saw
+        // "Can't grow in this environment" while everyone else saw a live crop.
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Plant), nameof(Plant.UpdateHealth))]
+        private static void KeepAlive(Plant __instance)
+        {
+            if (Free)
+            {
+                __instance.m_status = Plant.Status.Healthy;
+                return;
+            }
+
+            if (__instance.m_status != Plant.Status.WrongBiome)
+                return;
+            if (__instance.m_biome == 0)
+            {
+                __instance.m_status = Plant.Status.Healthy;
+                return;
+            }
+
+            var map = Heightmap.FindHeightmap(__instance.transform.position);
+            if (map == null || map.GetBiome(__instance.transform.position) == Heightmap.Biome.None)
+                __instance.m_status = Plant.Status.Healthy;
         }
     }
 }

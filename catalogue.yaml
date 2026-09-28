@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-28 — shipped Core 0.1.18, Storage 0.1.0, pack 0.1.22. Take playtested locally. Multiplayer still open.
+# last_audit: 2026-09-29 — a picked mushroom stays visible and grows from a sprout back to full size.
 
-updated: 2026-09-28
+updated: 2026-09-29
 
 items:
   # --- loader ---
@@ -104,12 +104,12 @@ items:
     note: "Playtested 10 Sep: works. GetStationBuildRange forced to 20 m; overwrites vanilla extra-range-per-level."
 
   - id: player.death_pins
-    name: Clear death pin when tomb is emptied
+    name: Clear death pin when nothing is left to recover
     decision: dll
     in_mod: done
     bite: 1
     restless: Azumatt-DeathPinRemoval
-    note: "OnTakeAllSuccess + EasyFitInInventory → Minimap.RemovePin(pos, 1 m). Not playtested yet (next pass)."
+    note: "OnTakeAllSuccess + EasyFitInInventory → Minimap.RemovePin(pos, 1 m). A death that leaves no tomb with loot also drops the pin, so an empty bag does not keep a marker. Not playtested yet (next pass)."
 
   - id: player.swim_wield
     name: Keep tools equipped while swimming
@@ -407,7 +407,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-EquipmentAndQuickSlots
-    note: "Do not install the sidecar. Hidden rows, relocated worn + Z/X/C. Player.Load / Seat / Wear only on the owned local player — a friend joining used to reset the static height and shuffle extras. FinishDrag deletes leftover only if it is the same instance (not m_shared). WearExtras skipped while m_craftTimer >= 0. Death: extras into a second tomb. Ctrl/Move and Drop skip UnseatWorn so vanilla can take the item — AddItem clones, which used to zero the original stack and make DropItem spawn a second copy on the ground after parking one on hotbar row 0. Unequip parks in the bag, not the hotbar, and skips locks. HUD Z/X/C keep the hotbar held grow; taps fire while sprinting/moving (BepInEx IsDown blocks any extra key). DoCrafting AddItem that targets an extra cell is rewritten to a bag slot so upgrade/craft from a quick slot does not leave the unequipped piece in Z/X/C. Playtest upgrade + a joining client."
+    note: "Do not install the sidecar. Hidden rows, relocated worn + Z/X/C. Player.Load / Seat / Wear only on the owned local player — a friend joining used to reset the static height and shuffle extras. FinishDrag deletes leftover only if it is the same instance (not m_shared). WearExtras skipped while m_craftTimer >= 0. Death: extras into a second tomb. Ctrl/Move and Drop skip UnseatWorn so vanilla can take the item — AddItem clones, which used to zero the original stack and make DropItem spawn a second copy on the ground after parking one on hotbar row 0. Unequip parks in the bag, not the hotbar, and skips locks. HUD Z/X/C keep the hotbar held grow; taps fire while sprinting/moving (BepInEx IsDown blocks any extra key). They stay quiet while the map pin name, chat, console, or another text field has focus. DoCrafting AddItem that targets an extra cell is rewritten to a bag slot so upgrade/craft from a quick slot does not leave the unequipped piece in Z/X/C. Playtest upgrade + a joining client."
 
   - id: tooling.config_manager
     name: In-game settings panel
@@ -502,7 +502,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessStorage
-    note: "RestlessStorage 0.1.0. Storekeeper's Table opens the shared browser: search, game-type filters, sorting, pooled cards, source rows, quantity and carry weight. Take asks the chest owner for the matching stacks (prefab, quality, variant, world level, durability, crafter, custom data) and adds those items. Overflow goes back into that chest; if the owner never hears the acknowledgement the whole take goes back. Leave-one is not applied. Nearby range and access follow Core. No unloaded-storage claim. Local F8 toggle. Mouse and keyboard. Controller grid navigation is still open. Local take playtested. Multiplayer not yet. Needs Core 0.1.18. In the 0.1.22 pack."
+    note: "RestlessStorage 0.1.0. Storekeeper's Table opens the shared browser: search, game-type filters, sorting, pooled cards, source rows, quantity and carry weight. Card names wrap onto two lines. Take asks the chest owner for the matching stacks (prefab, quality, variant, world level, durability, crafter, custom data) and adds those items. Overflow goes back into that chest; if the owner never hears the acknowledgement the whole take goes back. Piles in the Core search range are stores on the same sheet; a take claims the pile and adds what fits. Leave-one is not applied. Opening the sheet marks each stack as a material that player has handled, then the usual recipe check runs, so a recipe missed because someone else picked the mats up can unlock. The station level is still required. Trophies are not marked collected. Nearby range and access follow Core. No unloaded-storage claim. Local F8 toggle. Mouse and keyboard. Controller grid navigation is still open. Local take playtested. Multiplayer not yet. Needs Core 0.1.18. In the 0.1.22 pack."
 
   - id: drawers.chests
     name: Chest-equivalent drawers
@@ -510,7 +510,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessDrawers
-    note: "RestlessDrawers 0.1.1. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Snap pitch is the neighbour's visual size minus a 4cm overlap. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Surface map is Meshy metal (red) and flipped roughness (alpha) on that shader, so bands can catch light. Hammer icons have the black plate removed. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
+    note: "RestlessDrawers 0.1.1. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Each cabinet is fitted to the same 1.1m cube (bottom on the piece origin) and the snap pitch is that cell on every side. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Surface map is Meshy metal (red) and flipped roughness (alpha) on that shader, so bands can catch light. Hammer icons have the black plate removed. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
 
   - id: cook.meals
     name: Restless cooking
@@ -526,7 +526,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPiles
-    note: "RestlessPiles 0.1.7. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. A split stack thrown back keeps the thrown count if the world item reloads as 0 or 1. Nearby range follows Core Search range unless Isolate pile range is on; the F8 slider hides until then. Needs Core 0.1.17. Not a chest."
+    note: "RestlessPiles 0.1.7. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. The storage browser lists them on the Core search range, the same walk as chests, and a take from the table claims the pile. A split stack thrown back keeps the thrown count if the world item reloads as 0 or 1. Craft, vacuum and quick-stack still follow Core Search range unless Isolate pile range is on; the F8 slider hides until then. Needs Core 0.1.18. Not a chest."
 
   - id: plant.forage
     name: Cultivator forage and bushes
@@ -534,7 +534,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPlant
-    note: "RestlessPlant 0.1.7. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Harvest range picks every ripe player-grown crop in range, not only the same kind, and searches that radius instead of every loaded pickable. A wide grid stamps crops only; the till tool stays one patch. Spacing follows the crop's grow radius unless minimum spacing is set (the old 2m default was cleared). Each extra cell is checked again, so an oversized grid plants only the cells that can grow, including cultivated ground, and paints the rest red. A failed grow check logs once and still puts the ghost back. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest and snap ranges stay their own settings. Needs Core."
+    note: "RestlessPlant 0.1.7. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Harvest range picks every ripe player-grown crop in range, not only the same kind, and searches that radius instead of every loaded pickable. A wide grid stamps crops only; the till tool stays one patch. Spacing follows the crop's grow radius unless minimum spacing is set (the old 2m default was cleared). Each extra cell is checked again, so an oversized grid plants only the cells that can grow, including cultivated ground, and paints the rest red. A failed grow check logs once and still puts the ghost back. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The search uses piece, piece_nonsolid, and item, including triggers. It does not use Plant.m_pieceMask, which stays empty until a vine looks for a wall, so that usually only happens for the host. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest and snap ranges stay their own settings. A grid cell past the centre pays for itself, so one seed cannot fill the rectangle. Area harvest includes ripe carrots, turnips, onions, barley and flax, and a grown crop keeps the planter's mark. A bird's nest that still uses the beehive script keeps the nest lines and feathers, and does not pull nearby hives. A single feather on the ground was added again for the player standing there, because it merged into a stack they already held and the drop had not yet been removed for the host. Clearing a plant's biome for grow-anywhere no longer sticks on the placed copy, which was showing only the planter "Can't grow in this environment". A picked mushroom or bush keeps its mesh, small at the pick, and grows back to full size over the respawn time. Needs Core."
 
   - id: skip.collectors
     name: Crystal / feather / guck / tar collectors

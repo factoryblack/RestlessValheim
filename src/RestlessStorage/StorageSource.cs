@@ -26,6 +26,15 @@ internal sealed class StorageSource : IStorageWindowSource
     {
         var groups = new Dictionary<string, Group>(StringComparer.Ordinal);
         var stores = 0;
+        void Add(ItemDrop.ItemData item, int count, string location)
+        {
+            if (item?.m_shared == null || count <= 0) return;
+            var id = ItemKey.Of(item);
+            if (!groups.TryGetValue(id, out var group)) groups.Add(id, group = new Group(item));
+            group.Count += count;
+            group.Pending.TryGetValue(location, out var have);
+            group.Pending[location] = have + count;
+        }
         foreach (var container in NearbyStorage.ForLocalPlayer())
         {
             var inventory = container.GetInventory();
@@ -33,17 +42,25 @@ internal sealed class StorageSource : IStorageWindowSource
             stores++;
             var location = Local(inventory.GetName()) + " · "
                 + Mathf.RoundToInt(Vector3.Distance(_player.transform.position, container.transform.position)) + " m";
-            var quantities = new Dictionary<string, long>(StringComparer.Ordinal);
             foreach (var item in inventory.GetAllItems())
             {
                 if (item?.m_shared == null || item.m_stack <= 0) continue;
-                var id = ItemKey.Of(item);
-                if (!groups.TryGetValue(id, out var group)) groups.Add(id, group = new Group(item));
-                group.Count += item.m_stack;
-                quantities.TryGetValue(id, out var count);
-                quantities[id] = count + item.m_stack;
+                Add(item, item.m_stack, location);
             }
-            foreach (var pair in quantities) groups[pair.Key].Locations.Add(new StorageLocation(location, pair.Value));
+        }
+        var lots = new List<NearbyLot>();
+        NearbyLots.Collect(_player, ModConfig.StorageRange.Value, lots);
+        foreach (var lot in lots)
+        {
+            if (lot.Item?.m_shared == null || lot.Count <= 0) continue;
+            stores++;
+            Add(lot.Item, lot.Count, lot.Place);
+        }
+        foreach (var group in groups.Values)
+        {
+            foreach (var pair in group.Pending)
+                group.Locations.Add(new StorageLocation(pair.Key, pair.Value));
+            group.Pending.Clear();
         }
         var keys = new List<string>(groups.Keys);
         keys.Sort(StringComparer.Ordinal);
@@ -63,6 +80,7 @@ internal sealed class StorageSource : IStorageWindowSource
                 .Append(resource.UnitWeight).Append(resource.StackSize);
             foreach (var source in group.Locations) signature.Append(source.Name).Append(':').Append(source.Count);
         }
+        Touch(_player, groups.Values);
         var stamp = signature.ToString();
         if (stamp != _signature) { _signature = stamp; _revision++; }
         var open = ModConfig.StorageEnabled.Value;
@@ -112,9 +130,20 @@ internal sealed class StorageSource : IStorageWindowSource
     private void Walk(List<Container> chests, string resourceId, int index, int left, int moved, bool blocked,
         bool timedOut, string label, Action<string> completed)
     {
-        if (blocked || timedOut || left <= 0 || index >= chests.Count)
+        if (blocked || timedOut || left <= 0 || index > chests.Count)
         {
             completed(Result(label, moved, blocked, timedOut));
+            return;
+        }
+
+        if (index == chests.Count)
+        {
+            NearbyLots.Take(_player, resourceId, left, taken =>
+            {
+                var rest = left - taken;
+                var full = rest > 0 && _player.GetInventory().GetEmptySlots() <= 0;
+                Walk(chests, resourceId, index + 1, rest, moved + taken, full, false, label, completed);
+            });
             return;
         }
 
@@ -148,7 +177,7 @@ internal sealed class StorageSource : IStorageWindowSource
         });
     }
 
-    private static string LabelFor(List<Container> chests, string resourceId)
+    private string LabelFor(List<Container> chests, string resourceId)
     {
         foreach (var chest in chests)
         {
@@ -162,6 +191,16 @@ internal sealed class StorageSource : IStorageWindowSource
                 var name = Local(item.m_shared.m_name);
                 return item.m_quality > 1 ? name + " " + item.m_quality : name;
             }
+        }
+
+        var lots = new List<NearbyLot>();
+        NearbyLots.Collect(_player, ModConfig.StorageRange.Value, lots);
+        foreach (var lot in lots)
+        {
+            if (lot.Item?.m_shared == null || ItemKey.Of(lot.Item) != resourceId)
+                continue;
+            var name = Local(lot.Item.m_shared.m_name);
+            return lot.Item.m_quality > 1 ? name + " " + lot.Item.m_quality : name;
         }
 
         return "items";
@@ -180,6 +219,29 @@ internal sealed class StorageSource : IStorageWindowSource
         if (blocked)
             return "Took " + moved.ToString("N0") + " " + label + ". No room for the rest.";
         return "Took " + moved.ToString("N0") + " " + label + ".";
+    }
+
+    // A stack on the sheet counts as handled. Recipes missed because someone
+    // else picked the materials up can unlock. The crafting station level is
+    // still required. Trophies are not marked collected, and pickup stats stay put.
+    private static void Touch(Player player, Dictionary<string, Group>.ValueCollection groups)
+    {
+        if (player != Player.m_localPlayer)
+            return;
+        var fresh = false;
+        foreach (var group in groups)
+        {
+            var name = group.Item?.m_shared?.m_name;
+            if (string.IsNullOrEmpty(name) || player.m_knownMaterial.Contains(name))
+                continue;
+            player.m_knownMaterial.Add(name);
+            fresh = true;
+        }
+
+        if (!fresh)
+            return;
+        player.UpdateKnownRecipesList();
+        player.UpdateEvents();
     }
 
     private static string Local(string value) => Localization.instance != null ? Localization.instance.Localize(value) : value;
@@ -201,6 +263,7 @@ internal sealed class StorageSource : IStorageWindowSource
         internal readonly ItemDrop.ItemData Item;
         internal long Count;
         internal readonly List<StorageLocation> Locations = new();
+        internal readonly Dictionary<string, long> Pending = new(StringComparer.Ordinal);
         internal Group(ItemDrop.ItemData item) => Item = item;
     }
 }

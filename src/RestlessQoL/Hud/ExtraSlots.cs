@@ -6,6 +6,7 @@ using Jotunn.Managers;
 using RestlessQoL.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
@@ -1032,7 +1033,7 @@ public sealed class ExtraSlots : FeatureModule
 
     private static void UseHotkeys(Player player)
     {
-        if (Console.IsVisible() || Chat.instance != null && Chat.instance.HasFocus())
+        if (Typing())
             return;
         if (player.IsDead() || player.IsTeleporting())
             return;
@@ -1053,6 +1054,25 @@ public sealed class ExtraSlots : FeatureModule
         if (item == null)
             return;
         player.UseItem(inv, item, false);
+    }
+
+    // Pin names, signs and chat share the keyboard with Z/X/C.
+    private static bool Typing()
+    {
+        if (Console.IsVisible() || Chat.instance != null && Chat.instance.HasFocus())
+            return true;
+        var map = Minimap.instance;
+        if (map != null && map.m_namePin != null && map.m_nameInput != null
+            && map.m_nameInput.gameObject.activeInHierarchy)
+            return true;
+        var selected = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+        if (selected == null)
+            return false;
+        var plain = selected.GetComponent<InputField>();
+        if (plain != null && plain.isFocused)
+            return true;
+        var tmp = selected.GetComponent<TMP_InputField>();
+        return tmp != null && tmp.isFocused;
     }
 
     // BepInEx IsDown() fails if any other keyboard key is held (sprint, move, block).

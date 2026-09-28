@@ -577,7 +577,7 @@ public sealed partial class SettingsUi : FeatureModule
                 Bool("No friendly fire on tames", ModConfig.FriendlyFireEnabled, locked, editable: CoreEditable);
                 Bool("Axe combo while chopping", ModConfig.AxeComboEnabled, locked, editable: CoreEditable);
                 Head("Camp");
-                Bool("Clear death pin when the tomb is empty", ModConfig.DeathPinsEnabled, locked, editable: CoreEditable);
+                Bool("Clear death pin when nothing is left to recover", ModConfig.DeathPinsEnabled, locked, editable: CoreEditable);
                 break;
             case "world":
                 Head("Terrain");

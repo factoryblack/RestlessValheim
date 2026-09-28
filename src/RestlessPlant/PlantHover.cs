@@ -59,7 +59,7 @@ internal static class PlantHover
         }
     }
 
-    private static double RemainingMinutes(Pickable pick)
+    internal static double RemainingMinutes(Pickable pick)
     {
         var pickedTime = PickedTime(pick);
         if (pickedTime <= 1)
@@ -79,6 +79,52 @@ internal static class PlantHover
         return pick.m_pickedTime;
     }
 
+    [HarmonyPatch(typeof(Pickable), nameof(Pickable.Awake))]
+    private static class SproutWatch
+    {
+        [HarmonyPostfix]
+        private static void After(Pickable __instance)
+        {
+            if (!PlantConfig.On || !Regrows(__instance))
+                return;
+            var sprout = __instance.GetComponent<PickSprout>() ?? __instance.gameObject.AddComponent<PickSprout>();
+            sprout.Bind(__instance);
+        }
+    }
+
+    [HarmonyPatch(typeof(Pickable), nameof(Pickable.SetPicked))]
+    private static class SproutPick
+    {
+        [HarmonyPostfix]
+        private static void After(Pickable __instance)
+        {
+            __instance.GetComponent<PickSprout>()?.Apply();
+        }
+    }
+
+    [HarmonyPatch(typeof(Pickable), nameof(Pickable.Interact))]
+    private static class SproutHandsOff
+    {
+        // The mesh stays up while it regrows, so the use key would otherwise
+        // play the pick animation on a sprout that has nothing to give.
+        [HarmonyPrefix]
+        private static bool LeaveIt(Pickable __instance, ref bool __result)
+        {
+            if (!__instance.m_picked || __instance.GetComponent<PickSprout>() == null)
+                return true;
+            __result = false;
+            return false;
+        }
+    }
+
+    private static bool Regrows(Pickable pick)
+    {
+        if (pick.m_respawnTimeMinutes <= 0f || pick.m_hideWhenPicked == null)
+            return false;
+        var name = Utils.GetPrefabName(pick.gameObject);
+        return name.StartsWith("Restless_");
+    }
+
     private static string Format(double minutes)
     {
         if (minutes < 1d)
@@ -96,5 +142,53 @@ internal static class PlantHover
         }
 
         return mins > 0 ? $"{hours}h {mins}m" : $"{hours}h";
+    }
+}
+
+// Picked forage used to switch its mesh off, so a mushroom patch looked empty.
+// The same mesh stays, small at the moment of the pick, and reaches its real
+// size when the respawn timer finishes.
+internal sealed class PickSprout : MonoBehaviour
+{
+    private const float Tiny = 0.2f;
+
+    private Pickable? _pick;
+    private Transform? _visual;
+    private Vector3 _full = Vector3.one;
+    private float _next;
+
+    public void Bind(Pickable pick)
+    {
+        _pick = pick;
+        _visual = pick.m_hideWhenPicked.transform;
+        _full = _visual.localScale;
+        Apply();
+    }
+
+    private void LateUpdate()
+    {
+        if (Time.unscaledTime < _next)
+            return;
+        _next = Time.unscaledTime + 0.25f;
+        Apply();
+    }
+
+    public void Apply()
+    {
+        if (_pick == null || _visual == null || _pick.m_respawnTimeMinutes <= 0f || _pick.m_enabled == 0)
+            return;
+
+        if (!_pick.m_picked)
+        {
+            _visual.localScale = _full;
+            return;
+        }
+
+        if (!_visual.gameObject.activeSelf)
+            _visual.gameObject.SetActive(true);
+
+        var left = PlantHover.RemainingMinutes(_pick);
+        var grown = Mathf.Clamp01(1f - (float)(left / _pick.m_respawnTimeMinutes));
+        _visual.localScale = _full * Mathf.Lerp(Tiny, 1f, grown);
     }
 }

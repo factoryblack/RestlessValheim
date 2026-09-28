@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Linq;
 using RestlessQoL.Core;
@@ -16,6 +17,73 @@ internal static class PileBag
         if (a?.m_shared == null || b?.m_shared == null)
             return false;
         return a.m_shared.m_name == b.m_shared.m_name;
+    }
+
+    internal static void List(Player player, float range, System.Collections.Generic.List<NearbyLot> into)
+    {
+        if (player == null || !PileConfig.On || range <= 0f)
+            return;
+        var origin = player.transform.position;
+        var reach = range * range;
+        foreach (var box in PileBox.All)
+        {
+            if (box == null || !box.Live || box.Stored <= 0 || box.Item?.m_shared == null)
+                continue;
+            if ((box.transform.position - origin).sqrMagnitude > reach)
+                continue;
+            NearbyStorage.EnsureDropPrefab(box.Item);
+            var sample = box.Item.Clone();
+            sample.m_stack = 1;
+            var meters = Mathf.RoundToInt(Vector3.Distance(origin, box.transform.position));
+            into.Add(new NearbyLot(box.GetHoverName() + " · " + meters + " m", sample, box.Stored));
+        }
+    }
+
+    internal static void Take(Player player, string key, int amount, Action<int> done)
+    {
+        if (done == null)
+            return;
+        if (player == null || !PileConfig.On || amount <= 0 || string.IsNullOrEmpty(key))
+        {
+            done(0);
+            return;
+        }
+
+        var origin = player.transform.position;
+        var reach = ModConfig.StorageRange.Value;
+        reach *= reach;
+        var boxes = new System.Collections.Generic.List<PileBox>();
+        foreach (var box in PileBox.All)
+        {
+            if (box == null || !box.Live || box.Stored <= 0 || box.Item?.m_shared == null)
+                continue;
+            if ((box.transform.position - origin).sqrMagnitude > reach)
+                continue;
+            NearbyStorage.EnsureDropPrefab(box.Item);
+            if (ItemKey.Of(box.Item) != key)
+                continue;
+            boxes.Add(box);
+        }
+
+        boxes.Sort((a, b) =>
+            (a.transform.position - origin).sqrMagnitude.CompareTo((b.transform.position - origin).sqrMagnitude));
+        void Step(int index, int got)
+        {
+            if (index >= boxes.Count || got >= amount)
+            {
+                done(got);
+                return;
+            }
+
+            var box = boxes[index];
+            Pile.OwnThen(box.View, _ =>
+            {
+                var n = TakeOwned(player, box, amount - got);
+                Step(index + 1, got + n);
+            }, () => Step(index + 1, got));
+        }
+
+        Step(0, 0);
     }
 
     public static int TakeStack(Player player, PileBox box)

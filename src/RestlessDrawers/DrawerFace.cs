@@ -67,8 +67,11 @@ public sealed class DrawerFace : MonoBehaviour
             face.drawMode = SpriteDrawMode.Simple;
             face.color = Color.white;
             face.enabled = false;
-            var scale = IconSize / Mathf.Max(0.01f, visual.lossyScale.x);
-            go.transform.localScale = new Vector3(scale, scale, scale);
+            var parent = visual.lossyScale;
+            go.transform.localScale = new Vector3(
+                IconSize / Mathf.Max(0.01f, Mathf.Abs(parent.x)),
+                IconSize / Mathf.Max(0.01f, Mathf.Abs(parent.y)),
+                IconSize / Mathf.Max(0.01f, Mathf.Abs(parent.z)));
             _faces[i] = face;
         }
     }

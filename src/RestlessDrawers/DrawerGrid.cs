@@ -8,17 +8,23 @@ internal static class DrawerGrid
 {
     public const float Cell = 1.1f;
     public const float Pull = 0.55f;
-    public const float Overlap = 0.04f;
     public const float YawSlop = 8f;
 
     private static readonly Collider[] Near = new Collider[32];
     private static readonly Collider[] Occupied = new Collider[16];
 
-    public static float Fit(Mesh mesh)
+    // Every tier fills the same cube. A long mesh used to keep its short axes,
+    // so wood and black metal did not share a pitch.
+    public static void Fit(Mesh mesh, out Vector3 scale, out Vector3 offset)
     {
-        var size = mesh.bounds.size;
-        var longest = Mathf.Max(size.x, Mathf.Max(size.y, size.z));
-        return Cell / Mathf.Max(0.05f, longest);
+        var bounds = mesh.bounds;
+        var size = bounds.size;
+        scale = new Vector3(
+            Cell / Mathf.Max(0.05f, size.x),
+            Cell / Mathf.Max(0.05f, size.y),
+            Cell / Mathf.Max(0.05f, size.z));
+        var center = Vector3.Scale(bounds.center, scale);
+        offset = new Vector3(-center.x, Cell * 0.5f - center.y, -center.z);
     }
 
     public static void Dress(GameObject prefab)
@@ -69,7 +75,7 @@ internal static class DrawerGrid
             if (Mathf.Abs(Mathf.DeltaAngle(ghost.eulerAngles.y, other.eulerAngles.y)) > YawSlop)
                 continue;
 
-            var step = Step(other);
+            var step = new Vector3(Cell, Cell, Cell);
             var local = other.InverseTransformPoint(ghost.position);
             float gx, gy, gz;
             if (Mathf.Abs(local.x) < Pull && Mathf.Abs(local.z) < Pull)
@@ -133,8 +139,6 @@ internal static class DrawerGrid
         return false;
     }
 
-    // Visual size after fit — shorter cabinets snap a shorter step so the
-    // next one sits on the lid instead of floating a cube-cell above it.
     private static Vector3 Extent(Transform drawer)
     {
         var visual = drawer.Find(DrawerVisual.ChildName);
@@ -148,15 +152,6 @@ internal static class DrawerGrid
             Mathf.Max(0.2f, size.x * Mathf.Abs(scale.x)),
             Mathf.Max(0.2f, size.y * Mathf.Abs(scale.y)),
             Mathf.Max(0.2f, size.z * Mathf.Abs(scale.z)));
-    }
-
-    private static Vector3 Step(Transform drawer)
-    {
-        var size = Extent(drawer);
-        return new Vector3(
-            Mathf.Max(0.2f, size.x - Overlap),
-            Mathf.Max(0.2f, size.y - Overlap),
-            Mathf.Max(0.2f, size.z - Overlap));
     }
 
     private static void StripOldSnaps(GameObject prefab)

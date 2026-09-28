@@ -215,7 +215,7 @@ public static class ModConfig
             "Crafting station range in metres.");
 
         DeathPinsEnabled = AdminBool(config, "Player.DeathPins", "Enabled", true,
-            "Remove the death map pin when the tombstone is emptied.");
+            "Remove the death map pin when the tombstone is emptied. A death with no stone to recover does not keep a pin.");
         SwimWieldEnabled = AdminBool(config, "Player.SwimWield", "Enabled", true,
             "Keep weapons and tools equipped while swimming.");
         CrossbowStateEnabled = AdminBool(config, "Player.Crossbow", "Enabled", true,

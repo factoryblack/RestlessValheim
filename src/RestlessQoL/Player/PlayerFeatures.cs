@@ -28,6 +28,33 @@ public sealed class DeathPins : FeatureModule
                 RemovePin(__instance);
         }
 
+        // The map pin is written after the tomb. An empty bag, or a death that
+        // never spawned a stone, has nothing to recover, so the pin does not stay.
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(Player), nameof(Player.OnDeath))]
+        private static void AfterDeath(Player __instance)
+        {
+            if (!ModConfig.DeathPinsEnabled.Value || __instance != Player.m_localPlayer
+                || Minimap.instance == null || LootNearby(__instance))
+                return;
+            Minimap.instance.RemovePin(__instance.transform.position, 1f);
+        }
+
+        private static bool LootNearby(Player player)
+        {
+            var origin = player.transform.position;
+            foreach (var tomb in UnityEngine.Object.FindObjectsByType<TombStone>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            {
+                if (tomb == null || Vector3.Distance(tomb.transform.position, origin) > 4f)
+                    continue;
+                var box = tomb.GetComponent<Container>()?.GetInventory();
+                if (box != null && box.NrOfItems() > 0)
+                    return true;
+            }
+
+            return false;
+        }
+
         private static void RemovePin(TombStone tomb)
         {
             if (!ModConfig.DeathPinsEnabled.Value || Minimap.instance == null || tomb == null)

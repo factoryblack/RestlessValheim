@@ -6,13 +6,14 @@ The Storekeeper's Table opens the shared Core storage browser and can take items
 
 - Core owns `StorageWindowApi`, immutable display DTOs and the shared window, using RestlessUi materials/type and RestlessScrollRect.
 - RestlessStorage owns the table, its local F8 visual toggle and `StorageSource`.
-- The source queries `NearbyStorage.ForLocalPlayer()` only while the window is open, at most once per second. Existing range, enabled state and container access checks apply. There is no claim that unloaded storage is connected.
+- The source queries `NearbyStorage.ForLocalPlayer()` only while the window is open, at most once per second. Piles register on that same Core search range through `NearbyLots`, so a wood stack in range is a store on the sheet and a take walks it after the chests. Existing range, enabled state and container access checks apply. There is no claim that unloaded storage is connected.
 - Read-only totals include all items in each accessible loaded inventory. They are not a promise of immediately withdrawable stock; reservations and transfer capacity are backend concerns.
+- Each distinct stack on the sheet is recorded as a known material for the player at the table. Valheim's recipe and piece check then runs once. A recipe that was only missing those materials unlocks, and still requires the crafting station level. Trophies are not added to the collected list, and pickup stats do not move.
 - Grouping preserves prefab, quality, variant, world level, durability, crafter and custom data. Display names alone are not stable transfer identities.
 
 ## Presentation
 
-1200 × 800 logical sheet, scaled to the available canvas. Six-column browser with 30 reused visible cards. Search, game-type category and name/quantity/unit-weight sorting. Selection is retained by opaque ID across snapshot updates. Item details and source locations scroll separately from the fixed quantity controls. Existing paper, portrait and control assets are reused; native recipe scrollbar artwork is borrowed when available. No new asset pack.
+1200 × 800 logical sheet, scaled to the available canvas. Six-column browser with 30 reused visible cards. Card names wrap onto two lines at body size and stop there; they use the same wrap as the detail copy. Search, game-type category and name/quantity/unit-weight sorting. Selection is retained by opaque ID across snapshot updates. Item details and source locations scroll separately from the fixed quantity controls. Existing paper, portrait and control assets are reused; native recipe scrollbar artwork is borrowed when available. No new asset pack.
 
 Snapshot revisions repaint changed content; scrolling only rebinds visible cells when the visible row changes. No frame-by-frame storage scan or full layout rebuild. World validity/input/resize checks remain lightweight. Empty storage, inaccessible storage and empty search results have distinct states. Closing, moving away, death, disabling the setting, scene teardown and addon unload release owned input blocking. ESC is consumed once instead of also opening the pause menu.
 

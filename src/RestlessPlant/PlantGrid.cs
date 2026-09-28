@@ -256,10 +256,25 @@ internal static class PlantGrid
         ghost.transform.SetPositionAndRotation(pos, Quaternion.LookRotation(fwd, Vector3.up));
     }
 
+    // Plant.m_pieceMask stays 0 until a vine looks for a wall, and that runs on
+    // the owner. A farmer who has never loaded one gets an empty search.
+    // Ripe bushes sit on item, and a lot of crop colliders are triggers.
+    private static int _fieldMask;
+
+    private static int FieldMask
+    {
+        get
+        {
+            if (_fieldMask == 0)
+                _fieldMask = LayerMask.GetMask("piece", "piece_nonsolid", "item");
+            return _fieldMask;
+        }
+    }
+
     private static Transform? Field(Vector3 from, float space, GameObject ghost)
     {
         var range = Mathf.Max(PlantConfig.SnapRange.Value, space + 0.25f);
-        var hits = Physics.OverlapSphere(from, range, Plant.m_pieceMask, QueryTriggerInteraction.Ignore);
+        var hits = Physics.OverlapSphere(from, range, FieldMask, QueryTriggerInteraction.Collide);
         Transform? best = null;
         var bestD = range * range;
         foreach (var hit in hits)
@@ -349,7 +364,7 @@ internal static class PlantGrid
         foreach (var body in go.GetComponentsInChildren<Rigidbody>(true))
             Object.DestroyImmediate(body);
         foreach (var col in go.GetComponentsInChildren<Collider>(true))
-            col.enabled = false;
+            Object.DestroyImmediate(col);
         foreach (var lod in go.GetComponentsInChildren<LODGroup>(true))
             lod.enabled = false;
     }
@@ -363,6 +378,37 @@ internal static class PlantGrid
             if (rend != null)
                 rend.SetPropertyBlock(Block);
         }
+    }
+
+    private static bool FreeBuild(Player player, Piece piece)
+    {
+        if (player.m_noPlacementCost)
+            return true;
+        return ZoneSystem.instance != null && ZoneSystem.instance.GetGlobalKey(piece.FreeBuildKey());
+    }
+
+    // Seeds still in the inventory include the centre, which the click pays
+    // for after TryPlacePiece returns.
+    private static int ExtraBudget(Player player, Piece piece)
+    {
+        if (FreeBuild(player, piece))
+            return int.MaxValue;
+        var spare = int.MaxValue;
+        var any = false;
+        foreach (var req in piece.m_resources)
+        {
+            if (req?.m_resItem?.m_itemData?.m_shared == null || req.m_amount <= 0)
+                continue;
+            any = true;
+            var have = player.GetInventory().CountItems(req.m_resItem.m_itemData.m_shared.m_name);
+            var can = (have - req.m_amount) / req.m_amount;
+            if (can < spare)
+                spare = can;
+        }
+
+        if (!any)
+            return int.MaxValue;
+        return spare < 0 ? 0 : spare;
     }
 
     [HarmonyPatch]
@@ -456,6 +502,10 @@ internal static class PlantGrid
             if (ghost == null)
                 return;
             var rot = ghost.transform.rotation;
+            // The click pays for the centre after this returns. Extras have to
+            // pay now, or one seed still fills the whole grid.
+            var budget = ExtraBudget(__instance, piece);
+            var placed = 0;
             _placing = true;
             try
             {
@@ -463,9 +513,12 @@ internal static class PlantGrid
                 {
                     if (!cell.Ok)
                         continue;
-                    if (!__instance.HaveRequirements(piece, Player.RequirementMode.CanBuild))
+                    if (placed >= budget)
                         break;
                     __instance.PlacePiece(piece, cell.Pos, rot, false, false);
+                    if (!FreeBuild(__instance, piece))
+                        __instance.ConsumeResources(piece.m_resources, 0);
+                    placed++;
                 }
             }
             finally

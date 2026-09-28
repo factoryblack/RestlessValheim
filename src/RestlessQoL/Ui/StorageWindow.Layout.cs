@@ -46,10 +46,12 @@ internal sealed partial class StorageWindow
             var oldLabel = cell.Button.GetComponentInChildren<Text>();
             Destroy(oldLabel.gameObject);
             cell.Icon = RestlessUi.Graphic(cell.Button.transform, "icon", Color.white, false).GetComponent<Image>();
-            cell.Icon.preserveAspect = true; At(cell.Icon.gameObject, 24, 8, 74, 66);
-            cell.Name = Label(cell.Button.transform, "", 16, 8, 77, 106, 27);
-            RestlessUi.BoundedLabel(cell.Name, 16, 13);
-            cell.Count = Label(cell.Button.transform, "", 16, 8, 104, 104, 20);
+            cell.Icon.preserveAspect = true; At(cell.Icon.gameObject, 24, 6, 74, 58);
+            cell.Name = Label(cell.Button.transform, "", 16, 8, 66, 106, 36);
+            cell.Name.alignment = TextAnchor.UpperCenter;
+            cell.Name.verticalOverflow = VerticalWrapMode.Truncate;
+            cell.Name.resizeTextForBestFit = false;
+            cell.Count = Label(cell.Button.transform, "", 16, 8, 104, 106, 18);
             cell.Count.alignment = TextAnchor.MiddleRight; cell.Count.color = RestlessUi.Accent;
             _cells.Add(cell);
         }

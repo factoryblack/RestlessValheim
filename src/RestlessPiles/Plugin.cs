@@ -4,6 +4,7 @@ using HarmonyLib;
 using Jotunn;
 using Jotunn.Managers;
 using Jotunn.Utils;
+using RestlessQoL.Storage;
 
 namespace RestlessPiles;
 
@@ -29,6 +30,7 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Log = Logger;
         PileConfig.Bind(Config);
+        NearbyLots.Listen(PileBag.List, PileBag.Take);
         _settings = PileSettings.Register();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();

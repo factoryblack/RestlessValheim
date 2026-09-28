@@ -85,6 +85,7 @@ public sealed partial class SettingsUi
         "restless.plant" => "ecosystem-plant",
         "restless.piles" => "ecosystem-piles",
         "restless.drawers" => "ecosystem-drawers",
+        "restless.storage" => "ecosystem-storage",
         _ => "nav-knot"
     });
 
@@ -94,6 +95,7 @@ public sealed partial class SettingsUi
         "restless.plant" => new Color(0.55f, 0.69f, 0.40f),
         "restless.piles" => new Color(0.71f, 0.68f, 0.61f),
         "restless.drawers" => new Color(0.62f, 0.48f, 0.32f),
+        "restless.storage" => new Color(0.55f, 0.46f, 0.32f),
         _ => RestlessUi.Accent
     };
 

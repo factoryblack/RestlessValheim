@@ -1,6 +1,7 @@
 using System;
 using BepInEx;
 using BepInEx.Logging;
+using BepInEx.Configuration;
 using HarmonyLib;
 using Jotunn;
 using Jotunn.Utils;
@@ -23,16 +24,22 @@ public class Plugin : BaseUnityPlugin
 
     private Harmony? _harmony;
     private IDisposable? _page;
+    private IDisposable? _settings;
+    internal static ConfigEntry<bool> WindowEnabled = null!;
 
     private void Awake()
     {
         Instance = this;
         Log = Logger;
+        WindowEnabled = Config.Bind("Interface", "StorageWindow", true,
+            "Open the shared storage browser when using a Storekeeper's Table. Local visual preference.");
+        _settings = SettingsPageApi.RegisterSettings(PluginGuid,
+            new SettingsSection("Storage window", new SettingsOption("Open storage browser", WindowEnabled, false)));
         _page = SettingsPageApi.Register(new SettingsPage(
             PluginGuid,
             PluginName,
             "A table for the stores around you.",
-            "Build a Storekeeper's Table at the workbench. The storage network window is the next piece of this plugin."));
+            "Build a Storekeeper's Table at the workbench to browse nearby accessible stores. Search resources, inspect combined totals and see where they are stored. Withdrawal is not available in this preview."));
         StorekeeperPiece.Load();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();
@@ -41,7 +48,10 @@ public class Plugin : BaseUnityPlugin
 
     private void OnDestroy()
     {
+        Storekeeper.CloseWindow();
+        _settings?.Dispose();
         _page?.Dispose();
         _harmony?.UnpatchSelf();
     }
 }
+

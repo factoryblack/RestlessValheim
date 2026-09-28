@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Shared storage browser for RestlessStorage. Read-only. The table plugin owns what is nearby; Core draws the window
+
 ## 0.1.17
 
 - A dedicated server can feed tames from a chest a player owns. A client still cannot send player id 0 to open a private chest

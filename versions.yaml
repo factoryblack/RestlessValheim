@@ -46,6 +46,14 @@ packages:
     csproj: "src/RestlessDrawers/RestlessDrawers.csproj"
     thunderstore_dir: "thunderstore/drawers"
     needs_core: true
+  storage:
+    version: "0.1.0"
+    guid: "restless.storage"
+    thunderstore: "RestlessStorage"
+    plugin: "src/RestlessStorage/Plugin.cs"
+    csproj: "src/RestlessStorage/RestlessStorage.csproj"
+    thunderstore_dir: "thunderstore/storage"
+    needs_core: true
   pack:
     version: "0.1.21"
     thunderstore: "Restless_Valheim"

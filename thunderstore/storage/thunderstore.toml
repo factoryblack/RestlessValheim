@@ -1,0 +1,39 @@
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "Restless"
+name = "RestlessStorage"
+versionNumber = "0.1.0"
+description = "A Storekeeper's Table for the chests around you. The network window comes next. Needs RestlessCore."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+containsNsfwContent = false
+
+[package.dependencies]
+denikson-BepInExPack_Valheim = "5.4.2351"
+ValheimModding-Jotunn = "2.30.2"
+Restless-RestlessCore = "0.1.17"
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "../../artifacts/tcli-storage"
+
+[[build.copy]]
+source = "../../dist/RestlessStorage.dll"
+target = "/"
+
+[[build.copy]]
+source = "./CHANGELOG.md"
+target = "/"
+
+[[build.copy]]
+source = "../../art/storage/runtime"
+target = "mesh"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["valheim"]
+
+[publish.categories]
+valheim = ["building", "tweaks", "mods"]

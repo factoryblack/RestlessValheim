@@ -5,6 +5,7 @@
 #   piles-v* RestlessPiles only
 #   plant-v* RestlessPlant only
 #   drawers-v* RestlessDrawers only
+#   RestlessStorage is compiled with the rest. It has no tag until the window ships.
 # GitHub runners have no Valheim client, so this follows Jötunn's pattern:
 # SteamCMD anonymous dedicated server (app 896660) + BepInEx pack, cached by buildid.
 # Thunderstore publish needs repo secret TCLI_AUTH_TOKEN (never commit the token).
@@ -111,6 +112,7 @@ jobs:
           dotnet build src/RestlessPiles/RestlessPiles.csproj -c Release --nologo
           dotnet build src/RestlessPlant/RestlessPlant.csproj -c Release --nologo
           dotnet build src/RestlessDrawers/RestlessDrawers.csproj -c Release --nologo
+          dotnet build src/RestlessStorage/RestlessStorage.csproj -c Release --nologo
 
       - name: Upload RestlessCore.dll
         uses: actions/upload-artifact@v4
@@ -145,6 +147,13 @@ jobs:
         with:
           name: RestlessDrawers-${{ github.sha }}
           path: dist/RestlessDrawers.dll
+          if-no-files-found: error
+
+      - name: Upload RestlessStorage.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: RestlessStorage-${{ github.sha }}
+          path: dist/RestlessStorage.dll
           if-no-files-found: error
 
       - name: Stamp package versions from tag

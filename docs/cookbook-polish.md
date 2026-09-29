@@ -25,3 +25,7 @@ The right panel uses a compact header, a fixed station requirement and four visi
 Recipes follow biome progression, Black Forest/Deep North labels are formatted, and selecting a recipe preserves the sidebar scroll position. Queue wording explains that orders may wait for ingredients. This follow-up only changes presentation, retains pooled cards and the existing one-second snapshot refresh, and adds no per-frame stock scans.
 
 Verify in Unity: long names at smaller resolutions, four/six-ingredient recipes, deep branch/back navigation, native scrollbar handle width, selected-order progress, and switching Kitchen/Pantry/Recipes without stale requirements. A successful CI build does not replace these visual checks.
+
+## Hero frame follow-up
+
+The featured recipe now uses cook-portrait as its actual outer surface through the shared CookHeroSurface helper. Nine-slice borders retain the corner folds on a wide card; the inner thumbnail frame and generic outer rim are removed. A small coloured diamond beside the status text communicates prepared/waiting/blocked independently of the bronze frame. Pooled cards restore their normal paper rim when reused in Orders or Pantry. Requires matching Core and Cook builds. In-game checks: corner proportions, long hero titles, all three status colours, and tab transitions.

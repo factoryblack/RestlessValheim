@@ -169,7 +169,8 @@ internal sealed partial class CookbookWindow
         private readonly Image _icon;
         private readonly Text _name, _state;
         private readonly Image _bar;
-        private readonly GameObject _track, _frame;
+        private readonly GameObject _track;
+        private readonly Image _statusDiamond;
         private Action? _clicked;
         internal Card(Transform parent)
         {
@@ -177,7 +178,8 @@ internal sealed partial class CookbookWindow
             _button = Root.AddComponent<Button>(); _button.targetGraphic = Root.GetComponent<Image>(); RestlessUi.PaperSelectable(_button);
             _icon = RestlessUi.Graphic(Root.transform,"icon",Color.white,false).GetComponent<Image>(); _icon.preserveAspect = true;
             _name = Label(Root.transform,"",18,0,0,100,40); _name.alignment = TextAnchor.MiddleLeft; RestlessUi.BoundedLabel(_name,18,15);
-            _frame = RestlessUi.Picture(Root.transform,"dish-frame","cook-portrait",false);
+            _statusDiamond = RestlessUi.Graphic(Root.transform,"status-diamond",Color.white,false).GetComponent<Image>();
+            _statusDiamond.rectTransform.localRotation = Quaternion.Euler(0,0,45);
             _track = RestlessUi.Graphic(Root.transform,"preparation-track",RestlessUi.Ink,false);
             _bar = RestlessUi.Graphic(_track.transform,"progress",RestlessUi.Accent,false).GetComponent<Image>();
             _state = Label(Root.transform,"",15,0,0,100,30); _state.alignment = TextAnchor.MiddleLeft;
@@ -195,13 +197,13 @@ internal sealed partial class CookbookWindow
         internal void Set(string name,string state,Sprite? icon,Color tint,Action action,bool selected = false,bool featured = false)
         {
             _clicked = action; var size = ((RectTransform)Root.transform).rect.size;
-            _frame.SetActive(featured);
+            _statusDiamond.gameObject.SetActive(featured);
             if (featured)
             {
-                Portrait(_frame,12,(size.y-80)/2,120,80);
-                Portrait(_icon.gameObject,28,(size.y-62)/2,88,62);
-                Position(_name.gameObject,146,12,size.x-158,54);
-                Position(_state.gameObject,146,72,size.x-158,30);
+                Portrait(_icon.gameObject,26,(size.y-72)/2,72,72);
+                Position(_name.gameObject,114,18,size.x-178,52);
+                Portrait(_statusDiamond.gameObject,116,81,7,7);
+                Position(_state.gameObject,134,72,size.x-172,26);
             }
             else if (size.y <= 64)
             {
@@ -219,7 +221,15 @@ internal sealed partial class CookbookWindow
             _state.alignment = size.y <= 64 ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
             _icon.sprite = icon; _icon.enabled = icon != null; _name.text = name; _state.text = state; _state.color = tint;
             _track.SetActive(false);
-            RestlessUi.PaperControl(Root,selected ? RestlessUi.Accent : new Color(.37f,.33f,.27f));
+            _statusDiamond.color = tint;
+            if (featured) RestlessUi.CookHeroSurface(Root);
+            else
+            {
+                RestlessUi.PaperControl(Root,selected ? RestlessUi.Accent : new Color(.37f,.33f,.27f));
+                // Cards are pooled between the recipe tree, orders and pantry.
+                var rim = Root.transform.Find("paperAccent");
+                if (rim != null) rim.gameObject.SetActive(true);
+            }
         }
     }
 }

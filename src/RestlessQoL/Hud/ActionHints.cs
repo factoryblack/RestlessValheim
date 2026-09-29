@@ -147,8 +147,7 @@ public sealed class ActionHints : FeatureModule
             ("Rotate", new[] { "JoyRotate" }),
             ("Menu", new[] { "BuildMenu" })
         };
-        var player = Player.m_localPlayer;
-        if (ModConfig.AreaSealEnabled.Value && !ZInput.IsGamepadActive() && player != null && player.InRepairMode())
+        if (ModConfig.AreaSealEnabled.Value && !ZInput.IsGamepadActive())
             rows.Insert(1, ("Seal", System.Array.Empty<string>()));
         return rows.ToArray();
     }

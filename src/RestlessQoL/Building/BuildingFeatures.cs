@@ -58,20 +58,34 @@ public sealed class AreaSeal : FeatureModule
     [HarmonyPatch]
     private static class Patches
     {
+        // Alt+click while the hammer is out. Skipping the placement update
+        // keeps a normal piece from being built and a repair from restoring health.
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(Player), nameof(Player.Repair))]
-        private static bool Repair(Player __instance, ItemDrop.ItemData toolItem)
+        [HarmonyPatch(typeof(Player), nameof(Player.UpdatePlacement))]
+        private static bool UpdatePlacement(Player __instance, bool takeInput)
         {
-            if (!ModConfig.AreaSealEnabled.Value || !HoldingAlt())
+            if (!takeInput || !ModConfig.AreaSealEnabled.Value || ZInput.IsGamepadActive() || !HoldingAlt())
                 return true;
-            var hovering = __instance.GetHoveringPiece();
-            if (hovering == null || !__instance.CheckCanRemovePiece(hovering)
-                || !PrivateArea.CheckAccess(hovering.transform.position))
-                return false;
+            if (Hud.IsPieceSelectionVisible() || Hud.InRadial() || !ZInput.GetButtonDown("Attack"))
+                return true;
 
-            var sealedCount = Apply(__instance, hovering);
-            if (sealedCount > 0)
-                Swing(__instance, toolItem, hovering);
+            var tool = __instance.GetRightItem();
+            var attack = tool?.m_shared?.m_attack;
+            if (attack == null || !__instance.HaveStamina(attack.m_attackStamina))
+                return true;
+
+            var hovering = __instance.GetHoveringPiece();
+            if (hovering != null && __instance.CheckCanRemovePiece(hovering)
+                && PrivateArea.CheckAccess(hovering.transform.position))
+            {
+                var sealedCount = Apply(__instance, hovering);
+                if (sealedCount > 0)
+                    Swing(__instance, tool, hovering);
+            }
+            else
+                __instance.Message(MessageHud.MessageType.TopLeft, "Nothing to seal");
+
+            __instance.m_placePressedTime = -9999f;
             return false;
         }
 

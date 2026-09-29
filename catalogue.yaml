@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-29 — 0.1.23 drop is written and not tagged. New behaviour is 0.2.0.
+# last_audit: 2026-09-29 — seal is an Alt click with the hammer out. The bind sits on that key stack.
 
 updated: 2026-09-29
 
@@ -101,7 +101,7 @@ items:
     in_mod: done
     bite: 1
     restless: n/a
-    note: "Hold Alt and use the hammer repair click. Player-built wood in the seal radius that rots in the rain takes one resin each, from the bag then nearby chests this client owns. Already sealed pieces are skipped. Current damage stays. Rain stops there. No tint. F8 enable and radius. Not playtested yet."
+    note: "Hold Alt and click with the hammer out. The Seal bind is on the hammer key stack, Alt plus the place button. Player-built wood in the seal radius that rots in the rain takes one resin each, from the bag then nearby chests this client owns. Already sealed pieces are skipped. A plain click still places or repairs. Current damage stays. Rain stops there. No tint. F8 enable and radius. The first repair-tool-only pass did not show the bind and did not seal."
 
   - id: building.workbench_range
     name: Workbench / station range

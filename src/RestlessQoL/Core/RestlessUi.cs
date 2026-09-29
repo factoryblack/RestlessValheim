@@ -1440,7 +1440,13 @@ internal static partial class RestlessUi
             return;
         if (face == "1-8")
             face = "1–8";
-        var mouse = MouseSprite(face);
+        var alt = "";
+        if (face != null && face.StartsWith("Alt + "))
+        {
+            alt = "Alt +";
+            face = face.Substring("Alt + ".Length);
+        }
+        var mouse = MouseSprite(face ?? "");
         var verbUi = chip.transform.Find("verb")?.GetComponent<Text>();
         var faceUi = chip.transform.Find("face")?.GetComponent<Text>();
         var icon = chip.transform.Find("glyph")?.GetComponent<Image>();
@@ -1461,9 +1467,16 @@ internal static partial class RestlessUi
         if (faceUi != null)
         {
             faceUi.supportRichText = false;
+            faceUi.horizontalOverflow = HorizontalWrapMode.Overflow;
             var extra = face is "LMB×2" ? "×2" : "";
-            faceUi.enabled = mouse == null || extra.Length > 0;
-            faceUi.text = mouse == null ? face : extra;
+            var prefix = alt.Length > 0;
+            faceUi.enabled = mouse == null || extra.Length > 0 || prefix;
+            faceUi.text = mouse == null
+                ? (prefix ? alt + " " + face : face)
+                : (prefix ? alt : extra);
+            Pin(faceUi.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+                prefix ? new Vector2(-22f, 0f) : new Vector2(-10f, 0f),
+                prefix ? new Vector2(64f, 20f) : new Vector2(48f, 20f));
         }
     }
 

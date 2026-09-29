@@ -15,6 +15,20 @@ public sealed class LookHints : FeatureModule
 
     private static RestlessUi.KeyStack? _stack;
 
+    private static readonly HashSet<object> Suppressors = new();
+
+    // Expansion windows can suppress both vanilla and Restless world-hover UI.
+    // A caller releases its own token on close/disable, without affecting another window.
+    public static void SetSuppressed(object owner,bool suppressed)
+    {
+        if (suppressed)
+        {
+            Suppressors.Add(owner); _stack?.Hide();
+            if (global::Hud.instance != null) QuietVanilla(global::Hud.instance);
+        }
+        else if (Suppressors.Remove(owner) && Suppressors.Count == 0) RestoreVanilla();
+    }
+
     protected override void OnLoaded()
     {
         GUIManager.OnCustomGUIAvailable += TearDown;
@@ -22,6 +36,7 @@ public sealed class LookHints : FeatureModule
 
     public override void Tick()
     {
+        if (Suppressors.Count > 0) return;
         if (ModConfig.LookHintsEnabled.Value)
             return;
         _stack?.Hide();
@@ -35,6 +50,10 @@ public sealed class LookHints : FeatureModule
         [HarmonyPatch(typeof(global::Hud), "UpdateCrosshair")]
         private static void AfterCrosshair(global::Hud __instance)
         {
+            if (Suppressors.Count > 0)
+            {
+                _stack?.Hide(); QuietVanilla(__instance); return;
+            }
             if (!ModConfig.LookHintsEnabled.Value)
             {
                 _stack?.Hide();
@@ -363,3 +382,4 @@ public sealed class LookHints : FeatureModule
         _stack = null;
     }
 }
+

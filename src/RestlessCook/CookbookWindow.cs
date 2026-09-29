@@ -27,6 +27,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     private IReadOnlyList<KitchenOrder> _orders = Array.Empty<KitchenOrder>();
     private string _recipe = "", _query = "", _stamp = "";
     private int _tab, _count = 1, _focus, _order;
+    private int _detailFocus = -1;
     private bool _blocked, _confirmCancel;
     private string _category = "Feasts";
     private readonly List<Button> _filters = new();
@@ -34,7 +35,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     private GameObject _dishFrame = null!;
     private Text _dishName = null!, _dishKind = null!, _station = null!, _requirementsLabel = null!;
     private float _next, _messageUntil;
-    private Text _heading = null!, _copy = null!, _status = null!, _quantity = null!, _actionText = null!;
+    private Text _heading = null!, _copy = null!, _status = null!, _quantity = null!, _actionText = null!, _actionHint = null!;
     private Button _action = null!, _collect = null!, _back = null!;
     private Vector2 _canvas;
 
@@ -48,7 +49,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         var w = go.AddComponent<CookbookWindow>(); _current = w; w._table = table;
         try
         {
-            w.Build(); w._blocked = true; GUIManager.BlockInput(true);
+            w.Build(); RestlessQoL.HudTweaks.LookHints.SetSuppressed(w,true); w._blocked = true; GUIManager.BlockInput(true);
             w.RecipeList(); w.Refresh(true);
         }
         catch (Exception e) { Debug.LogException(e); Close(); }
@@ -61,6 +62,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     }
     private void OnDisable()
     {
+        RestlessQoL.HudTweaks.LookHints.SetSuppressed(this,false);
         if (_current == this) _current = null;
         if (_blocked && !SettingsUi.IsOpen) GUIManager.BlockInput(false);
         _blocked = false;
@@ -81,7 +83,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         try
         {
             _orders = Kitchen.Orders(_table);
-            if (_order != 0 && !_orders.Any(o => o.Id == _order)) { _order = 0; _trail.Clear(); _focus = 0; }
+            if (_order != 0 && !_orders.Any(o => o.Id == _order)) { _order = 0; _trail.Clear(); _focus = 0; _detailFocus = -1; }
             if (_tab == 2) { PaintStations(force); return; }
             if (_tab == 3) { PaintPantry(force); return; }
             _steps = _order != 0 ? Kitchen.Live(_table, _order) : _tab == 1 ? Array.Empty<KitchenStep>() : Kitchen.Plan(_table, _recipe, _count);
@@ -92,6 +94,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             var key = stamp.ToString();
             if (force || key != _stamp)
             {
+                if (_detailFocus >= _steps.Count) _detailFocus = -1;
                 _stamp = key;
                 if (_tab == 1) OrderList();
                 if (_focus >= _steps.Count) { _focus = 0; _trail.Clear(); }
@@ -114,7 +117,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     }
     private void Tab(int tab)
     {
-        _tab = tab; _stamp = ""; _confirmCancel = false;
+        _detailFocus = -1; _tab = tab; _stamp = ""; _confirmCancel = false;
         for (var i = 0; i < _tabs.Count; i++) RestlessUi.PaperControl(_tabs[i].gameObject, i == tab ? RestlessUi.Accent : (Color?)null);
         if (tab == 0) { _order = 0; RecipeList(); }
         if (tab == 1) OrderList();
@@ -128,15 +131,15 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         var rows = Kitchen.Rows.Where(r => Matches(r)
             && (string.IsNullOrWhiteSpace(_query) || r.Name.IndexOf(_query.Trim(), StringComparison.CurrentCultureIgnoreCase) >= 0))
             .OrderBy(r => TierOrder(r.Tier)).ThenBy(r => r.Name).ToList();
-        if (!rows.Any(r => r.Id == _recipe)) { _recipe = rows.Count > 0 ? rows[0].Id : ""; _focus = 0; _trail.Clear(); }
+        if (!rows.Any(r => r.Id == _recipe)) { _recipe = rows.Count > 0 ? rows[0].Id : ""; _detailFocus = -1; _focus = 0; _trail.Clear(); }
         for (var i = 0; i < rows.Count; i++)
         {
             var r = rows[i]; var c = GetCard(_recipeCards, i, _recipes.content);
-            Position(c.Root, 0, i * 96, 228, 90);
+            Position(c.Root, 0, i * 80, 228, 72);
             c.Set(r.Name, TierName(r.Tier) + " · " + r.Kind, Icon(Output(r)), r.Id == _recipe ? RestlessUi.Accent : RestlessUi.PaperMuted,
-                () => { _recipe = r.Id; _order = 0; _focus = 0; _trail.Clear(); _confirmCancel = false; RecipeList(); Refresh(true); Size(_tree,_tree.content.rect.height,true); Size(_details,_details.content.rect.height,true); }, selected: r.Id == _recipe);
+                () => { _detailFocus = -1; _recipe = r.Id; _order = 0; _focus = 0; _trail.Clear(); _confirmCancel = false; RecipeList(); Refresh(true); Size(_tree,_tree.content.rect.height,true); Size(_details,_details.content.rect.height,true); }, selected: r.Id == _recipe, listEntry: true);
         }
-        HideAfter(_recipeCards, rows.Count); Size(_recipes, rows.Count * 96, false);
+        HideAfter(_recipeCards, rows.Count); Size(_recipes, rows.Count * 80, false);
         if (rows.Count == 0) Message("No matching recipes.");
     }
     private void OrderList()
@@ -146,7 +149,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             var o = _orders[i]; var c = GetCard(_recipeCards, i, _recipes.content);
             Position(c.Root, 0, i * 96, 228, 90);
             c.Set(o.Name, o.Collected + o.Ready + " / " + o.Count + " finished", Icon(o.Feast), o.Id == _order ? RestlessUi.Accent : RestlessUi.PaperMuted,
-                () => { _order = o.Id; _focus = 0; _trail.Clear(); _confirmCancel = false; Refresh(true); }, selected: o.Id == _order);
+                () => { _detailFocus = -1; _order = o.Id; _focus = 0; _trail.Clear(); _confirmCancel = false; Refresh(true); }, selected: o.Id == _order);
         }
         HideAfter(_recipeCards, _orders.Count); Size(_recipes, _orders.Count * 96, false);
     }
@@ -160,7 +163,12 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     }
     private void Focus(int index)
     {
-        _trail.Add(_focus); _focus = index; if (_tab == 1) PaintOrderSteps(); else PaintTree(); PaintDetails(); Size(_tree, _tree.content.rect.height, true); Size(_details, _details.content.rect.height, true);
+        _detailFocus = -1; _trail.Add(_focus); _focus = index; if (_tab == 1) PaintOrderSteps(); else PaintTree(); PaintDetails(); Size(_tree, _tree.content.rect.height, true); Size(_details, _details.content.rect.height, true);
+    }
+    private void Inspect(int index)
+    {
+        if (_steps[index].Uses.Count > 0) { Focus(index); return; }
+        _detailFocus = index; PaintDetails(); Size(_details,_details.content.rect.height,true);
     }
     private void PaintTree()
     {
@@ -169,29 +177,31 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         if (_steps.Count == 0) { HideAfter(_nodes, 0); _heading.text = _tab == 1 ? (_orders.Count == 0 ? "No kitchen orders" : "Choose an order") : "Choose a recipe"; return; }
         var root = _steps[_focus]; _heading.text = _trail.Count == 0 ? "Preparation plan" : "Ingredient preparation";
         var card = GetCard(_nodes, 0, _tree.content);
-        Position(card.Root, 54, 8, 420, 116);
-        card.Set(Local(root.Name), State(root), Icon(root.Output), Tint(root.State), () => PaintDetails(), selected: true, featured: true);
+        Position(card.Root, 18, 8, 492, 152);
+        card.Set(Local(root.Name), State(root), Icon(root.Output), Tint(root.State), () => { _detailFocus = -1; PaintDetails(); }, selected: true, featured: true);
         card.Progress(root);
         var children = Children(_focus);
         var li = 0;
         for (var j = 0; j < children.Count; j++)
         {
             var index = children[j]; var s = _steps[index];
-            float x = j % 2 * 276, y = 160 + j / 2 * 144;
-            Line(li++, 264, 124, 2, y - 140);
+            float x = j == children.Count-1 && children.Count%2 == 1 ? 138 : j%2*276;
+            float y = 192+j/2*144;
+            Line(li++, 264, 142, 2, y - 158);
             Line(li++, Math.Min(264, x + 126), y - 16, Math.Abs(264 - (x + 126)), 2);
             Line(li++, x + 126, y - 16, 2, 16);
             var node = GetCard(_nodes, j + 1, _tree.content); Position(node.Root, x, y, 252, 116);
-            node.Set(Local(s.Name), State(s), Icon(s.Output), Tint(s.State), () => Focus(index));
+            node.Set(Local(s.Name), State(s), Icon(s.Output), Tint(s.State), () => Inspect(index), expandable: s.Uses.Count > 0);
             node.Progress(s);
         }
         HideAfter(_nodes, children.Count + 1);
-        Size(_tree, children.Count == 0 ? 140 : 160 + ((children.Count + 1) / 2) * 144, false);
+        Size(_tree, children.Count == 0 ? 168 : 192 + ((children.Count + 1) / 2) * 144, false);
     }
     private void PaintDetails()
     {
         ShowDish();
-        var s = _steps.Count > _focus ? _steps[_focus] : null;
+        var detailIndex = _detailFocus >= 0 && _detailFocus < _steps.Count ? _detailFocus : _focus;
+        var s = _steps.Count > detailIndex ? _steps[detailIndex] : null;
         _dish.sprite = s == null ? null : Icon(s.Output); _dish.enabled = _dish.sprite != null;
         _dishFrame.SetActive(s != null); _dishName.text = s == null ? "Select a dish" : Local(s.Name);
         _dishKind.text = s == null ? "" : State(s);
@@ -200,7 +210,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             : StationName(s.Station) + "\nRequired level " + s.StationLevel;
         var b = new StringBuilder();
         var rowCount = s?.Uses.Count ?? 0;
-        var children = s == null ? new List<int>() : Children(_focus);
+        var children = s == null ? new List<int>() : Children(detailIndex);
         for (var i = 0; i < rowCount; i++)
         {
             var use = s!.Uses[i];
@@ -213,12 +223,12 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             Position(row.Root,0,26+i*58,280,54);
             row.Set(Local(use.Name),covered ? "Covered" : ready + " / " + use.Amount,Icon(use.Item),
                 covered || ready >= use.Amount ? Tint(KitchenStepState.Prepared) : RestlessUi.Accent,
-                () => { if (index >= 0) Focus(index); });
+                () => { if (index >= 0) Inspect(index); });
         }
         HideAfter(_requirementCards,rowCount);
         if (s != null)
         {
-            if (!string.IsNullOrWhiteSpace(s.Note)) b.AppendLine(s.Note).AppendLine();
+            if ((_order != 0 || detailIndex != 0) && !string.IsNullOrWhiteSpace(s.Note)) b.AppendLine(s.Note).AppendLine();
             var uses = Kitchen.OtherUses(s.Output);
             if (uses.Count > 0)
             {
@@ -227,7 +237,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             }
         }
         else b.Append(_tab == 1 ? "Select an order on the left to follow its progress." : "Select a recipe to explore its ingredients.");
-        _requirementsLabel.text = rowCount > 0 ? "INGREDIENTS · READY / NEEDED" : "";
+        _requirementsLabel.text = rowCount > 0 ? "INGREDIENTS · STOCK / NEEDED" : "";
         _copy.text = b.ToString();
         var copyY = rowCount > 0 ? 34 + rowCount*58 : 0;
         Position(_copy.gameObject,0,copyY,280,Mathf.Max(60,_copy.preferredHeight));
@@ -238,6 +248,8 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         _action.gameObject.SetActive(_tab < 2);
         _action.interactable = order != null || (_tab == 0 && _steps.Count > 0 && _steps[0].Uses.Count > 0 && _orders.Count < 8);
         _actionText.text = order != null ? (_confirmCancel ? "Confirm cancellation" : "Cancel order") : "Queue " + _count;
+        _actionHint.gameObject.SetActive(_tab == 0);
+        _actionHint.text = _steps.Count == 0 ? "Choose a recipe to queue." : QueueReason(_steps[0]);
         _quantity.text = _count.ToString();
     }
     private void Act()
@@ -310,9 +322,27 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         }
         return false;
     }
-    private string State(KitchenStep s) => Covered(s) ? "Covered by prepared food" : s.DurationSeconds > 0
-        ? s.Note + " · " + Mathf.CeilToInt(Mathf.Max(0, s.DurationSeconds - s.ElapsedSeconds)) + "s"
-        : s.State + " · " + s.Have + " / " + s.Need + (s.Cooking > 0 ? " · " + s.Cooking + " cooking" : "");
+    private string State(KitchenStep s)
+    {
+        if (Covered(s)) return "Covered by another step";
+        if (s.State == KitchenStepState.Blocked) return "Blocked · " + s.Have + " / " + s.Need;
+        if (s.Cooking > 0)
+        {
+            var timer = s.DurationSeconds > 0 ? " · " + Mathf.CeilToInt(Mathf.Max(0,s.DurationSeconds-s.ElapsedSeconds)) + "s" : "";
+            return s.Have + " prepared · " + s.Cooking + " cooking" + timer;
+        }
+        if (s.Uses.Count == 0)
+            return (s.Have >= s.Need ? "Available · " : "Missing · ") + s.Have + " / " + s.Need;
+        if (s.Have >= s.Need) return "Prepared · " + s.Have + " / " + s.Need;
+        return s.Have + " prepared · " + Math.Max(0,s.Need-s.Have) + " to make";
+    }
+    private static string QueueReason(KitchenStep root) => root.State switch
+    {
+        KitchenStepState.Ready => "Ingredients available · ready to prepare",
+        KitchenStepState.Queued => "Ingredients available · waiting for a station",
+        KitchenStepState.Prepared => "Preparation complete",
+        _ => string.IsNullOrWhiteSpace(root.Note) ? "Queue this dish for preparation" : Local(root.Note)
+    };
     private static Color Tint(KitchenStepState s) => s == KitchenStepState.Prepared ? new Color(.58f,.76f,.56f)
         : s == KitchenStepState.Blocked ? RestlessUi.HealthTint : RestlessUi.Accent;
     private static string TierName(string tier) => tier.ToLowerInvariant() switch
@@ -332,4 +362,5 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         private static bool Prefix() => _current == null && Time.frameCount != _closedFrame;
     }
 }
+
 

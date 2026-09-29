@@ -36,7 +36,7 @@ internal sealed partial class CookbookWindow
             _filters.Add(button);
             if (category == _category) RestlessUi.PaperControl(button.gameObject, RestlessUi.Accent);
         }
-        _recipes = Reader(_sheet, "recipes", 28, 260, 252, 422, 96);
+        _recipes = Reader(_sheet, "recipes", 28, 260, 252, 422, 80);
         Label(_sheet, "Order quantity", 18, 28, 696, 252, 26);
         Button(_sheet, "−", 28, 726, 52, 36, () => Quantity(-1));
         _quantity = Label(_sheet, "1", 22, 88, 726, 132, 36); _quantity.alignment = TextAnchor.MiddleCenter;
@@ -45,7 +45,7 @@ internal sealed partial class CookbookWindow
         _back = Button(_sheet, "‹ Back", 316, 132, 100, 34, () =>
         {
             if (_trail.Count == 0) return;
-            _focus = _trail[_trail.Count - 1]; _trail.RemoveAt(_trail.Count - 1); PaintTree(); PaintDetails();
+            _detailFocus = -1; _focus = _trail[_trail.Count - 1]; _trail.RemoveAt(_trail.Count - 1); PaintTree(); PaintDetails();
             Size(_tree, _tree.content.rect.height, true); Size(_details,_details.content.rect.height,true);
         });
         _heading = Label(_sheet, "Choose a recipe", 24, 428, 130, 424, 62);
@@ -60,7 +60,7 @@ internal sealed partial class CookbookWindow
         _dishName = Label(_sheet,"",22,1012,180,192,78);
         RestlessUi.BoundedLabel(_dishName,22,18);
         var ribbon = RestlessUi.Node(_sheet,"dish-state"); Position(ribbon,904,264,304,30);
-        _dishKind = Label(ribbon.transform,"",17,0,0,304,30); RestlessUi.BoundedLabel(_dishKind,17,14);
+        _dishKind = Label(ribbon.transform,"",17,0,0,304,36); RestlessUi.BoundedLabel(_dishKind,17,14);
         _station = Label(_sheet,"",18,904,302,300,48);
         Rule(_sheet,904,352,300,1);
         _details = Reader(_sheet, "details", 904, 358, 304, 262, 64);
@@ -68,6 +68,8 @@ internal sealed partial class CookbookWindow
         _copy = Label(_details.content, "", 17, 0, 0, 280, 100);
         _copy.alignment = TextAnchor.UpperLeft; _copy.verticalOverflow = VerticalWrapMode.Overflow;
         _collect = Button(_sheet, "Collect ready food", 904, 636, 304, 42, Collect);
+        _actionHint = Label(_sheet,"",17,904,630,304,58);
+        RestlessUi.BoundedLabel(_actionHint,17,14);
         _action = Button(_sheet, "Queue 1", 904, 694, 304, 52, Act);
         RestlessUi.ForgedSurface(_action.gameObject, action: true, interactive: true);
         _actionText = _action.GetComponentInChildren<Text>();
@@ -167,7 +169,7 @@ internal sealed partial class CookbookWindow
         internal readonly GameObject Root;
         private readonly Button _button;
         private readonly Image _icon;
-        private readonly Text _name, _state;
+        private readonly Text _name, _state, _expand;
         private readonly Image _bar;
         private readonly GameObject _track;
         private readonly Image _statusDiamond;
@@ -178,6 +180,8 @@ internal sealed partial class CookbookWindow
             _button = Root.AddComponent<Button>(); _button.targetGraphic = Root.GetComponent<Image>(); RestlessUi.PaperSelectable(_button);
             _icon = RestlessUi.Graphic(Root.transform,"icon",Color.white,false).GetComponent<Image>(); _icon.preserveAspect = true;
             _name = Label(Root.transform,"",18,0,0,100,40); _name.alignment = TextAnchor.MiddleLeft; RestlessUi.BoundedLabel(_name,18,15);
+            _expand = Label(Root.transform,"›",24,0,0,20,28);
+            _expand.color = RestlessUi.PaperMuted; _expand.raycastTarget = false;
             _statusDiamond = RestlessUi.Graphic(Root.transform,"status-diamond",Color.white,false).GetComponent<Image>();
             _statusDiamond.rectTransform.localRotation = Quaternion.Euler(0,0,45);
             _track = RestlessUi.Graphic(Root.transform,"preparation-track",RestlessUi.Ink,false);
@@ -188,22 +192,30 @@ internal sealed partial class CookbookWindow
         internal void Progress(KitchenStep step)
         {
             var size = ((RectTransform)Root.transform).rect.size;
-            _track.SetActive(step.State == KitchenStepState.Cooking && step.DurationSeconds > 0); Position(_track,12,size.y-10,size.x-24,4);
+            _track.SetActive(step.State == KitchenStepState.Cooking && step.DurationSeconds > 0); Position(_track,20,size.y-(_statusDiamond.gameObject.activeSelf ? 34 : 10),size.x-40,4);
             float fraction = step.State == KitchenStepState.Prepared ? 1f : step.DurationSeconds > 0
                 ? Mathf.Clamp01(step.ElapsedSeconds/step.DurationSeconds) : 0f;
-            Position(_bar.gameObject,0,0,(size.x-24)*fraction,4);
+            Position(_bar.gameObject,0,0,(size.x-40)*fraction,4);
             _bar.color = Tint(step.State);
         }
-        internal void Set(string name,string state,Sprite? icon,Color tint,Action action,bool selected = false,bool featured = false)
+        internal void Set(string name,string state,Sprite? icon,Color tint,Action action,bool selected = false,bool featured = false,bool listEntry = false,bool expandable = false)
         {
             _clicked = action; var size = ((RectTransform)Root.transform).rect.size;
             _statusDiamond.gameObject.SetActive(featured);
+            _state.gameObject.SetActive(!listEntry);
+            _expand.gameObject.SetActive(expandable);
+            Position(_expand.gameObject,size.x-24,14,16,28);
             if (featured)
             {
-                Portrait(_icon.gameObject,26,(size.y-72)/2,72,72);
-                Position(_name.gameObject,114,18,size.x-178,52);
-                Portrait(_statusDiamond.gameObject,116,81,7,7);
-                Position(_state.gameObject,134,72,size.x-172,26);
+                Portrait(_icon.gameObject,26,(size.y-96)/2,96,96);
+                Position(_name.gameObject,136,26,size.x-242,50);
+                Portrait(_statusDiamond.gameObject,138,93,7,7);
+                Position(_state.gameObject,156,80,size.x-194,34);
+            }
+            else if (listEntry)
+            {
+                Portrait(_icon.gameObject,10,(size.y-44)/2,44,44);
+                Position(_name.gameObject,64,(size.y-44)/2,size.x-76,44);
             }
             else if (size.y <= 64)
             {
@@ -214,7 +226,7 @@ internal sealed partial class CookbookWindow
             else
             {
                 Portrait(_icon.gameObject,10,12,48,48);
-                Position(_name.gameObject,68,6,size.x-80,50);
+                Position(_name.gameObject,68,6,size.x-(expandable ? 98 : 80),50);
                 Position(_state.gameObject,12,62,size.x-24,size.y-76);
             }
             _name.alignment = TextAnchor.MiddleLeft;
@@ -235,4 +247,5 @@ internal sealed partial class CookbookWindow
         }
     }
 }
+
 

@@ -24,6 +24,7 @@ internal sealed partial class CookbookWindow
     }
     private void HideDish()
     {
+        _actionHint.gameObject.SetActive(false);
         _station.text = ""; _requirementsLabel.text = ""; HideAfter(_requirementCards,0);
         _dish.enabled = false; _dishFrame.SetActive(false); _dishName.text = ""; _dishKind.text = "";
         _dishKind.transform.parent.gameObject.SetActive(false);
@@ -51,13 +52,14 @@ internal sealed partial class CookbookWindow
             var card = GetCard(_nodes, i, _tree.content);
             var indent = Mathf.Min(step.Depth, 4) * 12;
             Position(card.Root,indent,i*114,528-indent,104);
-            card.Set(Local(step.Name), State(step), Icon(step.Output), Tint(step.State), () => { _focus = index; PaintOrderSteps(); PaintDetails(); Size(_details,_details.content.rect.height,true); }, selected: i == _focus);
+            card.Set(Local(step.Name), State(step), Icon(step.Output), Tint(step.State), () => { _detailFocus = -1; _focus = index; PaintOrderSteps(); PaintDetails(); Size(_details,_details.content.rect.height,true); }, selected: i == _focus);
             card.Progress(step);
         }
         HideAfter(_nodes,_steps.Count); Size(_tree,_steps.Count*114,false);
     }
     private void PaintPantry(bool force)
     {
+        _actionHint.gameObject.SetActive(false);
         var pantry = Kitchen.Pantry(_table);
         var stamp = "pantry|" + string.Join("|",pantry.Select(p => p.Prefab+":"+p.Count+":"+p.Reserved));
         if (!force && _stamp == stamp) return;
@@ -96,3 +98,4 @@ internal sealed partial class CookbookWindow
         catch(Exception e){ Debug.LogException(e); Message("Could not collect. Check your inventory before retrying."); }
     }
 }
+

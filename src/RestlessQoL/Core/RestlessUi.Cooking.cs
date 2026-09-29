@@ -33,7 +33,7 @@ internal static partial class RestlessUi
         frame.SetActive(true); frame.transform.SetAsFirstSibling();
         Stretch(frame,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);
         var size = ((RectTransform)target.transform).rect.size;
-        const float scale = 1f/6f;
+        const float scale = 1f/4.5f;
         var left=330*scale; var right=350*scale; var top=350*scale; var bottom=210*scale;
         var middle=size.x-left-right; var centreHeight=Mathf.Max(0,size.y-top-bottom);
         var knot=180*scale; var knotX=(size.x-knot)/2;
@@ -52,3 +52,4 @@ internal static partial class RestlessUi
         }
     }
 }
+

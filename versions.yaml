@@ -1,21 +1,27 @@
 # Single pin list for loaders and Restless packages.
 # Feature decisions stay in catalogue.yaml.
-# After edits: python scripts/sync-versions.py
-# CI runs the same script with --check so Core cannot keep an old Jötunn.
+# Digits: python scripts/bump-versions.py core=new cook=fix
+#   new   — second digit, last digit returns to 0 (something a player can newly do)
+#   fix   — last digit only (a correction)
+#   break — first digit, and only after 1.0 (a world, config, or join break)
+#   done  — 1.0.0, when that package is the finished line
+# The pack's last digit moves by itself when a published pack joins a new drop.
+# Changelog sentences stay written by hand. sync-versions.py stamps these pins.
+# CI runs that stamp with --check so Core cannot keep an old Jötunn.
 
 bepinex: "5.4.2351"
 jotunn: "2.30.2"
 
 packages:
   core:
-    version: "0.1.19"
+    version: "0.2.0"
     guid: "restless.core"
     thunderstore: "RestlessCore"
     plugin: "src/RestlessQoL/Plugin.cs"
     csproj: "src/RestlessQoL/RestlessQoL.csproj"
     thunderstore_dir: "thunderstore/plugin"
   cook:
-    version: "0.1.10"
+    version: "0.2.0"
     guid: "restless.cook"
     thunderstore: "RestlessCook"
     plugin: "src/RestlessCook/Plugin.cs"
@@ -23,7 +29,7 @@ packages:
     thunderstore_dir: "thunderstore/cook"
     needs_core: true
   piles:
-    version: "0.1.8"
+    version: "0.2.0"
     guid: "restless.piles"
     thunderstore: "RestlessPiles"
     plugin: "src/RestlessPiles/Plugin.cs"
@@ -31,7 +37,7 @@ packages:
     thunderstore_dir: "thunderstore/piles"
     needs_core: true
   plant:
-    version: "0.1.8"
+    version: "0.2.0"
     guid: "restless.plant"
     thunderstore: "RestlessPlant"
     plugin: "src/RestlessPlant/Plugin.cs"
@@ -47,7 +53,7 @@ packages:
     thunderstore_dir: "thunderstore/drawers"
     needs_core: true
   storage:
-    version: "0.1.1"
+    version: "0.2.0"
     guid: "restless.storage"
     thunderstore: "RestlessStorage"
     plugin: "src/RestlessStorage/Plugin.cs"

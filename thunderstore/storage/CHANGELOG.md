@@ -1,11 +1,11 @@
 # Changelog
 
-## 0.1.1
+## 0.2.0
 
 - Card names wrap onto two lines
 - Nearby piles show on the same sheet, and a take from the table claims the pile
 - Opening the sheet marks materials you have handled, so a missed recipe can unlock. Trophies are left alone
-- Needs Core 0.1.19
+- Needs Core 0.2.0
 
 ## 0.1.0
 

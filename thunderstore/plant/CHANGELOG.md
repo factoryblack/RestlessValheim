@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.8
+## 0.2.0
 
 - A picked mushroom shrinks to a sprout and grows back. On a bush only the berries do that; the bush stays full size
 - Field snap lines up with the crop itself

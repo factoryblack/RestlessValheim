@@ -1,11 +1,11 @@
 # Changelog
 
-## 0.1.10
+## 0.2.0
 
 - The food preparation table opens the Cookbook and runs kitchen orders
 - An order cooks what it needs on nearby racks and ovens, then hands the feast to the player who placed it
 - Cauldron level, fuel, fire, and how many hooks you built still decide what gets done
-- Needs Core 0.1.19
+- Needs Core 0.2.0
 
 ## 0.1.9
 

@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.1.8
+## 0.2.0
 
-- The Storekeeper's Table lists nearby piles and can take from them. Needs Core 0.1.19
+- The Storekeeper's Table lists nearby piles and can take from them. Needs Core 0.2.0
 
 ## 0.1.7
 

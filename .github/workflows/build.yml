@@ -102,6 +102,8 @@ jobs:
 
       - name: Wheel motion regressions
         run: dotnet run --project tests/WheelMotion.Tests -c Release
+      - name: Preparation timing regressions
+        run: dotnet run --project tests/PreparationClock.Tests -c Release
       - name: Set tooltip regressions
         run: dotnet run --project tests/TooltipSetBlock.Tests -c Release
 
@@ -565,3 +567,4 @@ jobs:
           export PATH="$HOME/.dotnet/tools:$PATH"
           storage_zip=$(ls artifacts/tcli-storage/*.zip | head -n 1)
           tcli publish --config-path thunderstore/storage/thunderstore.toml --file "$storage_zip"
+

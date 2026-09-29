@@ -120,6 +120,7 @@ public static class CookYaml
                     case "output_amount": cur.OutputAmount = int.Parse(val); break;
                     case "station": cur.Station = val; break;
                     case "station_level": cur.StationLevel = int.Parse(val); break;
+                    case "preparation_seconds": cur.PreparationSeconds = float.Parse(val, System.Globalization.CultureInfo.InvariantCulture); break;
                 }
             }
         }
@@ -141,6 +142,8 @@ public static class CookYaml
 
         foreach (var row in items)
         {
+            if (row.PreparationSeconds < 0 || float.IsNaN(row.PreparationSeconds) || float.IsInfinity(row.PreparationSeconds))
+                throw new InvalidOperationException($"{row.Id}: invalid preparation_seconds");
             if (row.Uses.Count == 0)
                 throw new InvalidOperationException($"{row.Id}: empty uses[]");
             foreach (var feed in row.Feeds)
@@ -259,3 +262,4 @@ public static class CookYaml
         return val;
     }
 }
+

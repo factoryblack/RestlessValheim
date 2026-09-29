@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace RestlessCook;
 
-internal static class KitchenRun
+internal static partial class KitchenRun
 {
     private const string Key = "RestlessKitchen";
     private const int MaxOrders = 8;
@@ -34,13 +34,16 @@ internal static class KitchenRun
     {
         public readonly Dictionary<string, int> Pantry = new(StringComparer.Ordinal);
         public readonly List<KitchenOrder> Orders = new();
+        public readonly List<Work> Work = new();
     }
 
-    internal static IReadOnlyList<CookRow> Rows { get; private set; } = EmptyRows;
+    private static List<CookRow> _rows = new();
+    internal static IReadOnlyList<CookRow> Rows { get { EnsureMeads(); return _rows; } }
 
     internal static void Load(CookBook book)
     {
-        Rows = book.Items;
+        _rows = new List<CookRow>(book.Items);
+        _meadDb = null;
         ById.Clear();
         ByOutput.Clear();
         UsedBy.Clear();
@@ -68,6 +71,7 @@ internal static class KitchenRun
 
     internal static CookRow? Find(string idOrPrefab)
     {
+        EnsureMeads();
         if (string.IsNullOrEmpty(idOrPrefab))
             return null;
         if (ById.TryGetValue(idOrPrefab, out var byId))
@@ -109,6 +113,7 @@ internal static class KitchenRun
         var player = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
         var free = Stock(table.transform.position, player, ledger);
         var cooking = OnStations(table.transform.position);
+        IncludeWork(ledger, cooking);
         foreach (var order in ledger.Orders)
         {
             var prior = Expand(order.Feast, Outstanding(order), 0, "");
@@ -117,6 +122,7 @@ internal static class KitchenRun
 
         var steps = Expand(OutputOf(row), count, 0, "");
         Assign(table, steps, free, cooking, null);
+        PaintTiming(table, steps, ledger, 0);
         return steps;
     }
 
@@ -135,8 +141,10 @@ internal static class KitchenRun
         var player = order.PlayerId;
         var free = Stock(table.transform.position, player, ledger);
         var cooking = OnStations(table.transform.position);
+        IncludeWork(ledger, cooking);
         var steps = Expand(order.Feast, Outstanding(order), 0, "");
         Assign(table, steps, free, cooking, player);
+        PaintTiming(table, steps, ledger, orderId);
         return steps;
     }
 
@@ -180,6 +188,10 @@ internal static class KitchenRun
         if (!view.IsOwner())
             return;
         var ledger = Read(view);
+        foreach (var work in ledger.Work)
+            if (work.Order == orderId)
+                foreach (var input in work.Inputs) Add(ledger, input.Key, input.Value);
+        ledger.Work.RemoveAll(work => work.Order == orderId);
         ledger.Orders.RemoveAll(order => order.Id == orderId);
         Write(view, ledger);
     }
@@ -320,7 +332,7 @@ internal static class KitchenRun
         return given;
     }
 
-    internal static void Tick(CraftingStation table)
+    internal static void Tick(CraftingStation table, float elapsed)
     {
         var view = View(table);
         if (view == null || !view.IsOwner())
@@ -332,12 +344,14 @@ internal static class KitchenRun
         var origin = table.transform.position;
         var hits = Scan(origin);
         EnsureConversions();
+        AdvanceWork(table, hits, ledger, elapsed);
         CollectFinished(hits, ledger);
         Fuel(hits, ledger, origin);
         var crafts = 0;
         var loads = 0;
         var shared = Stock(origin, 0L, ledger);
         var cooking = OnStations(origin);
+        IncludeWork(ledger, cooking);
         foreach (var order in ledger.Orders)
         {
             var outstanding = Outstanding(order);
@@ -359,9 +373,9 @@ internal static class KitchenRun
                     continue;
                 }
 
-                if (step.Station != KitchenStationKind.Cauldron && step.Station != KitchenStationKind.PrepTable)
+                if (step.Station != KitchenStationKind.Cauldron && step.Station != KitchenStationKind.PrepTable && step.Station != KitchenStationKind.MeadKettle)
                     continue;
-                if (crafts >= CraftsPerTick)
+                if (crafts >= CraftsPerTick || Busy(ledger, step.Station))
                     continue;
                 if (!StationReady(table, hits, step))
                     continue;
@@ -369,13 +383,7 @@ internal static class KitchenRun
                     continue;
                 if (!Pay(step, ledger))
                     continue;
-                var made = Math.Max(1, OutputAmount(step));
-                Add(ledger, step.Output, made);
-                if (step.Depth == 0)
-                {
-                    var room = Math.Max(0, order.Count - order.Collected - order.Ready);
-                    order.Ready += Math.Min(made, room);
-                }
+                StartWork(ledger, order, step);
 
                 crafts++;
             }
@@ -848,11 +856,11 @@ internal static class KitchenRun
     {
         if (step.Station == KitchenStationKind.PrepTable)
             return table.GetLevel() >= step.StationLevel;
-        if (step.Station != KitchenStationKind.Cauldron)
+        if (step.Station != KitchenStationKind.Cauldron && step.Station != KitchenStationKind.MeadKettle)
             return false;
         foreach (var hit in hits)
         {
-            if (hit.Info.Kind == KitchenStationKind.Cauldron && hit.Info.Level >= step.StationLevel)
+            if (hit.Info.Kind == step.Station && hit.Info.Level >= step.StationLevel)
                 return true;
         }
 
@@ -865,21 +873,21 @@ internal static class KitchenRun
             return null;
         if (step.Station == KitchenStationKind.PrepTable)
             return table.GetLevel() >= step.StationLevel ? null : "Requires preparation table level " + step.StationLevel;
-        if (step.Station == KitchenStationKind.Cauldron)
+        if (step.Station == KitchenStationKind.Cauldron || step.Station == KitchenStationKind.MeadKettle)
         {
             var best = 0;
             var found = false;
             foreach (var hit in hits)
             {
-                if (hit.Info.Kind != KitchenStationKind.Cauldron)
+                if (hit.Info.Kind != step.Station)
                     continue;
                 found = true;
                 best = Math.Max(best, hit.Info.Level);
             }
 
             if (!found)
-                return "No cauldron in range";
-            return best >= step.StationLevel ? null : "Requires cauldron level " + step.StationLevel;
+                return "No " + step.Station + " in range";
+            return best >= step.StationLevel ? null : "Requires " + step.Station + " level " + step.StationLevel;
         }
 
         var any = false;
@@ -954,7 +962,7 @@ internal static class KitchenRun
             if (oven != null && seen.Add(oven.GetInstanceID()))
                 list.Add(DescribeOven(oven));
             var craft = col.GetComponentInParent<CraftingStation>();
-            if (craft != null && seen.Add(craft.GetInstanceID()) && KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.Cauldron)
+            if (craft != null && seen.Add(craft.GetInstanceID()) && (KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.Cauldron || KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.MeadKettle))
                 list.Add(DescribeCauldron(craft));
         }
 
@@ -1031,7 +1039,7 @@ internal static class KitchenRun
         var info = new KitchenStationInfo
         {
             Name = station.m_name,
-            Kind = KitchenStationKind.Cauldron,
+            Kind = KindOf(Utils.GetPrefabName(station.gameObject)),
             Level = station.GetLevel(),
             FireLit = true
         };
@@ -1086,6 +1094,8 @@ internal static class KitchenRun
     {
         if (string.IsNullOrEmpty(station))
             return KitchenStationKind.None;
+        if (station.IndexOf("meadcauldron", StringComparison.OrdinalIgnoreCase) >= 0 || station.IndexOf("meadketill", StringComparison.OrdinalIgnoreCase) >= 0 || station.IndexOf("meadkettle", StringComparison.OrdinalIgnoreCase) >= 0)
+            return KitchenStationKind.MeadKettle;
         if (station.IndexOf("cauldron", StringComparison.OrdinalIgnoreCase) >= 0)
             return KitchenStationKind.Cauldron;
         if (station.IndexOf("preptable", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -1169,6 +1179,7 @@ internal static class KitchenRun
             if (line.Length < 2)
                 continue;
             var parts = line.Split('\t');
+            if (parts[0] == "W") { var work = ReadWork(parts); if (work != null) ledger.Work.Add(work); continue; }
             if (parts[0] == "P" && parts.Length >= 3 && int.TryParse(parts[2], out var count) && count > 0)
                 ledger.Pantry[parts[1]] = count;
             if (parts[0] != "O" || parts.Length < 6)
@@ -1204,6 +1215,7 @@ internal static class KitchenRun
 
         foreach (var order in ledger.Orders)
             text.Append("O\t").Append(order.Id).Append('\t').Append(order.Feast).Append('\t').Append(order.Count).Append('\t').Append(order.PlayerId).Append('\t').Append(order.Ready).Append('\t').Append(order.Collected).Append('\n');
+        foreach (var work in ledger.Work) text.Append(WorkLine(work));
         view.GetZDO().Set(Key, text.ToString());
     }
 }
@@ -1211,7 +1223,7 @@ internal static class KitchenRun
 [HarmonyPatch]
 internal static class KitchenHook
 {
-    internal static void TickOwned()
+    internal static void TickOwned(float elapsed)
     {
         if (ZNetScene.instance == null)
             return;
@@ -1222,7 +1234,7 @@ internal static class KitchenHook
             var view = station.GetComponent<ZNetView>();
             if (view == null || !view.IsValid() || !view.IsOwner())
                 continue;
-            KitchenRun.Tick(station);
+            KitchenRun.Tick(station, elapsed);
         }
     }
 
@@ -1252,3 +1264,4 @@ internal static class KitchenHook
         __result = name + "\n[E] Kitchen";
     }
 }
+

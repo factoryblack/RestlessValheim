@@ -16,16 +16,27 @@ internal sealed partial class CookbookWindow
         RestlessUi.PaperCorner(paper);
         Label(_sheet, "Cookbook", 36, 28, 20, 340, 52);
         Label(_sheet, "Cook the haul. Prepare meals. Share a feast.", 16, 30, 75, 620, 28);
-        var names = new[] { "Recipes", "Orders", "Kitchen" };
+        var names = new[] { "Recipes", "Orders", "Kitchen", "Pantry" };
         for (var i = 0; i < names.Length; i++)
-        { var tab = i; _tabs.Add(Button(_sheet, names[i], 660 + i * 138, 34, 128, 38, () => Tab(tab))); }
+        { var tab = i; _tabs.Add(Button(_sheet, names[i], 570 + i * 124, 34, 114, 38, () => Tab(tab))); }
         Button(_sheet, "ESC", 1090, 34, 64, 38, Close);
         Rule(_sheet, 28, 112, 1176, 1);
         var search = Field(_sheet, 28, 132, 252, 40);
-        search.onValueChanged.AddListener(value => { _query = value; if (_tab == 0) RecipeList(); });
-        var filter = Button(_sheet, "Feasts", 28, 182, 252, 34, () => { });
-        filter.onClick.AddListener(() => { _feasts = !_feasts; filter.GetComponentInChildren<Text>().text = _feasts ? "Feasts" : "All food"; if (_tab == 0) RecipeList(); });
-        _recipes = Reader(_sheet, "recipes", 28, 230, 252, 452, 90);
+        search.onValueChanged.AddListener(value => { _query = value; if (_tab == 0) { RecipeList(); Refresh(true); } });
+        var categories = new[] { "All", "Feasts", "Meals", "Ingredients", "Meads" };
+        for (var i = 0; i < categories.Length; i++)
+        {
+            var category = categories[i];
+            var button = Button(_sheet, category, 28 + (i == 4 ? 168 : i % 3 * 84), 182 + i / 3 * 36, i == 3 ? 164 : 80, 30, () =>
+            {
+                _category = category;
+                for (var j = 0; j < _filters.Count; j++) RestlessUi.PaperControl(_filters[j].gameObject, categories[j] == category ? RestlessUi.Accent : (Color?)null);
+                if (_tab == 0) { RecipeList(); Refresh(true); }
+            });
+            _filters.Add(button);
+            if (category == _category) RestlessUi.PaperControl(button.gameObject, RestlessUi.Accent);
+        }
+        _recipes = Reader(_sheet, "recipes", 28, 260, 252, 422, 90);
         Label(_sheet, "Order quantity", 18, 28, 696, 252, 26);
         Button(_sheet, "−", 28, 726, 52, 36, () => Quantity(-1));
         _quantity = Label(_sheet, "1", 22, 88, 726, 132, 36); _quantity.alignment = TextAnchor.MiddleCenter;
@@ -42,7 +53,15 @@ internal sealed partial class CookbookWindow
         _tree = Reader(_sheet, "recipe-tree", 316, 206, 552, 552, 112);
         Rule(_sheet, 884, 132, 1, 630);
         Label(_sheet, "DETAILS", 20, 904, 136, 300, 30);
-        _details = Reader(_sheet, "details", 904, 184, 304, 436, 36);
+        _dish = RestlessUi.Graphic(_sheet,"featured-dish",Color.white,false).GetComponent<Image>();
+        _dish.preserveAspect = true; Position(_dish.gameObject,966,200,180,100);
+        _dishFrame = RestlessUi.Picture(_sheet,"dish-frame","cook-portrait",false);
+        Position(_dishFrame,904,176,304,152);
+        _dishName = Label(_sheet,"",25,912,330,288,64); _dishName.alignment = TextAnchor.MiddleCenter;
+        RestlessUi.BoundedLabel(_dishName,25,19);
+        var ribbon = RestlessUi.Chip(_sheet,"dish-state"); RestlessUi.PaperControl(ribbon); Position(ribbon,940,398,232,30);
+        _dishKind = Label(ribbon.transform,"",17,6,0,220,30); _dishKind.alignment = TextAnchor.MiddleCenter;
+        _details = Reader(_sheet, "details", 904, 444, 304, 176, 36);
         _copy = Label(_details.content, "", 18, 0, 0, 280, 100);
         _copy.alignment = TextAnchor.UpperLeft; _copy.verticalOverflow = VerticalWrapMode.Overflow;
         _collect = Button(_sheet, "Collect ready food", 904, 636, 304, 42, Collect);
@@ -132,6 +151,8 @@ internal sealed partial class CookbookWindow
         private readonly Button _button;
         private readonly Image _icon;
         private readonly Text _name, _state;
+        private readonly Image _bar;
+        private readonly GameObject _track, _frame;
         private Action? _clicked;
         internal Card(Transform parent)
         {
@@ -139,16 +160,43 @@ internal sealed partial class CookbookWindow
             _button = Root.AddComponent<Button>(); _button.targetGraphic = Root.GetComponent<Image>(); RestlessUi.PaperSelectable(_button);
             _icon = RestlessUi.Graphic(Root.transform,"icon",Color.white,false).GetComponent<Image>(); _icon.preserveAspect = true;
             _name = Label(Root.transform,"",18,0,0,100,40); _name.alignment = TextAnchor.MiddleLeft; RestlessUi.BoundedLabel(_name,18,15);
+            _frame = RestlessUi.Picture(Root.transform,"dish-frame","cook-portrait",false);
+            _track = RestlessUi.Graphic(Root.transform,"preparation-track",RestlessUi.Ink,false);
+            _bar = RestlessUi.Graphic(_track.transform,"progress",RestlessUi.Accent,false).GetComponent<Image>();
             _state = Label(Root.transform,"",15,0,0,100,30); _state.alignment = TextAnchor.MiddleLeft;
             RestlessUi.BoundedLabel(_state,15,13); _button.onClick.AddListener(() => _clicked?.Invoke());
+        }
+        internal void Progress(KitchenStep step)
+        {
+            var size = ((RectTransform)Root.transform).rect.size;
+            _track.SetActive(true); Position(_track,12,size.y-10,size.x-24,4);
+            float fraction = step.State == KitchenStepState.Prepared ? 1f : step.DurationSeconds > 0
+                ? Mathf.Clamp01(step.ElapsedSeconds/step.DurationSeconds) : 0f;
+            Position(_bar.gameObject,0,0,(size.x-24)*fraction,4);
+            _bar.color = Tint(step.State);
         }
         internal void Set(string name,string state,Sprite? icon,Color tint,Action action)
         {
             _clicked = action; var size = ((RectTransform)Root.transform).rect.size;
-            Position(_icon.gameObject,10,10,52,52); _icon.sprite = icon; _icon.enabled = icon != null;
-            Position(_name.gameObject,72,8,size.x-84,48); _name.text = name;
-            Position(_state.gameObject,12,60,size.x-24,size.y-64); _state.text = state; _state.color = tint;
+            var tall = size.y >= 180;
+            _frame.SetActive(tall);
+            if (tall)
+            {
+                Position(_icon.gameObject,(size.x-136)/2,14,136,size.y-112);
+                Position(_frame,16,4,size.x-32,size.y-92);
+                Position(_name.gameObject,12,size.y-86,size.x-24,48); _name.alignment = TextAnchor.MiddleCenter;
+                Position(_state.gameObject,12,size.y-38,size.x-24,24); _state.alignment = TextAnchor.MiddleCenter;
+            }
+            else
+            {
+                Position(_icon.gameObject,10,10,52,52);
+                Position(_name.gameObject,72,8,size.x-84,48); _name.alignment = TextAnchor.MiddleLeft;
+                Position(_state.gameObject,12,60,size.x-24,Mathf.Max(18,size.y-78)); _state.alignment = TextAnchor.MiddleLeft;
+            }
+            _icon.sprite = icon; _icon.enabled = icon != null; _name.text = name; _state.text = state; _state.color = tint;
+            _track.SetActive(false);
             RestlessUi.PaperControl(Root,tint);
         }
     }
 }
+

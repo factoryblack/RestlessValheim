@@ -29,6 +29,7 @@ public sealed class CookRow
     public int OutputAmount { get; set; } = 1;
     public string Station { get; set; } = "";
     public int StationLevel { get; set; } = 1;
+    public float PreparationSeconds { get; set; }
 
     public bool IsAdd => Operation == "add";
     public bool IsRewrite => Operation == "rewrite";
@@ -45,3 +46,4 @@ public sealed class CookBook
     public List<CookRow> Items { get; } = new();
     public List<CookRow> Kit { get; } = new();
 }
+

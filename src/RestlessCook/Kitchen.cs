@@ -17,7 +17,8 @@ public enum KitchenStationKind
     Cauldron,
     PrepTable,
     Rack,
-    Oven
+    Oven,
+    MeadKettle
 }
 
 public enum KitchenStepState
@@ -54,6 +55,9 @@ public sealed class KitchenStep
     public int StationLevel = 1;
     public string Note = "";
     public int ParentIndex = -1;
+    // Zero duration means no reliable native timer is available; UI must not invent one.
+    public float ElapsedSeconds;
+    public float DurationSeconds;
     public readonly List<KitchenUse> Uses = new();
 }
 
@@ -141,3 +145,4 @@ public static class Kitchen
         player?.Message(MessageHud.MessageType.Center, "Kitchen board is not in yet.");
     }
 }
+

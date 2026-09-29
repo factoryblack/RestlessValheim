@@ -53,7 +53,9 @@ public class Plugin : BaseUnityPlugin
         _kitchen += Time.deltaTime;
         if (_kitchen < 1f)
             return;
+        var elapsed = _kitchen;
         _kitchen = 0f;
-        KitchenHook.TickOwned();
+        KitchenHook.TickOwned(elapsed);
     }
 }
+

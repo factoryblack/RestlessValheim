@@ -22,7 +22,7 @@ internal sealed partial class CookbookWindow
         Button(_sheet, "ESC", 1090, 34, 64, 38, Close);
         Rule(_sheet, 28, 112, 1176, 1);
         var search = Field(_sheet, 28, 132, 252, 40);
-        search.onValueChanged.AddListener(value => { _query = value; if (_tab == 0) { RecipeList(); Refresh(true); } });
+        search.onValueChanged.AddListener(value => { _query = value; if (_tab == 0) { RecipeList(); Refresh(true); Size(_recipes,_recipes.content.rect.height,true); } });
         var categories = new[] { "All", "Feasts", "Meals", "Ingredients", "Meads" };
         for (var i = 0; i < categories.Length; i++)
         {
@@ -31,12 +31,12 @@ internal sealed partial class CookbookWindow
             {
                 _category = category;
                 for (var j = 0; j < _filters.Count; j++) RestlessUi.PaperControl(_filters[j].gameObject, categories[j] == category ? RestlessUi.Accent : (Color?)null);
-                if (_tab == 0) { RecipeList(); Refresh(true); }
+                if (_tab == 0) { RecipeList(); Refresh(true); Size(_recipes,_recipes.content.rect.height,true); }
             });
             _filters.Add(button);
             if (category == _category) RestlessUi.PaperControl(button.gameObject, RestlessUi.Accent);
         }
-        _recipes = Reader(_sheet, "recipes", 28, 260, 252, 422, 90);
+        _recipes = Reader(_sheet, "recipes", 28, 260, 252, 422, 96);
         Label(_sheet, "Order quantity", 18, 28, 696, 252, 26);
         Button(_sheet, "−", 28, 726, 52, 36, () => Quantity(-1));
         _quantity = Label(_sheet, "1", 22, 88, 726, 132, 36); _quantity.alignment = TextAnchor.MiddleCenter;
@@ -46,26 +46,29 @@ internal sealed partial class CookbookWindow
         {
             if (_trail.Count == 0) return;
             _focus = _trail[_trail.Count - 1]; _trail.RemoveAt(_trail.Count - 1); PaintTree(); PaintDetails();
-            Size(_tree, _tree.content.rect.height, true);
+            Size(_tree, _tree.content.rect.height, true); Size(_details,_details.content.rect.height,true);
         });
         _heading = Label(_sheet, "Choose a recipe", 24, 428, 130, 424, 62);
         RestlessUi.BoundedLabel(_heading, 24, 19);
         _tree = Reader(_sheet, "recipe-tree", 316, 206, 552, 552, 112);
         Rule(_sheet, 884, 132, 1, 630);
-        Label(_sheet, "DETAILS", 20, 904, 136, 300, 30);
+        Label(_sheet, "SELECTED STEP", 18, 904, 136, 300, 30);
         _dish = RestlessUi.Graphic(_sheet,"featured-dish",Color.white,false).GetComponent<Image>();
-        _dish.preserveAspect = true; Position(_dish.gameObject,966,200,180,100);
+        _dish.preserveAspect = true; Portrait(_dish.gameObject,916,194,68,52);
         _dishFrame = RestlessUi.Picture(_sheet,"dish-frame","cook-portrait",false);
-        Position(_dishFrame,904,176,304,152);
-        _dishName = Label(_sheet,"",25,912,330,288,64); _dishName.alignment = TextAnchor.MiddleCenter;
-        RestlessUi.BoundedLabel(_dishName,25,19);
-        var ribbon = RestlessUi.Chip(_sheet,"dish-state"); RestlessUi.PaperControl(ribbon); Position(ribbon,940,398,232,30);
-        _dishKind = Label(ribbon.transform,"",17,6,0,220,30); _dishKind.alignment = TextAnchor.MiddleCenter;
-        _details = Reader(_sheet, "details", 904, 444, 304, 176, 36);
-        _copy = Label(_details.content, "", 18, 0, 0, 280, 100);
+        Portrait(_dishFrame,904,186,96,64);
+        _dishName = Label(_sheet,"",22,1012,180,192,78);
+        RestlessUi.BoundedLabel(_dishName,22,18);
+        var ribbon = RestlessUi.Node(_sheet,"dish-state"); Position(ribbon,904,264,304,30);
+        _dishKind = Label(ribbon.transform,"",17,0,0,304,30); RestlessUi.BoundedLabel(_dishKind,17,14);
+        _station = Label(_sheet,"",18,904,302,300,48);
+        Rule(_sheet,904,352,300,1);
+        _details = Reader(_sheet, "details", 904, 358, 304, 262, 64);
+        _requirementsLabel = Label(_details.content,"",15,0,0,280,24);
+        _copy = Label(_details.content, "", 17, 0, 0, 280, 100);
         _copy.alignment = TextAnchor.UpperLeft; _copy.verticalOverflow = VerticalWrapMode.Overflow;
         _collect = Button(_sheet, "Collect ready food", 904, 636, 304, 42, Collect);
-        _action = Button(_sheet, "Prepare 1", 904, 694, 304, 52, Act);
+        _action = Button(_sheet, "Queue 1", 904, 694, 304, 52, Act);
         RestlessUi.ForgedSurface(_action.gameObject, action: true, interactive: true);
         _actionText = _action.GetComponentInChildren<Text>();
         _status = Label(_sheet, "", 16, 316, 766, 888, 26);
@@ -87,11 +90,14 @@ internal sealed partial class CookbookWindow
     private void Line(int index, float x, float y, float width, float height)
     {
         if (index == _lines.Count)
-        { var line = RestlessUi.Graphic(_tree.content, "branch", new Color(.55f,.45f,.28f,.7f), false); line.transform.SetAsFirstSibling(); _lines.Add(line); }
+        { var line = RestlessUi.Graphic(_tree.content, "branch", new Color(.64f,.52f,.32f,.85f), false); line.transform.SetAsFirstSibling(); _lines.Add(line); }
         var go = _lines[index]; go.SetActive(true); Position(go, x, y, Mathf.Max(1,width), height);
     }
     private static void Position(GameObject go, float x, float y, float w, float h) =>
         RestlessUi.Pin(go, new Vector2(0,1), new Vector2(0,1), new Vector2(x,-y), new Vector2(w,h));
+    // Image.preserveAspect uses the RectTransform pivot: centre it explicitly.
+    private static void Portrait(GameObject go,float x,float y,float w,float h) =>
+        RestlessUi.Pin(go,new Vector2(0,1),new Vector2(.5f,.5f),new Vector2(x+w/2,-y-h/2),new Vector2(w,h));
     private static Text Label(Transform parent, string text, int size, float x, float y, float w, float h)
     {
         var label = RestlessUi.Label(parent, text, size, RestlessUi.Text, TextAnchor.MiddleLeft);
@@ -119,13 +125,24 @@ internal sealed partial class CookbookWindow
     {
         var root = RestlessUi.Node(parent,name); Position(root,x,y,w,h);
         var scroll = root.AddComponent<RestlessScrollRect>(); scroll.horizontal = false; scroll.RowHeight = row; scroll.RowsPerNotch = 2;
-        var view = RestlessUi.Graphic(root.transform,"viewport",Color.clear,true); Position(view,0,0,w-12,h); view.AddComponent<RectMask2D>();
+        var view = RestlessUi.Graphic(root.transform,"viewport",Color.clear,true); Position(view,0,0,w-24,h); view.AddComponent<RectMask2D>();
         scroll.viewport = (RectTransform)view.transform;
-        var content = RestlessUi.Node(view.transform,"content"); Position(content,0,0,w-12,h); scroll.content = (RectTransform)content.transform;
+        var content = RestlessUi.Node(view.transform,"content"); Position(content,0,0,w-24,h); scroll.content = (RectTransform)content.transform;
         if (InventoryGui.instance != null && InventoryGui.instance.m_recipeListScroll != null)
         {
             var bar = Instantiate(InventoryGui.instance.m_recipeListScroll,root.transform,false);
-            bar.onValueChanged = new Scrollbar.ScrollEvent(); Position(bar.gameObject,w-8,0,8,h);
+            bar.onValueChanged = new Scrollbar.ScrollEvent(); Position(bar.gameObject,w-6,0,6,h);
+            bar.transform.localScale = Vector3.one;
+            // The native prefab can retain a wide sliding area after its root is resized.
+            if (bar.handleRect != null)
+            {
+                var area = bar.handleRect.parent as RectTransform;
+                if (area != null && area != bar.transform)
+                    RestlessUi.Stretch(area.gameObject,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);
+                var handle = bar.handleRect;
+                handle.sizeDelta = new Vector2(0,handle.sizeDelta.y);
+                handle.anchoredPosition = new Vector2(0,handle.anchoredPosition.y);
+            }
             scroll.verticalScrollbar = bar; scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
         }
         return scroll;
@@ -169,33 +186,40 @@ internal sealed partial class CookbookWindow
         internal void Progress(KitchenStep step)
         {
             var size = ((RectTransform)Root.transform).rect.size;
-            _track.SetActive(true); Position(_track,12,size.y-10,size.x-24,4);
+            _track.SetActive(step.State == KitchenStepState.Cooking && step.DurationSeconds > 0); Position(_track,12,size.y-10,size.x-24,4);
             float fraction = step.State == KitchenStepState.Prepared ? 1f : step.DurationSeconds > 0
                 ? Mathf.Clamp01(step.ElapsedSeconds/step.DurationSeconds) : 0f;
             Position(_bar.gameObject,0,0,(size.x-24)*fraction,4);
             _bar.color = Tint(step.State);
         }
-        internal void Set(string name,string state,Sprite? icon,Color tint,Action action)
+        internal void Set(string name,string state,Sprite? icon,Color tint,Action action,bool selected = false,bool featured = false)
         {
             _clicked = action; var size = ((RectTransform)Root.transform).rect.size;
-            var tall = size.y >= 180;
-            _frame.SetActive(tall);
-            if (tall)
+            _frame.SetActive(featured);
+            if (featured)
             {
-                Position(_icon.gameObject,(size.x-136)/2,14,136,size.y-112);
-                Position(_frame,16,4,size.x-32,size.y-92);
-                Position(_name.gameObject,12,size.y-86,size.x-24,48); _name.alignment = TextAnchor.MiddleCenter;
-                Position(_state.gameObject,12,size.y-38,size.x-24,24); _state.alignment = TextAnchor.MiddleCenter;
+                Portrait(_frame,12,(size.y-80)/2,120,80);
+                Portrait(_icon.gameObject,28,(size.y-62)/2,88,62);
+                Position(_name.gameObject,146,12,size.x-158,54);
+                Position(_state.gameObject,146,72,size.x-158,30);
+            }
+            else if (size.y <= 64)
+            {
+                Portrait(_icon.gameObject,6,(size.y-36)/2,36,36);
+                Position(_name.gameObject,50,4,size.x-124,size.y-8);
+                Position(_state.gameObject,size.x-70,4,64,size.y-8);
             }
             else
             {
-                Position(_icon.gameObject,10,10,52,52);
-                Position(_name.gameObject,72,8,size.x-84,48); _name.alignment = TextAnchor.MiddleLeft;
-                Position(_state.gameObject,12,60,size.x-24,Mathf.Max(18,size.y-78)); _state.alignment = TextAnchor.MiddleLeft;
+                Portrait(_icon.gameObject,10,12,48,48);
+                Position(_name.gameObject,68,6,size.x-80,50);
+                Position(_state.gameObject,12,62,size.x-24,size.y-76);
             }
+            _name.alignment = TextAnchor.MiddleLeft;
+            _state.alignment = size.y <= 64 ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
             _icon.sprite = icon; _icon.enabled = icon != null; _name.text = name; _state.text = state; _state.color = tint;
             _track.SetActive(false);
-            RestlessUi.PaperControl(Root,tint);
+            RestlessUi.PaperControl(Root,selected ? RestlessUi.Accent : new Color(.37f,.33f,.27f));
         }
     }
 }

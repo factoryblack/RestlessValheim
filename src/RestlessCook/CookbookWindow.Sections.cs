@@ -24,16 +24,19 @@ internal sealed partial class CookbookWindow
     }
     private void HideDish()
     {
+        _station.text = ""; _requirementsLabel.text = ""; HideAfter(_requirementCards,0);
         _dish.enabled = false; _dishFrame.SetActive(false); _dishName.text = ""; _dishKind.text = "";
         _dishKind.transform.parent.gameObject.SetActive(false);
         Position(_details.gameObject,904,184,304,436);
         _details.viewport.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,436);
+        if (_details.verticalScrollbar != null) Position(_details.verticalScrollbar.gameObject,298,0,6,436);
     }
     private void ShowDish()
     {
         _dishKind.transform.parent.gameObject.SetActive(true);
-        Position(_details.gameObject,904,444,304,176);
-        _details.viewport.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,176);
+        Position(_details.gameObject,904,358,304,262);
+        _details.viewport.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,262);
+        if (_details.verticalScrollbar != null) Position(_details.verticalScrollbar.gameObject,298,0,6,262);
     }
     private void PaintOrderSteps()
     {
@@ -47,8 +50,8 @@ internal sealed partial class CookbookWindow
             var index = i; var step = _steps[i];
             var card = GetCard(_nodes, i, _tree.content);
             var indent = Mathf.Min(step.Depth, 4) * 12;
-            Position(card.Root,indent,i*114,540-indent,104);
-            card.Set(Local(step.Name), State(step), Icon(step.Output), Tint(step.State), () => { _focus = index; PaintDetails(); Size(_details,_details.content.rect.height,true); });
+            Position(card.Root,indent,i*114,528-indent,104);
+            card.Set(Local(step.Name), State(step), Icon(step.Output), Tint(step.State), () => { _focus = index; PaintOrderSteps(); PaintDetails(); Size(_details,_details.content.rect.height,true); }, selected: i == _focus);
             card.Progress(step);
         }
         HideAfter(_nodes,_steps.Count); Size(_tree,_steps.Count*114,false);
@@ -66,16 +69,17 @@ internal sealed partial class CookbookWindow
         for (var i=0;i<pantry.Count;i++)
         {
             var item=pantry[i]; var card=GetCard(_nodes,i,_tree.content);
-            Position(card.Root,i%2*276,i/2*206,264,190);
+            Position(card.Root,i%2*276,i/2*128,252,116);
             var available=Math.Max(0,item.Count-item.Reserved);
             card.Set(Local(item.Name),available+" available · "+item.Reserved+" reserved",Icon(item.Prefab),RestlessUi.Accent,
-                () => { _pantrySelection=item.Prefab; PaintPantry(true); });
+                () => { _pantrySelection=item.Prefab; PaintPantry(true); }, selected: item.Prefab == _pantrySelection);
         }
-        HideAfter(_nodes,pantry.Count); Size(_tree,((pantry.Count+1)/2)*206,false);
+        HideAfter(_nodes,pantry.Count); Size(_tree,((pantry.Count+1)/2)*128,false);
         var selected=pantry.FirstOrDefault(p=>p.Prefab==_pantrySelection);
+        HideAfter(_requirementCards,0); _requirementsLabel.text=""; _station.text="";
         ShowDish(); _dish.sprite=selected==null?null:Icon(selected.Prefab); _dish.enabled=_dish.sprite!=null;
         _dishFrame.SetActive(selected!=null); _dishName.text=selected==null?"Pantry is empty":Local(selected.Name);
-        _dishKind.text="Stored preparation";
+        _dishKind.text="Stored preparation"; _dishKind.color=RestlessUi.PaperMuted;
         _copy.text="Unreserved food can be collected here. Ready food reserved for active orders stays with its order.";
         Position(_copy.gameObject,0,0,280,Mathf.Max(60,_copy.preferredHeight)); Size(_details,_copy.preferredHeight+16,false);
         _collect.gameObject.SetActive(false); _action.gameObject.SetActive(true);

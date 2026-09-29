@@ -15,3 +15,13 @@ The native-rack progress represents the next portion of that output, not a combi
 ## Validation
 CI builds all modules and runs existing regressions plus preparation-clock checks (no early output threshold, pause/resume, capped catch-up, duration bounds and elapsed-value roundtrip).
 Unity validation required: long names and UI scale; filter/search; deep branches; live order progression; station removed/restored mid-job; cancel mid-job then collect refunded pantry ingredients; save/reload mid-job; partial automatic delivery/full inventory; two-player owner handoff. Install matching Core and Cook DLLs. No in-game visual or multiplayer test was available in this environment.
+
+## Screenshot follow-up: compact planning layout
+
+The tree now uses a 420×116 featured dish and 252×116 ingredient cards. Four immediate ingredients fit within the 552-high viewport; additional branches still scroll. Portrait pivots are centred so preserved-aspect sprites stay centred inside their frames. Only the featured dish keeps the decorative portrait frame.
+
+The right panel uses a compact header, a fixed station requirement and four visible ingredient rows with ready/needed counts. Clicking a requirement explores that branch. Dependencies fulfilled by an already prepared or cooking ancestor say Covered, rather than claiming that their raw ingredients remain in stock. Longer lists and secondary information can scroll. Neutral borders identify ordinary cards; selection is gold and missing stock uses amber status text. Native scrollbar sliding areas are normalised to six pixels with an 18-pixel content gutter.
+
+Recipes follow biome progression, Black Forest/Deep North labels are formatted, and selecting a recipe preserves the sidebar scroll position. Queue wording explains that orders may wait for ingredients. This follow-up only changes presentation, retains pooled cards and the existing one-second snapshot refresh, and adds no per-frame stock scans.
+
+Verify in Unity: long names at smaller resolutions, four/six-ingredient recipes, deep branch/back navigation, native scrollbar handle width, selected-order progress, and switching Kitchen/Pantry/Recipes without stale requirements. A successful CI build does not replace these visual checks.

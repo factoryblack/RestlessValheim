@@ -29,3 +29,13 @@ Verify in Unity: long names at smaller resolutions, four/six-ingredient recipes,
 ## Hero frame follow-up
 
 The featured recipe now uses cook-portrait as its actual outer surface through the shared CookHeroSurface helper. Nine-slice borders retain the corner folds on a wide card; the inner thumbnail frame and generic outer rim are removed. A small coloured diamond beside the status text communicates prepared/waiting/blocked independently of the bronze frame. Pooled cards restore their normal paper rim when reused in Orders or Pantry. Requires matching Core and Cook builds. In-game checks: corner proportions, long hero titles, all three status colours, and tab transitions.
+
+## Cooking and frame corrections
+
+New orders now request additional finished dishes. Previously Assign allocated a finished dish already in the player's inventory to the root of a new order without increasing its Ready counter. Queue-one could remain inert, while queue-two cooked only the shortfall. Root allocation now uses only that order's completed, uncollected output; ingredient and intermediate stock remains usable. The same semantics apply to the recipe preview.
+
+The native catalogue now follows missing recipe dependencies from ObjectDB as well as discovering meads. This allows native spice blends to expand into their real inputs and station requirements without inventing cook.yaml rows or overriding custom recipes. Queuing opens the new order, and its footer reports active preparation, a blocked station or a missing raw ingredient.
+
+Frame regions preserve the bottom-centre knot independently of the stretchable edge sections (eleven regions rather than nine). No new texture is needed. Pooled cards hide the frame when reused for ordinary rows.
+
+Tests now link the real KitchenRun.Timing implementation against minimal game-boundary substitutes: start, persisted reload, station pause/resume, final completion, intermediate completion, duplicate-award prevention and orphan refunds. Root allocation checks reproduce queue-one/queue-two with an existing dish. These do not emulate Unity station ownership or physically loading racks; in-game testing still needs those paths.

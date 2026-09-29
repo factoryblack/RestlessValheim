@@ -117,7 +117,7 @@ internal static partial class KitchenRun
         foreach (var order in ledger.Orders)
         {
             var prior = Expand(order.Feast, Outstanding(order), 0, "");
-            Assign(table, prior, free, cooking, order.PlayerId);
+            Assign(table, prior, free, cooking, order.PlayerId, order.Ready);
         }
 
         var steps = Expand(OutputOf(row), count, 0, "");
@@ -143,7 +143,7 @@ internal static partial class KitchenRun
         var cooking = OnStations(table.transform.position);
         IncludeWork(ledger, cooking);
         var steps = Expand(order.Feast, Outstanding(order), 0, "");
-        Assign(table, steps, free, cooking, player);
+        Assign(table, steps, free, cooking, player, order.Ready);
         PaintTiming(table, steps, ledger, orderId);
         return steps;
     }
@@ -358,7 +358,7 @@ internal static partial class KitchenRun
             if (outstanding < 1)
                 continue;
             var steps = Expand(order.Feast, outstanding, 0, "");
-            Assign(table, steps, shared, cooking, order.PlayerId);
+            Assign(table, steps, shared, cooking, order.PlayerId, order.Ready);
             for (var i = steps.Count - 1; i >= 0; i--)
             {
                 var step = steps[i];
@@ -453,7 +453,7 @@ internal static partial class KitchenRun
         Walk(conversion.From, need, depth + 1, output, index, steps, guard);
     }
 
-    private static void Assign(CraftingStation table, List<KitchenStep> steps, Dictionary<string, int> free, Dictionary<string, int> cooking, long? playerId)
+    private static void Assign(CraftingStation table, List<KitchenStep> steps, Dictionary<string, int> free, Dictionary<string, int> cooking, long? playerId, int completedForOrder = 0)
     {
         var hits = Scan(table.transform.position);
         var covered = new bool[steps.Count];
@@ -471,9 +471,9 @@ internal static partial class KitchenRun
             }
 
             free.TryGetValue(step.Output, out var stock);
-            var have = Math.Min(stock, step.Need);
+            var have = KitchenStock.Allocate(stock,step.Need,i == 0,completedForOrder);
             step.Have = have;
-            free[step.Output] = stock - have;
+            free[step.Output] = Math.Max(0,stock - have);
             cooking.TryGetValue(step.Output, out var onFire);
             var still = step.Need - have;
             step.Cooking = Math.Min(onFire, Math.Max(0, still));

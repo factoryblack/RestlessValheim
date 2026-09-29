@@ -225,6 +225,8 @@ internal sealed partial class CookbookWindow
             if (featured) RestlessUi.CookHeroSurface(Root);
             else
             {
+                var hero = Root.transform.Find("cookHeroFrame");
+                if (hero != null) hero.gameObject.SetActive(false);
                 RestlessUi.PaperControl(Root,selected ? RestlessUi.Accent : new Color(.37f,.33f,.27f));
                 // Cards are pooled between the recipe tree, orders and pantry.
                 var rim = Root.transform.Find("paperAccent");

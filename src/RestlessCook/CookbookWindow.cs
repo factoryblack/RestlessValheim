@@ -98,9 +98,19 @@ internal sealed partial class CookbookWindow : MonoBehaviour
                 if (_tab == 1) PaintOrderSteps(); else PaintTree(); PaintDetails();
             }
             if (Time.unscaledTime >= _messageUntil)
-                _status.text = _order == 0 ? "Queue an order · missing ingredients can be supplied while it waits" : "Live order · preparation continues after closing";
+                _status.text = _order == 0 ? "Queue an order · missing ingredients can be supplied while it waits" : OrderStatus();
         }
         catch (Exception e) { Debug.LogException(e); _status.text = "Kitchen data unavailable. Close and try again."; }
+    }
+    private string OrderStatus()
+    {
+        var working = _steps.FirstOrDefault(s => s.State == KitchenStepState.Cooking && !Covered(s));
+        if (working != null) return "Preparing " + Local(working.Name) + " · " + State(working);
+        var blocked = _steps.FirstOrDefault(s => s.State == KitchenStepState.Blocked && !Covered(s));
+        if (blocked != null) return Local(blocked.Name) + " · " + blocked.Note;
+        var missing = _steps.FirstOrDefault(s => s.State == KitchenStepState.Missing && s.Uses.Count == 0 && !Covered(s));
+        if (missing != null) return "Waiting for " + Local(missing.Name) + " · " + missing.Have + " / " + missing.Need + " available";
+        return "Order queued · waiting for the next preparation step";
     }
     private void Tab(int tab)
     {
@@ -241,7 +251,16 @@ internal sealed partial class CookbookWindow : MonoBehaviour
                 if (!_confirmCancel) { _confirmCancel = true; PaintDetails(); Message("Cancel this order? Prepared food remains in the kitchen pantry."); return; }
                 Kitchen.Cancel(_table, _order); _order = 0; _confirmCancel = false; Message("Cancellation requested.");
             }
-            else Message(Kitchen.Place(_table, _recipe, _count) ? "Order placed. Open Orders to follow preparation." : "Order could not be placed. Check ownership or queue capacity.");
+            else
+            {
+                var previous = new HashSet<int>(Kitchen.Orders(_table).Select(o => o.Id));
+                if (Kitchen.Place(_table,_recipe,_count))
+                {
+                    _order = Kitchen.Orders(_table).FirstOrDefault(o => !previous.Contains(o.Id))?.Id ?? 0;
+                    Tab(1); Message("Order queued. Each step below shows what happens next.");
+                }
+                else Message("Order could not be placed. Check ownership or queue capacity.");
+            }
             Refresh(true);
         }
         catch (Exception e) { Debug.LogException(e); Message("Action failed. Check Orders before trying again."); }

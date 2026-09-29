@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Hold Alt and click with the hammer out to seal wood. The Seal bind sits on the hammer key stack. A plain click still places or repairs
+- The cooking portrait is a shared card frame. Wide cards keep the corner folds and the bottom knot
+
 ## 0.2.0
 
 - Hold Alt with the repair tool to seal wooden pieces against rain. One resin each, from your inventory and nearby chests. Already sealed pieces are skipped. F8 has the switch and the radius

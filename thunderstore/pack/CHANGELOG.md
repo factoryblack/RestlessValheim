@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.24
+
+- RestlessCore 0.2.1 and RestlessCook 0.3.0. Plant 0.2.0, Piles 0.2.0, Drawers 0.1.2, and Storage 0.2.0 stay. Jötunn stays 2.30.2.
+
 ## 0.1.23
 
 - RestlessCore 0.2.0, RestlessCook 0.2.0, RestlessPlant 0.2.0, RestlessPiles 0.2.0, RestlessDrawers 0.1.2, and RestlessStorage 0.2.0. Jötunn stays 2.30.2.

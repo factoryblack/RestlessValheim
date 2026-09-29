@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- The Cookbook shows larger portraits, filters for feasts, meals, ingredients and meads, and a selected dish
+- Cauldron and preparation crafts take their crafting time. Cancelling one puts the ingredients back
+- Each step of an order shows its progress. A dish already in your inventory does not satisfy a new order
+- Native recipes such as spice blends list their real ingredients and station
+- The featured card uses the cooking portrait. A coloured diamond shows prepared, waiting, or blocked
+- Needs Core 0.2.1
+
 ## 0.2.0
 
 - The food preparation table opens the Cookbook and runs kitchen orders

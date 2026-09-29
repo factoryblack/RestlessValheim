@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-29 — seal is an Alt click with the hammer out. The bind sits on that key stack.
+# last_audit: 2026-09-29 — 0.1.24 drop: Core 0.2.1 seal bind and portrait frame, Cook 0.3.0 cookbook polish.
 
 updated: 2026-09-29
 
@@ -526,7 +526,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessCook
-    note: "RestlessCook 0.2.0. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. The finished feast is handed to the player who ordered it, and that part of the order is done. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core. Deep North waits. Not in the Core DLL. Multiplayer ownership is still unverified."
+    note: "RestlessCook 0.3.0. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook, with portraits, filters, a selected dish, and a progress track for each step. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. Cauldron and preparation crafts take their crafting time and return the ingredients if cancelled. A dish already in the bag does not fill a new order. Native recipes expand into their real ingredients. The featured card uses the cooking portrait and a status diamond. The finished feast is handed to the player who ordered it, and that part of the order is done. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core 0.2.1. Deep North waits. Not in the Core DLL. Multiplayer ownership is still unverified."
 
   - id: piles.stacks
     name: Uncapped resource piles

@@ -263,6 +263,9 @@ def main(argv):
             if not path.exists():
                 continue
             text, newline = read_text(path)
+            heading = HEADING.search(text)
+            if heading and tag_exists(PACKAGES[name][0], heading.group(1)):
+                continue
             updated = replace_open(text, f"Needs Core {old_core}", f"Needs Core {new_core}")
             if updated != text:
                 write_text(path, updated, newline)
@@ -281,8 +284,6 @@ def main(argv):
     for name, (old, new) in changed.items():
         full = PACKAGES[name][1]
         text = text.replace(f"{full} {old}", f"{full} {new}")
-    if old_core != new_core:
-        text = text.replace(f"Needs Core {old_core}", f"Needs Core {new_core}")
     write_text(catalogue, text, newline)
 
     publish = root / "thunderstore" / "PUBLISH.md"
@@ -314,7 +315,12 @@ def main(argv):
             lines.append(f"git tag {tag}")
             lines.append(f"git push origin {tag}")
         block = "\n".join(lines)
-        text, count = re.subn(r"```\n(?:git tag .*?\n)+```", "```\n" + block + "\n```", text, count=1)
+        text, count = re.subn(
+            r"```\n(?:git (?:tag|push) [^\n]*\n)+```",
+            "```\n" + block + "\n```",
+            text,
+            count=1,
+        )
         if count != 1:
             raise SystemExit("thunderstore/PUBLISH.md is missing its tag block")
         write_text(publish, text, newline)

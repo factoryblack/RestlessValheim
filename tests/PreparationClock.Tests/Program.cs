@@ -21,4 +21,10 @@ Equal(0,KitchenStock.Allocate(1,1,true,0)); // One feast in the bag must not sta
 Equal(0,KitchenStock.Allocate(1,2,true,0)); // Queue-two must prepare both, not just the shortfall.
 Equal(1,KitchenStock.Allocate(20,2,true,1)); // Retain this order's completed but uncollected output.
 Equal(3,KitchenStock.Allocate(3,4,false,0)); // Ingredients/intermediate meals still use existing stock.
+var over = KitchenStock.Split(10,6,false,0);
+Equal(6,over.Allocated); // Only the recipe amount is reserved.
+Equal(10,over.OnHand); // The cookbook still shows the extra on hand.
+if (KitchenStock.Count(over.OnHand,6) != "10 / 6") throw new Exception("Over-count should read 10 / 6");
+var root = KitchenStock.Split(10,6,true,0);
+Equal(0,root.OnHand); // A feast already in the bag does not count toward a new order.
 Console.WriteLine("4 order-stock regressions passed");

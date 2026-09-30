@@ -48,6 +48,8 @@ public sealed class KitchenStep
     public int Depth;
     public int Need;
     public int Have;
+    // On-hand stock this step can see, including amounts above Need.
+    public int Available;
     public int Cooking;
     public KitchenStepState State;
     public KitchenStationKind Station;

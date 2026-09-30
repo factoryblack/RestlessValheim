@@ -89,7 +89,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             _steps = _order != 0 ? Kitchen.Live(_table, _order) : _tab == 1 ? Array.Empty<KitchenStep>() : Kitchen.Plan(_table, _recipe, _count);
             var stamp = new StringBuilder().Append(_tab).Append('|').Append(_order).Append('|').Append(_recipe).Append('|').Append(_count);
             foreach (var s in _steps) stamp.Append('|').Append(s.Output).Append(':').Append(s.Parent).Append(':').Append(s.Depth)
-                .Append(':').Append(s.Need).Append(':').Append(s.Have).Append(':').Append(s.Cooking).Append(':').Append(s.State).Append(':').Append(s.Note).Append(':').Append(s.ElapsedSeconds).Append(':').Append(s.DurationSeconds);
+                .Append(':').Append(s.Need).Append(':').Append(s.Have).Append(':').Append(s.Available).Append(':').Append(s.Cooking).Append(':').Append(s.State).Append(':').Append(s.Note).Append(':').Append(s.ElapsedSeconds).Append(':').Append(s.DurationSeconds);
             foreach (var o in _orders) stamp.Append('|').Append(o.Id).Append(':').Append(o.Ready).Append(':').Append(o.Count);
             var key = stamp.ToString();
             if (force || key != _stamp)
@@ -112,7 +112,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         var blocked = _steps.FirstOrDefault(s => s.State == KitchenStepState.Blocked && !Covered(s));
         if (blocked != null) return Local(blocked.Name) + " · " + blocked.Note;
         var missing = _steps.FirstOrDefault(s => s.State == KitchenStepState.Missing && s.Uses.Count == 0 && !Covered(s));
-        if (missing != null) return "Waiting for " + Local(missing.Name) + " · " + missing.Have + " / " + missing.Need + " available";
+        if (missing != null) return "Waiting for " + Local(missing.Name) + " · " + KitchenStock.Count(missing.Available, missing.Need) + " available";
         return "Order queued · waiting for the next preparation step";
     }
     private void Tab(int tab)
@@ -216,13 +216,14 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             var use = s!.Uses[i];
             var index = children.FindIndex(n => _steps[n].Output == use.Item);
             if (index >= 0) index = children[index];
-            // KitchenUse.Have includes incoming work. Show ready stock separately instead.
-            var ready = index >= 0 ? _steps[index].Have : 0;
-            var covered = Covered(s) || s.Have + s.Cooking >= s.Need;
+            var child = index >= 0 ? _steps[index] : null;
+            var onHand = child != null ? child.Available : use.Have;
+            var covered = child != null && Covered(child);
             var row = GetCard(_requirementCards,i,_details.content);
             Position(row.Root,0,26+i*58,280,54);
-            row.Set(Local(use.Name),covered ? "Covered" : ready + " / " + use.Amount,Icon(use.Item),
-                covered || ready >= use.Amount ? Tint(KitchenStepState.Prepared) : RestlessUi.Accent,
+            var count = KitchenStock.Count(onHand, use.Amount);
+            row.Set(Local(use.Name), covered ? "Covered · " + count : count, Icon(use.Item),
+                covered || onHand >= use.Amount ? Tint(KitchenStepState.Prepared) : RestlessUi.Accent,
                 () => { if (index >= 0) Inspect(index); });
         }
         HideAfter(_requirementCards,rowCount);
@@ -324,17 +325,18 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     }
     private string State(KitchenStep s)
     {
+        var count = KitchenStock.Count(s.Available, s.Need);
         if (Covered(s)) return "Covered by another step";
-        if (s.State == KitchenStepState.Blocked) return "Blocked · " + s.Have + " / " + s.Need;
+        if (s.State == KitchenStepState.Blocked) return "Blocked · " + count;
         if (s.Cooking > 0)
         {
-            var timer = s.DurationSeconds > 0 ? " · " + Mathf.CeilToInt(Mathf.Max(0,s.DurationSeconds-s.ElapsedSeconds)) + "s" : "";
-            return s.Have + " prepared · " + s.Cooking + " cooking" + timer;
+            var timer = s.DurationSeconds > 0 ? " · " + Mathf.CeilToInt(Mathf.Max(0, s.DurationSeconds - s.ElapsedSeconds)) + "s" : "";
+            return s.Available + " prepared · " + s.Cooking + " cooking" + timer;
         }
         if (s.Uses.Count == 0)
-            return (s.Have >= s.Need ? "Available · " : "Missing · ") + s.Have + " / " + s.Need;
-        if (s.Have >= s.Need) return "Prepared · " + s.Have + " / " + s.Need;
-        return s.Have + " prepared · " + Math.Max(0,s.Need-s.Have) + " to make";
+            return (s.Available >= s.Need ? "Available · " : "Missing · ") + count;
+        if (s.Available >= s.Need) return "Prepared · " + count;
+        return s.Available + " prepared · " + Math.Max(0, s.Need - s.Available) + " to make";
     }
     private static string QueueReason(KitchenStep root) => root.State switch
     {

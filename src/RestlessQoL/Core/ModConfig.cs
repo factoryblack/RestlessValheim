@@ -204,7 +204,7 @@ public static class ModConfig
         PetPantryEnabled = AdminBool(config, "Storage.PetPantry", "Enabled", true,
             "Tamed animals eat matching food from nearby chests when hungry.");
         VacuumEnabled = AdminBool(config, "Storage.Vacuum", "Enabled", true,
-            "Ground piles go into nearby chests that already have that item. Empty chests are ignored.");
+            "Ground piles go into player-built chests that already have that item. Crypts and other world chests are left alone. Empty chests are ignored.");
         VacuumInterval = AdminFloat(config, "Storage.Vacuum", "Interval", 0.75f, 0.2f, 5f,
             "Seconds between vacuum scans.");
         AreaRepairEnabled = AdminBool(config, "Building.AreaRepair", "Enabled", true,
@@ -212,9 +212,9 @@ public static class ModConfig
         AreaRepairRadius = AdminFloat(config, "Building.AreaRepair", "Radius", 15f, 2f, 40f,
             "Area repair radius in metres.");
         AreaSealEnabled = AdminBool(config, "Building.AreaSeal", "Enabled", true,
-            "Hold Alt and use the repair click to seal wooden pieces in a radius. One resin each, from your inventory and nearby chests. Already sealed pieces are skipped.");
+            "Hold Alt and click with the hammer out. Seals player-built wood inside every crafting station that covers the piece, out to that station's build range. One resin each, from your inventory and nearby chests. Already sealed pieces are skipped.");
         AreaSealRadius = AdminFloat(config, "Building.AreaSeal", "Radius", 15f, 2f, 40f,
-            "Area seal radius in metres.");
+            "Seal radius in metres for wood that is not inside a crafting station. Wood inside a station uses that station's build range instead.");
         WorkbenchTweaksEnabled = AdminBool(config, "Building.Workbench", "Enabled", true,
             "Override crafting-station use range.");
         WorkbenchRange = AdminFloat(config, "Building.Workbench", "Range", 20f, 4f, 40f,

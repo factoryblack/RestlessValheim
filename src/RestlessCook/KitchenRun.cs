@@ -463,6 +463,8 @@ internal static partial class KitchenRun
             if (step.ParentIndex >= 0 && step.ParentIndex < covered.Length && covered[step.ParentIndex])
             {
                 covered[i] = true;
+                free.TryGetValue(step.Output, out var already);
+                step.Available = Math.Max(0, already);
                 step.Have = step.Need;
                 step.Cooking = 0;
                 step.State = KitchenStepState.Prepared;
@@ -471,9 +473,11 @@ internal static partial class KitchenRun
             }
 
             free.TryGetValue(step.Output, out var stock);
-            var have = KitchenStock.Allocate(stock,step.Need,i == 0,completedForOrder);
+            var portion = KitchenStock.Split(stock, step.Need, i == 0, completedForOrder);
+            var have = portion.Allocated;
             step.Have = have;
-            free[step.Output] = Math.Max(0,stock - have);
+            step.Available = portion.OnHand;
+            free[step.Output] = Math.Max(0, stock - have);
             cooking.TryGetValue(step.Output, out var onFire);
             var still = step.Need - have;
             step.Cooking = Math.Min(onFire, Math.Max(0, still));
@@ -617,6 +621,15 @@ internal static partial class KitchenRun
                     count -= 1;
                 Add(Clean(item.m_dropPrefab.name), count);
             }
+        }
+
+        var lots = new List<NearbyLot>();
+        NearbyLots.CollectAround(origin, Range(), lots);
+        foreach (var lot in lots)
+        {
+            if (lot.Item?.m_dropPrefab == null)
+                continue;
+            Add(Clean(lot.Item.m_dropPrefab.name), lot.Count);
         }
 
         return free;
@@ -827,6 +840,10 @@ internal static partial class KitchenRun
             if (count < 1)
                 return;
         }
+
+        var fromPiles = NearbyLots.Drain(origin, Range(), sharedName, count);
+        if (fromPiles > 0)
+            Add(ledger, prefab, fromPiles);
     }
 
     private static bool SpendFuel(ItemDrop fuel, Ledger ledger, Vector3 origin)
@@ -959,7 +976,9 @@ internal static partial class KitchenRun
             if (rack != null && seen.Add(rack.GetInstanceID()))
                 list.Add(DescribeRack(rack));
             var oven = col.GetComponentInParent<Smelter>();
-            if (oven != null && seen.Add(oven.GetInstanceID()))
+            // Kilns, smelters and the other production machines belong to the work-order board.
+            // The stone oven stays here; food recipes still load it.
+            if (oven != null && seen.Add(oven.GetInstanceID()) && FoodOven(Utils.GetPrefabName(oven.gameObject)))
                 list.Add(DescribeOven(oven));
             var craft = col.GetComponentInParent<CraftingStation>();
             if (craft != null && seen.Add(craft.GetInstanceID()) && (KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.Cauldron || KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.MeadKettle))
@@ -1064,7 +1083,7 @@ internal static partial class KitchenRun
             if (prefab == null)
                 continue;
             var oven = prefab.GetComponent<Smelter>();
-            if (oven != null)
+            if (oven != null && FoodOven(Utils.GetPrefabName(prefab)))
             {
                 foreach (var conversion in oven.m_conversion)
                     Remember(conversion?.m_from, conversion?.m_to, KitchenStationKind.Oven);
@@ -1089,6 +1108,9 @@ internal static partial class KitchenRun
         if (!Products.TryGetValue(product, out var existing) || (existing.Kind != KitchenStationKind.Rack && kind == KitchenStationKind.Rack))
             Products[product] = new Conversion { From = raw, Kind = kind };
     }
+
+    private static bool FoodOven(string prefab) =>
+        prefab.IndexOf("oven", StringComparison.OrdinalIgnoreCase) >= 0;
 
     private static KitchenStationKind KindOf(string station)
     {

@@ -6,6 +6,7 @@
 #   plant-v* RestlessPlant only
 #   drawers-v* RestlessDrawers only
 #   storage-v* RestlessStorage only
+#   works-v* RestlessWorks only
 # GitHub runners have no Valheim client, so this follows Jötunn's pattern:
 # SteamCMD anonymous dedicated server (app 896660) + BepInEx pack, cached by buildid.
 # Thunderstore publish needs repo secret TCLI_AUTH_TOKEN (never commit the token).
@@ -16,7 +17,7 @@ on:
   pull_request:
   push:
     branches: [main]
-    tags: ["v*", "pack-v*", "cook-v*", "piles-v*", "plant-v*", "drawers-v*", "storage-v*"]
+    tags: ["v*", "pack-v*", "cook-v*", "piles-v*", "plant-v*", "drawers-v*", "storage-v*", "works-v*"]
   workflow_dispatch:
 
 concurrency:
@@ -115,6 +116,7 @@ jobs:
           dotnet build src/RestlessPlant/RestlessPlant.csproj -c Release --nologo
           dotnet build src/RestlessDrawers/RestlessDrawers.csproj -c Release --nologo
           dotnet build src/RestlessStorage/RestlessStorage.csproj -c Release --nologo
+          dotnet build src/RestlessWorks/RestlessWorks.csproj -c Release --nologo
 
       - name: Upload RestlessCore.dll
         uses: actions/upload-artifact@v4
@@ -156,6 +158,13 @@ jobs:
         with:
           name: RestlessStorage-${{ github.sha }}
           path: dist/RestlessStorage.dll
+          if-no-files-found: error
+
+      - name: Upload RestlessWorks.dll
+        uses: actions/upload-artifact@v4
+        with:
+          name: RestlessWorks-${{ github.sha }}
+          path: dist/RestlessWorks.dll
           if-no-files-found: error
 
       - name: Stamp package versions from tag
@@ -567,4 +576,47 @@ jobs:
           export PATH="$HOME/.dotnet/tools:$PATH"
           storage_zip=$(ls artifacts/tcli-storage/*.zip | head -n 1)
           tcli publish --config-path thunderstore/storage/thunderstore.toml --file "$storage_zip"
+
+      - name: Stamp works package version from tag
+        if: startsWith(github.ref, 'refs/tags/works-v')
+        run: |
+          version="${GITHUB_REF_NAME#works-v}"
+          echo "version=$version" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          import os, re, json
+          from pathlib import Path
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("works-v")
+          toml = Path("thunderstore/works/thunderstore.toml")
+          text = toml.read_text(encoding="utf-8")
+          text = re.sub(r'versionNumber = ".*"', f'versionNumber = "{version}"', text, count=1)
+          toml.write_text(text, encoding="utf-8")
+          manifest = Path("thunderstore/works/manifest.json")
+          data = json.loads(manifest.read_text(encoding="utf-8"))
+          data["version_number"] = version
+          manifest.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          print(f"stamped works {version}")
+          PY
+
+      - name: Thunderstore works zip
+        if: startsWith(github.ref, 'refs/tags/works-v')
+        run: |
+          test -f thunderstore/works/icon.png
+          test -f dist/RestlessWorks.dll
+          test -f art/works/runtime/board.rcm
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          dotnet tool install -g tcli
+          tcli build --config-path thunderstore/works/thunderstore.toml --package-version "$version"
+
+      - name: Publish works to Thunderstore
+        if: startsWith(github.ref, 'refs/tags/works-v')
+        env:
+          TCLI_AUTH_TOKEN: ${{ secrets.TCLI_AUTH_TOKEN }}
+        run: |
+          if [ -z "$TCLI_AUTH_TOKEN" ]; then
+            echo "Add a repo secret named TCLI_AUTH_TOKEN (Thunderstore team service account)." >&2
+            exit 1
+          fi
+          export PATH="$HOME/.dotnet/tools:$PATH"
+          works_zip=$(ls artifacts/tcli-works/*.zip | head -n 1)
+          tcli publish --config-path thunderstore/works/thunderstore.toml --file "$works_zip"
 

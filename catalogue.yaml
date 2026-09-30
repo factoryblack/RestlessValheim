@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-29 — 0.1.24 drop: Core 0.2.1 seal bind and portrait frame, Cook 0.3.0 cookbook polish.
+# last_audit: 2026-09-30 — Kilns and smelters move to the work-order board. The stone oven stays with the preparation table.
 
-updated: 2026-09-29
+updated: 2026-09-30
 
 items:
   # --- loader ---
@@ -69,7 +69,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuAutoStore
-    note: "Match-only. Local write if we own the chest, else RestlessPush and only then shrink the bag. Skips hotbar row 0, extras, and locks. No sort/trash."
+    note: "Match-only, and only into chests a player placed. Crypts and other world loot are skipped, same as vacuum. Local write if we own the chest, else RestlessPush and only then shrink the bag. Skips hotbar row 0, extras, and locks. No sort/trash."
 
   - id: storage.restock
     name: Restock (Shift+`)
@@ -101,7 +101,7 @@ items:
     in_mod: done
     bite: 1
     restless: n/a
-    note: "Hold Alt and click with the hammer out. The Seal bind is on the hammer key stack, Alt plus the place button. Player-built wood in the seal radius that rots in the rain takes one resin each, from the bag then nearby chests this client owns. Already sealed pieces are skipped. A plain click still places or repairs. Current damage stays. Rain stops there. No tint. F8 enable and radius. The first repair-tool-only pass did not show the bind and did not seal."
+    note: "Hold Alt and click with the hammer out. The Seal bind is on the hammer key stack, Alt plus the place button. Player-built wood inside every crafting station that covers the clicked piece is sealed out to that station's build range, the same distance as the station range override. The seal radius applies only when the piece is outside every station. One resin each, from the bag then nearby chests this client owns. Already sealed pieces are skipped. A plain click still places or repairs. Current damage stays. Rain stops there. No tint. F8 enable and open-air radius. Not playtested at the longer station range yet."
 
   - id: building.workbench_range
     name: Workbench / station range
@@ -222,7 +222,7 @@ items:
     in_mod: done
     bite: 2
     restless: Azumatt-AzuAutoStore
-    note: "Ground piles into chests that already HaveItem that stack. Local write if we own the chest; else RestlessPush. FinishDrop runs after a real take so a partial deposit cannot leave the world drop. A drop whose stack was cleared without a deposit is left in the world. Split drops remember the thrown count. Interval 0.75 s. Quest items skipped."
+    note: "Ground piles into player-built chests that already HaveItem that stack. A chest counts as player-built when its piece has a creator; crypts, burial rooms, and other world loot have none and are skipped. Tombstones are skipped too. Local write if we own the chest; else RestlessPush. FinishDrop runs after a real take so a partial deposit cannot leave the world drop. A drop whose stack was cleared without a deposit is left in the world. Split drops remember the thrown count. Interval 0.75 s. Quest items skipped. Not playtested in a crypt yet."
 
   - id: inventory.mouse_tweaks
     name: Shift-click / stack-split inventory
@@ -526,7 +526,15 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessCook
-    note: "RestlessCook 0.3.0. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook, with portraits, filters, a selected dish, and a progress track for each step. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. Cauldron and preparation crafts take their crafting time and return the ingredients if cancelled. A dish already in the bag does not fill a new order. Native recipes expand into their real ingredients. The featured card uses the cooking portrait and a status diamond. The finished feast is handed to the player who ordered it, and that part of the order is done. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core 0.2.1. Deep North waits. Not in the Core DLL. Multiplayer ownership is still unverified."
+    note: "RestlessCook 0.3.0. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook, with portraits, filters, a selected dish, and a progress track for each step. Ingredient lines show the full amount on hand, so extra stock reads 8/6 instead of stopping at 6/6. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. Cauldron and preparation crafts take their crafting time and return the ingredients if cancelled. A dish already in the bag does not fill a new order. Resource piles in the search range count as stock and can be pulled into an order. Kilns, smelters and the other production machines are no longer on this roster; the stone oven stays. Native recipes expand into their real ingredients. The featured card uses the cooking portrait and a status diamond. The finished feast is handed to the player who ordered it, and that part of the order is done. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core 0.2.1. Deep North waits. Not in the Core DLL. Multiplayer ownership is still unverified. Count display not yet in a published drop."
+
+  - id: works.board
+    name: Work-order board
+    decision: sidecar
+    in_mod: partial
+    bite: 2
+    restless: Restless-RestlessWorks
+    note: "RestlessWorks 0.1.0. A freestanding work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. Finished output waits on the board. The workshop window is not in yet; the board exposes the same kind of API as the Cookbook. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. Not playtested. Not in the pack. Needs Core 0.2.1."
 
   - id: piles.stacks
     name: Uncapped resource piles
@@ -534,7 +542,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPiles
-    note: "RestlessPiles 0.2.0. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. The storage browser lists them on the Core search range, the same walk as chests, and a take from the table claims the pile. A split stack thrown back keeps the thrown count if the world item reloads as 0 or 1. Craft, vacuum and quick-stack still follow Core Search range unless Isolate pile range is on; the F8 slider hides until then. Needs Core 0.2.0. Not a chest."
+    note: "RestlessPiles 0.2.0. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. The storage browser lists them on the Core search range, the same walk as chests, and a take from the table claims the pile. A split stack thrown back keeps the thrown count if the world item reloads as 0 or 1. Craft, vacuum and quick-stack still follow Core Search range unless Isolate pile range is on; the F8 slider hides until then. The preparation table counts those piles and pulls them into an order. Needs Core 0.2.0. Not a chest."
 
   - id: plant.forage
     name: Cultivator forage and bushes

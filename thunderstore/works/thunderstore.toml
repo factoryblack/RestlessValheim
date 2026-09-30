@@ -1,0 +1,39 @@
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "Restless"
+name = "RestlessWorks"
+versionNumber = "0.1.0"
+description = "A work-order board for kilns, smelters and the other production machines. Needs RestlessCore."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+containsNsfwContent = false
+
+[package.dependencies]
+denikson-BepInExPack_Valheim = "5.4.2351"
+ValheimModding-Jotunn = "2.30.2"
+Restless-RestlessCore = "0.2.1"
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "../../artifacts/tcli-works"
+
+[[build.copy]]
+source = "../../dist/RestlessWorks.dll"
+target = "/"
+
+[[build.copy]]
+source = "./CHANGELOG.md"
+target = "/"
+
+[[build.copy]]
+source = "../../art/works/runtime"
+target = "mesh"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["valheim"]
+
+[publish.categories]
+valheim = ["crafting", "tweaks", "mods"]

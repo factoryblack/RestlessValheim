@@ -11,6 +11,7 @@ internal static class VersionPins
     public const string Plant = "0.2.0";
     public const string Drawers = "0.1.2";
     public const string Storage = "0.2.0";
+    public const string Works = "0.1.0";
 
     public static string? ForGuid(string guid) => guid switch
     {
@@ -20,6 +21,7 @@ internal static class VersionPins
         "restless.plant" => Plant,
         "restless.drawers" => Drawers,
         "restless.storage" => Storage,
+        "restless.works" => Works,
         _ => null
     };
 }

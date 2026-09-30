@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HarmonyLib;
 using RestlessQoL.Core;
 using RestlessQoL.Storage;
@@ -101,38 +102,79 @@ public sealed class AreaSeal : FeatureModule
     private static bool HoldingAlt() =>
         Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
 
+    private readonly struct Region
+    {
+        public readonly Vector3 Origin;
+        public readonly float Radius;
+        public Region(Vector3 origin, float radius) { Origin = origin; Radius = radius; }
+    }
+
+    // A piece inside a crafting station seals that station's build area, the same
+    // distance the workbench range override grants. The seal radius is only for
+    // wood that is not inside any station.
+    private static List<Region> Coverage(Piece hovering)
+    {
+        var list = new List<Region>();
+        var point = hovering.transform.position;
+        var search = ModConfig.WorkbenchTweaksEnabled.Value ? ModConfig.WorkbenchRange.Value : 40f;
+        foreach (var station in NearbyQuery.UniqueInSphere<CraftingStation>(point, search))
+        {
+            var range = StationRange(station);
+            if (range < 1f || Vector3.Distance(station.transform.position, point) > range)
+                continue;
+            list.Add(new Region(station.transform.position, range));
+        }
+
+        if (list.Count == 0)
+            list.Add(new Region(point, ModConfig.AreaSealRadius.Value));
+        return list;
+    }
+
+    private static float StationRange(CraftingStation station)
+    {
+        if (ModConfig.WorkbenchTweaksEnabled.Value)
+            return ModConfig.WorkbenchRange.Value;
+        return station.m_rangeBuild > 0f ? station.m_rangeBuild : ModConfig.AreaSealRadius.Value;
+    }
+
     private static int Apply(Player player, Piece hovering)
     {
-        var origin = hovering.transform.position;
-        var radius = ModConfig.AreaSealRadius.Value;
+        var seen = new HashSet<int>();
         var fresh = 0;
         var done = 0;
         var sealedCount = 0;
         var ranOut = false;
-        foreach (var wear in NearbyQuery.UniqueInSphere<WearNTear>(origin, radius))
+        foreach (var region in Coverage(hovering))
         {
-            if (!Wooden(wear))
-                continue;
-            if (!Owned(wear))
-                continue;
-            if (Sealed(wear))
+            foreach (var wear in NearbyQuery.UniqueInSphere<WearNTear>(region.Origin, region.Radius))
             {
-                done++;
-                continue;
-            }
+                if (!seen.Add(wear.GetInstanceID()))
+                    continue;
+                if (Vector3.Distance(wear.transform.position, region.Origin) > region.Radius)
+                    continue;
+                if (!Wooden(wear))
+                    continue;
+                if (!Owned(wear))
+                    continue;
+                if (Sealed(wear))
+                {
+                    done++;
+                    continue;
+                }
 
-            fresh++;
-            if (ranOut)
-                continue;
-            if (!SpendResin(player))
-            {
-                ranOut = true;
-                continue;
-            }
+                fresh++;
+                if (ranOut)
+                    continue;
+                if (!SpendResin(player))
+                {
+                    ranOut = true;
+                    continue;
+                }
 
-            wear.m_nview.GetZDO().Set(Flag, 1);
-            fresh--;
-            sealedCount++;
+                wear.m_nview.GetZDO().Set(Flag, 1);
+                fresh--;
+                sealedCount++;
+            }
         }
 
         if (sealedCount > 0)

@@ -46,6 +46,17 @@ public static class NearbyStorage
         return view != null && view.IsValid();
     }
 
+    // World loot (crypts, burial rooms, camps) has no player creator. A chest,
+    // ship, or cart a player placed does. Tombstones are containers too, and
+    // they are not a place to store a pile.
+    internal static bool PlayerBuilt(Container container)
+    {
+        if (container == null || container.GetComponentInParent<TombStone>() != null)
+            return false;
+        var piece = container.GetComponentInParent<Piece>();
+        return piece != null && piece.IsPlacedByPlayer();
+    }
+
     // Chest OnContainerChanged only Save()s when IsOwner(). A client
     // RemoveItem/AddItem is local theatre; vacuum then Destroy()s the pile
     // and the host ZDO never saw it. Only mutate chests we already own.
@@ -279,7 +290,7 @@ public static class NearbyStorage
         var moved = 0;
         foreach (var container in ForPlayer(player, ModConfig.StorageRange.Value))
         {
-            if (!CanWrite(container))
+            if (!PlayerBuilt(container) || !CanWrite(container))
                 continue;
             var dest = container.GetInventory();
             if (dest == null || dest == playerInv)
@@ -392,7 +403,7 @@ public static class NearbyStorage
         var left = new List<Container>();
         foreach (var container in ForPlayer(player, ModConfig.StorageRange.Value))
         {
-            if (CanWrite(container))
+            if (!PlayerBuilt(container) || CanWrite(container))
                 continue;
             var dest = container.GetInventory();
             if (dest == null || !dest.HaveItem(item.m_shared.m_name))

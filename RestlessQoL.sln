@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}") = "RestlessDrawers", "src\Rest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}") = "RestlessStorage", "src\RestlessStorage\RestlessStorage.csproj", "{F7B14E3A-2D5C-4E99-B8A1-6C0D2E4F8A91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFCE}") = "RestlessWorks", "src\RestlessWorks\RestlessWorks.csproj", "{A8C25F4B-3E6D-4C10-9B22-7D1E3F5A0B82}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,9 @@ Global
 		{F7B14E3A-2D5C-4E99-B8A1-6C0D2E4F8A91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7B14E3A-2D5C-4E99-B8A1-6C0D2E4F8A91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7B14E3A-2D5C-4E99-B8A1-6C0D2E4F8A91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8C25F4B-3E6D-4C10-9B22-7D1E3F5A0B82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8C25F4B-3E6D-4C10-9B22-7D1E3F5A0B82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8C25F4B-3E6D-4C10-9B22-7D1E3F5A0B82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8C25F4B-3E6D-4C10-9B22-7D1E3F5A0B82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

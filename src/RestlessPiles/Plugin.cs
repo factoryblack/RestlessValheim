@@ -30,7 +30,7 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Log = Logger;
         PileConfig.Bind(Config);
-        NearbyLots.Listen(PileBag.List, PileBag.Take);
+        NearbyLots.Listen(PileBag.List, PileBag.Take, PileBag.Drain);
         _settings = PileSettings.Register();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();

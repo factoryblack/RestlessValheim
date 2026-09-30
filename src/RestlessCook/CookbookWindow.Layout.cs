@@ -220,8 +220,8 @@ internal sealed partial class CookbookWindow
             else if (size.y <= 64)
             {
                 Portrait(_icon.gameObject,6,(size.y-36)/2,36,36);
-                Position(_name.gameObject,50,4,size.x-124,size.y-8);
-                Position(_state.gameObject,size.x-70,4,64,size.y-8);
+                Position(_name.gameObject,50,4,size.x-188,size.y-8);
+                Position(_state.gameObject,size.x-132,4,124,size.y-8);
             }
             else
             {

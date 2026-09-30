@@ -1,0 +1,11 @@
+{
+  "name": "RestlessWorks",
+  "version_number": "0.1.0",
+  "website_url": "https://github.com/factoryblack/RestlessValheim",
+  "description": "A work-order board for kilns, smelters and the other production machines. Needs RestlessCore.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2351",
+    "ValheimModding-Jotunn-2.30.2",
+    "Restless-RestlessCore-0.2.1"
+  ]
+}

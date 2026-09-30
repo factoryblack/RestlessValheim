@@ -67,5 +67,18 @@ if (Test-Path $storageDll) {
         ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
     Write-Host "installed $(Join-Path $storagePlugins 'RestlessStorage.dll')"
 }
+
+$worksDll = Join-Path $root 'dist\RestlessWorks.dll'
+if (Test-Path $worksDll) {
+    $worksPlugins = Join-Path $valheimPlugins 'RestlessWorks'
+    New-Item -ItemType Directory -Force -Path $worksPlugins | Out-Null
+    Copy-Item $worksDll (Join-Path $worksPlugins 'RestlessWorks.dll') -Force
+    $mesh = Join-Path $worksPlugins 'mesh'
+    New-Item -ItemType Directory -Force -Path $mesh | Out-Null
+    Get-ChildItem (Join-Path $root 'art\works\runtime') -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.Extension -in '.rcm', '.png' } |
+        ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
+    Write-Host "installed $(Join-Path $worksPlugins 'RestlessWorks.dll')"
+}
 Write-Host 'Launch Valheim from Steam. This install already has BepInEx + Jotunn.'
 Write-Host 'Extra slots ship in this DLL. No sidecars.'

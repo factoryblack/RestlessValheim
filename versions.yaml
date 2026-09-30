@@ -60,6 +60,14 @@ packages:
     csproj: "src/RestlessStorage/RestlessStorage.csproj"
     thunderstore_dir: "thunderstore/storage"
     needs_core: true
+  works:
+    version: "0.1.0"
+    guid: "restless.works"
+    thunderstore: "RestlessWorks"
+    plugin: "src/RestlessWorks/Plugin.cs"
+    csproj: "src/RestlessWorks/RestlessWorks.csproj"
+    thunderstore_dir: "thunderstore/works"
+    needs_core: true
   pack:
     version: "0.1.24"
     thunderstore: "Restless_Valheim"

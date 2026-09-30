@@ -22,23 +22,50 @@ internal sealed class NearbyLot
 
 internal static class NearbyLots
 {
-    private static readonly List<Action<Player, float, List<NearbyLot>>> Collectors = new();
+    private static readonly List<Action<Vector3, float, List<NearbyLot>>> Collectors = new();
     private static readonly List<Action<Player, string, int, Action<int>>> Takers = new();
+    private static readonly List<Func<Vector3, float, string, int, int>> Drains = new();
 
     internal static void Listen(
-        Action<Player, float, List<NearbyLot>> collect,
-        Action<Player, string, int, Action<int>> take)
+        Action<Vector3, float, List<NearbyLot>> collect,
+        Action<Player, string, int, Action<int>> take,
+        Func<Vector3, float, string, int, int>? drain = null)
     {
         Collectors.Add(collect);
         Takers.Add(take);
+        if (drain != null)
+            Drains.Add(drain);
     }
 
     internal static void Collect(Player player, float range, List<NearbyLot> into)
     {
-        if (player == null || range <= 0f)
+        if (player == null)
+            return;
+        CollectAround(player.transform.position, range, into);
+    }
+
+    internal static void CollectAround(Vector3 origin, float range, List<NearbyLot> into)
+    {
+        if (range <= 0f)
             return;
         foreach (var collect in Collectors)
-            collect(player, range, into);
+            collect(origin, range, into);
+    }
+
+    // Reduce a nearby lot without putting the items in a bag. Callers account for them.
+    internal static int Drain(Vector3 origin, float range, string sharedName, int amount)
+    {
+        if (amount <= 0 || range <= 0f || string.IsNullOrEmpty(sharedName))
+            return 0;
+        var taken = 0;
+        foreach (var drain in Drains)
+        {
+            taken += Math.Max(0, drain(origin, range, sharedName, amount - taken));
+            if (taken >= amount)
+                break;
+        }
+
+        return taken;
     }
 
     internal static void Take(Player player, string key, int amount, Action<int> done)

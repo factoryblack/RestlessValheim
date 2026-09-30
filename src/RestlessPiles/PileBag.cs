@@ -19,12 +19,12 @@ internal static class PileBag
         return a.m_shared.m_name == b.m_shared.m_name;
     }
 
-    internal static void List(Player player, float range, System.Collections.Generic.List<NearbyLot> into)
+    internal static void List(Vector3 origin, float range, System.Collections.Generic.List<NearbyLot> into)
     {
-        if (player == null || !PileConfig.On || range <= 0f)
+        if (!PileConfig.On || range <= 0f)
             return;
-        var origin = player.transform.position;
-        var reach = range * range;
+        var reach = Mathf.Min(range, PileConfig.Nearby);
+        reach *= reach;
         foreach (var box in PileBox.All)
         {
             if (box == null || !box.Live || box.Stored <= 0 || box.Item?.m_shared == null)
@@ -160,6 +160,34 @@ internal static class PileBag
             if (box.Item.m_shared.m_name != sharedName)
                 continue;
             if ((box.transform.position - player.transform.position).sqrMagnitude > range * range)
+                continue;
+            if (!box.View.IsOwner())
+                box.View.ClaimOwnership();
+            if (!box.View.IsOwner())
+                continue;
+            taken += PullFromPile(box, amount - taken);
+        }
+
+        return taken;
+    }
+
+    // Drop the pile count only. The kitchen pantry accounts for what was taken.
+    internal static int Drain(Vector3 origin, float range, string sharedName, int amount)
+    {
+        if (amount <= 0 || range <= 0f || string.IsNullOrEmpty(sharedName) || !PileConfig.On)
+            return 0;
+        var reach = Mathf.Min(range, PileConfig.Nearby);
+        reach *= reach;
+        var taken = 0;
+        foreach (var box in PileBox.All)
+        {
+            if (taken >= amount)
+                break;
+            if (box == null || !box.Live || box.Stored <= 0 || box.Item?.m_shared == null || box.View == null)
+                continue;
+            if (box.Item.m_shared.m_name != sharedName)
+                continue;
+            if ((box.transform.position - origin).sqrMagnitude > reach)
                 continue;
             if (!box.View.IsOwner())
                 box.View.ClaimOwnership();

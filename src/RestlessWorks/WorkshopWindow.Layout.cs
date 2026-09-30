@@ -24,6 +24,7 @@ internal sealed partial class WorkshopWindow
         _search=Field(_sheet,"Search…",28,132,252,40,false);
         _search.onValueChanged.AddListener(value=>{_query=value;_stamp="";Refresh(true);Reset(_list);});
         _controls=RestlessUi.Node(_sheet,"production-controls");
+        RestlessUi.Stretch(_controls,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);
         _make=Button(_controls.transform,"Make",28,186,122,36,()=>SetMode(WorksOrderMode.Make));
         _keep=Button(_controls.transform,"Keep",158,186,122,36,()=>SetMode(WorksOrderMode.Keep));
         Button(_controls.transform,"−",28,236,52,38,()=>Quantity(-1));
@@ -116,9 +117,10 @@ internal sealed partial class WorkshopWindow
         {
             var z=((RectTransform)Root.transform).rect.size;_click=click;
             Portrait(_icon.gameObject,12,compact?12:18,compact?40:62,compact?40:62);_icon.sprite=icon;_icon.enabled=icon!=null;
-            Place(_name.gameObject,compact?62:88,8,z.x-(compact?74:106),compact?46:52);
+            var titleX=icon==null?14:compact?62:88;
+            Place(_name.gameObject,titleX,8,z.x-titleX-18,compact?46:52);
             if(compact) Place(_summary.gameObject,12,58,z.x-24,26);
-            else if(z.y<=116) Place(_summary.gameObject,88,62,z.x-106,z.y-72);
+            else if(z.y<=116) Place(_summary.gameObject,titleX,62,z.x-titleX-18,z.y-72);
             else Place(_summary.gameObject,12,80,z.x-24,z.y-96);
             _name.text=name;_summary.text=summary;_summary.color=RestlessUi.PaperMuted;_summary.gameObject.SetActive(!string.IsNullOrEmpty(summary));
             _track.SetActive(false);RestlessUi.PaperControl(Root,selected?RestlessUi.Accent:new Color(.32f,.29f,.24f));

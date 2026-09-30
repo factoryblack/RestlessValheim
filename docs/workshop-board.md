@@ -2,7 +2,7 @@
 
 RestlessWorks is the workshop, in the same way RestlessCook is the kitchen. The window should follow the Cookbook: one place, a recipe list, the selected item's dependencies, orders, and the stations that will do the work. Keep it a separate window. The preparation table stays food. The workbench and forge stay where equipment is made and improved.
 
-The screen is not in this package. Bind `Works.Opened` the way the Cookbook binds `Kitchen.Opened`.
+`WorkshopWindow` binds `Works.Opened`. Production, Orders, Machines and Output share the Restless paper controls and wheel scrolling. The window closes on Escape, departure from the board, or another major interface opening.
 
 ## What the player does
 
@@ -44,10 +44,17 @@ The preparation table used to list every `Smelter`. Kilns, smelters and the othe
 
 ## Not in this pass
 
-- No workshop window.
 - Recipes are the machines' own conversions. Bronze, nails and gear are still forge crafts, not board recipes.
 - Finished output waits on the board until Collect or Take. A designated output chest is not wired yet.
 - Fuel on a plan is an estimate of one fuel item per product. The machine still burns on its own timer.
-- Each Keep order is its own target. Two Keep 30 orders for the same item ask for 60.
+- The UI prevents a second Keep target for the same output. API callers remain responsible for duplicate targets.
 - The last player to use the board owns it, and the tick follows them. Same rule as the kitchen.
 - Not playtested.
+
+## Window behaviour and playtest
+
+Production supports search, machine filtering, Make/Keep quantities and separate ordering of dependencies. Dependencies are not automatically queued. Fuel requirements are labelled estimates. Orders show completed/available, incoming and remaining quantities; coverage bars are not timers. Machines show native queue/fuel counts. Output separates reserved Make output from stock anyone can take.
+
+The window polls only while open, once per second, reuses cards and only redraws changed data. Board ownership loss disables mutations until reopened. Collection remains restricted to the Make order's player. Cancelling an instruction needs a second click and does not remove material already in machines.
+
+Playtest: Make output through collection; Keep replenishment and duplicate guard; fuel/input shortages; full inventory collection; cancellation; two players switching board ownership; long names and small resolutions; search/filter and wheel scrolling; Escape then reopening. Runtime rendering and multiplayer behaviour still need an in-game pass.

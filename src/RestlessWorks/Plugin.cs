@@ -1,4 +1,5 @@
 using System;
+using HarmonyLib;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -24,6 +25,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<bool> BoardEnabled = null!;
 
     private float _clock;
+    private Harmony? _uiPatches;
     private IDisposable? _page;
     private IDisposable? _settings;
 
@@ -39,11 +41,17 @@ public class Plugin : BaseUnityPlugin
         _settings = SettingsPageApi.RegisterSettings(PluginGuid,
             new SettingsSection("Work orders", new SettingsOption("Open the board", BoardEnabled, false)));
         BoardPiece.Load();
+        Works.Opened += WorkshopWindow.Open;
+        _uiPatches = new Harmony(PluginGuid + ".ui");
+        _uiPatches.PatchAll(typeof(WorkshopWindow).Assembly);
         Log.LogInfo($"{PluginName} {PluginVersion} loaded.");
     }
 
     private void OnDestroy()
     {
+        Works.Opened -= WorkshopWindow.Open;
+        WorkshopWindow.Close();
+        _uiPatches?.UnpatchSelf();
         _settings?.Dispose();
         _page?.Dispose();
     }
@@ -58,3 +66,4 @@ public class Plugin : BaseUnityPlugin
         WorksRun.TickOwned(elapsed);
     }
 }
+

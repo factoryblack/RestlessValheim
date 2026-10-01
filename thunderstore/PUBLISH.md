@@ -1,43 +1,14 @@
-# Thunderstore 0.1.24
+# Publish Restless packages
 
-Prepared 29 Sep 2026. Not tagged yet. This drop: Core 0.2.1, Cook 0.3.0. Plant 0.2.0, Piles 0.2.0, Drawers 0.1.2, and Storage 0.2.0 stay. Pack 0.1.24. BepInExPack 5.4.2351. Jötunn stays 2.30.2.
+Use [the build and release guide](../docs/maintainers/building.md) for tag prefixes and build commands, and [the documentation workflow](../docs/maintainers/public-docs.md) for package copy and screenshot updates.
 
-Pins live in `versions.yaml`. A package bump is `python scripts/bump-versions.py core=fix cook=new`. Changelog sentences stay written by hand.
+1. Check the current source and assign Unreleased changelog notes to the version actually shipping.
+2. Bump selected packages with `scripts/bump-versions.py`; `versions.yaml` owns version and dependency pins.
+3. Run the documented generation checks. Review the package README, bio, dependency list and version notes together.
+4. Build and playtest complete packages, including runtime assets. `scripts/pack.ps1` stages local archives from package TOMLs.
+5. Publish dependencies before their consumers. Publish the collection pack last, after its pinned dependencies are available.
+6. Check each live Thunderstore page after publication: description, guide link, screenshots, changelog and dependencies.
 
-## This drop
+A Core tag publishes Core only. Works remains a separate installation until it is deliberately added to the pack's member list. Do not reactivate the deprecated legacy packages.
 
-| Package | Was | Now | Why |
-|---|---|---|---|
-| RestlessCore | 0.2.0 | **0.2.1** | Seal bind on the hammer, Alt-click seals, shared cooking portrait frame |
-| RestlessCook | 0.2.0 | **0.3.0** | Cookbook portraits, filters, timed prep, step progress, real native ingredients |
-| RestlessPlant | 0.2.0 | **0.2.0** | Stays |
-| RestlessPiles | 0.2.0 | **0.2.0** | Stays |
-| RestlessDrawers | 0.1.2 | **0.1.2** | Stays |
-| RestlessStorage | 0.2.0 | **0.2.0** | Stays |
-| Restless Valheim pack | 0.1.23 | **0.1.24** | Core and Cook |
-
-## What to tell players
-
-**Restless Valheim 0.1.24**  
-Core 0.2.1 and Cook 0.3.0. Plant, Piles, Drawers, and Storage stay.
-
-**RestlessCore 0.2.1**  
-Hold Alt and click with the hammer out to seal wood. The Seal bind is on the hammer key stack.
-
-**RestlessCook 0.3.0**  
-The Cookbook shows portraits, filters, and each step of an order. Cauldron and prep crafts take their time. Needs Core 0.2.1.
-
-## Tag order
-
-Core first. Cook after that listing exists. Pack last. Plant, Piles, Drawers, and Storage are already listed. Do not run these until the drop is signed off.
-
-```
-git tag v0.2.1
-git push origin v0.2.1
-git tag cook-v0.3.0
-git push origin cook-v0.3.0
-git tag pack-v0.1.24
-git push origin pack-v0.1.24
-```
-
-Pack waits up to 600s for Core 0.2.1 and Cook 0.3.0. The other four are already published.
+Documentation merges do not update an existing Thunderstore release automatically. The revised package pages ship in the next package release. Screenshot placeholders are intentional until captures are available; see [the capture brief](../docs/maintainers/screenshots.md).

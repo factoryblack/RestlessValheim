@@ -1,8 +1,8 @@
 {
   "name": "RestlessStorage",
   "version_number": "0.2.0",
-  "website_url": "https://github.com/factoryblack/RestlessValheim",
-  "description": "A Storekeeper's Table for the chests around you. The network window comes next. Needs RestlessCore.",
+  "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/storage.md",
+  "description": "Search nearby storage, see combined item totals and take what you need from the Storekeeper's Table.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",

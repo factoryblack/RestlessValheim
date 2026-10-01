@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "RestlessPlant"
 versionNumber = "0.2.0"
-description = "Berry bushes and forage on the cultivator, plus a planting square, bulk harvest, and replant. Needs RestlessCore."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "Grow berries, mushrooms and more. Plant aligned rows, harvest nearby crops and replant as you go."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/plant.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -33,3 +33,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["misc", "tweaks", "mods"]
+

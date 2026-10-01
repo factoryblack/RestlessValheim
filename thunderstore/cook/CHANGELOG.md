@@ -1,82 +1,78 @@
 # Changelog
 
+Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## Unreleased
+
+- Refreshed the Cookbook introduction and moved the detailed food catalogue into linked, generated recipe guides.
+
 ## 0.3.0
 
-- The Cookbook shows larger portraits, filters for feasts, meals, ingredients and meads, and a selected dish
-- Cauldron and preparation crafts take their crafting time. Cancelling one puts the ingredients back
-- Each step of an order shows its progress. A dish already in your inventory does not satisfy a new order
-- Native recipes such as spice blends list their real ingredients and station
-- The featured card uses the cooking portrait. A coloured diamond shows prepared, waiting, or blocked
-- Needs Core 0.2.1
+- Added larger dish portraits and filters for feasts, meals, ingredients and meads.
+- Cauldron and preparation crafts take their crafting time; cancellation returns their ingredients.
+- Orders show preparation progress for each step and do not count a carried dish as the newly completed order.
+- Native dishes such as spice blends show their real ingredients and station.
+- Improved featured cards and prepared/waiting/blocked feedback.
+- Requires Core 0.2.1.
 
 ## 0.2.0
 
-- The food preparation table opens the Cookbook and runs kitchen orders
-- An order cooks what it needs on nearby racks and ovens, then hands the feast to the player who placed it
-- Cauldron level, fuel, fire, and how many hooks you built still decide what gets done
-- Needs Core 0.2.0
+- The food preparation table opens the Cookbook and manages kitchen orders.
+- Orders load nearby cooking racks/ovens, collect prepared results and deliver the completed feast to its ordering player.
+- Station level, fire, fuel and hook capacity remain required.
+- Requires Core 0.2.0.
 
 ## 0.1.9
 
-- Thunderstore / r2modman installs show custom plates again. r2modman flattens the shipped `mesh/` folder next to the DLL; Cook now reads plates from either place instead of falling back to vanilla clones
+- Fixed custom food models missing after mod-manager installation flattened the asset folder.
 
 ## 0.1.8
 
-- Custom feast boards place again: the plate is the bigger size, the invisible vanilla table no longer blocks the serving tray
-- Feast leftovers no longer show the cloned Meadows 35/35/2 stats under their own food block
-- Incomplete leftover recipes stay disabled so they cannot unlock, get forgotten, and unlock again every tick
-- Plates steal a quiet vanilla food shader for lighting (skip thistle / spice / eitr garnish)
-- Honeyed Mushrooms no longer pops off the ground when dropped (it had inherited grilled neck-tail mesh colliders)
+- Fixed placement and scale of custom feast boards.
+- Removed duplicated vanilla food values from custom feast leftovers.
+- Kept incomplete leftover recipes disabled instead of repeatedly unlocking.
+- Improved food lighting and fixed dropped Honeyed Mushrooms jumping off the ground.
 
 ## 0.1.7
 
-- Fixed custom recipes constantly re-triggering: a known feast/meal/sideboard recipe was being un-learned and re-learned (re-firing the "learned recipe" toast) every time the player's inventory or station proximity changed, because known-status was recomputed from current possession on every UpdateKnownRecipesList tick instead of staying permanent once discovered
-- Removed a duplicate DressRegistered pass on load that doubled every "cook mesh/albedo missing" warning
-- A raw `dotnet build` now copies the custom feast/meal mesh + albedo assets (art/cook/runtime) next to the built DLL, matching what the packaged Thunderstore zip already ships. Previously, only the full tcli-built package carried the `mesh/` folder the game reads at runtime — dropping a manually built DLL into BepInEx/plugins without it silently left every custom dish showing its vanilla clone_from appearance instead of the custom model
-- Clarify the vanilla-appearance fallback with an explicit log message when a custom model can't be found, instead of a bare "missing" warning
+- Fixed learned recipes repeatedly triggering unlock notifications.
+- Removed duplicate asset warnings.
+- Local builds now copy the food models/textures alongside the DLL, and missing custom models produce clearer log messages.
 
 ## 0.1.6
 
-- Custom feast plates render at 2.5x their baked mesh scale — Meshy exports were noticeably undersized against the vanilla food/feast meshes they replace
+- Increased custom feast-model scale to better match vanilla food presentation.
 
 ## 0.1.5
 
-- Remove Feast.Awake patch — method was removed in the latest Valheim update; feasts initialize correctly via UpdateVisual and Interact
+- Fixed feast initialisation compatibility with the updated game.
 
 ## 0.1.4
 
-- Custom feast boards craft at the food preparation table; the serving tray places the leftover board
-- Custom feast leftover recipes bind real meal ItemDrops so they grey out without ingredients
-- Feast leftovers get an explicit prep-table recipe; the list forgets the empty-cost leak and only shows boards you know or hold
-- Placed feast boards keep a leftover food item, servings, and a plate collider so E can eat them
-- Dropped meals no longer get the feast plate collider (convex mesh on ItemDrop prefabs made them pop upward)
+- Fixed preparation-table crafts, serving-tray placement and ingredient availability for custom feast boards.
+- Placed feasts retain servings and can be eaten.
+- Fixed dropped meals jumping because of feast collision settings.
 
 ## 0.1.3
 
-- Custom feasts are serving-tray pieces (vanilla models were the Meadows/Black Forest boards). Unlock by knowing the meals, then place with the tray
-- Meal, sideboard, leftover, and feast plates sit at the prefab origin at baked metre scale; vanilla food/feast meshes stay hidden, including when a feast updates as you eat
-- Plate materials use a lit albedo shader instead of vanilla skinned-food materials
+- Custom feasts can be placed with the serving tray and unlock from their meal ingredients.
+- Improved model alignment, leftover plates and lit food materials.
 
 ## 0.1.2
 
-- Matrix drops the internal Op column and keeps Recipe
-- Vanilla rewrite and reference rows use Iron Gate icons from the Valheim wiki (Pulled Bear has no wiki file yet)
-- Serving tray (Feaster) recipe registers after vanilla prefabs so the workbench craft actually appears
-- Recipe discovery is vanilla again: hold the ingredients. Feast crafts stay on the food preparation table
+- Made recipe tables easier to read and added vanilla dish icons.
+- Fixed serving-tray recipe registration and restored normal ingredient-based discovery.
 
 ## 0.1.1
 
-- Custom meals, feasts, and sideboards use isolated plate icons
-- Custom dishes use the Meshy plate meshes and 1024 albedos
-- Thunderstore readme is the cooking wiki and full recipe matrix
-- Locked v0.1 food stats: vanilla feasts stay balanced, custom feasts split health/stamina, Mistlands+ custom feasts carry eitr, sideboards stay inedible
-- Food meshes unflip Meshy UVs, bleed atlas gutters, and drop leftover vanilla meat/feast gloss
-- Food preparation table and Serving tray become Meadows workbench crafts; Meadows/Black Forest custom feasts drop Woodland Herb Blend
-- Custom feast recipes are taught when known-recipes refresh and when you use the prep table
-- Jötunn 2.30.1 (needs RestlessCore 0.1.3+)
+- Added custom dish icons and models, updated food values and the full recipe reference.
+- Improved food textures and materials.
+- Moved preparation-table and serving-tray access to Meadows and removed spice requirements from early custom feasts.
+- Improved recipe discovery.
+- Requires Jötunn 2.30.1 and Core 0.1.3 or later.
 
 ## 0.1.0
 
-- Meadows through Ashlands cooking graph: 17 meals, 16 feasts, 2 sideboards
-- 14 cooked-first vanilla rewrites and 2 feast reroutes
-- Hidden Hills and Cinder sideboards feed Mushrooms Galore and the Ashlands Gourmet Bowl
+- Initial Meadows–Ashlands food expansion: 17 meals, 16 feasts and two sideboards.
+- Changed 14 vanilla recipes to use cooked protein and rerouted two vanilla feasts.
+- Hidden Hills and Cinder sideboards connect meals to vanilla feast recipes.

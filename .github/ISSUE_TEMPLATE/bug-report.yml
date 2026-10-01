@@ -1,0 +1,37 @@
+name: Bug report
+description: Report a reproducible Restless problem.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: versions
+    attributes:
+      label: Game, packages and other mods
+      description: Include Valheim version, Restless package versions and your full mod list.
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Multiplayer and settings
+      description: Single-player, listen-host or dedicated server? Who performed the action? Include relevant host settings.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Give the exact sequence, item/recipe/station and quantities where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, video and logs
+      description: Attach full-screen images for layout issues, plus resolution, UI scale and input device. Remove private details from logs.
+

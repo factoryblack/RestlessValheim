@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "RestlessCook"
 versionNumber = "0.3.0"
-description = "Cook the haul, make meals, turn meals into feasts. Meadows through Ashlands. Needs RestlessCore."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "Cook the haul, make meals and serve feasts. Plan kitchen orders at one table while nearby cooking stations do the work."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/cook.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -37,3 +37,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["crafting", "tweaks", "mods"]
+

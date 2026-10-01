@@ -1,15 +1,22 @@
 # Changelog
 
+Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## Unreleased
+
+- Refreshed the package bio to describe the existing browser, with a player guide and screenshot areas.
+
 ## 0.2.0
 
-- Card names wrap onto two lines
-- Nearby piles show on the same sheet, and a take from the table claims the pile
-- Opening the sheet marks materials you have handled, so a missed recipe can unlock. Trophies are left alone
-- Needs Core 0.2.0
+- Item names wrap onto two lines.
+- Nearby piles appear in the browser and support withdrawal.
+- Opening the browser can discover recipes for handled materials; trophies remain unaffected.
+- Requires Core 0.2.0.
 
 ## 0.1.0
 
-- Storekeeper's Table, built at the workbench
-- The table opens a storage browser: search, type filters, sort, combined totals, and where each entry is stored
-- Take moves the matching stacks from the chest owner into your inventory. What does not fit goes back
-- Local F8 toggle. Nearby range and access follow Core. Needs Core 0.1.18
+- Added the Storekeeper's Table, built at a workbench.
+- Added nearby-storage search, filters, sorting, combined totals and source locations.
+- Withdrawal is performed by the source owner, with overflow and interrupted-transfer rollback.
+- Added a local F8 window toggle and shared Core range/access rules.
+- Requires Core 0.1.18.

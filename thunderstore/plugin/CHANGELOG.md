@@ -1,143 +1,138 @@
 # Changelog
 
+Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## Unreleased
+
+- Refreshed package information and player guides, with screenshot areas ready for new captures.
+- Wood sealing now covers the build range of stations covering the piece, with the configured radius used outside station coverage.
+
 ## 0.2.1
 
-- Hold Alt and click with the hammer out to seal wood. The Seal bind sits on the hammer key stack. A plain click still places or repairs
-- The cooking portrait is a shared card frame. Wide cards keep the corner folds and the bottom knot
+- Alt-click with the hammer seals wood while ordinary clicks still place or repair.
+- Improved shared cooking-card frames so wider layouts retain their corner details.
 
 ## 0.2.0
 
-- Hold Alt with the repair tool to seal wooden pieces against rain. One resin each, from your inventory and nearby chests. Already sealed pieces are skipped. F8 has the switch and the radius
-- A death that leaves nothing to recover drops the map pin
-- Extra-slot hotkeys stay quiet while you are typing
-- The F8 storage page uses the storage emblem
+- Added resin-based rain protection for wooden pieces, with a host-controlled toggle and radius.
+- Deaths with nothing to recover no longer leave a recovery pin.
+- Quick-slot hotkeys no longer activate while typing.
+- Updated the F8 Storage page emblem.
 
 ## 0.1.18
 
-- Storage browser for the Storekeeper's Table. Take is answered by the chest owner, and a missed reply puts the stacks back
+- Added the shared storage browser for the Storekeeper's Table, with source-owned withdrawal and rollback for unanswered transfers.
 
 ## 0.1.17
 
-- A dedicated server can feed tames from a chest a player owns. A client still cannot send player id 0 to open a private chest
-- A split stack remembers how many you threw. Vacuum will not delete that drop when its stack has been cleared
-- Compendium text follows the native scroll. Settings repaint when a value changes. F8 and build-detail readers use the shared wheel, and that wheel stops when you change settings page
-- Hover hints measure their text. A narrow tooltip rescales when the canvas width changes. Extra craft requirements scroll on their own. The crafting corner stays 96
-- Cheated marks on items, characters, and worlds no longer block achievements. A modded game is not a cheat mark
-- The character page shows the lifetime record. Deaths, distance, crafts, and hunts stay put when achievements start counting
-- Character adds run, day streak, longest streak, comfort, pieces built, trees, ore, crops, fish, tames, tallest build, and highest place built
+- Fixed dedicated-server tame feeding from eligible player-owned chests.
+- Fixed split-stack ground-item routing losing the original thrown amount.
+- Improved compendium scrolling, live settings refresh and shared reader scrolling.
+- Improved narrow tooltips, hover text sizing and scrolling crafting requirements.
+- Updated achievement handling so modded/cheated marks do not block achievements when the host setting is enabled.
+- Expanded the Character page with lifetime records, activity, streaks and building records.
 
 ## 0.1.16
 
-- Crafting is one paper sheet on the native envelope: station header, recipe list, scrolling detail, and material sockets with their own count lanes (PR 24)
-- The station requirement sits in a material socket with the native icon, level, and unmet hint. The old dark station-level plate stays hidden
-- Selected recipes read Valheim's RecipeDataPair, so the station, category, and preview follow the real recipe
-- Recipe and loadout readers share a four-row wheel motion that takes a fractional notch and eases
-- BepInExPack pin is 5.4.2351. Jötunn stays 2.30.2
-- Selected Craft/Upgrade keeps its selected colour. The station line follows the recipe, including handcraft
-- You can kill your own tames again, including with the butcher knife. Ballistae still ignore them, and tames still do not hurt you or each other
-- Building from chests no longer skips a required station. A stonecutter piece still needs a stonecutter in range
+- Reworked crafting into a coherent paper layout with a station header, recipe list, scrolling details and readable material counts.
+- Station requirements now use the same presentation as materials, including level and unmet-state hints.
+- Fixed station, category and preview information following the wrong selected recipe.
+- Added shared scrolling for recipe and loadout readers.
+- Preserved selected Craft/Upgrade colours and handcraft station information.
+- Restored player attacks on owned tames, including the butcher knife; tame and ballista protection remains.
+- Building from storage still requires the correct nearby station.
+- Updated BepInExPack to 5.4.2351; Jötunn remains 2.30.2.
 
 ## 0.1.15
 
-- Loadout totals: paper panel, worn-slot armour sources, multiplicative attack bonuses, and a scrollable source reader (PR 20)
-- Pause, inventory, and hammer layout dumps only run while the Jötunn debug overlay is on
-- Expansion settings can hide a row until another setting is on (pile range waits for isolate)
-- Already published Plant 0.1.5 and Piles 0.1.5 still start on this Core
+- Improved loadout totals with a paper panel, actual worn-armour sources, combined attack bonuses and scrollable explanations.
+- Reduced unnecessary layout diagnostics outside the debug overlay.
+- Expansion settings can hide dependent controls until their parent option is enabled.
+- Maintained compatibility with the published Plant 0.1.5 and Piles 0.1.5 builds.
 
 ## 0.1.14
 
-- Plant and Piles settings render on their F8 pages (PR 19). Cook and Drawers stay “no configurable settings.”
-- Core Search range also covers piles unless Piles isolates its own range
-- Dedicated-host tames eat from nearby chests again (no local player used to skip the pull)
+- Added Plant and Piles controls to their F8 pages; Cook and Drawers have no configurable settings in this release.
+- Piles use Core's search range unless their separate range is enabled.
+- Fixed nearby-chest tame feeding on dedicated hosts.
 
 ## 0.1.13
 
-- Tab and chests restore native graphics, TMP, hidden objects and CanvasGroups on undress (PR 17)
-- Recipe rows and requirement cells remember native count/quality text and CanvasGroup state so turning the inventory skin off restores them (PR 18)
-- Hammer requirement colours update even when the count text does not
-- Crafting inspect shares tooltip badges and sections, and keeps scroll
-- Split and variant dialogs use paper; native input and selection stay
-- F8 has an ecosystem overview (Core plus Cook / Plant / Piles / Drawers). Cards show the loaded BepInEx version against `versions.yaml`, and Core also shows Jötunn
-- Loadout totals overlay from the armor chip; hover a stat for origins (F8 toggle, not the ledger)
-- Day and time sit on the biome bar (F8)
-- Fermenter, smelter, kiln, cooking station, and beehive hovers show remaining time (F8)
-- Jötunn pin is 2.30.2 (same as the pack). `versions.yaml` is the single pin list
+- Turning inventory styling off restores native graphics, text and visibility, including recipe and requirement rows.
+- Crafting shortage colours refresh correctly, and inspect shares tooltip sections while retaining scroll position.
+- Split-stack and variant dialogs use Restless styling with native input behaviour.
+- Added an F8 ecosystem overview with installed module/version information.
+- Added a loadout totals overlay with stat sources.
+- Added optional day/time information and station timers.
+- Jötunn is pinned to 2.30.2, with package/dependency versions managed centrally.
 
 ## 0.1.12
 
-- Hammer menu no longer re-dresses every piece and moves the grid on idle frames; hover, category, and live resource counts still update
-- Tab inventory paper (bag, chest, craft, skills, collections) only re-dresses when a stack, recipe, or overlay actually changes
+- Reduced unnecessary idle refreshes in the hammer menu and inventory while preserving live selection and material updates.
 
 ## 0.1.11
 
-- Hammer / hoe / serving-tray menu uses the shared paper wells; piece cards keep native counts, stars, arrows and the grey/red availability tint
-- Selected piece gets a compact paper card (name, description, costs, station) docked under the grid, sitting with the menu just above the hotbar; native icons and shortage colours stay
-- The piece grid scales down once to leave room; hovering another piece grows the card downward without moving the grid
-- Two or more costs sit side by side on a taller card so long recipes are not clipped
-- The card is as wide as the piece grid, with the cost half taking more of that width so resource names stay on one line
-- Build list and the two detail columns scroll on vanilla bars (narrow 10-unit tracks), not a kit scrollbar
-- Search box keeps its placeholder, caret and selection
+- Styled hammer, hoe and serving-tray menus with shared piece cards and native availability feedback.
+- Added a compact selected-piece detail card with description, materials and station requirements.
+- Improved fit and scrolling for larger build recipes.
+- Kept native scrollbars, search caret, placeholder and selection behaviour.
 
 ## 0.1.10
 
-- ESC pause labels stay on the paper column (native MenuEntries text stays in the layout instead of being deactivated)
+- Fixed pause-menu labels disappearing from the Restless paper layout.
 
 ## 0.1.9
 
-- World wind stays on the biome plate; the helm wind ring moves left of the minimap so it is not under the buffs
-- Crafting paper stays grey stone: the dresser was retinting the plate black every frame over the right art
-- Compendium, trophies and achievements use the shared paper collection shells (status text and progress stay)
-- ESC and logout/quit confirmations use the shared paper kit
-- M map biome, pin name, filters and switches use the shared paper kit; selected pin art stays live
+- Improved wind information placement around the minimap.
+- Fixed crafting panels becoming too dark during refresh.
+- Updated compendium, trophy and achievement screens, pause/confirmation menus and map controls to the shared interface style.
 
 ## 0.1.8
 
-- Hammer hover now shows our own clean health meter under the piece name/icon plate for anything with a WearNTear, instead of relying on the vanilla piece health bar (which stays hidden by default via the existing PieceHealth debug toggle)
+- Added a clearer hover health meter for placed pieces.
 
 ## 0.1.7
 
-- Wind arrow moves to its own plate on the left of the minimap instead of sharing the biome bar underneath it
+- Moved the wind arrow to a separate plate beside the minimap.
 
 ## 0.1.6
 
-- Vitals bleach the torn fill inside the meter mask so health/stamina/eitr read as colour, not charcoal (notice duration fill unchanged)
-- Build-from-chests no longer unlocks unknown hammer pieces or feast boards
-- Vacuum always syncs the world drop after a partial chest take; restock matches stack quality; storage RPCs reply when off and expire after 3s
+- Improved resource-meter fill colours.
+- Building from storage no longer unlocks unknown pieces or feast boards.
+- Fixed partial ground-item deposits, quality-aware restocking and unanswered storage requests.
 
 ## 0.1.5
 
-- Health/adrenaline and stamina/eitr pairs sit vertically centered on the hotbar
-- RestlessPiles can skip extra slots when dumping into a pile
+- Aligned resource bars around the hotbar.
+- Allowed Piles deposits to protect extra slots.
 
 ## 0.1.4
 
-- Clear Valheim 1.0 cheated item marks on inventory write, load, and world drops (F8, host-locked)
-- Craft panel keeps vanilla wood when paper-panel art is missing (was a black slab)
-- Minimap other-player pins use a cream diamond with an ink edge
-- Craft-from-chests no longer treats a too-low bench as “have the materials” (upgrades stay gated by station level)
-- Jötunn 2.30.1 (BepInExPack stays 5.4.2350)
+- Added host-controlled cheated-item mark clearing.
+- Kept native crafting backgrounds when replacement art is unavailable.
+- Improved minimap player markers.
+- Crafting from storage respects station upgrade levels.
+- Updated Jötunn to 2.30.1; BepInExPack remains 5.4.2350.
 
 ## 0.1.3
 
-- Paper frames on Tab, chests and skills only refit when their bounds move
-- Chip buttons restore native layout on undress; HUD extra slots no longer re-dress every frame
+- Reduced repeated resizing of inventory, container and skills frames.
+- Improved native layout restoration and reduced idle slot refreshes.
 
 ## 0.1.2
 
-- Recipe rows show have/need, including nearby chests
-- Craft-from-chests no longer counts a LeaveOne-reserved last unit as available
-- Adrenaline sits above health on the left of the hotbar; eitr sits above stamina on the right
+- Recipe quantities include nearby storage while respecting Leave one.
+- Adjusted adrenaline/health and eitr/stamina layout.
 
 ## 0.1.1
 
-- Listing describes RestlessCore only
+- Updated the listing to describe Core itself.
 
 ## 0.1.0
 
-- Nearby chests for craft, build, station pull, pet pantry, and ground vacuum
-- Quick stack (`` ` ``) / restock (`Shift+`` ` ``); middle-click slot lock
-- Extra worn slots and Z / X / C; unequip and upgrade park in the bag
-- Area repair, wider station range, repair-on-use, stack size, host-locked F8
-- Swim-wield, tame-safe fire, axe combo, loaded crossbow, death pins
-- Eternal fires, 20 m hoe, floating drops, network uncap
-- Restless HUD, inventory, and map chrome are in this build and still landing — vanilla and Restless currently mix
+- Initial nearby-storage crafting, building, station inputs, tame feeding and ground-item routing.
+- Quick Stack, Restock, cell locks, worn slots and three quick slots.
+- Area repair, wider station range, equipment repair, stack settings and host-controlled configuration.
+- Swimming equipment, crossbow state, tame protection, axe combo and death-pin improvements.
+- Persistent fires, extended terrain limits, floating drops and network settings.
+- Initial Restless HUD, inventory and map presentation.

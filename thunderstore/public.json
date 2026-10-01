@@ -1,0 +1,42 @@
+{
+  "plugin": {
+    "name": "RestlessCore",
+    "description": "A cohesive Valheim interface, nearby-storage crafting, equipment slots and configurable quality-of-life improvements.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/core.md"
+  },
+  "cook": {
+    "name": "RestlessCook",
+    "description": "Cook the haul, make meals and serve feasts. Plan kitchen orders at one table while nearby cooking stations do the work.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/cook.md"
+  },
+  "plant": {
+    "name": "RestlessPlant",
+    "description": "Grow berries, mushrooms and more. Plant aligned rows, harvest nearby crops and replant as you go.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/plant.md"
+  },
+  "piles": {
+    "name": "RestlessPiles",
+    "description": "Turn familiar resource piles into bulk storage. Deposit supplies, take a stack and craft from nearby piles.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/piles.md"
+  },
+  "drawers": {
+    "name": "RestlessDrawers",
+    "description": "Build modular storage walls with visible contents and the same capacity and unlocks as matching vanilla chests.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/drawers.md"
+  },
+  "storage": {
+    "name": "RestlessStorage",
+    "description": "Search nearby storage, see combined item totals and take what you need from the Storekeeper's Table.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/storage.md"
+  },
+  "works": {
+    "name": "RestlessWorks",
+    "description": "Manage nearby production from a work-order board. Make a batch or keep essential supplies stocked.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/works.md"
+  },
+  "pack": {
+    "name": "Restless Valheim",
+    "description": "The Restless collection in one install: a cohesive interface, smoother storage, expanded cooking and easier farming.",
+    "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md"
+  }
+}

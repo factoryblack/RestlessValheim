@@ -1,8 +1,8 @@
 {
   "name": "Restless_Valheim",
   "version_number": "0.1.24",
-  "website_url": "https://github.com/factoryblack/RestlessValheim",
-  "description": "The Restless table in one click: chests, cooking, piles, planting, drawers, storage, and a quieter HUD. Valheim 1.0.",
+  "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md",
+  "description": "The Restless collection in one install: a cohesive interface, smoother storage, expanded cooking and easier farming.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",

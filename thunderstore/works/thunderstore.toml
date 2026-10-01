@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "RestlessWorks"
 versionNumber = "0.1.0"
-description = "A work-order board for kilns, smelters and the other production machines. Needs RestlessCore."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "Manage nearby production from a work-order board. Make a batch or keep essential supplies stocked."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/works.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -37,3 +37,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["crafting", "tweaks", "mods"]
+

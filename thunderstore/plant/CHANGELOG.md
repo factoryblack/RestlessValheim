@@ -1,62 +1,61 @@
 # Changelog
 
+Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## Unreleased
+
+- Berry-bush hover names now identify their own crop instead of displaying generic Pickable text.
+- Refreshed planting, harvest and regrowth guidance.
+
 ## 0.2.0
 
-- A picked mushroom shrinks to a sprout and grows back. On a bush only the berries do that; the bush stays full size
-- Field snap lines up with the crop itself
-- Each extra grid cell pays for its own seed
-- Area harvest includes ripe farm crops you planted
-- Grow-anywhere no longer leaves the plant unable to grow in its biome
-- A bird nest keeps its own text and feathers, and does not pull nearby hives
+- Picked mushrooms shrink and regrow; bushes retain their foliage while berries regrow.
+- Improved field alignment and made every additional grid cell pay its own planting cost.
+- Area harvest includes ripe planted farm crops.
+- Fixed grow-anywhere plants incorrectly retaining a blocked-biome state.
+- Bird nests retain their own feather interaction and do not trigger nearby hive harvesting.
 
 ## 0.1.7
 
-- Grid spacing follows the crop. Minimum spacing 0 uses the room that plant needs to grow
-- An oversized grid plants the cells that sit on cultivated ground and can grow. The rest stay red and are skipped
-- Harvest range picks every ripe player-grown crop nearby, not only the same kind, and only searches that radius
-- A wide cultivator grid stamps crops. The till tool still cultivates one patch
-- A failed grow check logs once and still puts the ghost back
+- Grid spacing follows each crop's needs; zero minimum spacing uses its growth spacing.
+- Large previews plant valid cells and skip invalid ones.
+- Area harvest picks ripe player-grown crops of different types within its radius.
+- Crop-grid size no longer expands the till tool.
+- Improved failed-placement feedback and stability.
 
 ## 0.1.6
 
-- Snap-to-field aligns to the crop itself. A location parent was throwing the cultivator ghost off the bed
+- Fixed field alignment being offset by a plant's parent location.
 
 ## 0.1.5
 
-- Planting, harvest, grid and personal controls sit on the F8 Plant page (PR 19)
+- Added Plant settings and personal controls to its F8 page.
 
 ## 0.1.4
 
-- Grid extras sit on the heightmap instead of a catch-all ray, so a square no longer floats
-- Extra cells that cannot grow (untilled, wrong biome, no sun, no space) paint red and are skipped
-- `[` `]` set width and `-` `=` set depth, so a bed can be 1×5
-- F10 snaps the ghost onto a nearby plant's spacing
-- Grow-anywhere, decorative trees/shrubs/vines, extra saplings, and beehive bulk harvest are settings (off for grow-anywhere)
-- Hover a growing sapling for the wait; hover a one-shot crop to see what will replant
-- Lingonberry bushes and blue mushrooms join the cultivator when those prefabs exist
+- Extra grid cells follow terrain height and show red when they cannot grow.
+- Added independent row/column controls and F10 field alignment.
+- Added configurable saplings, decorative plants and grow-anywhere, plus bulk beehive harvest.
+- Added remaining-time/replant hints and available lingonberry/blue-mushroom entries.
 
 ## 0.1.3
 
-- Mushrooms, thistle, and the other forage crops show a placement ghost again
-- Berry bushes and forage grow their fruit back (about four hours if vanilla left the timer empty)
-- Hover a bare plant to see how long until it fruits
-- Replant still only runs for carrots and other one-shot crops, not bushes
+- Fixed invisible forage placement previews.
+- Bushes and forage regrow their resources and show remaining-time hints.
+- Restricted replanting to one-shot crops rather than bushes.
 
 ## 0.1.2
 
-- Fix cultivator crops that placed with no visible model (mushrooms and other forage). Cloned pieces now force every renderer active and strip any LODGroup, instead of inheriting whatever visibility state the vanilla pickable prefab happened to ship with.
+- Fixed cultivator forage appearing invisible after placement.
 
 ## 0.1.1
 
-- Bulk harvest only treats Restless_* clones or pieces with a creator as player-grown (vanilla bushes stayed “ours”)
-- One-shot crops replant the picked piece, including bulk neighbours; cultivator selection is remembered at 1×1
-- Shrinking the plant grid destroys leftover ghosts instead of hiding them
+- Area harvest distinguishes player-grown crops from wild ones.
+- Improved one-shot replanting and remembered cultivator selection.
+- Shrinking the planting grid removes unused previews.
 
 ## 0.1.0
 
-- Cultivator plants berry bushes, mushrooms, thistle, dandelion, and later-biome forage (skips missing prefabs)
-- Odd planting square (`[` / `]`) places every cell you can afford
-- Bulk harvest of player-grown matching plants
-- One-shot crops replant the last selected cultivator piece
-- Cultivator crop clones now take the vanilla item icon so Jötunn accepts them
-- Grid extras are visual-only (no ZNetView). Default size is 1×1; [ ] grows the square
+- Initial cultivator berries, mushrooms and available forage.
+- Added affordable grid planting, player-grown area harvest and replanting.
+- Used native item icons and local planting previews.

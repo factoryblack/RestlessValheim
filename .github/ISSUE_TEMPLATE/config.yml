@@ -1,0 +1,6 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Player guides and troubleshooting
+    url: https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md
+    about: Installation, controls, recipes and common problems.
+

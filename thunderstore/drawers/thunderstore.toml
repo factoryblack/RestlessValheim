@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "RestlessDrawers"
 versionNumber = "0.1.2"
-description = "Furniture drawers for every vanilla chest. Same slots and unlock. Fronts show what is inside. Needs RestlessCore."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "Build modular storage walls with visible contents and the same capacity and unlocks as matching vanilla chests."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/drawers.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -37,3 +37,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["building", "tweaks", "mods"]
+

@@ -1,105 +1,131 @@
 # Changelog
 
+Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
+
+## Unreleased
+
+- Refreshed the collection overview, package bios and linked player guides.
+
 ## 0.1.24
 
-- RestlessCore 0.2.1 and RestlessCook 0.3.0. Plant 0.2.0, Piles 0.2.0, Drawers 0.1.2, and Storage 0.2.0 stay. Jötunn stays 2.30.2.
+- Clearer Cookbook browsing and real preparation progress, plus improved wood-sealing controls.
+- Included version changes: RestlessCore 0.2.1, RestlessCook 0.3.0.
 
 ## 0.1.23
 
-- RestlessCore 0.2.0, RestlessCook 0.2.0, RestlessPlant 0.2.0, RestlessPiles 0.2.0, RestlessDrawers 0.1.2, and RestlessStorage 0.2.0. Jötunn stays 2.30.2.
+- Introduced Cookbook kitchen orders and added nearby piles to the storage browser, alongside planting and drawer improvements.
+- Included version changes: RestlessCore 0.2.0, RestlessCook 0.2.0, RestlessPlant 0.2.0, RestlessPiles 0.2.0, RestlessDrawers 0.1.2, RestlessStorage 0.2.0.
 
 ## 0.1.22
 
-- RestlessCore 0.1.18 and RestlessStorage 0.1.0. Cook 0.1.9, Plant 0.1.7, Piles 0.1.7, and Drawers 0.1.1 stay. Jötunn stays 2.30.2.
+- Added the Storekeeper's Table storage browser to the collection.
+- Included version changes: RestlessCore 0.1.18, RestlessStorage 0.1.0.
 
 ## 0.1.21
 
-- RestlessCore 0.1.17, RestlessPlant 0.1.7, and RestlessPiles 0.1.7. Cook 0.1.9 and Drawers 0.1.1 stay. BepInExPack 5.4.2351. Jötunn stays 2.30.2.
+- Improved UI scrolling, split-stack routing and crop planting behaviour.
+- Included version changes: RestlessCore 0.1.17, RestlessPlant 0.1.7, RestlessPiles 0.1.7, BepInExPack 5.4.2351.
 
 ## 0.1.20
 
-- RestlessCore 0.1.16 and RestlessPlant 0.1.6. Cook 0.1.9, Piles 0.1.6, and Drawers 0.1.1 stay. BepInExPack 5.4.2351. Jötunn stays 2.30.2.
+- Improved crafting requirements, station information and field alignment.
+- Included version changes: RestlessCore 0.1.16, RestlessPlant 0.1.6, BepInExPack 5.4.2351.
 
 ## 0.1.19
 
-- RestlessCore 0.1.15, RestlessPiles 0.1.6, and RestlessDrawers 0.1.1. Plant 0.1.5 and Cook 0.1.9 stay. Jötunn stays 2.30.2.
+- Improved loadout totals and drawer presentation.
+- Included version changes: RestlessCore 0.1.15, RestlessPiles 0.1.6, RestlessDrawers 0.1.1.
 
 ## 0.1.18
 
-- RestlessCore 0.1.14, RestlessPlant 0.1.5, and RestlessPiles 0.1.5. Cook 0.1.9 and Drawers 0.1.0 unchanged. Jötunn stays 2.30.2.
+- Added expansion settings pages and updated storage-range behaviour.
+- Included version changes: RestlessCore 0.1.14, RestlessPlant 0.1.5, RestlessPiles 0.1.5.
 
 ## 0.1.17
 
-- RestlessCore 0.1.13 and RestlessDrawers 0.1.0. Jötunn stays 2.30.2. Cook, plant and piles unchanged.
+- Added the ecosystem overview and introduced drawer cabinets.
+- Included version changes: RestlessCore 0.1.13, RestlessDrawers 0.1.0.
 
 ## 0.1.16
 
-- One pack bump: RestlessCore 0.1.12 (idle hammer and Tab skip). Cook, plant and piles unchanged.
+- Reduced unnecessary idle inventory and hammer-menu refreshes.
+- Included version changes: RestlessCore 0.1.12.
 
 ## 0.1.15
 
-- One pack bump: Jötunn 2.30.2. Core, cook, plant and piles unchanged.
+- Updated the shared Jötunn dependency.
+- Included version changes: Jötunn 2.30.2.
 
 ## 0.1.14
 
-- One pack bump: RestlessCore 0.1.11 (build-menu paper) and RestlessPlant 0.1.4 (grid snap, rows×columns, field snap, extras). Cook and piles unchanged.
+- Improved build-menu presentation and expanded planting-grid controls.
+- Included version changes: RestlessCore 0.1.11, RestlessPlant 0.1.4.
 
 ## 0.1.13
 
-- One pack bump: RestlessCook 0.1.9 (r2modman custom plates). Core, plant and piles unchanged.
+- Fixed custom cooking models in mod-manager installations.
+- Included version changes: RestlessCook 0.1.9.
 
 ## 0.1.12
 
-- One pack bump: RestlessCore 0.1.10 (ESC pause labels). Cook, plant and piles unchanged.
+- Fixed pause-menu label visibility.
+- Included version changes: RestlessCore 0.1.10.
 
 ## 0.1.11
 
-- One pack bump: RestlessCore 0.1.9, RestlessCook 0.1.8, RestlessPlant 0.1.3. RestlessPiles stays 0.1.4.
+- Updated Core, cooking and planting with their latest fixes.
+- Included version changes: RestlessCore 0.1.9, RestlessCook 0.1.8, RestlessPlant 0.1.3.
 
 ## 0.1.10
 
-- Full stack: RestlessCore 0.1.8, RestlessCook 0.1.7, RestlessPiles 0.1.3, and RestlessPlant 0.1.2
+- Updated the collection with UI, food, pile and planting fixes.
+- Included version changes: RestlessCore 0.1.8, RestlessCook 0.1.7, RestlessPiles 0.1.3, RestlessPlant 0.1.2.
 
 ## 0.1.9
 
-- Full stack: RestlessCore 0.1.6, RestlessCook 0.1.6, RestlessPiles 0.1.3, and RestlessPlant 0.1.1
+- Updated the collection components.
+- Included version changes: RestlessCore 0.1.6, RestlessCook 0.1.6, RestlessPiles 0.1.3, RestlessPlant 0.1.1.
 
 ## 0.1.8
 
-- Full stack: RestlessCore 0.1.6, RestlessCook 0.1.4, RestlessPiles 0.1.2, and RestlessPlant 0.1.1
+- Updated Core, cooking, pile storage and planting.
+- Included version changes: RestlessCore 0.1.6, RestlessCook 0.1.4, RestlessPiles 0.1.2, RestlessPlant 0.1.1.
 
 ## 0.1.7
 
-- Full stack: RestlessCore 0.1.5, RestlessCook 0.1.3, RestlessPiles 0.1.1, and RestlessPlant 0.1.0
+- Updated interface and food presentation alongside pile and planting fixes.
+- Included version changes: RestlessCore 0.1.5, RestlessCook 0.1.3, RestlessPiles 0.1.1, RestlessPlant 0.1.0.
 
 ## 0.1.6
 
-- Full stack: RestlessCore 0.1.5, RestlessCook 0.1.2, RestlessPiles 0.1.0, and RestlessPlant 0.1.0
+- Added Piles and Plant to the collection.
+- Included version changes: RestlessCore 0.1.5, RestlessCook 0.1.2, RestlessPiles 0.1.0, RestlessPlant 0.1.0.
 
 ## 0.1.5
 
-- Installs RestlessCore 0.1.5 and RestlessCook 0.1.2 with BepInEx 5.4.2350 and Jötunn 2.30.1
+- Updated Core and Cook with their dependencies.
+- Included version changes: RestlessCore 0.1.5, RestlessCook 0.1.2, BepInEx 5.4.2350, Jötunn 2.30.1.
 
 ## 0.1.4
 
-- Installs RestlessCore 0.1.4 and RestlessCook 0.1.1 with BepInEx 5.4.2350 and Jötunn 2.30.1
+- Updated Core and Cook.
+- Included version changes: RestlessCore 0.1.4, RestlessCook 0.1.1, BepInEx 5.4.2350, Jötunn 2.30.1.
 
 ## 0.1.3
 
-- First listing as Restless Valheim (Thunderstore name `Restless_Valheim`; RestlessCorePack is the old package)
-- Pack icon is the original stone rune R
-- Installs RestlessCore 0.1.3 and RestlessCook 0.1.0 with BepInEx and Jötunn
+- First listing under the current Restless Valheim package name.
+- Included version changes: RestlessCore 0.1.3, RestlessCook 0.1.0.
+- Package identifier: `Restless_Valheim`. The earlier CorePack listing is not this package.
 
 ## 0.1.2
 
-- Relisted as a Valheim **modpack** (Modpacks category), not a standalone mod
-- Pack icon is the existing stone rune R (not a new mark)
-- Installs RestlessCore 0.1.2 and RestlessCook 0.1.0 with BepInEx and Jötunn
+- Listed as a modpack installation bundle, rather than a standalone plugin.
+- Included version changes: RestlessCore 0.1.2, RestlessCook 0.1.0.
 
 ## 0.1.1
 
-- Listing describes this pack only
+- Updated the listing to describe the pack itself.
 
 ## 0.1.0
 
-- RestlessCore with BepInEx and Jötunn
+- Initial Core bundle with BepInEx and Jötunn.

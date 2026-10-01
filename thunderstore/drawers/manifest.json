@@ -1,8 +1,8 @@
 {
   "name": "RestlessDrawers",
   "version_number": "0.1.2",
-  "website_url": "https://github.com/factoryblack/RestlessValheim",
-  "description": "Furniture drawers for every vanilla chest. Same slots and unlock. Fronts show what is inside. Needs RestlessCore.",
+  "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/drawers.md",
+  "description": "Build modular storage walls with visible contents and the same capacity and unlocks as matching vanilla chests.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",

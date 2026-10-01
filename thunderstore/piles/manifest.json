@@ -1,8 +1,8 @@
 {
   "name": "RestlessPiles",
   "version_number": "0.2.0",
-  "website_url": "https://github.com/factoryblack/RestlessValheim",
-  "description": "Wood stacks and stone piles hold as much as you dump in. E to open, take a bag's worth, or ` the rest. Needs RestlessCore.",
+  "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/piles.md",
+  "description": "Turn familiar resource piles into bulk storage. Deposit supplies, take a stack and craft from nearby piles.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",

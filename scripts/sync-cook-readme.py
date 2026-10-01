@@ -1,4 +1,4 @@
-# Regenerates thunderstore/cook/README.md from cook.yaml.
+# Generates the player recipe reference from cook.yaml; never overwrites package copy.
 # Source of truth is the yaml. Full-size plates live in docs/cook/wiki/.
 from pathlib import Path
 import json
@@ -233,101 +233,63 @@ def md_row(cells):
     return "| " + " | ".join(cells) + " |"
 
 
-lines = []
-add = lines.append
+# Player references are generated independently of the editorial package page.
+import sys
 
-add("# RestlessCook")
-add("")
-add("Valheim 1.0 cooking for Restless. **Cook the haul, make meals, turn meals into feasts.**")
-add("")
-add("Hard-depends on **RestlessCore**, **BepInExPack 5.4.2350**, and **Jötunn 2.30.1**. Everyone on the server needs this mod (minor version match).")
-add("")
-add("v0.1 is Meadows through Ashlands. Deep North waits.")
-add("")
-add("This page is the recipe wiki. Isolated plates are the full renders; the in-game slots use 256px copies of the same art. The graph itself is [`cook.yaml`](https://github.com/factoryblack/RestlessValheim/blob/main/cook.yaml).")
-add("")
-add("## How it works")
-add("")
-add("1. Cook the raw meat and fish first.")
-add("2. Turn those cuts (and forage) into prepared meals.")
-add("3. Assemble meals into feast boards. Two sideboards bundle leftover Mistlands and Ashlands plates so they still reach a vanilla feast.")
-add("")
-add("Every prepared meal still reaches at least one feast. Existing vanilla feasts stay valid sinks. Protein recipes that already exist are rewritten in place so they ask for the cooked cut.")
-add("")
-add("Vanilla feasts stay the balanced white fork. Custom feast A is health. Custom feast B is stamina. Mistlands and Ashlands custom feasts also carry eitr. Custom feasts consume finished meals, so they beat the vanilla board rather than matching it. Hidden Hills and Cinder sideboards are assembly pieces, not food.")
-add("")
-add("The Food preparation table and Serving tray are the vanilla pieces, unlocked in Meadows: 10 wood / 8 resin / 6 leather scraps for the table, 6 wood / 4 leather scraps / 2 resin for the tray at a workbench. Meadows and Black Forest custom boards do not ask for Bog Witch spices. Later custom feasts still do.")
-add("")
-add("## The matrix")
-add("")
-add("All 81 graph rows. Custom dishes use the isolated plate thumbs; vanilla rows use Iron Gate icons.")
-add("")
-add(md_row(["", "Dish", "Kind", "Biome", "Recipe", "H/S/E", "Goes into"]))
-add(md_row(["---", "---", "---", "---", "---", "---", "---"]))
-for row in items:
-    add(md_row([
-        icon_md(row),
-        row["name"],
-        KIND.get(row["kind"], row["kind"]),
-        TIER.get(row["tier"], row["tier"]),
-        recipe(row),
-        stats(row),
-        feeds(row),
-    ]))
-add("")
-add("## Plates")
-add("")
-add("Full-size isolated renders, grouped by biome. Meals first, then feasts, then sideboards.")
-add("")
+BASE = root / "docs/player/recipes"
+links = {i["id"]: i["tier"] + ".md#" + i["id"].replace("_", "-") for i in items}
 
+def safe(text):
+    return str(text).replace("|", "\\|")
+
+def feed_links(row):
+    return ", ".join("[" + safe(by_id[f]["name"]) + "](" + links[f] + ")" for f in row["feeds"] if f in by_id) or "No further recipe listed"
+
+def food_details(row):
+    if row.get("kind") == "sideboard":
+        return "Not edible; used as a recipe ingredient."
+    if "food" not in row and "food_stamina" not in row:
+        return "Vanilla values; not overridden by this graph."
+    return "Health: {} · Stamina: {} · Eitr: {} · Regeneration: {} per tick · Duration: {} minutes".format(row.get("food", 0), row.get("food_stamina", 0), row.get("food_eitr", 0), row.get("food_regen", 0), row.get("food_minutes", 0))
+
+planned = {}
+index = ["# Cook recipe reference", "", "Ingredients, station requirements, food values and recipe links, grouped by biome.", "", "[Learn the kitchen first](../cook.md) · [All player guides](../README.md)", "", "Generated from `cook.yaml`. This reference follows current main; older releases can use different recipes. Native recipe discovery and station upgrades still apply.", "", "## Browse by biome", "", "| Biome | Entries |", "| --- | --- |"]
 for tier in TIERS:
-    rows = [i for i in items if i["tier"] == tier and i["operation"] == "add"]
-    if not rows:
-        continue
-    add(f"### {TIER[tier]}")
-    add("")
-    for kind in ("meal", "feast", "sideboard"):
-        group = [i for i in rows if i["kind"] == kind]
-        if not group:
-            continue
-        add(f"#### {KIND[kind]}s")
-        add("")
-        for row in group:
-            add(f"**{row['name']}**")
-            add("")
-            add(plate(row))
-            add("")
-            add(f"- Recipe: {recipe(row)}")
-            add(f"- Station: {station(row)}")
-            add(f"- Stats: {stats(row)}")
-            add(f"- Goes into: {feeds(row)}")
-            add("")
-    add("")
-
-rewrites = [i for i in items if i["operation"] == "rewrite"]
-add("## Vanilla rewrites")
-add("")
-add("These keep their vanilla identity. Ingredients change in place; there is no second Meat Platter.")
-add("")
-add(md_row(["", "Dish", "Biome", "Now asks for"]))
-add(md_row(["---", "---", "---", "---"]))
-for row in rewrites:
-    add(md_row([icon_md(row), row["name"], TIER.get(row["tier"], row["tier"]), recipe(row)]))
-add("")
-add("## Vanilla spices")
-add("")
-add("Not new items. They sit on feast boards.")
-add("")
-add("- Woodland Herb Blend (`SpiceForests`)")
-add("- Seafarer's Herbs (`SpiceOceans`)")
-add("- Mountain Peak Pepper Powder (`SpiceMountains`)")
-add("- Grasslands Herbalist Harvest (`SpicePlains`)")
-add("- Herbs of the Hidden Hills (`SpiceMistlands`)")
-add("- Fiery Spice Powder (`SpiceAshlands`)")
-add("")
-add("This package does not replace RestlessCore. Install the **Restless Valheim** modpack, or Core then this.")
-add("")
-
-out = root / "thunderstore" / "cook" / "README.md"
-out.write_text("\n".join(lines), encoding="utf-8")
-print(f"wrote {out} ({len(items)} rows)")
+    rows = [i for i in items if i["tier"] == tier]
+    index.append("| [" + TIER[tier] + "](" + tier + ".md) | " + str(len(rows)) + " |")
+index += ["", "## Reading the guide", "", "**New dish** means a custom addition; **Changed vanilla recipe** keeps the original item but changes its ingredients; **Vanilla reference** connects the food graph without adding a second item. An empty ingredient list on a reference is not a free crafting recipe.", "", "Each entry gives its output quantity and station level when specified by the graph. Sideboards are not edible. Food regeneration is per tick, not per second.", "", "[Changed vanilla recipes](vanilla-changes.md) · [Dish artwork gallery](gallery.md)", "", "There are " + str(len(items)) + " food graph entries, including references. This is not a count of newly added items.", ""]
+planned[BASE / "README.md"] = "\n".join(index)
+for tier in TIERS:
+    rows = [i for i in items if i["tier"] == tier]
+    page = ["# " + TIER[tier] + " recipes", "", "[Recipe index](README.md) · [Kitchen guide](../cook.md)", "", "Generated from `cook.yaml`; current-source reference.", "", "## Dishes", ""]
+    for row in rows:
+        page.append("- [" + safe(row["name"]) + "](#" + row["id"].replace("_", "-") + ")")
+    for row in rows:
+        page += ["", '<a id="' + row["id"].replace("_", "-") + '"></a>', "", "## " + row["name"], "", icon_md(row), "", KIND.get(row["kind"], row["kind"]) + " · " + {"add":"New dish", "rewrite":"Changed vanilla recipe", "reference":"Vanilla reference"}.get(row["operation"], row["operation"]), "", "- Ingredients: " + (recipe(row) if row["uses"] else "Use the native recipe; this entry does not supply an ingredient override."), "- Output quantity: " + (str(row["output_amount"]) if "output_amount" in row else "Native/default output"), "- Station: " + (station(row) or "Native station; not overridden here"), "- " + food_details(row), "- Used in: " + feed_links(row)]
+    page += ["", "[Recipe index](README.md) · [Kitchen guide](../cook.md)", ""]
+    planned[BASE / (tier + ".md")] = "\n".join(page)
+rewrite = ["# Changed vanilla recipes", "", "These items keep their vanilla identity. Ingredients are changed in place, rather than adding duplicate items.", "", "[Recipe index](README.md) · [Kitchen guide](../cook.md)", "", "| Dish | Biome | Ingredients and output |", "| --- | --- | --- |"]
+for row in items:
+    if row["operation"] == "rewrite":
+        rewrite.append(md_row(["[" + safe(row["name"]) + "](" + links[row["id"]] + ")", TIER.get(row["tier"], row["tier"]), safe(recipe(row))]))
+rewrite += ["", "The preparation table and serving tray have their separate furniture/tool recipes described in the kitchen guide.", ""]
+planned[BASE / "vanilla-changes.md"] = "\n".join(rewrite)
+gallery = ["# Dish artwork", "", "Full-size reference renders of the added meals, feasts and sideboards. These images are artwork references; use gameplay screenshots to judge their in-game scale and appearance.", "", "[Recipe index](README.md) · [Kitchen guide](../cook.md)", ""]
+for tier in TIERS:
+    gallery += ["## " + TIER[tier], ""]
+    for row in items:
+        if row["tier"] == tier and row["source"] == "custom" and row["operation"] == "add":
+            gallery += ["### [" + row["name"] + "](" + links[row["id"]] + ")", "", plate(row), ""]
+planned[BASE / "gallery.md"] = "\n".join(gallery)
+if sys.argv[1:] not in ([], ["--check"]):
+    raise SystemExit("Usage: sync-cook-readme.py [--check]")
+if sys.argv[1:] == ["--check"]:
+    stale = [str(p.relative_to(root)) for p, s in planned.items() if not p.exists() or p.read_text(encoding="utf-8").replace("\r\n", "\n") != s]
+    if stale:
+        raise SystemExit("Recipe guides are stale; run python scripts/sync-cook-readme.py:\n" + "\n".join(stale))
+    print("Cook recipe guides match (" + str(len(items)) + " entries)")
+else:
+    for path, text in planned.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8", newline="\n")
+    print("Updated " + str(len(planned)) + " recipe guides; package README preserved")

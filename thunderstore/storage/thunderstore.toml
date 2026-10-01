@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "RestlessStorage"
 versionNumber = "0.2.0"
-description = "A Storekeeper's Table for the chests around you. The network window comes next. Needs RestlessCore."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "Search nearby storage, see combined item totals and take what you need from the Storekeeper's Table."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/storage.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -37,3 +37,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["building", "tweaks", "mods"]
+

@@ -1,0 +1,23 @@
+name: Feature suggestion
+description: Suggest a focused Restless improvement.
+title: "[Suggestion] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is awkward or unclear?
+      description: Describe the player task and which module it affects.
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: Suggested improvement
+      description: Explain how it preserves Valheim progression and fits the existing systems.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or screenshots
+

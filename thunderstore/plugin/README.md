@@ -1,29 +1,55 @@
 # RestlessCore
 
-The Restless table for **Valheim 1.0**. Nearby chests count as yours, the HUD stays out of the way, and the host locks the rules so a guest cannot quietly change the world.
+**Less friction. Clearer information. Still Valheim.**
 
-Open **F8** in-game, or Restless from the pause menu. Vanilla Settings is left alone.
+RestlessCore brings the HUD, inventory, crafting and everyday quality-of-life systems together. It is the foundation for the Restless collection and works on its own.
 
-Needs **BepInExPack 5.4.2351** and **Jötunn 2.30.2**.
+> (screenshot coming) — HUD at a finished base, with food/status effects and a populated hotbar.
 
-## Chests, without the running
+## Spend less time moving materials
 
-If a chest is close, it is in play. Crafting and building read those boxes. Smelters, kilns, cooking stations, and fermenters pull from them. Hungry tames eat matching food out of them. Ground scrap that already belongs in a chest gets vacuumed in.
+Craft and build using eligible nearby chests when your bag runs short. Quick Stack deposits into matching storage; Restock tops up what you already carry. Hungry tames can eat from nearby chests, and supported station interactions can find their inputs and fuel there.
 
-`` ` `` quick-stacks matching piles. `Shift+`` ` `` restocks the bag from those same chests. Middle-click locks a slot so those keys leave it alone.
+Hotbar, equipment/quick slots and locked bag cells stay protected. Empty chests are ignored by Quick Stack and ground-item routing. Material pulls leave one item behind by default, keeping the chest stack available as a destination.
 
-## Building and the small stuff
+## A clearer view of your character
 
-The hammer repairs a circle, not one piece. Stations reach a bit further, and using one repairs what that station knows how to fix. Campfires and hearths stay lit. Held torches do not burn down. The hoe will dig or raise to 20 m. Most drops float; nails still sink.
+Dedicated equipment slots and **Z / X / C** quick slots sit beside the bag. Item tooltips show quality and separate set bonuses from individual item stats. Loadout totals let you inspect values and their sources.
 
-Tools stay in hand while you swim. A loaded crossbow keeps the bolt when you put it away. Axes combo while you chop. Tames do not team-kill each other, and you do not team-kill them (player PvP is still vanilla). Death pins clear when the tomb is empty.
+The HUD, minimap, inventory/crafting, build information, map and menus share a restrained torn-paper treatment. Notifications stack, and repeated messages consolidate.
 
-Stacks default to 2×, gear stays 1×. Extra worn slots plus **Z / X / C** sit beside the hotbar.
+> (screenshot coming) — Inventory/crafting with a readable set-piece tooltip.
 
-## How it looks
+## Small jobs, fewer clicks
 
-Health and adrenaline sit left of the hotbar; stamina and eitr sit right. Notices stack top-left. The minimap tears at the edge; wind sits on the biome plate, and the helm ring moves left of the map so it is not under the buffs. Hammer a placed piece and a health meter sits under the name plate.
+Repair an area, repair equipment at a valid station and seal wood against rain for resin. Keep a loaded crossbow loaded when swapping, keep tools equipped in water and clear death pins when recovery is complete.
 
-Tab, inspect, and crafting are mid-migration — some of that is still vanilla wood under Restless paper. F8 turns the Restless pieces on and off.
+Stacks default to **2×**; single-item gear stays single. Persistent fires, terrain limits and other gameplay options are configurable. Tames do not hurt players or each other, and ballistae ignore them; **players can still kill their own tames**.
 
-Gameplay config is **host-locked**. The look is client-local.
+## Start here
+
+1. Install Core and its dependencies with a mod manager.
+2. Launch modded and open **F8**, or **Restless** in the pause menu.
+3. Review gameplay settings with the host and choose your personal HUD preferences.
+
+| Default control | Action |
+| --- | --- |
+| Backtick, left of 1 | Quick Stack |
+| Shift + Backtick | Restock |
+| Middle mouse on a bag cell | Lock/unlock; cream diamond indicator |
+| Z / X / C | Quick slots |
+| F8 | Restless settings |
+
+Gameplay rules are host/server-controlled with locking enabled. Keybinds and visual preferences remain local. Core overlaps other storage-automation, equipment-slot and HUD mods; consult the guide before combining duplicate systems.
+
+> (screenshot coming) — F8 ecosystem overview and Core settings.
+
+Cook, Plant, Piles, Drawers, Storage and Works are separate expansions that use this foundation. Core does not add a skill tree or rarity gameplay by itself.
+
+## Installation and help
+
+Needs **BepInExPack 5.4.2351** and **Jötunn 2.30.2**. Use matching released plugin versions on all clients and the server.
+
+[Player guide](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/core.md) · [Installation](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/install.md) · [Changelog](https://github.com/factoryblack/RestlessValheim/blob/main/thunderstore/plugin/CHANGELOG.md) · [Report a problem](https://github.com/factoryblack/RestlessValheim/issues/new/choose)
+
+[Explore the Restless collection](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/).

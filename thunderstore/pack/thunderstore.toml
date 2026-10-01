@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "Restless_Valheim"
 versionNumber = "0.1.24"
-description = "Restless Valheim: BepInEx, Jötunn, RestlessCore, RestlessCook, RestlessPiles, RestlessPlant, RestlessDrawers, and RestlessStorage."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "The Restless collection in one install: a cohesive interface, smoother storage, expanded cooking and easier farming."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -34,3 +34,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["modpacks"]
+

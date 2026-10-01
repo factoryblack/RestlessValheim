@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "RestlessPiles"
 versionNumber = "0.2.0"
-description = "Wood stacks and stone piles become uncapped stores. E opens a tray; Take stack grabs one bag stack. Needs RestlessCore."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "Turn familiar resource piles into bulk storage. Deposit supplies, take a stack and craft from nearby piles."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/piles.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -33,3 +33,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["tweaks", "misc", "mods"]
+

@@ -1,24 +1,26 @@
 # Changelog
 
+Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## Unreleased
+
+- Cabinets now fit below a metre-high floor and use shared corner snap points.
+- Refreshed cabinet, access and installation guidance.
+
 ## 0.1.2
 
-- Each cabinet is the same 1.1 m cube, so a mixed grid shares one pitch. The old 4 cm overlap is gone
+- Standardised all cabinet tiers to the same 1.1 m size for mixed arrangements, removing the previous overlap.
 
 ## 0.1.1
 
-- Drawer cabinets use the Meshy metal and roughness pictures, folded into the chest shader's surface map, so bands can catch light and wood stays duller
-- Hammer icons no longer carry a black plate behind the cabinet
+- Improved metal highlights and matte wood on cabinet materials.
+- Removed unwanted black backgrounds from hammer icons.
 
 ## 0.1.0
 
-- Wood, personal, reinforced, and black metal drawers clone their matching vanilla chests
-- Same slot count, same recipe, same unlock timing
-- One container per cabinet; the fronts are visual only
-- Shared grid: any drawer snaps to any other when close and facing the same way
-- Snap pitch follows the cabinet you are joining, with a 4cm overlap so lids and sides touch
-- Drawers skip WearNTear support: they will not collapse, and they no longer sit on the leftover chest AABB
-- Same-column aim stacks on the lid; occupancy is the cell origin, not the collider
-- Lit shader comes from the chest body — skip snow / stack / wind overlays (those explode the ghost)
-- The four most abundant stacks show as icons on the front
-- Nearby craft, build, quick-stack, and vacuum treat them as chests
-- First Thunderstore ship. F8 links this page once Core 0.1.13 is loaded.
+- Added wood, personal, reinforced and black metal cabinets matching their vanilla chest recipes, unlocks and capacity.
+- Each cabinet is one container; its front displays the four most abundant stacks.
+- Added mixed-tier snapping and furniture support handling.
+- Integrated eligible drawers with nearby crafting, building, Quick Stack and ground-item routing.
+- Added the F8 package link with Core 0.1.13.
+- Initial snapping used cabinet-relative spacing with overlap; later releases change this.

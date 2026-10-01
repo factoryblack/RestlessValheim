@@ -1,24 +1,43 @@
 # RestlessPiles
 
-The wood stack and the stone pile finally hold what you actually cut.
+**Your wood stack can hold the wood you actually cut.**
 
-**E** opens a tray. **Take stack** puts one bag-sized bite in your inventory. **`** dumps every matching stack you are carrying. Smash or hammer-remove the pile and the extras spill as bag-sized drops, along with the wood or stone you spent to place it.
+RestlessPiles turns supported vanilla resource stacks and piles into bulk stores for their own material. Existing placed piles keep working.
 
-Needs **RestlessCore**, plus BepInEx and Jötunn. Everyone on the server should be on the same minor version.
+> (screenshot coming) — Pile tray showing stored resources and Take stack/Stack controls.
 
-This is still the hammer piece you already know — not a chest, not a ground drop. Existing piles in a save keep working; you do not have to tear them down.
+## Store it where it belongs
 
-## Using one
+A wood stack holds wood. A stone pile holds stone. Supported single-resource piles cover available wood variants, stone, coal, black marble, grausten, bones, skulls and coins.
 
-A stone pile only takes stone. A wood stack only takes wood. Empty is fine: the piece still knows what it is, so vacuum and `` ` `` will fill it.
+An empty pile still knows its material. It is a buildable pile, with no mixed-item chest inventory or extra bag grid.
 
-- **Take stack** fills one matching partial in the bag, or starts one new max stack. It never dumps the whole pile into every free slot.
-- **Stack** on the tray (or `` ` `` nearby) puts matching bag stacks into the pile. Hotbar, extra slots, and locked cells stay put.
-- **Vacuum** prefers a matching pile, then a chest that already has that item.
-- Crafting and building can pull from a nearby pile after they have checked chests.
+## Deposit and withdraw
 
-Wood, finewood, core wood, yggdrasil, ashwood, stone, coal, black marble, grausten, bones, skulls, and the coin piles are included — anything that is a `_stack` or `_pile` and costs one stackable resource.
+Press **E** to open a pile. **Stack** deposits matching bag items; **Take stack** fills one matching partial stack or starts one new stack. Core's **Backtick** Quick Stack also deposits into nearby matching piles.
 
-Host-locked toggle. Range follows Core Search range unless Isolate pile range is on (F8).
+Hotbar, equipment/quick slots and locked cells remain protected. Removing or destroying a pile returns stored extras and its build materials as ordinary drops.
 
-Install the **Restless Valheim** modpack, or Core then this. This package does not replace RestlessCore.
+## Part of the workshop
+
+Crafting and building can use nearby pile stock after checking chests. Supported station interactions find pile inputs and fuel, and ground-item routing prefers an appropriate pile before a matching chest.
+
+Storage lists nearby piles alongside containers. Cook can use their stock in kitchen orders.
+
+## Start here
+
+1. Install Piles with Core.
+2. Place a supported pile, or visit one already built.
+3. Open its tray and deposit matching resources.
+
+Use **F8 → RestlessPiles** for its host-controlled toggle and range settings. Piles follow Core's search range by default. Enable **Isolate pile range** to use a separate radius; that slider appears only when needed.
+
+Piles are nearby physical stores, not global access to every pile in the world.
+
+## Installation and help
+
+Requires **RestlessCore**, BepInExPack and Jötunn. A mod manager installs the required dependencies. Use matching released plugin versions on all clients and the server.
+
+[Player guide](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/piles.md) · [Installation](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/install.md) · [Changelog](https://github.com/factoryblack/RestlessValheim/blob/main/thunderstore/piles/CHANGELOG.md) · [Report a problem](https://github.com/factoryblack/RestlessValheim/issues/new/choose)
+
+[RestlessCore](https://thunderstore.io/c/valheim/p/Restless/RestlessCore/) is the shared foundation. [Explore the collection](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/).

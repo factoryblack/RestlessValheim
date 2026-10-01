@@ -5,8 +5,8 @@ schemaVersion = "0.0.1"
 namespace = "Restless"
 name = "RestlessCore"
 versionNumber = "0.2.1"
-description = "Valheim 1.0 QoL: nearby chests for craft, build and stations; extra armor and Z/X/C slots; F8 host-locked settings. HUD and inventory are mid-migration — vanilla and Restless currently mix."
-websiteUrl = "https://github.com/factoryblack/RestlessValheim"
+description = "A cohesive Valheim interface, nearby-storage crafting, equipment slots and configurable quality-of-life improvements."
+websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/core.md"
 containsNsfwContent = false
 
 [package.dependencies]
@@ -32,3 +32,4 @@ communities = ["valheim"]
 
 [publish.categories]
 valheim = ["client-side", "tweaks"]
+

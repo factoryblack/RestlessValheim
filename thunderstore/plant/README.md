@@ -1,24 +1,50 @@
 # RestlessPlant
 
-Berry bushes and forage on the cultivator, the way carrots already work.
+**A better rhythm for the garden.**
 
-Plant a raspberry bush. Plant thistle. Plant a square of mushrooms if you have the stock. Pick one player-grown plant and its neighbours come with it. Hover a bare bush and the look prompt tells you when the fruit is coming back.
+Plant forage alongside ordinary crops, line up new rows and harvest an area without clicking every plant.
 
-Needs **RestlessCore**, plus BepInEx and Jötunn. Everyone on the server should be on the same minor version.
+> (screenshot coming) — Rectangular planting preview aligned with an existing field.
 
-Vanilla carrots, flax, and the rest stay as they are. The square and the harvest pass apply to them too.
+## Grow more of the world
 
-## In the field
+The cultivator gains berry bushes, mushrooms, thistle, dandelion and available later-biome forage. Each placement costs the resource it grows. Additional saplings and decorative flora have their own host settings.
 
-The cultivator gains raspberry, blueberry, cloudberry, lingonberry, mushrooms (including yellow and blue), thistle, dandelion, magecap, jotun puffs, smoke puff, and fiddlehead. Each costs one of the thing it grows. Optional extras add ancient / ygga / autumn birch / ashwood saplings, plus small trees, shrubs, vines, and stick/stone/flint. If a prefab is missing in your build, that crop is skipped so the rest still load.
+Vanilla carrots, turnips, onions, barley and flax still work with the planting and harvest tools. Missing game prefabs are skipped rather than stopping the whole module.
 
-- **`[` / `]`** sets how many plants wide. **`-` / `=`** sets how deep. Place once; every cell that can grow and that you can afford goes down.
-- **F10** snaps the ghost onto a nearby plant so a new row lines up with the field.
-- Extra cells snap to the soil. A cell that cannot grow (untilled, wrong biome, no sun, no room) shows red and is left empty, unless **Grow anywhere** is on.
-- Picking a **player-grown** plant also picks matching neighbours. Using a hive can take neighbouring hives too. Wild meadow raspberries stay wild.
-- Carrots and other one-shot crops **replant** if you still have the seed. Hover a ripe one-shot to see what goes back in.
-- Bushes and mushrooms keep their fruit cycle. They are not ripped up on pick. A picked mushroom shrinks and grows back. On a bush only the berries do that. Hover the bare plant for the wait, or a sapling still growing.
+## Rows that fit the crop
 
-Host-locked extras, grow-anywhere, harvest, and replant live in `restless.plant.cfg`. Grid size and snap are yours.
+Change grid width and depth independently. Spacing follows the selected crop's growth needs, and field alignment helps extend existing rows.
 
-Install the **Restless Valheim** modpack, or Core then this. This package does not replace RestlessCore.
+Every planted cell consumes its own materials. Cells that lack suitable ground, biome, sun, space or stock are red and skipped; valid cells can still be placed. The till tool remains a single terrain patch.
+
+## Pick, replant, regrow
+
+Area harvest picks eligible ripe **player-grown** crops nearby, including different crop types. One-shot crops can replant when you can pay for the replacement.
+
+Berry bushes and forage retain their fruit cycle. Mushrooms shrink and regrow; bushes keep their full-size foliage. Hover a growing or harvested plant for the wait. Wild crops remain outside the player-grown area-harvest rule.
+
+> (screenshot coming) — Mixed forage garden with a readable regrowth timer.
+
+## Start planting
+
+1. Install Plant with Core.
+2. Equip the cultivator and choose an available plant.
+3. Start with a small preview; expand and align it as your field and stock allow.
+
+| Default control | Action |
+| --- | --- |
+| Left / right bracket | Reduce / increase columns |
+| Minus / equals | Reduce / increase rows |
+| F10 | Toggle field alignment |
+| F8 → RestlessPlant | Settings and keybinds |
+
+The host controls extra plants, harvest, replant and grow-anywhere rules. Grid size and controls remain local. **Grow anywhere is off by default**; ordinary growth checks still matter.
+
+## Installation and help
+
+Requires **RestlessCore**, BepInExPack and Jötunn. A mod manager installs the required dependencies. Use matching released plugin versions on all clients and the server.
+
+[Player guide](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/plant.md) · [Installation](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/install.md) · [Changelog](https://github.com/factoryblack/RestlessValheim/blob/main/thunderstore/plant/CHANGELOG.md) · [Report a problem](https://github.com/factoryblack/RestlessValheim/issues/new/choose)
+
+[RestlessCore](https://thunderstore.io/c/valheim/p/Restless/RestlessCore/) is the shared foundation. [Explore the collection](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/).

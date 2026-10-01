@@ -17,7 +17,7 @@ namespace RestlessWorks;
 public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.works";
-    public const string PluginName = "RestlessWorks";
+    public const string PluginName = "RestlessWorkshop";
     public const string PluginVersion = "0.1.0";
 
     internal static Plugin Instance { get; private set; } = null!;
@@ -66,4 +66,3 @@ public class Plugin : BaseUnityPlugin
         WorksRun.TickOwned(elapsed);
     }
 }
-

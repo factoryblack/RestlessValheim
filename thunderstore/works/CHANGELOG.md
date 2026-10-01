@@ -4,6 +4,8 @@ Changes are listed newest first. **Unreleased** describes current source changes
 
 ## Unreleased
 
+- Renamed public branding and the F8 entry to RestlessWorkshop; existing package, configuration and saved-board identifiers remain compatible.
+
 - Added the Workshop interface: Production, Orders, Machines and Output.
 - Added product search/machine filters, Make/Keep quantities, stock coverage, collection and confirmed cancellation.
 - Added separate views for available output and Make reservations.

@@ -1,4 +1,6 @@
-# RestlessWorks
+# RestlessWorkshop
+
+The public name is **RestlessWorkshop**. The existing Thunderstore package remains **RestlessWorks**; install that listing. Existing configurations and saved boards keep their identifiers.
 
 **Make a batch. Keep a reserve.**
 
@@ -25,7 +27,7 @@ The board supports up to eight orders. Coverage bars show quantities, not elapse
 
 ## Start here
 
-1. Install Works with Core.
+1. Install Workshop with Core.
 2. Build the **Work-order board** at a workbench from the hammer's Furniture category.
 3. Place it near supported machines and supplies, open it and choose a product.
 4. Set the quantity and choose Make or Keep.
@@ -40,7 +42,7 @@ Finished output stays on the board. Collect reserved Make output through Orders,
 
 Stopping an order does not remove materials already processing inside machines. The last player to use the board takes ownership; reopen the window if control changes. Multiplayer ownership still needs broader playtesting.
 
-Use **F8 → RestlessWorks** for the local window toggle. Works is currently a **separate install**, outside the pack manifest. The guide follows current main; older builds may not contain the Workshop UI.
+Use **F8 → RestlessWorkshop** for the local window toggle. Workshop is currently a **separate install**, outside the pack manifest. The guide follows current main; older builds may not contain the Workshop UI.
 
 ## Installation and help
 

@@ -120,7 +120,7 @@ public static class Works
     {
         if (!Plugin.BoardEnabled.Value)
         {
-            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Enable the work-order board in F8 · RestlessWorks.");
+            Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Enable the work-order board in F8 · RestlessWorkshop.");
             return;
         }
 
@@ -133,3 +133,4 @@ public static class Works
         Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Work-order board is not in yet.");
     }
 }
+

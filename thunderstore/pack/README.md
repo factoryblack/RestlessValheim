@@ -21,7 +21,7 @@ Restless Valheim installs the collection and its dependencies in one mod-manager
 
 The pack is an installation bundle. Its features come from the individual plugins, which can also be installed separately.
 
-**RestlessWorks** adds workshop Make/Keep orders and is currently a separate install; it is not in this pack's dependency list yet.
+**RestlessWorkshop** adds workshop Make/Keep orders and is currently a separate install; it is not in this pack's dependency list yet.
 
 ## One consistent interface
 

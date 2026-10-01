@@ -18,9 +18,9 @@ Restless is a collection of mods for Valheim 1.0: a shared interface and quality
 | [RestlessPiles](https://thunderstore.io/c/valheim/p/Restless/RestlessPiles/) | Familiar resource piles become bulk stores | [Piles](docs/player/piles.md) |
 | [RestlessDrawers](https://thunderstore.io/c/valheim/p/Restless/RestlessDrawers/) | Modular cabinets with matching chest capacity and visible contents | [Drawers](docs/player/drawers.md) |
 | [RestlessStorage](https://thunderstore.io/c/valheim/p/Restless/RestlessStorage/) | Search and withdraw from nearby storage at the Storekeeper's Table | [Storage](docs/player/storage.md) |
-| [RestlessWorks](https://thunderstore.io/c/valheim/p/Restless/RestlessWorks/) | Make batches or maintain stock targets with nearby production machines | [Works](docs/player/works.md) |
+| [RestlessWorkshop](https://thunderstore.io/c/valheim/p/Restless/RestlessWorks/) | Make batches or maintain stock targets with nearby production machines | [Workshop](docs/player/works.md) |
 
-Core works on its own. Each expansion needs Core, but does not require the other expansions. The **Restless Valheim** pack installs Core, Cook, Plant, Piles, Drawers and Storage with their dependencies. Works is currently a separate install.
+Core works on its own. Each expansion needs Core, but does not require the other expansions. The **Restless Valheim** pack installs Core, Cook, Plant, Piles, Drawers and Storage with their dependencies. Workshop is currently a separate install.
 
 ## Start playing
 

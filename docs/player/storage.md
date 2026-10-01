@@ -18,7 +18,7 @@ Search names, filter item types and sort the list. Select an entry to inspect it
 
 Choose a quantity and take the selected material into your inventory. Withdrawal uses the real source containers; it does not create a second copy for you.
 
-If the requested amount will not fit, the remainder stays in or is returned to its source. A failed container transaction also returns its reserved items. For Make-order output in Works, use the board's order collection instead: the Storekeeper's Table is a nearby-storage browser.
+If the requested amount will not fit, the remainder stays in or is returned to its source. A failed container transaction also returns its reserved items. For Make-order output in Workshop, use the board's order collection instead: the Storekeeper's Table is a nearby-storage browser.
 
 Nearby piles can be listed and withdrawn from. Access restrictions still apply, including personal containers.
 

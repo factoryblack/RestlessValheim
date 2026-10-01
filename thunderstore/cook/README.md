@@ -35,7 +35,7 @@ The completed feast goes to its ordering player. Cancelled timed preparation ret
 
 > (screenshot coming) — Different finished feast boards on a dining table.
 
-Open **F8 → RestlessCook** for the local Cookbook toggle. Kilns and smelters belong to Works; the stone oven stays with this kitchen.
+Open **F8 → RestlessCook** for the local Cookbook toggle. Kilns and smelters belong to Workshop; the stone oven stays with this kitchen.
 
 ## Installation and help
 

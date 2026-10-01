@@ -40,7 +40,7 @@ The Orders view shows preparation progress for each step. Cauldron and preparati
 
 Cooking racks, ovens, cauldron upgrades, fire, fuel and capacity still determine what can be made. A bigger order does not create extra hooks or remove station requirements.
 
-The stone oven belongs to this kitchen. Kilns, smelters and other workshop machines belong to [Works](works.md).
+The stone oven belongs to this kitchen. Kilns, smelters and other workshop machines belong to [Workshop](works.md).
 
 If an order is waiting, inspect its ingredients and station requirements before placing another order. Keep the relevant stations in range and supplied.
 

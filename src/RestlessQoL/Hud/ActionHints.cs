@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using Jotunn.Managers;
+using RestlessQoL.Building;
 using RestlessQoL.Core;
 using UnityEngine;
 
@@ -71,7 +72,7 @@ public sealed class ActionHints : FeatureModule
             }
 
             if (build)
-                Show(BuildRows());
+                Show(BuildRows(player));
             else if (fishing)
                 Show(("Hook", new[] { "Attack", "JoyAttack" }));
             else if (combat)
@@ -136,7 +137,7 @@ public sealed class ActionHints : FeatureModule
         ("Inventory", new[] { "Inventory", "JoyInventory" })
     ];
 
-    private static (string verb, string[] buttons)[] BuildRows()
+    private static (string verb, string[] buttons)[] BuildRows(Player player)
     {
         var rows = new List<(string verb, string[] buttons)>
         {
@@ -147,7 +148,7 @@ public sealed class ActionHints : FeatureModule
             ("Rotate", new[] { "JoyRotate" }),
             ("Menu", new[] { "BuildMenu" })
         };
-        if (ModConfig.AreaSealEnabled.Value && !ZInput.IsGamepadActive())
+        if (ModConfig.AreaSealEnabled.Value && !ZInput.IsGamepadActive() && AreaSeal.HammerOut(player))
             rows.Insert(1, ("Seal", System.Array.Empty<string>()));
         return rows.ToArray();
     }

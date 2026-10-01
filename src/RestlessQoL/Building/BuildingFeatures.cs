@@ -67,6 +67,8 @@ public sealed class AreaSeal : FeatureModule
         {
             if (!takeInput || !ModConfig.AreaSealEnabled.Value || ZInput.IsGamepadActive() || !HoldingAlt())
                 return true;
+            if (!HammerOut(__instance))
+                return true;
             if (Hud.IsPieceSelectionVisible() || Hud.InRadial() || !ZInput.GetButtonDown("Attack"))
                 return true;
 
@@ -101,6 +103,9 @@ public sealed class AreaSeal : FeatureModule
 
     private static bool HoldingAlt() =>
         Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+
+    internal static bool HammerOut(Player? player) =>
+        player?.GetRightItem()?.m_shared?.m_name == "$item_hammer";
 
     private readonly struct Region
     {

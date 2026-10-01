@@ -6,10 +6,11 @@ namespace RestlessWorks;
 internal static class BoardVisual
 {
     public const string ChildName = "RestlessWorksMesh";
+    public const float ModelScale = 2f;
 
-    public static void Apply(GameObject prefab)
+    public static void Apply(GameObject prefab, string meshId)
     {
-        var mesh = BoardArt.Mesh();
+        var mesh = BoardArt.Mesh(meshId);
         if (mesh == null)
         {
             Plugin.Log.LogWarning("RestlessWorks: no custom model, leaving the chest look.");
@@ -36,7 +37,7 @@ internal static class BoardVisual
         visual.transform.SetParent(prefab.transform, false);
         visual.transform.localPosition = Vector3.zero;
         visual.transform.localRotation = Quaternion.identity;
-        visual.transform.localScale = Vector3.one;
+        visual.transform.localScale = Vector3.one * ModelScale;
         visual.AddComponent<MeshFilter>().sharedMesh = mesh;
         var rend = visual.AddComponent<MeshRenderer>();
         Paint(rend, BoardArt.Albedo(), mat);

@@ -74,8 +74,13 @@ internal static class CropPieces
             piece.m_noInWater = !free;
             piece.m_cultivatedGroundOnly = row.Till && !free;
             piece.m_icon = icon;
+            piece.m_canBeRemoved = true;
             if (template != null)
                 CopyPlacement(piece, template);
+            // Forage pickables (mushrooms, thistle, sticks) live on the item
+            // layer. The cultivator remove ray only sees piece, so a planted
+            // mushroom could be picked and never destroyed.
+            SitOnPieceLayer(go);
 
             FlattenLod(go);
             TunePickable(source, go);
@@ -106,6 +111,15 @@ internal static class CropPieces
         }
 
         return null;
+    }
+
+    private static void SitOnPieceLayer(GameObject go)
+    {
+        var layer = LayerMask.NameToLayer("piece");
+        if (layer < 0)
+            return;
+        foreach (var transform in go.GetComponentsInChildren<Transform>(true))
+            transform.gameObject.layer = layer;
     }
 
     private static void CopyPlacement(Piece dest, Piece src)

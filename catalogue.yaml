@@ -18,9 +18,9 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-09-30 — Kilns and smelters move to the work-order board. The stone oven stays with the preparation table.
+# last_audit: 2026-10-01 — Drawers snap by vanilla corner points on the 94cm cell.
 
-updated: 2026-09-30
+updated: 2026-10-01
 
 items:
   # --- loader ---
@@ -101,7 +101,7 @@ items:
     in_mod: done
     bite: 1
     restless: n/a
-    note: "Hold Alt and click with the hammer out. The Seal bind is on the hammer key stack, Alt plus the place button. Player-built wood inside every crafting station that covers the clicked piece is sealed out to that station's build range, the same distance as the station range override. The seal radius applies only when the piece is outside every station. One resin each, from the bag then nearby chests this client owns. Already sealed pieces are skipped. A plain click still places or repairs. Current damage stays. Rain stops there. No tint. F8 enable and open-air radius. Not playtested at the longer station range yet."
+    note: "Hold Alt and click with the hammer out. The Seal line is on the hammer key stack only, Alt plus the place button; the cultivator and hoe do not show it and do not seal. Player-built wood inside every crafting station that covers the clicked piece is sealed out to that station's build range, the same distance as the station range override. The seal radius applies only when the piece is outside every station. One resin each, from the bag then nearby chests this client owns. Already sealed pieces are skipped. A plain click still places or repairs. Current damage stays. Rain stops there. No tint. F8 enable and open-air radius. Not playtested at the longer station range yet."
 
   - id: building.workbench_range
     name: Workbench / station range
@@ -518,7 +518,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessDrawers
-    note: "RestlessDrawers 0.1.2. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Each cabinet is fitted to the same 1.1m cube (bottom on the piece origin) and the snap pitch is that cell on every side. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Surface map is Meshy metal (red) and flipped roughness (alpha) on that shader, so bands can catch light. Hammer icons have the black plate removed. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
+    note: "RestlessDrawers 0.1.2. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Each cabinet, legs included, is 95cm (bottom on the piece origin) with vanilla snap points on the eight corners of a 94cm cell, so neighbours overlap by 1cm, a corner can catch a floor, yaw stays the player's, and one cabinet fits between floors a metre apart. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Surface map is Meshy metal (red) and flipped roughness (alpha) on that shader, so bands can catch light. Hammer icons have the black plate removed. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
 
   - id: cook.meals
     name: Restless cooking
@@ -534,7 +534,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessWorks
-    note: "RestlessWorks 0.1.0. A freestanding work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. Finished output waits on the board. The workshop window is not in yet; the board exposes the same kind of API as the Cookbook. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. Not playtested. Not in the pack. Needs Core 0.2.1."
+    note: "RestlessWorks 0.1.0. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. Finished output waits on the board. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Not in the pack. Needs Core 0.2.1."
 
   - id: piles.stacks
     name: Uncapped resource piles
@@ -550,7 +550,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPlant
-    note: "RestlessPlant 0.2.0. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Harvest range picks every ripe player-grown crop in range, not only the same kind, and searches that radius instead of every loaded pickable. A wide grid stamps crops only; the till tool stays one patch. Spacing follows the crop's grow radius unless minimum spacing is set (the old 2m default was cleared). Each extra cell is checked again, so an oversized grid plants only the cells that can grow, including cultivated ground, and paints the rest red. A failed grow check logs once and still puts the ghost back. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The search uses piece, piece_nonsolid, and item, including triggers. It does not use Plant.m_pieceMask, which stays empty until a vine looks for a wall, so that usually only happens for the host. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest and snap ranges stay their own settings. A grid cell past the centre pays for itself, so one seed cannot fill the rectangle. Area harvest includes ripe carrots, turnips, onions, barley and flax, and a grown crop keeps the planter's mark. A bird's nest that still uses the beehive script keeps the nest lines and feathers, and does not pull nearby hives. A single feather on the ground was added again for the player standing there, because it merged into a stack they already held and the drop had not yet been removed for the host. Clearing a plant's biome for grow-anywhere no longer sticks on the placed copy, which was showing only the planter "Can't grow in this environment". A picked mushroom shrinks to a sprout and grows back to full size. On a bush only the berries do that; the bush stays full size. Needs Core."
+    note: "RestlessPlant 0.2.0. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Harvest range picks every ripe player-grown crop in range, not only the same kind, and searches that radius instead of every loaded pickable. A wide grid stamps crops only; the till tool stays one patch. Spacing follows the crop's grow radius unless minimum spacing is set (the old 2m default was cleared). Each extra cell is checked again, so an oversized grid plants only the cells that can grow, including cultivated ground, and paints the rest red. A failed grow check logs once and still puts the ghost back. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The search uses piece, piece_nonsolid, and item, including triggers. It does not use Plant.m_pieceMask, which stays empty until a vine looks for a wall, so that usually only happens for the host. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest and snap ranges stay their own settings. A grid cell past the centre pays for itself, so one seed cannot fill the rectangle. Area harvest includes ripe carrots, turnips, onions, barley and flax, and a grown crop keeps the planter's mark. A bird's nest that still uses the beehive script keeps the nest lines and feathers, and does not pull nearby hives. A single feather on the ground was added again for the player standing there, because it merged into a stack they already held and the drop had not yet been removed for the host. Clearing a plant's biome for grow-anywhere no longer sticks on the placed copy, which was showing only the planter "Can't grow in this environment". A picked mushroom shrinks to a sprout and grows back to full size. Cultivator remove destroys a planted crop, including mushrooms, because those pickables used to sit on the item layer the remove ray misses. On a bush only the berries do that; the bush stays full size. Needs Core."
 
   - id: skip.collectors
     name: Crystal / feather / guck / tar collectors

@@ -10,7 +10,7 @@ internal static class BoardPiece
 {
     public const string PrefabName = "piece_restless_works";
     public const string DisplayName = "Work-order board";
-    public const string Blurb = "Standing orders for the kilns and smelters nearby.";
+    public const string Blurb = "Hang it on a wall. Standing orders for the kilns and smelters nearby.";
 
     private const string Donor = "piece_chest_wood";
     private static bool _added;
@@ -30,7 +30,13 @@ internal static class BoardPiece
             return;
         }
 
-        var go = PrefabManager.Instance.CreateClonedPrefab(PrefabName, Donor);
+        Register(PrefabName, DisplayName, Blurb, BoardArt.UnityId);
+        Plugin.Log.LogInfo("RestlessWorks added the work-order board.");
+    }
+
+    private static void Register(string prefabName, string displayName, string blurb, string meshId)
+    {
+        var go = PrefabManager.Instance.CreateClonedPrefab(prefabName, Donor);
         if (go == null)
             return;
 
@@ -38,16 +44,19 @@ internal static class BoardPiece
         if (container != null)
             Object.DestroyImmediate(container);
 
-        BoardVisual.Apply(go);
+        BoardVisual.Apply(go, meshId);
 
         var piece = go.GetComponent<Piece>() ?? go.AddComponent<Piece>();
         var icon = BoardArt.Icon() ?? piece.m_icon;
         piece.m_icon = icon;
-        piece.m_name = DisplayName;
-        piece.m_description = Blurb;
+        piece.m_name = displayName;
+        piece.m_description = blurb;
         piece.m_groundOnly = false;
         piece.m_groundPiece = false;
         piece.m_clipGround = false;
+        // The chest donor refuses anything that is not nearly flat. A wall board has to accept a vertical face.
+        piece.m_notOnTiltingSurface = false;
+        piece.m_notOnFloor = true;
         piece.m_category = Piece.PieceCategory.Furniture;
         SitAsFurniture(go);
 
@@ -56,8 +65,8 @@ internal static class BoardPiece
 
         var cfg = new PieceConfig
         {
-            Name = DisplayName,
-            Description = Blurb,
+            Name = displayName,
+            Description = blurb,
             PieceTable = PieceTables.Hammer,
             Category = PieceCategories.Furniture,
             CraftingStation = "piece_workbench",
@@ -68,7 +77,6 @@ internal static class BoardPiece
         cfg.AddRequirement("BronzeNails", 4, true);
 
         PieceManager.Instance.AddPiece(new CustomPiece(go, true, cfg));
-        Plugin.Log.LogInfo("RestlessWorks added the work-order board.");
     }
 
     private static void SitAsFurniture(GameObject prefab)

@@ -9,27 +9,32 @@ namespace RestlessWorks;
 internal static class BoardArt
 {
     public const string Id = "board";
+    public const string UnityId = "board.from-unity";
 
-    private static Mesh? _mesh;
+    private static readonly Dictionary<string, Mesh> Meshes = new();
     private static Texture2D? _albedo;
     private static Sprite? _icon;
     private static string? _folder;
     private static MethodInfo? _loadImage;
     private static bool _searched;
 
-    public static Mesh? Mesh()
+    public static Mesh? Mesh() => Mesh(Id);
+
+    public static Mesh? Mesh(string id)
     {
-        if (_mesh != null)
-            return _mesh;
-        var path = Path.Combine(Folder(), Id + ".rcm");
+        if (Meshes.TryGetValue(id, out var cached))
+            return cached;
+        var path = Path.Combine(Folder(), id + ".rcm");
         if (!File.Exists(path))
         {
             Plugin.Log.LogWarning("board mesh missing " + path);
             return null;
         }
 
-        _mesh = ReadRcm(File.ReadAllBytes(path));
-        return _mesh;
+        var mesh = ReadRcm(File.ReadAllBytes(path), id);
+        if (mesh != null)
+            Meshes[id] = mesh;
+        return mesh;
     }
 
     public static Texture2D? Albedo()
@@ -122,7 +127,7 @@ internal static class BoardArt
         return dir;
     }
 
-    private static Mesh? ReadRcm(byte[] data)
+    private static Mesh? ReadRcm(byte[] data, string id)
     {
         if (data.Length < 12 || data[0] != (byte)'R' || data[1] != (byte)'C' || data[2] != (byte)'M'
             || (data[3] != (byte)'1' && data[3] != (byte)'2'))
@@ -166,7 +171,7 @@ internal static class BoardArt
 
         var mesh = new Mesh
         {
-            name = Id,
+            name = id,
             indexFormat = vertCount > 65000
                 ? UnityEngine.Rendering.IndexFormat.UInt32
                 : UnityEngine.Rendering.IndexFormat.UInt16

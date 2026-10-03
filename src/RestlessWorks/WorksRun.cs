@@ -354,7 +354,7 @@ internal static class WorksRun
             var relevant = false;
             for (var i = 0; i < station.GetQueueSize(); i++)
             {
-                var conversion = station.GetItemConversion(station.GetQueuedOre(i));
+                var conversion = station.GetItemConversion(station.GetQueuedOre());
                 if (conversion?.m_to != null && Wanted(ledger, Clean(conversion.m_to.gameObject.name)))
                 { relevant = true; break; }
             }
@@ -536,7 +536,7 @@ internal static class WorksRun
                 map.TryGetValue(product, out var have);
                 map[product] = have + count;
             }
-            for (var i = 0; i < station.GetQueueSize(); i++) AddSource(station.GetQueuedOre(i), 1);
+            for (var i = 0; i < station.GetQueueSize(); i++) AddSource(station.GetQueuedOre(), 1);
             AddSource(station.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre), station.GetProcessedQueueSize());
         }
 

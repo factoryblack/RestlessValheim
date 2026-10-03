@@ -3,5 +3,6 @@
   <ItemGroup>
     <Compile Include="../../src/RestlessQoL/Storage/TransferBook.cs" Link="TransferBook.cs" />
     <Compile Include="../../src/RestlessQoL/Storage/ProductionLease.cs" Link="ProductionLease.cs" />
+    <Compile Include="../../src/RestlessQoL/Storage/TransferDelivery.cs" Link="TransferDelivery.cs" />
   </ItemGroup>
 </Project>

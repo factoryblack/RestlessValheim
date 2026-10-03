@@ -36,6 +36,29 @@ foreach (var handle in reader.TypeDefinitions)
 if (recipes != 1 || items != 1)
     throw new Exception($"Selected recipe contract changed: {selectionType}, Recipe fields={recipes}, ItemData fields={items}");
 Console.WriteLine("Native recipe selection contract passed.");
+// Inspect the native smelter queue contract without loading Unity into the test process.
+foreach (var handle in reader.TypeDefinitions)
+{
+    var type = reader.GetTypeDefinition(handle);
+    if (reader.GetString(type.Name) != "Smelter") continue;
+    foreach (var mh in type.GetMethods())
+    {
+        var method = reader.GetMethodDefinition(mh);
+        var name = reader.GetString(method.Name);
+        if (!name.Contains("Ore") && !name.Contains("Queue")) continue;
+        var signature = method.DecodeSignature(provider, (object?)null);
+        Console.WriteLine($"Smelter.{name}({string.Join(",", signature.ParameterTypes)}): {signature.ReturnType}");
+        if (method.RelativeVirtualAddress == 0 || (name != "GetQueuedOre" && name != "QueueOre")) continue;
+        var il = pe.GetMethodBody(method.RelativeVirtualAddress).GetILBytes()!;
+        Console.WriteLine($"Smelter.{name} IL: {Convert.ToHexString(il)}");
+        for (var i = 0; i + 4 < il.Length; i++)
+        {
+            if (il[i] != 0x72 || il[i + 4] != 0x70) continue;
+            var token = BitConverter.ToInt32(il, i + 1);
+            Console.WriteLine("Queue literal: " + reader.GetUserString(System.Reflection.Metadata.Ecma335.MetadataTokens.UserStringHandle(token & 0xffffff)));
+        }
+    }
+}
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";

@@ -65,4 +65,50 @@ Equal(true, ProductionLease.Acquire(machine, b), "idle controller releases machi
 ProductionLease.SetActive(b, true);
 ZDOMan.instance.Remove(b.GetZDO().m_uid);
 Equal(true, ProductionLease.Acquire(machine, a), "destroyed controller no longer blocks");
+// Exercise receipt persistence and the actual peer-binding/decision adapter.
+var character = new Player { Id = 42, View = new ZNetView(40, true) };
+character.View.GetZDO().Peer = 900;
+Player.m_localPlayer = character; Player.All.Add(character);
+Equal(true, TransferDelivery.ActorIsPeer(42, 900), "profile binds to owning peer");
+Equal(false, TransferDelivery.ActorIsPeer(42, 42), "profile id is not a network peer id");
+var target = new Container { m_nview = new ZNetView(50, true), Stock = 10 };
+Equal(true, TransferDelivery.MayUse(target, 42, 900), "normal remote actor allowed");
+target.Allowed = false;
+Equal(false, TransferDelivery.MayUse(target, 42, 900), "ward access enforced");
+target.Allowed = true;
+var transferId = TransferDelivery.NextId();
+TransferDelivery.Remember(target, transferId, "W", 0);
+// Simulate reconnect with only the character's persisted custom data.
+var restored = new Player { Id = 42, View = character.View };
+foreach (var pair in character.m_customData) restored.m_customData.Add(pair.Key, pair.Value);
+Player.m_localPlayer = restored; Player.All.Clear(); Player.All.Add(restored);
+ZNetScene.instance = new ZNetScene(); ZNetScene.instance.Objects[target.m_nview.GetZDO().m_uid] = new GameObject { Container = target };
+UnityEngine.Time.unscaledTime = 10;
+TransferDelivery.Tick();
+var cancellation = target.m_nview.Sent.Last().Data;
+TransferDelivery.OnDecision(target, 900, cancellation);
+var confirmed = target.m_nview.Sent.Last().Data;
+TransferDelivery.OnClosed(target, 500, confirmed);
+Equal(false, restored.m_customData.ContainsKey("restless.transfer.receipts.v2"), "confirmed decision clears saved receipt");
+var restoredBook = TransferDelivery.Read(target);
+restoredBook.Prepare(42, transferId, "W", () => throw new Exception("delayed request reopened after reconnect cancellation"));
+Equal(10, target.Stock, "early reconnect cancellation moves no stock");
+
+// A delivered batch stays committed through repeated decisions and lost confirmation.
+var committedId = TransferDelivery.NextId();
+var ownerBook = TransferDelivery.Read(target);
+ownerBook.Prepare(42, committedId, "W", () => new TransferBook.Entry { State = TransferBook.Phase.Held, Count = 4,
+    Payload = TransferDelivery.Pack(new() { new() { m_stack = 4 } }) });
+TransferDelivery.Write(target, ownerBook);
+TransferDelivery.Remember(target, committedId, "W", 1, TransferDelivery.Pack(new() { new() { m_stack = 1 } }));
+var decision = target.m_nview.Sent.Last().Data;
+TransferDelivery.OnDecision(target, 900, decision);
+TransferDelivery.OnDecision(target, 900, decision);
+Equal(11, target.Stock, "overflow returned once on duplicate decision");
+UnityEngine.Time.unscaledTime = 20; TransferDelivery.Tick();
+Equal(TransferDelivery.DecisionRpc, target.m_nview.Sent.Last().Rpc, "lost confirmation keeps retrying saved decision");
+TransferDelivery.OnDecision(target, 900, target.m_nview.Sent.Last().Data);
+TransferDelivery.OnClosed(target, 500, target.m_nview.Sent.Last().Data);
+Equal(false, restored.m_customData.ContainsKey("restless.transfer.receipts.v2"), "retry confirmation clears receipt");
+Equal(11, target.Stock, "retry does not return overflow twice");
 Console.WriteLine("Reliability regressions passed.");

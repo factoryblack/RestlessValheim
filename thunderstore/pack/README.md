@@ -17,11 +17,10 @@ Restless Valheim installs the collection and its dependencies in one mod-manager
 | [RestlessPlant](https://thunderstore.io/c/valheim/p/Restless/RestlessPlant/) | Grow berries, mushrooms and more. Plant aligned rows, harvest nearby crops and replant as you go. |
 | [RestlessDrawers](https://thunderstore.io/c/valheim/p/Restless/RestlessDrawers/) | Build modular storage walls with visible contents and the same capacity and unlocks as matching vanilla chests. |
 | [RestlessStorage](https://thunderstore.io/c/valheim/p/Restless/RestlessStorage/) | Search nearby storage, see combined item totals and take what you need from the Storekeeper's Table. |
+| [RestlessWorkshop](https://thunderstore.io/c/valheim/p/Restless/RestlessWorkshop/) | Manage nearby production from a work-order board. Make a batch or keep essential supplies stocked. |
 <!-- pack-members:end -->
 
 The pack is an installation bundle. Its features come from the individual plugins, which can also be installed separately.
-
-**RestlessWorkshop** adds workshop Make/Keep orders and is currently a separate install; it is not in this pack's dependency list yet.
 
 ## One consistent interface
 

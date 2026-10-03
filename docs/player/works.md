@@ -56,7 +56,7 @@ The last player to use the board takes ownership, and owned processing follows t
 
 Use **F8 → RestlessWorkshop** for the local window toggle. Closing or disabling the window does not stop placed orders. Wider multiplayer ownership behaviour still needs playtesting.
 
-Workshop requires Core and is **not yet included in the pack manifest**. Install it separately. If an older installed release reports that the workshop window is not included, update to the build containing the UI; the guide follows current main.
+Workshop requires Core. The Restless Valheim pack installs it with the rest of the collection. If an older installed release reports that the workshop window is not included, update to the build containing the UI.
 
 [Install](install.md) · [Troubleshoot](troubleshooting.md) · [All guides](README.md)
 

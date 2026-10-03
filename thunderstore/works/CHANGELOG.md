@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.1.1
+
+- RestlessWorkshop is included in the Restless Valheim pack.
+- Requires Core 0.2.2.
+
 ## 0.1.0
 
 - Added a wall-mounted work-order board, built at a workbench, for kilns, smelters and the other production machines nearby. The stone oven stays with cooking.

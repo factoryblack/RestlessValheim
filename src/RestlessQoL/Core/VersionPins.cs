@@ -11,7 +11,7 @@ internal static class VersionPins
     public const string Plant = "0.2.1";
     public const string Drawers = "0.2.0";
     public const string Storage = "0.2.1";
-    public const string Works = "0.1.0";
+    public const string Works = "0.1.1";
 
     public static string? ForGuid(string guid) => guid switch
     {

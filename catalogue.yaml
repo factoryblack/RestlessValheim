@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-10-03 — Next drop pins: Core 0.2.2, drawers 0.2.0, works still 0.1.0.
+# last_audit: 2026-10-03 — Workshop is a pack member. Pack 0.1.26, Workshop 0.1.1.
 
 updated: 2026-10-03
 
@@ -534,7 +534,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessWorkshop
-    note: "RestlessWorkshop 0.1.0. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. Finished output waits on the board. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Not in the pack. Needs Core 0.2.2."
+    note: "RestlessWorkshop 0.1.1. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. Finished output waits on the board. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Included in the Restless Valheim pack. Needs Core 0.2.2."
 
   - id: piles.stacks
     name: Uncapped resource piles

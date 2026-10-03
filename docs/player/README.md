@@ -17,7 +17,7 @@
 | [Storage](storage.md) | The Storekeeper's Table, combined totals and withdrawal |
 | [Workshop](works.md) | Make versus Keep, production status, reservations and collection |
 
-Core is the shared foundation. Expansions can be installed individually. The current pack includes Core, Cook, Plant, Piles, Drawers and Storage; Workshop is separate.
+Core is the shared foundation. Expansions can be installed individually. The pack installs Core, Cook, Plant, Piles, Drawers, Storage and Workshop together.
 
 These guides follow current main. Host settings can change the defaults described here. Screenshots are being refreshed; their placeholders identify the views being prepared.
 

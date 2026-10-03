@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "Restless_Valheim"
-versionNumber = "0.1.25"
+versionNumber = "0.1.26"
 description = "The Restless collection in one install: a cohesive interface, smoother storage, expanded cooking and easier farming."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md"
 containsNsfwContent = false
@@ -18,6 +18,7 @@ Restless-RestlessPiles = "0.2.1"
 Restless-RestlessPlant = "0.2.1"
 Restless-RestlessDrawers = "0.2.0"
 Restless-RestlessStorage = "0.2.1"
+Restless-RestlessWorkshop = "0.1.1"
 
 [build]
 icon = "./icon.png"

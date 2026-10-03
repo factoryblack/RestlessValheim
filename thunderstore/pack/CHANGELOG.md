@@ -2,6 +2,11 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
+## 0.1.26
+
+- RestlessWorkshop is included. Installing the collection also installs the work-order board.
+- Included version changes: RestlessCore 0.2.2, RestlessCook 0.3.1, RestlessPlant 0.2.1, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.1, RestlessWorkshop 0.1.1.
+
 ## 0.1.25
 
 - Refreshed the collection overview, package bios and linked player guides.

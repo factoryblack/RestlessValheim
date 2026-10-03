@@ -8,7 +8,7 @@
 4. Start the game using the manager's modded launch option.
 5. Open **F8** or **Restless** in the pause menu to check settings.
 
-The pack includes Core, Cook, Plant, Piles, Drawers and Storage. Install Workshop separately if you want the work-order board. Expansions require Core; they do not require every other expansion.
+The pack includes Core, Cook, Plant, Piles, Drawers, Storage and Workshop. Expansions require Core; they do not require every other expansion.
 
 The old RestlessValheim and RestlessQOL listings are deprecated. They are not the current collection.
 

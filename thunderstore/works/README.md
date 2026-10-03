@@ -42,7 +42,7 @@ Finished output stays on the board. Collect reserved Make output through Orders,
 
 Stopping an order does not remove materials already processing inside machines. The last player to use the board takes ownership; reopen the window if control changes. Multiplayer ownership still needs broader playtesting.
 
-Use **F8 → RestlessWorkshop** for the local window toggle. Workshop is currently a **separate install**, outside the pack manifest. The guide follows current main; older builds may not contain the Workshop UI.
+Use **F8 → RestlessWorkshop** for the local window toggle. The Restless Valheim pack installs Workshop with the rest of the collection.
 
 ## Installation and help
 

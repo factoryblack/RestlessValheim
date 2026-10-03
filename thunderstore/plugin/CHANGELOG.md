@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Keep remote chest transfer reservations across ownership changes; retry character settlement decisions until confirmed.
+- Bind storage requests to the character's owning peer and reject duplicate or cancelled transfers.
+
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
 ## 0.2.2

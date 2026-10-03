@@ -7,14 +7,12 @@ using UnityEngine;
 namespace RestlessQoL.Storage;
 
 // The chest owner removes the stacks, then sends those exact items back.
-// Until the taker acknowledges, the owner still holds them and puts them
-// back on timeout. A repeated acknowledgement does nothing.
+// Holds persist on the chest until a confirmed character decision settles them.
 public static class StorageWithdraw
 {
-    internal const string RequestRpc = "RestlessWithdraw";
-    internal const string ReplyRpc = "RestlessWithdrawn";
-    internal const string AckRpc = "RestlessWithdrawAck";
-    internal const string CancelRpc = "RestlessWithdrawCancel";
+    internal const string RequestRpc = "RestlessWithdrawV2";
+    internal const string ReplyRpc = "RestlessWithdrawnV2";
+
 
     public sealed class Batch
     {
@@ -29,9 +27,14 @@ public static class StorageWithdraw
         }
     }
 
-    private static int _nextId = 1;
-    private static readonly Dictionary<int, Action<Batch>> Waiting = new();
-    private static readonly Dictionary<string, Hold> Holds = new();
+    private sealed class Pending
+    {
+        internal Container Container = null!;
+        internal long Actor;
+        internal Action<Batch> Done = null!;
+    }
+    private static readonly Dictionary<int, Pending> Waiting = new();
+    internal static bool WaitingFor(int id) => Waiting.ContainsKey(id);
 
     public static void Request(Container container, long playerId, string identity, int amount, Action<Batch> done)
     {
@@ -56,8 +59,10 @@ public static class StorageWithdraw
             return;
         }
 
-        var id = NextId();
-        Waiting[id] = done;
+        var id = TransferDelivery.NextId();
+        if (id == 0) { done(new Batch(0, new List<ItemDrop.ItemData>(), true)); return; }
+        Waiting[id] = new Pending { Container = container, Actor = playerId, Done = done };
+        TransferDelivery.Remember(container, id, "W", 0);
         Plugin.Instance.StartCoroutine(ExpireRequest(id));
         var pkg = new ZPackage();
         pkg.Write(playerId);
@@ -69,19 +74,12 @@ public static class StorageWithdraw
 
     public static void Acknowledge(Container container, int id, List<ItemDrop.ItemData> overflow)
     {
-        if (id == 0 || container?.m_nview == null || !container.m_nview.IsValid())
-            return;
-        SendAck(container, id, overflow);
-        Plugin.Instance.StartCoroutine(RepeatAck(container, id, overflow));
+        if (id != 0) TransferDelivery.Remember(container, id, "W", 1, TransferDelivery.Pack(overflow));
     }
 
     public static void Cancel(Container container, int id)
     {
-        if (id == 0 || container?.m_nview == null || !container.m_nview.IsValid())
-            return;
-        var pkg = new ZPackage();
-        pkg.Write(id);
-        container.m_nview.InvokeRPC(CancelRpc, pkg);
+        if (id != 0) TransferDelivery.Remember(container, id, "W", -1);
     }
 
     public static int Give(Inventory dest, List<ItemDrop.ItemData> items, List<ItemDrop.ItemData> overflow)
@@ -139,59 +137,29 @@ public static class StorageWithdraw
         var id = pkg.ReadInt();
         var identity = pkg.ReadString();
         var amount = pkg.ReadInt();
-        var items = new List<ItemDrop.ItemData>();
-        if (ModConfig.StorageEnabled.Value && MayUse(container, playerId, sender))
-            items = Extract(container, identity, amount);
-        if (items.Count > 0)
+        if (id <= 0 || !ModConfig.StorageEnabled.Value || !TransferDelivery.MayUse(container, playerId, sender))
+        { Reply(container, sender, id, new List<ItemDrop.ItemData>()); return; }
+        var book = TransferDelivery.Read(container);
+        var row = book.Prepare(playerId, id, "W", () =>
         {
-            var key = Key(sender, id);
-            var hold = new Hold(container, items);
-            Holds[key] = hold;
-            hold.Timer = Plugin.Instance.StartCoroutine(ExpireHold(key));
-        }
-
-        Reply(container, sender, id, items);
+            var items = Extract(container, identity, amount);
+            var count = 0; foreach (var item in items) count += item.m_stack;
+            return new TransferBook.Entry { Count = count, Payload = TransferDelivery.Pack(items),
+                State = count > 0 ? TransferBook.Phase.Held : TransferBook.Phase.Cancelled };
+        });
+        TransferDelivery.Write(container, book);
+        Reply(container, sender, id, row.State == TransferBook.Phase.Held ? TransferDelivery.Unpack(row.Payload) : new List<ItemDrop.ItemData>());
     }
 
-    internal static void OnReply(long sender, ZPackage pkg)
+    internal static void OnReply(Container container, long sender, ZPackage pkg)
     {
         pkg.SetPos(0);
-        var id = pkg.ReadInt();
-        var items = ReadItems(pkg.ReadPackage());
-        if (!Waiting.TryGetValue(id, out var done))
-            return;
+        var id = pkg.ReadInt(); var items = ReadItems(pkg.ReadPackage());
+        if (!Waiting.TryGetValue(id, out var pending) || pending.Container != container
+            || container.m_nview.GetZDO().GetOwner() != sender) return;
         Waiting.Remove(id);
-        done(new Batch(id, items, false));
-    }
-
-    internal static void OnAck(Container container, long sender, ZPackage pkg)
-    {
-        if (!container.IsOwner())
-            return;
-        pkg.SetPos(0);
-        var id = pkg.ReadInt();
-        var key = Key(sender, id);
-        if (!Holds.TryGetValue(key, out var hold))
-            return;
-        Holds.Remove(key);
-        if (hold.Timer != null)
-            Plugin.Instance.StopCoroutine(hold.Timer);
-        ReturnTo(container, Within(hold.Items, ReadItems(pkg.ReadPackage())));
-    }
-
-    internal static void OnCancel(Container container, long sender, ZPackage pkg)
-    {
-        if (!container.IsOwner())
-            return;
-        pkg.SetPos(0);
-        var id = pkg.ReadInt();
-        var key = Key(sender, id);
-        if (!Holds.TryGetValue(key, out var hold))
-            return;
-        Holds.Remove(key);
-        if (hold.Timer != null)
-            Plugin.Instance.StopCoroutine(hold.Timer);
-        ReturnTo(container, hold.Items);
+        if (Player.m_localPlayer == null || Player.m_localPlayer.GetPlayerID() != pending.Actor) return;
+        pending.Done(new Batch(id, items, false));
     }
 
     private static List<ItemDrop.ItemData> Extract(Container container, string identity, int amount)
@@ -258,39 +226,14 @@ public static class StorageWithdraw
         return clone;
     }
 
-    private static void SendAck(Container container, int id, List<ItemDrop.ItemData> overflow)
-    {
-        var pkg = new ZPackage();
-        pkg.Write(id);
-        pkg.Write(WriteItems(overflow ?? new List<ItemDrop.ItemData>()));
-        container.m_nview.InvokeRPC(AckRpc, pkg);
-    }
-
-    private static IEnumerator RepeatAck(Container container, int id, List<ItemDrop.ItemData> overflow)
-    {
-        yield return new WaitForSeconds(0.6f);
-        if (container != null && container.m_nview != null && container.m_nview.IsValid())
-            SendAck(container, id, overflow);
-        yield return new WaitForSeconds(1.4f);
-        if (container != null && container.m_nview != null && container.m_nview.IsValid())
-            SendAck(container, id, overflow);
-    }
-
     private static IEnumerator ExpireRequest(int id)
     {
         yield return new WaitForSeconds(8f);
-        if (!Waiting.TryGetValue(id, out var done))
-            yield break;
+        if (!Waiting.TryGetValue(id, out var pending)) yield break;
         Waiting.Remove(id);
-        done(new Batch(id, new List<ItemDrop.ItemData>(), true));
-    }
-
-    private static IEnumerator ExpireHold(string key)
-    {
-        yield return new WaitForSeconds(10f);
-        if (!Holds.TryGetValue(key, out var hold))
-            yield break;
-        Plugin.Log.LogWarning("Restless withdraw is still holding " + hold.Items.Count + " stack(s) for an acknowledgement.");
+        if (Player.m_localPlayer == null || Player.m_localPlayer.GetPlayerID() != pending.Actor) yield break;
+        Cancel(pending.Container, id);
+        pending.Done(new Batch(id, new List<ItemDrop.ItemData>(), true));
     }
 
     private static void Reply(Container container, long sender, int id, List<ItemDrop.ItemData> items)
@@ -306,15 +249,7 @@ public static class StorageWithdraw
         view.InvokeRPC(sender, ReplyRpc, pkg);
     }
 
-    private static bool MayUse(Container container, long playerId, long sender)
-    {
-        if (playerId != 0)
-            return playerId == sender && container.CheckAccess(playerId);
-        var server = ZNet.instance?.GetServerPeer();
-        return server != null && sender == server.m_uid;
-    }
-
-    private static List<ItemDrop.ItemData> Within(List<ItemDrop.ItemData> held, List<ItemDrop.ItemData> claimed)
+    internal static List<ItemDrop.ItemData> Within(List<ItemDrop.ItemData> held, List<ItemDrop.ItemData> claimed)
     {
         var left = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var item in held)
@@ -342,10 +277,10 @@ public static class StorageWithdraw
         return ok;
     }
 
-    private static ZPackage WriteItems(List<ItemDrop.ItemData> items)
+    internal static ZPackage WriteItems(List<ItemDrop.ItemData> items)
     {
         var width = Math.Max(1, items.Count);
-        var bag = new Inventory("RestlessWithdraw", null, width, 1);
+        var bag = new Inventory("RestlessWithdrawV2", null, width, 1);
         for (var i = 0; i < items.Count; i++)
         {
             var clone = Copy(items[i], items[i].m_stack);
@@ -357,13 +292,13 @@ public static class StorageWithdraw
         return pkg;
     }
 
-    private static List<ItemDrop.ItemData> ReadItems(ZPackage pkg)
+    internal static List<ItemDrop.ItemData> ReadItems(ZPackage pkg)
     {
         var items = new List<ItemDrop.ItemData>();
         if (pkg == null)
             return items;
         pkg.SetPos(0);
-        var bag = new Inventory("RestlessWithdraw", null, 8, 4);
+        var bag = new Inventory("RestlessWithdrawV2", null, 8, 4);
         bag.Load(pkg);
         foreach (var item in bag.GetAllItems())
         {
@@ -374,25 +309,4 @@ public static class StorageWithdraw
         return items;
     }
 
-    private static int NextId()
-    {
-        var id = _nextId++;
-        if (_nextId <= 0)
-            _nextId = 1;
-        return id;
-    }
-
-    private static string Key(long sender, int id) => sender + ":" + id;
-
-    private sealed class Hold
-    {
-        public readonly Container Container;
-        public readonly List<ItemDrop.ItemData> Items;
-        public Coroutine? Timer;
-        public Hold(Container container, List<ItemDrop.ItemData> items)
-        {
-            Container = container;
-            Items = items;
-        }
-    }
 }

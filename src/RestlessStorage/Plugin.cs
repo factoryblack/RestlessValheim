@@ -39,7 +39,8 @@ public class Plugin : BaseUnityPlugin
             PluginGuid,
             PluginName,
             "A table for the stores around you.",
-            "Build a Storekeeper's Table at the workbench. Browse nearby stores, then take a stack into your inventory. The chest owner moves the items. Whatever does not fit goes back."));
+            "Build a Storekeeper's Table at the workbench. Browse nearby stores, then take a stack into your inventory. The chest owner moves the items. Whatever does not fit goes back.",
+            packageUrl: "https://thunderstore.io/c/valheim/p/Restless/RestlessStorage/"));
         StorekeeperPiece.Load();
         _harmony = new Harmony(PluginGuid);
         _harmony.PatchAll();

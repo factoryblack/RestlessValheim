@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-10-03 — Workshop is a pack member. Pack 0.1.26, Workshop 0.1.1.
+# last_audit: 2026-10-03 — Chest transfers confirm before they count, and production tables drop their pantry when destroyed.
 
 updated: 2026-10-03
 
@@ -53,7 +53,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Recipe rows show have/need (bag plus spendable chest stock; LeaveOne is reserved per chest in both the have-count and the pull). A 1-cost ingredient no longer stays craftable after the last spendable unit is gone. HaveRequirements only flips true for chest stock when the current bench already meets GetRequiredStationLevel — a too-low forge used to allow upgrades. Craft shortfall is optimistic. Playtest a joining client at a closed chest."
+    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Recipe rows show have/need (bag plus spendable chest stock; LeaveOne is reserved per chest in both the have-count and the pull). A 1-cost ingredient no longer stays craftable after the last spendable unit is gone. HaveRequirements only flips true for chest stock when the current bench already meets GetRequiredStationLevel — a too-low forge used to allow upgrades. A synchronous spend claims the chest and removes the items before they count as paid. It does not treat a predicted remote pull as payment. Playtest two players crafting the last stack."
 
   - id: storage.build
     name: Build from nearby chests
@@ -61,7 +61,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Same RestlessPull as storage.craft, including LeaveOne reservation in the have-count. Ghosts still skipped. Chest stock never flips RequirementMode.IsKnown (hammer and feast discovery stay vanilla). Chest materials do not satisfy a missing crafting station — a stonecutter piece still needs a stonecutter in range, which is also what removal checks. Playtest a joining client placing a piece from closed chests."
+    note: "Same confirmed chest spend as storage.craft, including LeaveOne reservation in the have-count. Ghosts still skipped. Chest stock never flips RequirementMode.IsKnown (hammer and feast discovery stay vanilla). Chest materials do not satisfy a missing crafting station — a stonecutter piece still needs a stonecutter in range, which is also what removal checks. Playtest a joining client placing a piece from closed chests."
 
   - id: storage.quickstack
     name: Quick stack (`)
@@ -77,7 +77,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuAutoStore
-    note: "Existing stacks only; LeaveOne. Pull waits for the owner reply before adding to the bag so a failed RPC cannot dupe. Quality and world-level match the stack being filled. Owner replies taken=0 when storage is off; pending pulls expire after 3s."
+    note: "Existing stacks only; LeaveOne. Skips the hotbar, equipment, quick slots and locked cells. Pull waits for the owner, retries the same transfer, and adds to the bag only after that reply. If the stack was moved, the items go to a free cell or the ground. A missed reply cancels the hold instead of adding nothing while the chest keeps the items, or the reverse. Quality and world-level match the stack being filled."
 
   - id: storage.station_pull
     name: Stations pull ore/fuel from chests
@@ -407,7 +407,7 @@ items:
     in_mod: done
     bite: 2
     restless: (vanilla has no inventory MMB lock)
-    note: "Player bag only. Persists on the character. Vanilla Stack, quick stack, and restock skip locked cells. No bag sort exists — do not invent one. Cream diamond top-right. F8 toggle."
+    note: "Player bag only. Persists on the character. Vanilla Stack, quick stack, restock, and background kitchen and workshop pulls skip locked cells. Hotbar, equipment and quick slots are skipped by those automatic pulls too. No bag sort exists — do not invent one. Cream diamond top-right. F8 toggle."
 
   - id: inventory.equipment_slots
     name: Dedicated armor / quick slots
@@ -510,7 +510,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessStorage
-    note: "RestlessStorage 0.2.1. Storekeeper's Table opens the shared browser: search, game-type filters, sorting, pooled cards, source rows, quantity and carry weight. Card names wrap onto two lines. Take asks the chest owner for the matching stacks (prefab, quality, variant, world level, durability, crafter, custom data) and adds those items. Overflow goes back into that chest; if the owner never hears the acknowledgement the whole take goes back. Piles in the Core search range are stores on the same sheet; a take claims the pile and adds what fits. Leave-one is not applied. Opening the sheet marks each stack as a material that player has handled, then the usual recipe check runs, so a recipe missed because someone else picked the mats up can unlock. The station level is still required. Trophies are not marked collected. Nearby range and access follow Core. No unloaded-storage claim. Local F8 toggle. Mouse and keyboard. Controller grid navigation is still open. Local take playtested. Multiplayer not yet. Needs Core 0.2.0. In the 0.1.23 pack."
+    note: "RestlessStorage 0.2.1. Storekeeper's Table opens the shared browser: search, game-type filters, sorting, pooled cards, source rows, quantity and carry weight. Card names wrap onto two lines. Take asks the chest owner for the matching stacks (prefab, quality, variant, world level, durability, crafter, custom data) and adds those items. Overflow goes back only when it is part of the reserved batch. A take that never arrives is cancelled and returned. Silence after the items were delivered does not put a second copy back in the chest. A second withdraw while one is running is refused instead of left hanging. Piles in the Core search range are stores on the same sheet; a take claims the pile and adds what fits. Leave-one is not applied. Opening the sheet marks each stack as a material that player has handled, then the usual recipe check runs, so a recipe missed because someone else picked the mats up can unlock. The station level is still required. Trophies are not marked collected. Nearby range and access follow Core. No unloaded-storage claim. Local F8 toggle. Mouse and keyboard. Controller grid navigation is still open. Local take playtested. Multiplayer not yet. Needs Core 0.2.0. In the 0.1.23 pack."
 
   - id: drawers.chests
     name: Chest-equivalent drawers
@@ -526,7 +526,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessCook
-    note: "RestlessCook 0.3.1. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook, with portraits, filters, a selected dish, and a progress track for each step. Ingredient lines show the full amount on hand, so extra stock reads 8/6 instead of stopping at 6/6. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. Cauldron and preparation crafts take their crafting time and return the ingredients if cancelled. A dish already in the bag does not fill a new order. Resource piles in the search range count as stock and can be pulled into an order. Kilns, smelters and the other production machines are no longer on this roster; the stone oven stays. Native recipes expand into their real ingredients. The featured card uses the cooking portrait and a status diamond. The finished feast is handed to the player who ordered it, and that part of the order is done. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core 0.2.1. Deep North waits. Not in the Core DLL. Multiplayer ownership is still unverified. Count display not yet in a published drop."
+    note: "RestlessCook 0.3.1. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook, with portraits, filters, a selected dish, and a progress track for each step. Ingredient lines show the full amount on hand, so extra stock reads 8/6 instead of stopping at 6/6. Chests this player can open count in full, including the last item and a chest this client does not own. Leave one does not reserve kitchen ingredients. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. A rack or oven meal ordered on its own is marked ready when that item finishes, and that stack stays reserved so another order cannot spend it. Background pulls skip locked cells, the hotbar and quick slots. Looking at the Cookbook does not take over nearby racks or ovens. A cauldron job pauses when its fire is out or the station is unusable, and resumes without paying again. Destroying the table drops the pantry and unpaid inputs. Cauldron and preparation crafts take their crafting time and return the ingredients if cancelled. A dish already in the bag does not fill a new order. Resource piles in the search range count as stock and can be pulled into an order. Kilns, smelters and the other production machines are no longer on this roster; the stone oven stays. Native recipes expand into their real ingredients. The featured card uses the cooking portrait and a status diamond. The finished feast is handed to the player who ordered it, and that part of the order is done. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core 0.2.1. Deep North waits. Not in the Core DLL. Multiplayer ownership is still unverified. The full chest count is not in the published Cook 0.3.1 drop."
 
   - id: works.board
     name: Work-order board
@@ -534,7 +534,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessWorkshop
-    note: "RestlessWorkshop 0.1.1. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. Finished output waits on the board. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Included in the Restless Valheim pack. Needs Core 0.2.2."
+    note: "RestlessWorkshop 0.1.1. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. A machine that already holds ore keeps receiving its own fuel until that queue finishes, even when the order needs no more ore. Background pulls skip locked cells, the hotbar and quick slots. Place, cancel, collect and take refuse a caller who does not own the board. Destroying the board drops its pantry. Finished output waits on the board. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Included in the Restless Valheim pack. Needs Core 0.2.2."
 
   - id: piles.stacks
     name: Uncapped resource piles

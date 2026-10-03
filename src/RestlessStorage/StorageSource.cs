@@ -95,7 +95,10 @@ internal sealed class StorageSource : IStorageWindowSource
         if (completed == null)
             return;
         if (_busy)
+        {
+            completed("A transfer is already in progress.");
             return;
+        }
         if (!IsAvailable)
         {
             completed("The table is out of reach.");
@@ -152,6 +155,8 @@ internal sealed class StorageSource : IStorageWindowSource
         {
             if (batch.TimedOut)
             {
+                if (batch.Id != 0)
+                    StorageWithdraw.Cancel(chest, batch.Id);
                 Walk(chests, resourceId, index + 1, left, moved, blocked, true, label, completed);
                 return;
             }

@@ -34,12 +34,28 @@ public sealed partial class SettingsUi
             "Workshop cabinets. Same chests, quieter fronts.",
             "Wood, personal, reinforced and black metal drawers clone their matching chests. One container each; the fronts show what is inside. They snap together as furniture.",
             packageUrl: Package("RestlessDrawers")));
+        EcosystemPages.Add(new SettingsPage("restless.storage", "RestlessStorage",
+            "A table for the stores around you.",
+            "Build a Storekeeper's Table at the workbench. Browse nearby stores, then take a stack into your inventory.",
+            packageUrl: Package("RestlessStorage")));
+        EcosystemPages.Add(new SettingsPage("restless.works", "RestlessWorkshop",
+            "Standing orders for the kilns and smelters.",
+            "A work-order board queues the production machines nearby. The Cookbook stays the kitchen.",
+            packageUrl: Package("RestlessWorkshop")));
         // A module can supply its own details and settings action without a Core edit.
         foreach (var page in SettingsPageApi.Snapshot())
         {
             if (page.PluginGuid == CorePage.PluginGuid) continue;
             var index = EcosystemPages.FindIndex(p => p.PluginGuid == page.PluginGuid);
-            if (index >= 0) EcosystemPages[index] = page;
+            if (index >= 0)
+            {
+                var prior = EcosystemPages[index];
+                var stored = page.PackageUrl == null && prior.PackageUrl != null
+                    ? new SettingsPage(page.PluginGuid, page.Name, page.Summary, page.Details, page.Icon,
+                        prior.PackageUrl, page.OpenSettings)
+                    : page;
+                EcosystemPages[index] = stored;
+            }
             else EcosystemPages.Add(page);
         }
     }
@@ -95,8 +111,8 @@ public sealed partial class SettingsUi
         "restless.cook" => new Color(0.77f, 0.39f, 0.28f),
         "restless.plant" => new Color(0.55f, 0.69f, 0.40f),
         "restless.piles" => new Color(0.71f, 0.68f, 0.61f),
-        "restless.drawers" => new Color(0.62f, 0.48f, 0.32f),
-        "restless.storage" => new Color(0.55f, 0.46f, 0.32f),
+        "restless.drawers" => new Color(0.62f, 0.40f, 0.72f),
+        "restless.storage" => new Color(0.32f, 0.62f, 0.66f),
         "restless.works" => new Color(0.62f, 0.42f, 0.28f),
         _ => RestlessUi.Accent
     };

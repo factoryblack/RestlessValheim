@@ -202,11 +202,6 @@ internal static partial class KitchenRun
         var view = View(table);
         if (player == null || view == null)
             return 0;
-        if (!view.IsOwner())
-            view.ClaimOwnership();
-        if (!view.IsOwner())
-            return 0;
-
         var ledger = Read(view);
         KitchenOrder? order = null;
         foreach (var row in ledger.Orders)
@@ -216,6 +211,12 @@ internal static partial class KitchenRun
         }
 
         if (order == null || order.Ready <= 0)
+            return 0;
+        if (order.PlayerId != 0 && player.GetPlayerID() != order.PlayerId)
+            return 0;
+        if (!view.IsOwner())
+            view.ClaimOwnership();
+        if (!view.IsOwner())
             return 0;
         var taken = Give(player, ledger, order.Feast, order.Ready);
         if (taken <= 0)
@@ -342,7 +343,7 @@ internal static partial class KitchenRun
             return;
 
         var origin = table.transform.position;
-        var hits = Scan(origin);
+        var hits = Scan(origin, true);
         EnsureConversions();
         AdvanceWork(table, hits, ledger, elapsed);
         CollectFinished(hits, ledger);
@@ -350,7 +351,7 @@ internal static partial class KitchenRun
         var crafts = 0;
         var loads = 0;
         var shared = Stock(origin, 0L, ledger);
-        var cooking = OnStations(origin);
+        var cooking = OnStations(origin, hits);
         IncludeWork(ledger, cooking);
         foreach (var order in ledger.Orders)
         {
@@ -358,7 +359,7 @@ internal static partial class KitchenRun
             if (outstanding < 1)
                 continue;
             var steps = Expand(order.Feast, outstanding, 0, "");
-            Assign(table, steps, shared, cooking, order.PlayerId, order.Ready);
+            Assign(table, steps, shared, cooking, order.PlayerId, order.Ready, hits);
             for (var i = steps.Count - 1; i >= 0; i--)
             {
                 var step = steps[i];
@@ -453,9 +454,9 @@ internal static partial class KitchenRun
         Walk(conversion.From, need, depth + 1, output, index, steps, guard);
     }
 
-    private static void Assign(CraftingStation table, List<KitchenStep> steps, Dictionary<string, int> free, Dictionary<string, int> cooking, long? playerId, int completedForOrder = 0)
+    private static void Assign(CraftingStation table, List<KitchenStep> steps, Dictionary<string, int> free, Dictionary<string, int> cooking, long? playerId, int completedForOrder = 0, List<Hit>? hits = null)
     {
-        var hits = Scan(table.transform.position);
+        hits ??= Scan(table.transform.position);
         var covered = new bool[steps.Count];
         for (var i = 0; i < steps.Count; i++)
         {
@@ -601,7 +602,7 @@ internal static partial class KitchenRun
         {
             foreach (var item in player.GetInventory().GetAllItems())
             {
-                if (item?.m_dropPrefab == null)
+                if (item?.m_dropPrefab == null || !NearbyStorage.Spendable(item))
                     continue;
                 Add(Clean(item.m_dropPrefab.name), item.m_stack);
             }
@@ -609,17 +610,14 @@ internal static partial class KitchenRun
 
         foreach (var container in NearbyStorage.Around(origin, Range(), playerId))
         {
-            var view = container.m_nview;
-            if (view == null || !view.IsOwner() || container.GetInventory() == null)
+            var inventory = container.GetInventory();
+            if (inventory == null)
                 continue;
-            foreach (var item in container.GetInventory().GetAllItems())
+            foreach (var item in inventory.GetAllItems())
             {
                 if (item?.m_dropPrefab == null)
                     continue;
-                var count = item.m_stack;
-                if (ModConfig.LeaveOne.Value && count > 0)
-                    count -= 1;
-                Add(Clean(item.m_dropPrefab.name), count);
+                Add(Clean(item.m_dropPrefab.name), item.m_stack);
             }
         }
 
@@ -632,13 +630,55 @@ internal static partial class KitchenRun
             Add(Clean(lot.Item.m_dropPrefab.name), lot.Count);
         }
 
+        HoldReserved(free, ledger);
         return free;
     }
 
-    private static Dictionary<string, int> OnStations(Vector3 origin)
+    // Finished output credited to an order stays in the pantry for that order.
+    private static void HoldReserved(Dictionary<string, int> free, Ledger ledger)
+    {
+        var reserved = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var order in ledger.Orders)
+        {
+            if (order.Ready < 1 || string.IsNullOrEmpty(order.Feast))
+                continue;
+            reserved.TryGetValue(order.Feast, out var held);
+            reserved[order.Feast] = held + order.Ready;
+        }
+
+        foreach (var pair in reserved)
+        {
+            if (!ledger.Pantry.TryGetValue(pair.Key, out var inPantry) || inPantry < 1)
+                continue;
+            if (!free.TryGetValue(pair.Key, out var have) || have < 1)
+                continue;
+            free[pair.Key] = Math.Max(0, have - Math.Min(pair.Value, inPantry));
+        }
+    }
+
+    private static void CreditFinished(Ledger ledger, string product, int amount)
+    {
+        if (amount < 1 || string.IsNullOrEmpty(product))
+            return;
+        Add(ledger, product, amount);
+        var left = amount;
+        foreach (var order in ledger.Orders)
+        {
+            if (left < 1)
+                return;
+            if (order.Feast != product)
+                continue;
+            var room = Math.Max(0, order.Count - order.Ready - order.Collected);
+            var give = Math.Min(room, left);
+            order.Ready += give;
+            left -= give;
+        }
+    }
+
+    private static Dictionary<string, int> OnStations(Vector3 origin, List<Hit>? hits = null)
     {
         var map = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var hit in Scan(origin))
+        foreach (var hit in hits ?? Scan(origin))
         {
             if (hit.Rack == null)
                 continue;
@@ -676,7 +716,7 @@ internal static partial class KitchenRun
                     var product = Clean(name);
                     if (!Wanted(ledger, product))
                         continue;
-                    Add(ledger, product, 1);
+                    CreditFinished(ledger, product, 1);
                     rack.SetSlot(i, "", 0f, CookingStation.Status.NotDone, false);
                     rack.SetSlotVisual(i, "", false, CookingStation.Status.NotDone);
                 }
@@ -693,7 +733,7 @@ internal static partial class KitchenRun
             if (!Wanted(ledger, made))
                 continue;
             var amount = oven.GetProcessedQueueSize();
-            Add(ledger, made, amount);
+            CreditFinished(ledger, made, amount);
             oven.m_nview.GetZDO().Set(ZDOVars.s_spawnOre, "");
             oven.m_nview.GetZDO().Set(ZDOVars.s_spawnAmount, 0);
         }
@@ -806,13 +846,16 @@ internal static partial class KitchenRun
         {
             var shared = Shared(prefab);
             var inv = player.GetInventory();
-            var have = string.IsNullOrEmpty(shared) ? 0 : inv.CountItems(shared);
+            var have = string.IsNullOrEmpty(shared) ? 0 : NearbyStorage.CountSpendable(inv, shared, -1, true);
             var take = Math.Min(have, count);
             if (take > 0)
             {
-                inv.RemoveItem(shared, take);
-                Add(ledger, prefab, take);
-                count -= take;
+                var got = NearbyStorage.TakeSpendable(inv, shared, take, -1, true);
+                if (got > 0)
+                {
+                    Add(ledger, prefab, got);
+                    count -= got;
+                }
             }
         }
 
@@ -821,24 +864,11 @@ internal static partial class KitchenRun
         var sharedName = Shared(prefab);
         if (string.IsNullOrEmpty(sharedName))
             return;
-        foreach (var container in NearbyStorage.Around(origin, Range(), playerId))
+        var fromChests = NearbyStorage.TryConsumeAround(origin, Range(), playerId, sharedName, count, false, -1, true);
+        if (fromChests > 0)
         {
-            var view = container.m_nview;
-            var inv = container.GetInventory();
-            if (view == null || !view.IsOwner() || inv == null)
-                continue;
-            var have = inv.CountItems(sharedName);
-            if (ModConfig.LeaveOne.Value && have > 0)
-                have -= 1;
-            var take = Math.Min(have, count);
-            if (take < 1)
-                continue;
-            inv.RemoveItem(sharedName, take);
-            container.Save();
-            Add(ledger, prefab, take);
-            count -= take;
-            if (count < 1)
-                return;
+            Add(ledger, prefab, fromChests);
+            count -= fromChests;
         }
 
         var fromPiles = NearbyLots.Drain(origin, Range(), sharedName, count);
@@ -877,11 +907,41 @@ internal static partial class KitchenRun
             return false;
         foreach (var hit in hits)
         {
-            if (hit.Info.Kind == step.Station && hit.Info.Level >= step.StationLevel)
+            if (hit.Info.Kind == step.Station && Usable(hit.Craft, step.StationLevel))
                 return true;
         }
 
         return false;
+    }
+
+    private static bool Usable(CraftingStation? station, int level)
+    {
+        if (station == null || station.GetLevel() < level)
+            return false;
+        if (station.m_craftRequireFire && !FireLit(station))
+            return false;
+        var player = Player.m_localPlayer;
+        return player == null || station.CheckUsable(player, false);
+    }
+
+    private static string? Unusable(CraftingStation station)
+    {
+        if (station.m_craftRequireFire && !FireLit(station))
+            return "Needs a fire";
+        var player = Player.m_localPlayer;
+        if (player == null)
+            return null;
+        if (!station.InUseDistance(player))
+            return "Too far from the station";
+        if (station.CheckUsable(player, false))
+            return null;
+        return station.m_craftRequireRoof ? "Needs a roof" : "Station is not usable";
+    }
+
+    private static bool FireLit(CraftingStation station)
+    {
+        station.CheckFire();
+        return station.m_haveFire;
     }
 
     private static string? BlockReason(CraftingStation table, List<Hit> hits, KitchenStep step)
@@ -904,7 +964,19 @@ internal static partial class KitchenRun
 
             if (!found)
                 return "No " + step.Station + " in range";
-            return best >= step.StationLevel ? null : "Requires " + step.Station + " level " + step.StationLevel;
+            if (best < step.StationLevel)
+                return "Requires " + step.Station + " level " + step.StationLevel;
+            string? pause = null;
+            foreach (var hit in hits)
+            {
+                if (hit.Info.Kind != step.Station || hit.Craft == null || hit.Craft.GetLevel() < step.StationLevel)
+                    continue;
+                pause = Unusable(hit.Craft);
+                if (pause == null)
+                    return null;
+            }
+
+            return pause;
         }
 
         var any = false;
@@ -960,10 +1032,11 @@ internal static partial class KitchenRun
     {
         public CookingStation? Rack;
         public Smelter? Oven;
+        public CraftingStation? Craft;
         public KitchenStationInfo Info = new();
     }
 
-    private static List<Hit> Scan(Vector3 origin)
+    private static List<Hit> Scan(Vector3 origin, bool claim = false)
     {
         var list = new List<Hit>();
         var seen = new HashSet<int>();
@@ -974,12 +1047,12 @@ internal static partial class KitchenRun
                 continue;
             var rack = col.GetComponentInParent<CookingStation>();
             if (rack != null && seen.Add(rack.GetInstanceID()))
-                list.Add(DescribeRack(rack));
+                list.Add(DescribeRack(rack, claim));
             var oven = col.GetComponentInParent<Smelter>();
             // Kilns, smelters and the other production machines belong to the work-order board.
             // The stone oven stays here; food recipes still load it.
             if (oven != null && seen.Add(oven.GetInstanceID()) && FoodOven(Utils.GetPrefabName(oven.gameObject)))
-                list.Add(DescribeOven(oven));
+                list.Add(DescribeOven(oven, claim));
             var craft = col.GetComponentInParent<CraftingStation>();
             if (craft != null && seen.Add(craft.GetInstanceID()) && (KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.Cauldron || KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.MeadKettle))
                 list.Add(DescribeCauldron(craft));
@@ -988,7 +1061,7 @@ internal static partial class KitchenRun
         return list;
     }
 
-    private static Hit DescribeRack(CookingStation station)
+    private static Hit DescribeRack(CookingStation station, bool claim)
     {
         var info = new KitchenStationInfo
         {
@@ -1024,12 +1097,12 @@ internal static partial class KitchenRun
             info.Block = "Needs a fire";
         else if (station.m_useFuel && info.Fuel < 1)
             info.Block = "Needs fuel";
-        if (station.m_nview != null && !station.m_nview.IsOwner())
+        if (claim && station.m_nview != null && station.m_nview.IsValid() && !station.m_nview.IsOwner())
             station.m_nview.ClaimOwnership();
         return new Hit { Rack = station, Info = info };
     }
 
-    private static Hit DescribeOven(Smelter station)
+    private static Hit DescribeOven(Smelter station, bool claim)
     {
         var info = new KitchenStationInfo
         {
@@ -1048,21 +1121,24 @@ internal static partial class KitchenRun
 
         if (station.m_maxFuel > 0 && info.Fuel < 1)
             info.Block = "Needs fuel";
-        if (station.m_nview != null && !station.m_nview.IsOwner())
+        if (claim && station.m_nview != null && station.m_nview.IsValid() && !station.m_nview.IsOwner())
             station.m_nview.ClaimOwnership();
         return new Hit { Oven = station, Info = info };
     }
 
     private static Hit DescribeCauldron(CraftingStation station)
     {
+        var lit = !station.m_craftRequireFire || FireLit(station);
         var info = new KitchenStationInfo
         {
             Name = station.m_name,
             Kind = KindOf(Utils.GetPrefabName(station.gameObject)),
             Level = station.GetLevel(),
-            FireLit = true
+            NeedsFire = station.m_craftRequireFire,
+            FireLit = lit,
+            Block = lit ? "" : "Needs a fire"
         };
-        return new Hit { Info = info };
+        return new Hit { Craft = station, Info = info };
     }
 
     private static string ProductOf(CookingStation station, string raw)
@@ -1238,26 +1314,106 @@ internal static partial class KitchenRun
         foreach (var order in ledger.Orders)
             text.Append("O\t").Append(order.Id).Append('\t').Append(order.Feast).Append('\t').Append(order.Count).Append('\t').Append(order.PlayerId).Append('\t').Append(order.Ready).Append('\t').Append(order.Collected).Append('\n');
         foreach (var work in ledger.Work) text.Append(WorkLine(work));
-        view.GetZDO().Set(Key, text.ToString());
+        var body = text.ToString();
+        var zdo = view.GetZDO();
+        if (zdo.GetString(Key) == body)
+            return;
+        zdo.Set(Key, body);
+    }
+
+    internal static void Spill(CraftingStation table)
+    {
+        var view = View(table);
+        if (view == null || !view.IsValid())
+            return;
+        if (!view.IsOwner())
+            view.ClaimOwnership();
+        if (!view.IsOwner())
+            return;
+        var ledger = Read(view);
+        var origin = table.transform.position + Vector3.up;
+        var drops = new List<KeyValuePair<string, int>>();
+        foreach (var pair in ledger.Pantry)
+            if (pair.Value > 0)
+                drops.Add(pair);
+        foreach (var work in ledger.Work)
+            foreach (var input in work.Inputs)
+                if (input.Value > 0)
+                    drops.Add(input);
+        view.GetZDO().Set(Key, "");
+        foreach (var drop in drops)
+            Drop(drop.Key, drop.Value, origin);
+    }
+
+    private static void Drop(string prefab, int count, Vector3 origin)
+    {
+        var item = Item(prefab);
+        if (item?.m_itemData == null || count < 1)
+            return;
+        var left = count;
+        var size = Math.Max(1, item.m_itemData.m_shared.m_maxStackSize);
+        while (left > 0)
+        {
+            var stack = Math.Min(size, left);
+            var clone = item.m_itemData.Clone();
+            clone.m_stack = stack;
+            clone.m_dropPrefab = item.gameObject;
+            ItemDrop.DropItem(clone, stack, origin, Quaternion.identity);
+            left -= stack;
+        }
     }
 }
 
 [HarmonyPatch]
 internal static class KitchenHook
 {
+    private static readonly List<CraftingStation> Tables = new();
+
     internal static void TickOwned(float elapsed)
     {
         if (ZNetScene.instance == null)
             return;
-        foreach (var station in UnityEngine.Object.FindObjectsByType<CraftingStation>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        for (var i = Tables.Count - 1; i >= 0; i--)
         {
-            if (station == null || Utils.GetPrefabName(station.gameObject) != "piece_preptable")
+            var station = Tables[i];
+            if (station == null)
+            {
+                Tables.RemoveAt(i);
                 continue;
+            }
+
             var view = station.GetComponent<ZNetView>();
             if (view == null || !view.IsValid() || !view.IsOwner())
                 continue;
             KitchenRun.Tick(station, elapsed);
         }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.OnEnable))]
+    private static void WatchTable(CraftingStation __instance)
+    {
+        if (__instance == null || Utils.GetPrefabName(__instance.gameObject) != "piece_preptable")
+            return;
+        if (!Tables.Contains(__instance))
+            Tables.Add(__instance);
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.OnDisable))]
+    private static void ForgetTable(CraftingStation __instance)
+    {
+        if (__instance != null)
+            Tables.Remove(__instance);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Destroy), typeof(HitData), typeof(bool))]
+    private static void BeforeDestroy(WearNTear __instance)
+    {
+        var station = __instance != null ? __instance.GetComponent<CraftingStation>() : null;
+        if (station != null && Utils.GetPrefabName(station.gameObject) == "piece_preptable")
+            KitchenRun.Spill(station);
     }
 
     [HarmonyPrefix]

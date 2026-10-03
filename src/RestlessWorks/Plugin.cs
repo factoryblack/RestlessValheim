@@ -37,7 +37,8 @@ public class Plugin : BaseUnityPlugin
             "Open the work-order board. Local preference; does not stop orders already placed.");
         _page = SettingsPageApi.Register(new SettingsPage(PluginGuid, PluginName,
             "Standing orders for the kilns and smelters.",
-            "A work-order board queues the production machines nearby. The Cookbook stays the kitchen."));
+            "A work-order board queues the production machines nearby. The Cookbook stays the kitchen.",
+            packageUrl: "https://thunderstore.io/c/valheim/p/Restless/RestlessWorkshop/"));
         _settings = SettingsPageApi.RegisterSettings(PluginGuid,
             new SettingsSection("Work orders", new SettingsOption("Open the board", BoardEnabled, false)));
         BoardPiece.Load();

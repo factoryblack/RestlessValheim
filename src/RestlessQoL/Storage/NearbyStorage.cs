@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RestlessQoL.Core;
+using RestlessQoL.HudTweaks;
 using UnityEngine;
 
 namespace RestlessQoL.Storage;
@@ -428,6 +429,123 @@ public static class NearbyStorage
             return 0;
         inventory.RemoveItem(sharedName, pull, quality, worldLevel);
         return pull;
+    }
+
+    // Removes the same stacks PullOwned would, and returns clones so a remote
+    // hold can be put back if the requester cancels before it applies them.
+    internal static List<ItemDrop.ItemData> Extract(Container container, string sharedName, int amount,
+        bool honorLeaveOne, int quality, bool worldLevel)
+    {
+        var taken = new List<ItemDrop.ItemData>();
+        if (!CanWrite(container) || amount <= 0 || string.IsNullOrEmpty(sharedName))
+            return taken;
+        var inventory = container.GetInventory();
+        if (inventory == null)
+            return taken;
+        var have = inventory.CountItems(sharedName, quality, worldLevel);
+        var pull = Mathf.Min(Pullable(have, honorLeaveOne), amount);
+        if (pull <= 0)
+            return taken;
+        using (SuppressPatches())
+        {
+            foreach (var item in new List<ItemDrop.ItemData>(inventory.GetAllItems()))
+            {
+                if (pull <= 0)
+                    break;
+                if (!Matches(item, sharedName, quality, worldLevel))
+                    continue;
+                var count = Mathf.Min(item.m_stack, pull);
+                var clone = item.Clone();
+                clone.m_stack = count;
+                clone.m_equipped = false;
+                if (!inventory.RemoveItem(item, count))
+                    continue;
+                taken.Add(clone);
+                pull -= count;
+            }
+
+            if (taken.Count > 0)
+                inventory.Changed(true, false);
+        }
+
+        return taken;
+    }
+
+    internal static int PlanPush(Container container, ItemDrop.ItemData item)
+    {
+        if (!CanWrite(container) || item?.m_shared == null || item.m_stack <= 0)
+            return 0;
+        var dest = container.GetInventory();
+        if (dest == null || !dest.HaveItem(item.m_shared.m_name))
+            return 0;
+        var room = 0;
+        foreach (var slot in dest.GetAllItems())
+        {
+            if (slot?.m_shared == null || slot.m_shared.m_name != item.m_shared.m_name)
+                continue;
+            if (slot.m_quality != item.m_quality || slot.m_worldLevel != item.m_worldLevel)
+                continue;
+            room += Mathf.Max(0, slot.m_shared.m_maxStackSize - slot.m_stack);
+        }
+
+        var taken = Mathf.Min(item.m_stack, room);
+        var left = item.m_stack - taken;
+        if (left <= 0)
+            return taken;
+        return taken + Mathf.Min(left, dest.GetEmptySlots() * item.m_shared.m_maxStackSize);
+    }
+
+    // Hotbar, worn and quick slots, and locked bag cells stay out of automatic spends.
+    public static bool Spendable(ItemDrop.ItemData? item) =>
+        item?.m_shared != null && item.m_stack > 0 && !item.m_equipped
+        && !ExtraSlots.SkipDeposit(item) && !SlotLock.Held(item);
+
+    public static int CountSpendable(Inventory inventory, string sharedName, int quality = -1, bool worldLevel = false)
+    {
+        if (inventory == null || string.IsNullOrEmpty(sharedName))
+            return 0;
+        var total = 0;
+        foreach (var item in inventory.GetAllItems())
+        {
+            if (!Matches(item, sharedName, quality, worldLevel) || !Spendable(item))
+                continue;
+            total += item.m_stack;
+        }
+
+        return total;
+    }
+
+    public static int TakeSpendable(Inventory inventory, string sharedName, int amount, int quality = -1,
+        bool worldLevel = false)
+    {
+        if (inventory == null || amount <= 0 || string.IsNullOrEmpty(sharedName))
+            return 0;
+        var taken = 0;
+        using (SuppressPatches())
+        {
+            foreach (var item in new List<ItemDrop.ItemData>(inventory.GetAllItems()))
+            {
+                if (taken >= amount)
+                    break;
+                if (!Matches(item, sharedName, quality, worldLevel) || !Spendable(item))
+                    continue;
+                var count = Mathf.Min(item.m_stack, amount - taken);
+                if (count <= 0 || !inventory.RemoveItem(item, count))
+                    continue;
+                taken += count;
+            }
+        }
+
+        return taken;
+    }
+
+    private static bool Matches(ItemDrop.ItemData? item, string sharedName, int quality, bool worldLevel)
+    {
+        if (item?.m_shared == null || item.m_stack <= 0 || item.m_shared.m_name != sharedName)
+            return false;
+        if (quality >= 0 && item.m_quality != quality)
+            return false;
+        return !worldLevel || item.m_worldLevel >= Game.m_worldLevel;
     }
 
     internal static int PushOwned(Container container, ItemDrop.ItemData item, ItemDrop? drop)

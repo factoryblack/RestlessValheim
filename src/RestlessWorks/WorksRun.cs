@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using HarmonyLib;
 using RestlessQoL.Core;
 using RestlessQoL.Storage;
 using UnityEngine;
@@ -15,15 +16,33 @@ internal static class WorksRun
 
     private static List<WorksRecipe>? _recipes;
     private static readonly Dictionary<string, string> SharedNames = new(StringComparer.Ordinal);
+    private static readonly List<Board> Boards = new();
+
+    internal static void Watch(Board board)
+    {
+        if (board != null && !Boards.Contains(board))
+            Boards.Add(board);
+    }
+
+    internal static void Forget(Board board)
+    {
+        if (board != null)
+            Boards.Remove(board);
+    }
 
     internal static void TickOwned(float elapsed)
     {
         if (ZNetScene.instance == null)
             return;
-        foreach (var board in UnityEngine.Object.FindObjectsByType<Board>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        for (var i = Boards.Count - 1; i >= 0; i--)
         {
+            var board = Boards[i];
             if (board == null)
+            {
+                Boards.RemoveAt(i);
                 continue;
+            }
+
             var view = board.GetComponent<ZNetView>();
             var piece = board.GetComponent<Piece>();
             if (view == null || piece == null || !view.IsValid() || !view.IsOwner())
@@ -119,7 +138,7 @@ internal static class WorksRun
     {
         var view = View(board);
         var recipe = Find(output);
-        if (view == null || recipe == null || count < 1)
+        if (view == null || recipe == null || count < 1 || !Controlled(view))
             return false;
         var ledger = Read(view);
         if (ledger.Orders.Count >= MaxOrders)
@@ -143,7 +162,7 @@ internal static class WorksRun
     internal static void Cancel(Piece board, int orderId)
     {
         var view = View(board);
-        if (view == null)
+        if (view == null || !Controlled(view))
             return;
         var ledger = Read(view);
         ledger.Orders.RemoveAll(order => order.Id == orderId);
@@ -154,7 +173,7 @@ internal static class WorksRun
     {
         var view = View(board);
         var player = Player.m_localPlayer;
-        if (view == null || player == null)
+        if (view == null || player == null || !Controlled(view))
             return 0;
         var ledger = Read(view);
         WorksOrder? order = null;
@@ -181,7 +200,7 @@ internal static class WorksRun
     {
         var view = View(board);
         var player = Player.m_localPlayer;
-        if (view == null || player == null || count < 1 || string.IsNullOrEmpty(prefab))
+        if (view == null || player == null || count < 1 || string.IsNullOrEmpty(prefab) || !Controlled(view))
             return 0;
         var ledger = Read(view);
         if (!ledger.Pantry.TryGetValue(prefab, out var have) || have < 1)
@@ -228,6 +247,7 @@ internal static class WorksRun
             }
         }
 
+        FuelQueued(hits, ledger, origin, playerId);
         Write(view, ledger);
     }
 
@@ -308,6 +328,35 @@ internal static class WorksRun
         if (station.m_fuelItem == null || station.m_maxFuel <= 0 || station.GetFuel() >= 1f)
             return true;
         var prefab = string.IsNullOrEmpty(recipe.Fuel) ? Clean(station.m_fuelItem.gameObject.name) : recipe.Fuel;
+        return AddFuel(station, prefab, ledger, origin, playerId);
+    }
+
+    // Ore already in a machine still burns fuel after the order stops queueing more.
+    private static void FuelQueued(List<Hit> hits, Ledger ledger, Vector3 origin, long playerId)
+    {
+        foreach (var hit in hits)
+        {
+            var station = hit.Station;
+            if (station?.m_nview == null || !station.m_nview.IsOwner())
+                continue;
+            if (station.m_fuelItem == null || station.m_maxFuel <= 0 || station.GetFuel() >= 1f)
+                continue;
+            if (station.GetQueueSize() <= 0)
+                continue;
+            var source = station.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre);
+            var conversion = string.IsNullOrEmpty(source) ? null : station.GetItemConversion(source);
+            if (conversion?.m_to == null)
+                continue;
+            if (!Wanted(ledger, Clean(conversion.m_to.gameObject.name)))
+                continue;
+            AddFuel(station, Clean(station.m_fuelItem.gameObject.name), ledger, origin, playerId);
+        }
+    }
+
+    private static bool AddFuel(Smelter station, string prefab, Ledger ledger, Vector3 origin, long playerId)
+    {
+        if (string.IsNullOrEmpty(prefab))
+            return false;
         if (!ledger.Pantry.TryGetValue(prefab, out var have) || have < 1)
         {
             PullInto(ledger, prefab, 1, origin, playerId);
@@ -497,7 +546,7 @@ internal static class WorksRun
         {
             foreach (var item in player.GetInventory().GetAllItems())
             {
-                if (item?.m_dropPrefab == null)
+                if (item?.m_dropPrefab == null || !NearbyStorage.Spendable(item))
                     continue;
                 AddStock(Clean(item.m_dropPrefab.name), item.m_stack);
             }
@@ -540,13 +589,16 @@ internal static class WorksRun
         {
             var shared = Shared(prefab);
             var inv = player.GetInventory();
-            var have = string.IsNullOrEmpty(shared) ? 0 : inv.CountItems(shared);
+            var have = string.IsNullOrEmpty(shared) ? 0 : NearbyStorage.CountSpendable(inv, shared);
             var take = Math.Min(have, count);
             if (take > 0)
             {
-                inv.RemoveItem(shared, take);
-                Add(ledger, prefab, take);
-                count -= take;
+                var got = NearbyStorage.TakeSpendable(inv, shared, take);
+                if (got > 0)
+                {
+                    Add(ledger, prefab, got);
+                    count -= got;
+                }
             }
         }
 
@@ -771,7 +823,48 @@ internal static class WorksRun
                 text.Append("P\t").Append(pair.Key).Append('\t').Append(pair.Value).Append('\n');
         }
 
-        view.GetZDO().Set(Key, text.ToString());
+        var body = text.ToString();
+        var zdo = view.GetZDO();
+        if (zdo.GetString(Key) == body)
+            return;
+        zdo.Set(Key, body);
+    }
+
+    internal static void Spill(Piece board)
+    {
+        var view = View(board);
+        if (view == null || !view.IsValid())
+            return;
+        if (!view.IsOwner())
+            view.ClaimOwnership();
+        if (!view.IsOwner())
+            return;
+        var ledger = Read(view);
+        var origin = board.transform.position + Vector3.up;
+        var drops = new List<KeyValuePair<string, int>>(ledger.Pantry);
+        view.GetZDO().Set(Key, "");
+        foreach (var drop in drops)
+            Drop(drop.Key, drop.Value, origin);
+    }
+
+    private static bool Controlled(ZNetView? view) => view != null && view.IsValid() && view.IsOwner();
+
+    private static void Drop(string prefab, int count, Vector3 origin)
+    {
+        var item = Item(prefab);
+        if (item?.m_itemData == null || count < 1)
+            return;
+        var left = count;
+        var size = Math.Max(1, item.m_itemData.m_shared.m_maxStackSize);
+        while (left > 0)
+        {
+            var stack = Math.Min(size, left);
+            var clone = item.m_itemData.Clone();
+            clone.m_stack = stack;
+            clone.m_dropPrefab = item.gameObject;
+            ItemDrop.DropItem(clone, stack, origin, Quaternion.identity);
+            left -= stack;
+        }
     }
 
     private sealed class Hit
@@ -784,5 +877,18 @@ internal static class WorksRun
     {
         public readonly List<WorksOrder> Orders = new();
         public readonly Dictionary<string, int> Pantry = new(StringComparer.Ordinal);
+    }
+}
+
+[HarmonyPatch]
+internal static class WorksSpill
+{
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Destroy), typeof(HitData), typeof(bool))]
+    private static void BeforeDestroy(WearNTear __instance)
+    {
+        var piece = __instance != null ? __instance.GetComponent<Piece>() : null;
+        if (piece != null && piece.GetComponent<Board>() != null)
+            WorksRun.Spill(piece);
     }
 }

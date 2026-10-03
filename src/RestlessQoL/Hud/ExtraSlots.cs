@@ -56,6 +56,8 @@ public sealed class ExtraSlots : FeatureModule
     private static bool _wasOn = true;
     private static bool _busy;
     private static bool _doingEquip;
+    private static long _legacyPlayer = -1;
+    private static bool _legacyClear;
     private static int _leaveWorn;
     private static int _craftPark;
     private static int _dragExtra = -1;
@@ -401,6 +403,8 @@ public sealed class ExtraSlots : FeatureModule
             if (!IsOwnedPlayer(__instance))
                 return;
             _visibleHeight = -1;
+            _legacyPlayer = __instance.GetPlayerID();
+            _legacyClear = false;
             Grow(__instance.GetInventory(), __instance);
         }
 
@@ -959,13 +963,34 @@ public sealed class ExtraSlots : FeatureModule
     {
         if (player == null || _busy)
             return;
+        var id = player.GetPlayerID();
+        if (id != _legacyPlayer)
+        {
+            _legacyPlayer = id;
+            _legacyClear = false;
+        }
+
+        if (_legacyClear || player.m_customData == null)
+            return;
+        var equip = player.m_customData.TryGetValue(EquipKey, out var equipRaw) && !string.IsNullOrEmpty(equipRaw);
+        var quick = player.m_customData.TryGetValue(QuickKey, out var quickRaw) && !string.IsNullOrEmpty(quickRaw);
+        if (!equip && !quick)
+        {
+            _legacyClear = true;
+            return;
+        }
+
         var inv = player.GetInventory();
         if (inv == null)
             return;
         Grow(inv);
         var bkg = Traverse.Create(inv).Field("m_bkg").GetValue<Sprite>();
-        Import(player, inv, EquipKey, new Inventory("RestlessEquip", bkg, 2, 3), true);
-        Import(player, inv, QuickKey, new Inventory("RestlessQuick", bkg, 1, 3), false);
+        if (equip)
+            Import(player, inv, EquipKey, new Inventory("RestlessEquip", bkg, 2, 3), true);
+        if (quick)
+            Import(player, inv, QuickKey, new Inventory("RestlessQuick", bkg, 1, 3), false);
+        if (!player.m_customData.ContainsKey(EquipKey) && !player.m_customData.ContainsKey(QuickKey))
+            _legacyClear = true;
     }
 
     private static void Import(Player player, Inventory home, string key, Inventory bag, bool worn)

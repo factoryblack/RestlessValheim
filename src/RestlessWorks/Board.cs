@@ -4,6 +4,10 @@ namespace RestlessWorks;
 
 public class Board : MonoBehaviour, Hoverable, Interactable
 {
+    private void OnEnable() => WorksRun.Watch(this);
+
+    private void OnDisable() => WorksRun.Forget(this);
+
     public string GetHoverName() => Localization.instance.Localize(BoardPiece.DisplayName);
 
     public string GetHoverText() => Localization.instance.Localize("[<color=yellow><b>$KEY_Use</b></color>] Work orders");

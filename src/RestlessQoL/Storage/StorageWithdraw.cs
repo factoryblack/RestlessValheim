@@ -14,6 +14,7 @@ public static class StorageWithdraw
     internal const string RequestRpc = "RestlessWithdraw";
     internal const string ReplyRpc = "RestlessWithdrawn";
     internal const string AckRpc = "RestlessWithdrawAck";
+    internal const string CancelRpc = "RestlessWithdrawCancel";
 
     public sealed class Batch
     {
@@ -72,6 +73,15 @@ public static class StorageWithdraw
             return;
         SendAck(container, id, overflow);
         Plugin.Instance.StartCoroutine(RepeatAck(container, id, overflow));
+    }
+
+    public static void Cancel(Container container, int id)
+    {
+        if (id == 0 || container?.m_nview == null || !container.m_nview.IsValid())
+            return;
+        var pkg = new ZPackage();
+        pkg.Write(id);
+        container.m_nview.InvokeRPC(CancelRpc, pkg);
     }
 
     public static int Give(Inventory dest, List<ItemDrop.ItemData> items, List<ItemDrop.ItemData> overflow)
@@ -166,7 +176,22 @@ public static class StorageWithdraw
         Holds.Remove(key);
         if (hold.Timer != null)
             Plugin.Instance.StopCoroutine(hold.Timer);
-        ReturnTo(container, ReadItems(pkg.ReadPackage()));
+        ReturnTo(container, Within(hold.Items, ReadItems(pkg.ReadPackage())));
+    }
+
+    internal static void OnCancel(Container container, long sender, ZPackage pkg)
+    {
+        if (!container.IsOwner())
+            return;
+        pkg.SetPos(0);
+        var id = pkg.ReadInt();
+        var key = Key(sender, id);
+        if (!Holds.TryGetValue(key, out var hold))
+            return;
+        Holds.Remove(key);
+        if (hold.Timer != null)
+            Plugin.Instance.StopCoroutine(hold.Timer);
+        ReturnTo(container, hold.Items);
     }
 
     private static List<ItemDrop.ItemData> Extract(Container container, string identity, int amount)
@@ -265,9 +290,7 @@ public static class StorageWithdraw
         yield return new WaitForSeconds(10f);
         if (!Holds.TryGetValue(key, out var hold))
             yield break;
-        Holds.Remove(key);
-        Plugin.Log.LogWarning("Restless withdraw timed out; the stacks went back into the chest.");
-        ReturnTo(hold.Container, hold.Items);
+        Plugin.Log.LogWarning("Restless withdraw is still holding " + hold.Items.Count + " stack(s) for an acknowledgement.");
     }
 
     private static void Reply(Container container, long sender, int id, List<ItemDrop.ItemData> items)
@@ -286,9 +309,37 @@ public static class StorageWithdraw
     private static bool MayUse(Container container, long playerId, long sender)
     {
         if (playerId != 0)
-            return container.CheckAccess(playerId);
+            return playerId == sender && container.CheckAccess(playerId);
         var server = ZNet.instance?.GetServerPeer();
         return server != null && sender == server.m_uid;
+    }
+
+    private static List<ItemDrop.ItemData> Within(List<ItemDrop.ItemData> held, List<ItemDrop.ItemData> claimed)
+    {
+        var left = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var item in held)
+        {
+            if (item == null || item.m_stack <= 0)
+                continue;
+            var id = ItemKey.Of(item);
+            left.TryGetValue(id, out var have);
+            left[id] = have + item.m_stack;
+        }
+
+        var ok = new List<ItemDrop.ItemData>();
+        foreach (var item in claimed)
+        {
+            if (item == null || item.m_stack <= 0)
+                continue;
+            var id = ItemKey.Of(item);
+            if (!left.TryGetValue(id, out var have) || have <= 0)
+                continue;
+            var count = Math.Min(have, item.m_stack);
+            left[id] = have - count;
+            ok.Add(Copy(item, count));
+        }
+
+        return ok;
     }
 
     private static ZPackage WriteItems(List<ItemDrop.ItemData> items)

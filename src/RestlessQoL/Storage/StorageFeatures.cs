@@ -253,7 +253,7 @@ public sealed class Restock : FeatureModule
             while (index < items.Length)
             {
                 var item = items[index++];
-                if (item == null || SlotLock.Held(item))
+                if (!NearbyStorage.Spendable(item))
                     continue;
                 var max = item.m_shared.m_maxStackSize;
                 if (item.m_stack >= max)
@@ -261,11 +261,7 @@ public sealed class Restock : FeatureModule
                 NearbyStorage.RequestConsume(item.m_shared.m_name, max - item.m_stack, taken =>
                 {
                     if (taken > 0)
-                    {
-                        item.m_stack += taken;
-                        filled += taken;
-                    }
-
+                        filled += ApplyRestock(player, inventory, item, taken);
                     Next(index);
                 }, true, item.m_quality, true);
                 return;
@@ -277,5 +273,23 @@ public sealed class Restock : FeatureModule
         }
 
         Next(0);
+    }
+
+    private static int ApplyRestock(Player player, Inventory inventory, ItemDrop.ItemData item, int taken)
+    {
+        var live = item?.m_shared != null && inventory.ContainsItem(item) && NearbyStorage.Spendable(item);
+        var room = live ? item!.m_shared.m_maxStackSize - item.m_stack : 0;
+        var add = Math.Min(Math.Max(0, room), taken);
+        if (add > 0)
+            item!.m_stack += add;
+        var rest = taken - add;
+        if (rest <= 0 || item?.m_shared == null)
+            return add;
+        var clone = item.Clone();
+        clone.m_stack = rest;
+        clone.m_equipped = false;
+        if (!inventory.AddItem(clone))
+            ItemDrop.DropItem(clone, rest, player.transform.position + Vector3.up, player.transform.rotation);
+        return taken;
     }
 }

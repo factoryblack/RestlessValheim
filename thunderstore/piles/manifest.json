@@ -1,11 +1,11 @@
 {
   "name": "RestlessPiles",
-  "version_number": "0.2.0",
+  "version_number": "0.2.1",
   "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/piles.md",
   "description": "Turn familiar resource piles into bulk storage. Deposit supplies, take a stack and craft from nearby piles.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",
-    "Restless-RestlessCore-0.2.1"
+    "Restless-RestlessCore-0.2.2"
   ]
 }

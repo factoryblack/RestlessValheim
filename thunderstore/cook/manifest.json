@@ -1,11 +1,11 @@
 {
   "name": "RestlessCook",
-  "version_number": "0.3.0",
+  "version_number": "0.3.1",
   "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/cook.md",
   "description": "Cook the haul, make meals and serve feasts. Plan kitchen orders at one table while nearby cooking stations do the work.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",
-    "Restless-RestlessCore-0.2.1"
+    "Restless-RestlessCore-0.2.2"
   ]
 }

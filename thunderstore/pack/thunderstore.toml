@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "Restless_Valheim"
-versionNumber = "0.1.24"
+versionNumber = "0.1.25"
 description = "The Restless collection in one install: a cohesive interface, smoother storage, expanded cooking and easier farming."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md"
 containsNsfwContent = false
@@ -12,12 +12,12 @@ containsNsfwContent = false
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2351"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.2.1"
-Restless-RestlessCook = "0.3.0"
-Restless-RestlessPiles = "0.2.0"
-Restless-RestlessPlant = "0.2.0"
-Restless-RestlessDrawers = "0.1.2"
-Restless-RestlessStorage = "0.2.0"
+Restless-RestlessCore = "0.2.2"
+Restless-RestlessCook = "0.3.1"
+Restless-RestlessPiles = "0.2.1"
+Restless-RestlessPlant = "0.2.1"
+Restless-RestlessDrawers = "0.2.0"
+Restless-RestlessStorage = "0.2.1"
 
 [build]
 icon = "./icon.png"

@@ -12,3 +12,41 @@ Use [the build and release guide](../docs/maintainers/building.md) for tag prefi
 A Core tag publishes Core only. Works remains a separate installation until it is deliberately added to the pack's member list. Do not reactivate the deprecated legacy packages.
 
 Documentation merges do not update an existing Thunderstore release automatically. The revised package pages ship in the next package release. Screenshot placeholders are intentional until captures are available; see [the capture brief](../docs/maintainers/screenshots.md).
+
+## This drop
+
+Not tagged yet. One tag per push. Core first, then the addons, then RestlessWorkshop, then the pack. Workshop is not a pack member.
+
+| Package | Was | Now | Why |
+|---|---|---|---|
+| RestlessCore | 0.2.1 | **0.2.2** | Seal is hammer-only, station seal range, shared icons |
+| RestlessCook | 0.3.0 | **0.3.1** | Cookbook polish; kilns and smelters leave the kitchen |
+| RestlessPlant | 0.2.0 | **0.2.1** | Cultivator can remove planted crops, including mushrooms |
+| RestlessPiles | 0.2.0 | **0.2.1** | Shared icon and refreshed guide |
+| RestlessDrawers | 0.1.2 | **0.2.0** | 95 cm cabinets with corner snaps under a one-metre floor |
+| RestlessStorage | 0.2.0 | **0.2.1** | Shared icon and refreshed guide |
+| RestlessWorks | — | **0.1.0** | First Workshop listing. Separate install |
+| Restless Valheim pack | 0.1.24 | **0.1.25** | The six members above, not Workshop |
+
+Jötunn stays 2.30.2. Clients and the server need matching versions. The 95 cm drawers, hammer-only seal and crop removal were built for the local playtest and have not been confirmed back from that session.
+
+## Tag order
+
+```
+git tag v0.2.2
+git push origin v0.2.2
+git tag cook-v0.3.1
+git push origin cook-v0.3.1
+git tag plant-v0.2.1
+git push origin plant-v0.2.1
+git tag piles-v0.2.1
+git push origin piles-v0.2.1
+git tag drawers-v0.2.0
+git push origin drawers-v0.2.0
+git tag storage-v0.2.1
+git push origin storage-v0.2.1
+git tag works-v0.1.0
+git push origin works-v0.1.0
+git tag pack-v0.1.25
+git push origin pack-v0.1.25
+```

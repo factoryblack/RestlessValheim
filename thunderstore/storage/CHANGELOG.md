@@ -2,9 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
-## Unreleased
+## 0.2.1
 
 - Refreshed the package bio to describe the existing browser, with a player guide and screenshot areas.
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+- Requires Core 0.2.2.
 
 ## 0.2.0
 

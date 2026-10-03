@@ -2,10 +2,13 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
-## Unreleased
+## 0.2.1
 
 - Berry-bush hover names now identify their own crop instead of displaying generic Pickable text.
+- The cultivator can remove a planted crop, including mushrooms.
 - Refreshed planting, harvest and regrowth guidance.
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+- Requires Core 0.2.2.
 
 ## 0.2.0
 

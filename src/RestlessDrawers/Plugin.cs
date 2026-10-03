@@ -14,7 +14,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.drawers";
     public const string PluginName = "RestlessDrawers";
-    public const string PluginVersion = "0.1.2";
+    public const string PluginVersion = "0.2.0";
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;

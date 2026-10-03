@@ -2,9 +2,14 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
-## Unreleased
+## 0.3.1
 
 - Refreshed the Cookbook introduction and moved the detailed food catalogue into linked, generated recipe guides.
+- Cookbook sections, recipe density, preparation labels and hover are easier to read.
+- Kilns, smelters and the other workshop machines are no longer kitchen stations. The stone oven stays with cooking.
+- Kitchen orders count and pull stock from nearby piles.
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+- Requires Core 0.2.2.
 
 ## 0.3.0
 

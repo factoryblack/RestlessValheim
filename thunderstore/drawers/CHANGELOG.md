@@ -2,10 +2,12 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
-## Unreleased
+## 0.2.0
 
-- Cabinets now fit below a metre-high floor and use shared corner snap points.
+- Cabinets are about 95 cm on each side, overlap their neighbours by a centimetre, and snap from the eight corners of a 94 cm cell so they fit under a one-metre floor.
 - Refreshed cabinet, access and installation guidance.
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+- Requires Core 0.2.2.
 
 ## 0.1.2
 

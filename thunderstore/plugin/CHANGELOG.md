@@ -2,10 +2,12 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
-## Unreleased
+## 0.2.2
 
 - Refreshed package information and player guides, with screenshot areas ready for new captures.
 - Wood sealing now covers the build range of stations covering the piece, with the configured radius used outside station coverage.
+- The Seal hint and Alt-click appear only while the hammer is out.
+- Updated the Restless ecosystem icons in the F8 menu and package listing, with matching ring size, centred artwork and transparent backgrounds.
 
 ## 0.2.1
 

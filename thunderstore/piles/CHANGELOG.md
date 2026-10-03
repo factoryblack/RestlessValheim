@@ -2,9 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
-## Unreleased
+## 0.2.1
 
 - Refreshed the package page and added a guide to deposits, withdrawal and shared storage actions.
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+- Requires Core 0.2.2.
 
 ## 0.2.0
 

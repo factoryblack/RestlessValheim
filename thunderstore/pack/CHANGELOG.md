@@ -2,9 +2,11 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
-## Unreleased
+## 0.1.25
 
 - Refreshed the collection overview, package bios and linked player guides.
+- Included version changes: RestlessCore 0.2.2, RestlessCook 0.3.1, RestlessPlant 0.2.1, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.1.
+- Updated the Restless Valheim modpack icon to match the shared ecosystem artwork, with a centred Nordic R and transparent background.
 
 ## 0.1.24
 

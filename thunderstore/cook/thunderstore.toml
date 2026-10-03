@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessCook"
-versionNumber = "0.3.0"
+versionNumber = "0.3.1"
 description = "Cook the haul, make meals and serve feasts. Plan kitchen orders at one table while nearby cooking stations do the work."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/cook.md"
 containsNsfwContent = false
@@ -12,7 +12,7 @@ containsNsfwContent = false
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2351"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.2.1"
+Restless-RestlessCore = "0.2.2"
 
 [build]
 icon = "./icon.png"

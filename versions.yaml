@@ -63,7 +63,7 @@ packages:
   works:
     version: "0.1.0"
     guid: "restless.works"
-    thunderstore: "RestlessWorks"
+    thunderstore: "RestlessWorkshop"
     plugin: "src/RestlessWorks/Plugin.cs"
     csproj: "src/RestlessWorks/RestlessWorks.csproj"
     thunderstore_dir: "thunderstore/works"

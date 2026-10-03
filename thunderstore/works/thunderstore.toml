@@ -3,7 +3,7 @@ schemaVersion = "0.0.1"
 
 [package]
 namespace = "Restless"
-name = "RestlessWorks"
+name = "RestlessWorkshop"
 versionNumber = "0.1.0"
 description = "Manage nearby production from a work-order board. Make a batch or keep essential supplies stocked."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/works.md"

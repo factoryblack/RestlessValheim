@@ -15,7 +15,7 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-Not tagged yet. One tag per push. Core first, then the addons, then RestlessWorkshop, then the pack. Workshop is not a pack member.
+One tag per push. Core first, then the addons, then RestlessWorkshop, then the pack. Workshop is not a pack member.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
@@ -25,7 +25,7 @@ Not tagged yet. One tag per push. Core first, then the addons, then RestlessWork
 | RestlessPiles | 0.2.0 | **0.2.1** | Shared icon and refreshed guide |
 | RestlessDrawers | 0.1.2 | **0.2.0** | 95 cm cabinets with corner snaps under a one-metre floor |
 | RestlessStorage | 0.2.0 | **0.2.1** | Shared icon and refreshed guide |
-| RestlessWorks | — | **0.1.0** | First Workshop listing. Separate install |
+| RestlessWorkshop | — | **0.1.0** | First listing. Separate install |
 | Restless Valheim pack | 0.1.24 | **0.1.25** | The six members above, not Workshop |
 
 Jötunn stays 2.30.2. Clients and the server need matching versions. The 95 cm drawers, hammer-only seal and crop removal were built for the local playtest and have not been confirmed back from that session.

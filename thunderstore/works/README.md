@@ -1,6 +1,6 @@
 # RestlessWorkshop
 
-The public name is **RestlessWorkshop**. The existing Thunderstore package remains **RestlessWorks**; install that listing. Existing configurations and saved boards keep their identifiers.
+Install **RestlessWorkshop**. A board already placed in a world keeps its orders.
 
 **Make a batch. Keep a reserve.**
 

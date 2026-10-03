@@ -6,7 +6,7 @@
 #   plant-v* RestlessPlant only
 #   drawers-v* RestlessDrawers only
 #   storage-v* RestlessStorage only
-#   works-v* RestlessWorks only
+#   works-v* RestlessWorkshop only
 # GitHub runners have no Valheim client, so this follows Jötunn's pattern:
 # SteamCMD anonymous dedicated server (app 896660) + BepInEx pack, cached by buildid.
 # Thunderstore publish needs repo secret TCLI_AUTH_TOKEN (never commit the token).

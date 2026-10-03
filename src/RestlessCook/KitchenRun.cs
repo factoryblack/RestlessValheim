@@ -698,7 +698,7 @@ internal static partial class KitchenRun
             {
                 for (var i = 0; i < hit.Oven.GetQueueSize(); i++)
                 {
-                    var conversion = hit.Oven.GetItemConversion(hit.Oven.GetQueuedOre());
+                    var conversion = hit.Oven.GetItemConversion(ProductionQueue.Input(hit.Oven, i));
                     if (conversion?.m_to == null) continue;
                     var product = Clean(conversion.m_to.gameObject.name);
                     map.TryGetValue(product, out var have); map[product] = have + 1;

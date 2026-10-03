@@ -2,6 +2,7 @@
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
   <ItemGroup>
     <Compile Include="../../src/RestlessQoL/Storage/TransferBook.cs" Link="TransferBook.cs" />
+    <Compile Include="../../src/RestlessQoL/Storage/ProductionQueue.cs" Link="ProductionQueue.cs" />
     <Compile Include="../../src/RestlessQoL/Storage/ProductionLease.cs" Link="ProductionLease.cs" />
     <Compile Include="../../src/RestlessQoL/Storage/TransferDelivery.cs" Link="TransferDelivery.cs" />
   </ItemGroup>

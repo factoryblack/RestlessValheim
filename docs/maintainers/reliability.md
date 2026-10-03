@@ -4,7 +4,7 @@ The transfer protocol is shared by Quick Stack, Restock and the Storage browser.
 
 ## What the regression suite covers
 
-`tests/Reliability.Tests` runs the production transaction-history and lease classes. It checks duplicate requests, cancellation arriving before a request, duplicate acknowledgement, cancellation after commit, reservation serialization/ownership hand-off, per-chest scope, history compaction, overlapping controllers and controller destruction. These tests do not emulate Unity networking or native machine timers.
+`tests/Reliability.Tests` runs the production transaction-history, receipt, queue and lease classes. It checks duplicate requests, cancellation arriving before a request, duplicate acknowledgement, cancellation after commit, reservation serialization/ownership hand-off, per-chest scope, history compaction, overlapping controllers and controller destruction, saved receipt retries, character/peer binding and mixed input queues. The native assembly contract is checked separately. These tests do not emulate Unity networking or native machine timers.
 
 ## Transfer behaviour
 

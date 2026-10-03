@@ -39,7 +39,7 @@ internal sealed class TransferBook
         if (row == null)
         {
             // A cancellation arriving before its request must still close it.
-            if (commit) return false;
+            if (commit) return Retired(actor, id, kind);
             row = Prepare(actor, id, kind, () => new Entry { State = Phase.Cancelled });
         }
         if (row.State != Phase.Held) return true;

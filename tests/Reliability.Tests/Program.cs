@@ -47,6 +47,7 @@ history.Prepare(7, 1, "P", () => new TransferBook.Entry { State = TransferBook.P
 for (var id = 2; id < 400; id++) history.Resolve(7, id, "P", false, _ => { });
 history = TransferBook.Load(history.Save());
 Equal("held", history.Find(7, 1, "P")!.Payload, "compaction retains unresolved payload");
+Equal(true, history.Resolve(7, 2, "P", true, _ => throw new Exception("retired settlement applied")), "retired settlement can be confirmed");
 history.Prepare(7, 2, "P", () => throw new Exception("evicted request reopened"));
 Equal(TransferBook.Phase.Cancelled, history.Find(7, 2, "P")!.State, "retired request refused");
 
@@ -111,4 +112,10 @@ TransferDelivery.OnDecision(target, 900, target.m_nview.Sent.Last().Data);
 TransferDelivery.OnClosed(target, 500, target.m_nview.Sent.Last().Data);
 Equal(false, restored.m_customData.ContainsKey("restless.transfer.receipts.v2"), "retry confirmation clears receipt");
 Equal(11, target.Stock, "retry does not return overflow twice");
+// Mixed input queues are read individually even before any output is processed.
+var smelter = new Smelter(); smelter.Queue("CopperOre"); smelter.Queue("TinOre");
+smelter.m_nview.GetZDO().Set("spawnOre", "IronScrap");
+Equal("CopperOre", ProductionQueue.Input(smelter, 0), "first input uses native getter");
+Equal("TinOre", ProductionQueue.Input(smelter, 1), "second input is independent of first/output buffer");
+Equal("", ProductionQueue.Input(smelter, 2), "outside queue is empty");
 Console.WriteLine("Reliability regressions passed.");

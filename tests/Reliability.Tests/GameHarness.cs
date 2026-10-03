@@ -114,3 +114,12 @@ namespace RestlessQoL.Storage
         { var count = Math.Min(held.Sum(i => i.m_stack), overflow.Sum(i => i.m_stack)); return new() { new() { m_stack = count } }; }
     }
 }
+
+public sealed class Smelter
+{
+    public ZNetView m_nview = new(60, true);
+    private int _count;
+    public void Queue(string name) { m_nview.GetZDO().Set("item" + _count, name); _count++; }
+    public int GetQueueSize() => _count;
+    public string GetQueuedOre() => m_nview.GetZDO().GetString("item0");
+}

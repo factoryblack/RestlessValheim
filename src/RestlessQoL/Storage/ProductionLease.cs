@@ -21,7 +21,7 @@ public static class ProductionLease
     }
     public static bool Acquire(ZNetView machine, ZNetView controller)
     {
-        if (!controller.IsOwner() || !Available(machine, controller)) return false;
+        if (controller == null || !controller.IsValid() || !controller.IsOwner() || !Available(machine, controller)) return false;
         if (!machine.IsOwner()) machine.ClaimOwnership();
         if (!machine.IsOwner() || !Available(machine, controller)) return false;
         var owner = controller.GetZDO().m_uid;

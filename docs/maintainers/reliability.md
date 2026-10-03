@@ -30,7 +30,7 @@ Persistence follows Valheim's ordinary character/world saves. This is not an ato
 
 1. Order a smelter batch from a machine with no processed output and insufficient starting fuel. Once all ore is queued, refuelling must continue; queued output must already count toward the request.
 2. Queue different ore types and include an existing processed-output buffer. Count input queue entries separately from that buffer. A kiln does not need coal refuelling.
-3. Place two preparation tables covering the same rack/oven. Open both windows without ordering: browsing must not claim machines. Place overlapping orders: only the reserved controller may collect/load that machine.
+3. Place two preparation tables covering the same rack/oven. Open both windows without ordering: browsing must not claim machines. Place overlapping orders: only the reserved controller may collect/load that machine. A controller should reserve only machines whose conversions are relevant to its outstanding orders.
 4. Hand machine/controller ownership to another peer and unload/reload them. The reservation should remain tied to the controller. Finish/cancel the last order or destroy the controller: it should stop blocking other controllers.
 5. Repeat the overlap check with Workshop boards, including standing stock orders. Standing orders intentionally retain their machines until cancelled.
 6. Order one Cooked Egg, an oven product and a feast with shared intermediate recipes. Confirm normal native cooking times, one completion per output and no unnecessary additional loads.

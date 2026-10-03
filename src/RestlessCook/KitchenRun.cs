@@ -356,8 +356,8 @@ internal static partial class KitchenRun
             return;
         }
         ProductionLease.SetActive(view, true);
-        var hits = Scan(origin, true, view);
         EnsureConversions();
+        var hits = Scan(origin, true, view);
         AdvanceWork(table, hits, ledger, elapsed);
         CollectFinished(hits, ledger);
         Fuel(hits, ledger, origin);
@@ -1064,18 +1064,33 @@ internal static partial class KitchenRun
     {
         var list = new List<Hit>();
         var seen = new HashSet<int>();
+        HashSet<string>? demand = null;
+        if (claim && controller != null)
+        {
+            demand = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var order in Read(controller).Orders)
+                foreach (var step in Expand(order.Feast, Outstanding(order), 0, "")) demand.Add(step.Output);
+        }
         var hits = Physics.OverlapSphere(origin, Range(), ~0, QueryTriggerInteraction.Collide);
         foreach (var col in hits)
         {
             if (col == null)
                 continue;
             var rack = col.GetComponentInParent<CookingStation>();
-            if (rack != null && seen.Add(rack.GetInstanceID()) && (controller == null || ProductionLease.Available(rack.m_nview, controller)) && (!claim || (controller != null && ProductionLease.Acquire(rack.m_nview, controller))))
+            var rackRelevant = demand == null;
+            if (rack != null && demand != null)
+                foreach (var conversion in rack.m_conversion)
+                    if (conversion?.m_to != null && demand.Contains(Clean(conversion.m_to.gameObject.name))) { rackRelevant = true; break; }
+            if (rack != null && rackRelevant && seen.Add(rack.GetInstanceID()) && (controller == null || ProductionLease.Available(rack.m_nview, controller)) && (!claim || (controller != null && ProductionLease.Acquire(rack.m_nview, controller))))
                 list.Add(DescribeRack(rack, false));
             var oven = col.GetComponentInParent<Smelter>();
+            var ovenRelevant = demand == null;
+            if (oven != null && demand != null)
+                foreach (var conversion in oven.m_conversion)
+                    if (conversion?.m_to != null && demand.Contains(Clean(conversion.m_to.gameObject.name))) { ovenRelevant = true; break; }
             // Kilns, smelters and the other production machines belong to the work-order board.
             // The stone oven stays here; food recipes still load it.
-            if (oven != null && seen.Add(oven.GetInstanceID()) && FoodOven(Utils.GetPrefabName(oven.gameObject))
+            if (oven != null && ovenRelevant && seen.Add(oven.GetInstanceID()) && FoodOven(Utils.GetPrefabName(oven.gameObject))
                 && (controller == null || ProductionLease.Available(oven.m_nview, controller))
                 && (!claim || (controller != null && ProductionLease.Acquire(oven.m_nview, controller))))
                 list.Add(DescribeOven(oven, false));

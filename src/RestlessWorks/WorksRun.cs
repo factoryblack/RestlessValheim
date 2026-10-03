@@ -479,6 +479,13 @@ internal static class WorksRun
     {
         var list = new List<Hit>();
         var seen = new HashSet<int>();
+        HashSet<string>? demand = null;
+        if (claim && controller != null)
+        {
+            demand = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var order in Read(controller).Orders)
+                if (order.Mode == WorksOrderMode.Keep || order.Count > order.Ready + order.Collected) demand.Add(order.Output);
+        }
         var hits = Physics.OverlapSphere(origin, Range(), ~0, QueryTriggerInteraction.Collide);
         foreach (var col in hits)
         {
@@ -487,6 +494,13 @@ internal static class WorksRun
             var station = col.GetComponentInParent<Smelter>();
             if (station == null || !seen.Add(station.GetInstanceID()) || FoodOven(Utils.GetPrefabName(station.gameObject)))
                 continue;
+            if (demand != null)
+            {
+                var relevant = false;
+                foreach (var conversion in station.m_conversion)
+                    if (conversion?.m_to != null && demand.Contains(Clean(conversion.m_to.gameObject.name))) { relevant = true; break; }
+                if (!relevant) continue;
+            }
             if (controller != null && !ProductionLease.Available(station.m_nview, controller)) continue;
             if (claim && (controller == null || !ProductionLease.Acquire(station.m_nview, controller))) continue;
             list.Add(Describe(station, false));

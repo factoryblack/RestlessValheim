@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+
 ## 0.3.0
 
 - The Cookbook shows larger portraits, filters for feasts, meals, ingredients and meads, and a selected dish

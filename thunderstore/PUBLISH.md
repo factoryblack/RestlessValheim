@@ -41,3 +41,12 @@ git push origin pack-v0.1.24
 ```
 
 Pack waits up to 600s for Core 0.2.1 and Cook 0.3.0. The other four are already published.
+
+## Pending ecosystem icon refresh
+
+The aligned icon refresh is recorded under **Unreleased** in all eight package changelogs. These entries are not a published release and do not change the version pins or tag plan above.
+
+- Core embeds the package icons for the F8 module cards, module headings and modpack link. Releasing Core updates the in-game collection artwork.
+- Each of the eight Thunderstore listings needs a new package version to receive its own updated icon. Publishing Core alone does not refresh the expansion listings.
+- When preparing the icon release, assign each package a new version with the version-bump script, move its Unreleased entry into that version's changelog section, and update this publish plan. Publish the plugins before a pack release that depends on their new versions.
+- All package icons remain 256 × 256 PNGs with transparent exterior; no gameplay changes accompany the icon refresh.

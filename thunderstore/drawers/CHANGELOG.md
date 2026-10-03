@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+
 ## 0.1.2
 
 - Each cabinet is the same 1.1 m cube, so a mixed grid shares one pitch. The old 4 cm overlap is gone

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated the Restless Valheim modpack icon to match the shared ecosystem artwork, with a centred Nordic R and transparent background.
+
 ## 0.1.24
 
 - RestlessCore 0.2.1 and RestlessCook 0.3.0. Plant 0.2.0, Piles 0.2.0, Drawers 0.1.2, and Storage 0.2.0 stay. Jötunn stays 2.30.2.

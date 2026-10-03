@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated the Restless ecosystem icons in the F8 menu and package listing, with matching ring size, centred artwork and transparent backgrounds.
+
 ## 0.2.1
 
 - Hold Alt and click with the hammer out to seal wood. The Seal bind sits on the hammer key stack. A plain click still places or repairs

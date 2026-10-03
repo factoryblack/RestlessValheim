@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
+
 ## 0.2.0
 
 - A picked mushroom shrinks to a sprout and grows back. On a bush only the berries do that; the bush stays full size

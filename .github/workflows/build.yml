@@ -111,6 +111,9 @@ jobs:
       - name: Set tooltip regressions
         run: dotnet run --project tests/TooltipSetBlock.Tests -c Release
 
+      - name: Transfer and production ownership regressions
+        run: dotnet run --project tests/Reliability.Tests -c Release
+
       - name: Release build
         run: |
           dotnet build src/RestlessQoL/RestlessQoL.csproj -c Release --nologo

@@ -14,17 +14,15 @@ public sealed class StorageSync : FeatureModule
     public override string Id => "storage.sync";
     public override bool Enabled => true;
 
-    private const string PullRpc = "RestlessPull";
-    private const string PushRpc = "RestlessPush";
-    private const string PulledRpc = "RestlessPulled";
-    private const string PushedRpc = "RestlessPushed";
-    private const string AckRpc = "RestlessTransferAck";
-    private const string CancelRpc = "RestlessTransferCancel";
+    private const string PullRpc = "RestlessPullV2";
+    private const string PushRpc = "RestlessPushV2";
+    private const string PulledRpc = "RestlessPulledV2";
+    private const string PushedRpc = "RestlessPushedV2";
+    public override bool TickInMenus => true;
+    public override void Tick() => TransferDelivery.Tick();
 
-    private static int _nextId = 1;
     private static readonly Dictionary<int, Pending> Waiting = new();
-    private static readonly Dictionary<string, int> Applied = new();
-    private static readonly Dictionary<string, Hold> Holds = new();
+    internal static bool WaitingFor(int id) => Waiting.ContainsKey(id);
 
     internal static int RequestPull(Container container, long playerId, string sharedName, int amount,
         bool honorLeaveOne, int quality, bool worldLevel, Action<int>? done)
@@ -53,7 +51,7 @@ public sealed class StorageSync : FeatureModule
             pkg.Write(quality);
             pkg.Write(worldLevel);
             pkg.Write(honorLeaveOne);
-        }, done);
+        }, done, amount);
         return 0;
     }
 
@@ -84,7 +82,14 @@ public sealed class StorageSync : FeatureModule
             pkg.Write(id);
             pkg.Write(dropId);
             pkg.Write(payload);
-        }, done);
+        }, done, item.m_stack, taken =>
+        {
+            if (drop != null)
+                return drop.m_nview != null && drop.m_nview.IsValid() && drop.m_nview.IsOwner()
+                    && drop.m_itemData == item && item.m_stack >= taken;
+            var player = Player.m_localPlayer;
+            return player != null && player.GetInventory().ContainsItem(item) && NearbyStorage.Spendable(item) && item.m_stack >= taken;
+        });
     }
 
     private static int TakeNow(Container container, string sharedName, int amount, bool honorLeaveOne, int quality,
@@ -102,7 +107,7 @@ public sealed class StorageSync : FeatureModule
         return NearbyStorage.PullOwned(container, sharedName, amount, honorLeaveOne, quality, worldLevel);
     }
 
-    private static void Begin(Container container, string rpc, Action<int, ZPackage> fill, Action<int> done)
+    private static void Begin(Container container, string rpc, Action<int, ZPackage> fill, Action<int> done, int limit = int.MaxValue, Func<int, bool>? accept = null)
     {
         var view = container.m_nview;
         if (view == null || !view.IsValid())
@@ -111,32 +116,27 @@ public sealed class StorageSync : FeatureModule
             return;
         }
 
-        var id = NextId();
+        var id = TransferDelivery.NextId();
+        if (id == 0) { done(0); return; }
         var pkg = new ZPackage();
         fill(id, pkg);
-        Waiting[id] = new Pending(container, rpc, pkg, done);
+        Waiting[id] = new Pending(container, rpc, pkg, done, Player.m_localPlayer.GetPlayerID(), limit, accept);
+        TransferDelivery.Remember(container, id, rpc == PushRpc ? "S" : "P", 0);
         Send(container, rpc, pkg);
         Plugin.Instance.StartCoroutine(Retry(id));
     }
 
-    private static int NextId()
+    private static void Finish(Container container, long sender, int id, int taken)
     {
-        var id = _nextId++;
-        if (_nextId <= 0)
-            _nextId = 1;
-        return id;
-    }
-
-    private static void Finish(int id, int taken)
-    {
-        if (id == 0 || !Waiting.TryGetValue(id, out var pending))
-            return;
+        if (id == 0 || !Waiting.TryGetValue(id, out var pending) || pending.Container != container
+            || container.m_nview.GetZDO().GetOwner() != sender) return;
         Waiting.Remove(id);
+        var kind = pending.Rpc == PushRpc ? "S" : "P";
+        if (Player.m_localPlayer == null || Player.m_localPlayer.GetPlayerID() != pending.Actor) return;
+        if (taken < 0 || taken > pending.Limit || (taken > 0 && pending.Accept != null && !pending.Accept(taken))) taken = 0;
+        // A single main-thread callback applies the source/destination before the decision is sent.
         pending.Done(taken);
-        if (taken > 0)
-            Plugin.Instance.StartCoroutine(RepeatAck(pending.Container, id));
-        else
-            Cancel(pending.Container, id);
+        TransferDelivery.Remember(container, id, kind, taken > 0 ? 1 : -1);
     }
 
     private static IEnumerator Retry(int id)
@@ -153,8 +153,11 @@ public sealed class StorageSync : FeatureModule
         if (!Waiting.TryGetValue(id, out var last))
             yield break;
         Waiting.Remove(id);
-        Cancel(last.Container, id);
-        last.Done(0);
+        if (Player.m_localPlayer != null && Player.m_localPlayer.GetPlayerID() == last.Actor)
+        {
+            TransferDelivery.Remember(last.Container, id, last.Rpc == PushRpc ? "S" : "P", -1);
+            last.Done(0);
+        }
     }
 
     private static void OnPull(Container container, long sender, ZPackage pkg)
@@ -169,23 +172,23 @@ public sealed class StorageSync : FeatureModule
         var quality = pkg.ReadInt();
         var worldLevel = pkg.ReadBool();
         var honorLeave = pkg.ReadBool();
-        if (id == 0 || !ModConfig.StorageEnabled.Value || !MayUse(container, playerId, sender))
+        if (id <= 0 || !ModConfig.StorageEnabled.Value || !MayUse(container, playerId, sender))
         {
             Reply(container, sender, PulledRpc, id, 0);
             return;
         }
 
-        var key = Key(sender, id);
-        if (!Applied.TryGetValue(key, out var taken))
+        var book = TransferDelivery.Read(container);
+        var row = book.Prepare(playerId, id, "P", () =>
         {
             var items = NearbyStorage.Extract(container, name, amount, honorLeave, quality, worldLevel);
-            taken = 0;
-            foreach (var item in items)
-                taken += item.m_stack;
-            Applied[key] = taken;
-            if (taken > 0)
-                Holds[key] = new Hold(container, items, false);
-        }
+            var count = 0;
+            foreach (var item in items) count += item.m_stack;
+            return new TransferBook.Entry { Count = count, Payload = TransferDelivery.Pack(items),
+                State = count > 0 ? TransferBook.Phase.Held : TransferBook.Phase.Cancelled };
+        });
+        TransferDelivery.Write(container, book);
+        var taken = row.State == TransferBook.Phase.Held ? row.Count : 0;
 
         Reply(container, sender, PulledRpc, id, taken);
     }
@@ -199,96 +202,33 @@ public sealed class StorageSync : FeatureModule
         var id = pkg.ReadInt();
         pkg.ReadZDOID();
         var item = ReadItem(pkg.ReadPackage());
-        if (id == 0 || !ModConfig.StorageEnabled.Value || item == null || !MayUse(container, playerId, sender))
+        if (id <= 0 || !ModConfig.StorageEnabled.Value || item == null || !MayUse(container, playerId, sender))
         {
             Reply(container, sender, PushedRpc, id, 0);
             return;
         }
 
-        var key = Key(sender, id);
-        if (!Applied.TryGetValue(key, out var taken))
+        var book = TransferDelivery.Read(container);
+        var row = book.Prepare(playerId, id, "S", () =>
         {
-            taken = NearbyStorage.PlanPush(container, item);
-            Applied[key] = taken;
-            if (taken > 0)
-            {
-                var clone = item.Clone();
-                clone.m_stack = taken;
-                clone.m_equipped = false;
-                Holds[key] = new Hold(container, new List<ItemDrop.ItemData> { clone }, true);
-            }
-        }
-
-        Reply(container, sender, PushedRpc, id, taken);
+            var count = NearbyStorage.PlanPush(container, item);
+            var clone = item.Clone(); clone.m_stack = count; clone.m_equipped = false;
+            return new TransferBook.Entry { Count = count,
+                Payload = count > 0 ? TransferDelivery.Pack(new List<ItemDrop.ItemData> { clone }) : "",
+                State = count > 0 ? TransferBook.Phase.Held : TransferBook.Phase.Cancelled };
+        });
+        TransferDelivery.Write(container, book);
+        Reply(container, sender, PushedRpc, id, row.State == TransferBook.Phase.Held ? row.Count : 0);
     }
 
-    private static void OnAck(Container container, long sender, int id)
-    {
-        if (!container.IsOwner())
-            return;
-        var key = Key(sender, id);
-        if (!Holds.TryGetValue(key, out var hold))
-            return;
-        Holds.Remove(key);
-        if (!hold.Push)
-            return;
-        var item = hold.Items.Count > 0 ? hold.Items[0] : null;
-        if (item == null)
-            return;
-        NearbyStorage.PushOwned(container, item, null);
-        if (item.m_stack > 0)
-            ItemDrop.DropItem(item, item.m_stack, container.transform.position + Vector3.up, Quaternion.identity);
-    }
-
-    private static void OnCancel(Container container, long sender, int id)
-    {
-        if (!container.IsOwner())
-            return;
-        var key = Key(sender, id);
-        if (!Holds.TryGetValue(key, out var hold))
-            return;
-        Holds.Remove(key);
-        if (!hold.Push)
-            StorageWithdraw.ReturnTo(container, hold.Items);
-    }
-
-    // The player id in the package has to be the peer who sent it.
-    // A dedicated tame has no player id. Accept that only from the server peer.
-    private static bool MayUse(Container container, long playerId, long sender)
-    {
-        if (playerId != 0)
-            return playerId == sender && container.CheckAccess(playerId);
-        var server = ZNet.instance?.GetServerPeer();
-        return server != null && sender == server.m_uid;
-    }
+    private static bool MayUse(Container container, long playerId, long sender) => TransferDelivery.MayUse(container, playerId, sender);
 
     private static void Send(Container container, string rpc, ZPackage pkg)
     {
         var view = container != null ? container.m_nview : null;
-        if (view == null || !view.IsValid())
-            return;
-        pkg.SetPos(0);
-        view.InvokeRPC(rpc, pkg);
+        if (view == null || !view.IsValid()) return;
+        pkg.SetPos(0); view.InvokeRPC(rpc, pkg);
     }
-
-    private static void Cancel(Container container, int id)
-    {
-        if (id == 0 || container?.m_nview == null || !container.m_nview.IsValid())
-            return;
-        container.m_nview.InvokeRPC(CancelRpc, id);
-    }
-
-    private static IEnumerator RepeatAck(Container container, int id)
-    {
-        yield return new WaitForSeconds(0.6f);
-        if (container != null && container.m_nview != null && container.m_nview.IsValid())
-            container.m_nview.InvokeRPC(AckRpc, id);
-        yield return new WaitForSeconds(1.4f);
-        if (container != null && container.m_nview != null && container.m_nview.IsValid())
-            container.m_nview.InvokeRPC(AckRpc, id);
-    }
-
-    private static string Key(long sender, int id) => sender + ":" + id;
 
     private static void Reply(Container container, long sender, string rpc, int id, int taken)
     {
@@ -349,18 +289,15 @@ public sealed class StorageSync : FeatureModule
             __instance.gameObject.AddComponent<Hook>();
             view.Register<ZPackage>(PullRpc, (long sender, ZPackage pkg) => OnPull(__instance, sender, pkg));
             view.Register<ZPackage>(PushRpc, (long sender, ZPackage pkg) => OnPush(__instance, sender, pkg));
-            view.Register<int, int>(PulledRpc, (_, id, taken) => Finish(id, taken));
-            view.Register<int, int>(PushedRpc, (_, id, taken) => Finish(id, taken));
-            view.Register<int>(AckRpc, (long sender, int id) => OnAck(__instance, sender, id));
-            view.Register<int>(CancelRpc, (long sender, int id) => OnCancel(__instance, sender, id));
+            view.Register<int, int>(PulledRpc, (sender, id, taken) => Finish(__instance, sender, id, taken));
+            view.Register<int, int>(PushedRpc, (sender, id, taken) => Finish(__instance, sender, id, taken));
+            view.Register<ZPackage>(TransferDelivery.DecisionRpc, (sender, pkg) => TransferDelivery.OnDecision(__instance, sender, pkg));
+            view.Register<ZPackage>(TransferDelivery.ClosedRpc, (sender, pkg) => TransferDelivery.OnClosed(__instance, sender, pkg));
             view.Register<ZPackage>(StorageWithdraw.RequestRpc,
                 (long sender, ZPackage pkg) => StorageWithdraw.OnRequest(__instance, sender, pkg));
             view.Register<ZPackage>(StorageWithdraw.ReplyRpc,
-                (long sender, ZPackage pkg) => StorageWithdraw.OnReply(sender, pkg));
-            view.Register<ZPackage>(StorageWithdraw.AckRpc,
-                (long sender, ZPackage pkg) => StorageWithdraw.OnAck(__instance, sender, pkg));
-            view.Register<ZPackage>(StorageWithdraw.CancelRpc,
-                (long sender, ZPackage pkg) => StorageWithdraw.OnCancel(__instance, sender, pkg));
+                (long sender, ZPackage pkg) => StorageWithdraw.OnReply(__instance, sender, pkg));
+
         }
     }
 
@@ -374,25 +311,10 @@ public sealed class StorageSync : FeatureModule
         public readonly string Rpc;
         public readonly ZPackage Package;
         public readonly Action<int> Done;
-        public Pending(Container container, string rpc, ZPackage package, Action<int> done)
-        {
-            Container = container;
-            Rpc = rpc;
-            Package = package;
-            Done = done;
-        }
-    }
-
-    private sealed class Hold
-    {
-        public readonly Container Container;
-        public readonly List<ItemDrop.ItemData> Items;
-        public readonly bool Push;
-        public Hold(Container container, List<ItemDrop.ItemData> items, bool push)
-        {
-            Container = container;
-            Items = items;
-            Push = push;
-        }
+        public readonly long Actor;
+        public readonly int Limit;
+        public readonly Func<int, bool>? Accept;
+        public Pending(Container container, string rpc, ZPackage package, Action<int> done, long actor, int limit, Func<int, bool>? accept)
+        { Container = container; Rpc = rpc; Package = package; Done = done; Actor = actor; Limit = limit; Accept = accept; }
     }
 }

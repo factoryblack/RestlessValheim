@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Persist reserved withdrawals and validate settlement against the original batch; delayed packets cannot reopen a cancelled take.
+
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
 ## 0.2.1

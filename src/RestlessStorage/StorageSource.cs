@@ -151,6 +151,14 @@ internal sealed class StorageSource : IStorageWindowSource
         }
 
         var chest = chests[index];
+        // The sheet was built from these inventories. Do not spend a network
+        // round trip on every unrelated chest before reaching the selected item.
+        var inventory = chest != null ? chest.GetInventory() : null;
+        if (inventory != null && !StorageWithdraw.Contains(inventory, resourceId))
+        {
+            Walk(chests, resourceId, index + 1, left, moved, blocked, false, label, completed);
+            return;
+        }
         StorageWithdraw.Request(chest, _player.GetPlayerID(), resourceId, left, batch =>
         {
             if (batch.TimedOut)
@@ -272,3 +280,4 @@ internal sealed class StorageSource : IStorageWindowSource
         internal Group(ItemDrop.ItemData item) => Item = item;
     }
 }
+

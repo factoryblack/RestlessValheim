@@ -32,6 +32,7 @@ public static class StorageWithdraw
         internal Container Container = null!;
         internal long Actor;
         internal Action<Batch> Done = null!;
+        internal ZPackage Package = null!;
     }
     private static readonly Dictionary<int, Pending> Waiting = new();
     internal static bool WaitingFor(int id) => Waiting.ContainsKey(id);
@@ -61,15 +62,15 @@ public static class StorageWithdraw
 
         var id = TransferDelivery.NextId();
         if (id == 0) { done(new Batch(0, new List<ItemDrop.ItemData>(), true)); return; }
-        Waiting[id] = new Pending { Container = container, Actor = playerId, Done = done };
-        TransferDelivery.Remember(container, id, "W", 0);
-        Plugin.Instance.StartCoroutine(ExpireRequest(id));
         var pkg = new ZPackage();
         pkg.Write(playerId);
         pkg.Write(id);
         pkg.Write(identity);
         pkg.Write(amount);
-        view.InvokeRPC(RequestRpc, pkg);
+        Waiting[id] = new Pending { Container = container, Actor = playerId, Done = done, Package = pkg };
+        TransferDelivery.Remember(container, id, "W", 0);
+        Send(container,pkg);
+        Plugin.Instance.StartCoroutine(ExpireRequest(id));
     }
 
     public static void Acknowledge(Container container, int id, List<ItemDrop.ItemData> overflow)
@@ -226,14 +227,38 @@ public static class StorageWithdraw
         return clone;
     }
 
+    // Exact identity (quality/world level/custom data included), not shared name.
+    public static bool Contains(Inventory inventory, string identity)
+    {
+        if (inventory == null || string.IsNullOrEmpty(identity)) return false;
+        foreach (var item in inventory.GetAllItems())
+            if (item?.m_shared != null && item.m_stack > 0 && ItemKey.Of(item) == identity) return true;
+        return false;
+    }
+
+    private static void Send(Container container, ZPackage pkg)
+    {
+        var view = container != null ? container.m_nview : null;
+        if (view == null || !view.IsValid()) return;
+        pkg.SetPos(0); view.InvokeRPC(RequestRpc,pkg);
+    }
+
     private static IEnumerator ExpireRequest(int id)
     {
-        yield return new WaitForSeconds(8f);
-        if (!Waiting.TryGetValue(id, out var pending)) yield break;
+        // Lost requests/replies and owner hand-offs should not turn a single
+        // packet loss into an eight-second wait. Replay the same reservation ID.
+        for (var attempt = 0; attempt < 7; attempt++)
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            if (!Waiting.TryGetValue(id,out var pending)) yield break;
+            Send(pending.Container,pending.Package);
+        }
+        yield return new WaitForSecondsRealtime(1f);
+        if (!Waiting.TryGetValue(id, out var last)) yield break;
         Waiting.Remove(id);
-        if (Player.m_localPlayer == null || Player.m_localPlayer.GetPlayerID() != pending.Actor) yield break;
-        Cancel(pending.Container, id);
-        pending.Done(new Batch(id, new List<ItemDrop.ItemData>(), true));
+        if (Player.m_localPlayer == null || Player.m_localPlayer.GetPlayerID() != last.Actor) yield break;
+        Cancel(last.Container, id);
+        last.Done(new Batch(id, new List<ItemDrop.ItemData>(), true));
     }
 
     private static void Reply(Container container, long sender, int id, List<ItemDrop.ItemData> items)
@@ -310,3 +335,4 @@ public static class StorageWithdraw
     }
 
 }
+

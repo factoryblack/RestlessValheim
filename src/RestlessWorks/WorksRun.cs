@@ -141,7 +141,8 @@ internal static class WorksRun
         if (view == null || recipe == null || count < 1 || !Controlled(view))
             return false;
         var ledger = Read(view);
-        if (ledger.Orders.Count >= MaxOrders)
+        if (ledger.Orders.Count >= MaxOrders || (mode == WorksOrderMode.Keep &&
+            ledger.Orders.Exists(order => order.Mode == WorksOrderMode.Keep && order.Output == recipe.Output)))
             return false;
         var next = 1;
         foreach (var order in ledger.Orders)
@@ -260,44 +261,9 @@ internal static class WorksRun
     }
 
     private static void Describe(Ledger ledger, Dictionary<string, int> stock, Dictionary<string, int> machines)
-    {
-        var pool = new Dictionary<string, int>(machines, StringComparer.Ordinal);
-        foreach (var order in ledger.Orders)
-        {
-            pool.TryGetValue(order.Output, out var running);
-            if (order.Mode == WorksOrderMode.Make)
-            {
-                var still = Math.Max(0, order.Count - order.Ready - order.Collected);
-                var cover = Math.Min(still, running);
-                pool[order.Output] = running - cover;
-                order.InProduction = cover;
-                order.Available = order.Ready + order.Collected;
-                order.Remaining = still - cover;
-                continue;
-            }
+        => WorksAccounting.Describe(ledger.Orders,stock,machines);
 
-            stock.TryGetValue(order.Output, out var held);
-            held = Math.Max(0, held - Reserved(ledger, order.Output));
-            var gap = Math.Max(0, order.Count - held);
-            var filling = Math.Min(gap, running);
-            pool[order.Output] = running - filling;
-            order.InProduction = filling;
-            order.Available = held;
-            order.Remaining = gap - filling;
-        }
-    }
-
-    private static int Reserved(Ledger ledger, string output)
-    {
-        var n = 0;
-        foreach (var order in ledger.Orders)
-        {
-            if (order.Mode == WorksOrderMode.Make && order.Output == output)
-                n += order.Ready;
-        }
-
-        return n;
-    }
+    private static int Reserved(Ledger ledger, string output) => WorksAccounting.Reserved(ledger.Orders,output);
 
     private static bool LoadOne(WorksRecipe recipe, List<Hit> hits, Ledger ledger, Vector3 origin, long playerId)
     {
@@ -422,18 +388,27 @@ internal static class WorksRun
         }
     }
 
-    private static void Credit(Ledger ledger, string made, int amount)
+    private static void Credit(Ledger ledger, string made, int amount) => WorksAccounting.Credit(ledger.Orders,made,amount);
+
+    // Native QueueProcessed may call Spawn immediately, before the next board tick.
+    // Intercept actual finished delivery, not estimated elapsed time or queued ore.
+    internal static bool CaptureFinished(Smelter station, string input, int amount)
     {
-        var left = amount;
-        foreach (var order in ledger.Orders)
+        if (amount <= 0 || station?.m_nview == null || !station.m_nview.IsValid() || !station.m_nview.IsOwner()) return false;
+        var conversion = station.GetItemConversion(input);
+        if (conversion?.m_to == null) return false;
+        var made = Clean(conversion.m_to.gameObject.name);
+        foreach (var board in Boards)
         {
-            if (left < 1 || order.Mode != WorksOrderMode.Make || order.Output != made)
-                continue;
-            var room = Math.Max(0, order.Count - order.Ready - order.Collected);
-            var give = Math.Min(room, left);
-            order.Ready += give;
-            left -= give;
+            if (board == null) continue;
+            var view = board.GetComponent<ZNetView>();
+            if (view == null || !view.IsValid() || !view.IsOwner() || !ProductionLease.Controls(station.m_nview,view)) continue;
+            var ledger = Read(view);
+            if (!Wanted(ledger,made)) return false;
+            Add(ledger,made,amount); Credit(ledger,made,amount); Write(view,ledger);
+            return true;
         }
+        return false;
     }
 
     private static bool Wanted(Ledger ledger, string output)
@@ -486,7 +461,7 @@ internal static class WorksRun
                 Amount = fuelNeed,
                 Available = fuelHave
             });
-            step.Note = "Fuel follows the machine. A finished unit drops at the machine.";
+            step.Note = "Fuel follows the machine. Finished output is collected on the controlling board.";
         }
 
         steps.Add(step);
@@ -594,17 +569,6 @@ internal static class WorksRun
             free[prefab] = have + count;
         }
 
-        var player = Player.m_localPlayer;
-        if (player != null && (playerId == 0 || player.GetPlayerID() == playerId))
-        {
-            foreach (var item in player.GetInventory().GetAllItems())
-            {
-                if (item?.m_dropPrefab == null || !NearbyStorage.Spendable(item))
-                    continue;
-                AddStock(Clean(item.m_dropPrefab.name), item.m_stack);
-            }
-        }
-
         foreach (var container in NearbyStorage.Around(origin, Range(), playerId))
         {
             var inv = container.GetInventory();
@@ -632,26 +596,6 @@ internal static class WorksRun
 
     private static void PullInto(Ledger ledger, string prefab, int count, Vector3 origin, long playerId)
     {
-        if (count < 1)
-            return;
-        var player = Player.m_localPlayer;
-        if (player != null && (playerId == 0 || player.GetPlayerID() == playerId))
-        {
-            var shared = Shared(prefab);
-            var inv = player.GetInventory();
-            var have = string.IsNullOrEmpty(shared) ? 0 : NearbyStorage.CountSpendable(inv, shared);
-            var take = Math.Min(have, count);
-            if (take > 0)
-            {
-                var got = NearbyStorage.TakeSpendable(inv, shared, take);
-                if (got > 0)
-                {
-                    Add(ledger, prefab, got);
-                    count -= got;
-                }
-            }
-        }
-
         if (count < 1)
             return;
         var sharedName = Shared(prefab);
@@ -930,4 +874,13 @@ internal static class WorksSpill
         if (piece != null && piece.GetComponent<Board>() != null)
             WorksRun.Spill(piece);
     }
+}
+
+
+[HarmonyPatch(typeof(Smelter), "Spawn", typeof(string), typeof(int))]
+internal static class WorksOutputDelivery
+{
+    [HarmonyPrefix]
+    private static bool BeforeSpawn(Smelter __instance, string __0, int __1)
+        => !WorksRun.CaptureFinished(__instance,__0,__1);
 }

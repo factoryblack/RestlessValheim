@@ -12,12 +12,6 @@ namespace RestlessWorks;
 // after reservations, reaches the target. Finished stock and ore already in a
 // machine both count, so several kilns do not each start the same shortage.
 
-public enum WorksOrderMode
-{
-    Make,
-    Keep
-}
-
 public sealed class WorksRecipe
 {
     public string Output = "";
@@ -50,21 +44,6 @@ public sealed class WorksStep
     public string Station = "";
     public string Note = "";
     public readonly List<WorksUse> Uses = new();
-}
-
-public sealed class WorksOrder
-{
-    public int Id;
-    public string Output = "";
-    public string Name = "";
-    public WorksOrderMode Mode;
-    public int Count;
-    public long PlayerId;
-    public int Ready;
-    public int Collected;
-    public int InProduction;
-    public int Available;
-    public int Remaining;
 }
 
 public sealed class WorksMachine
@@ -134,4 +113,5 @@ public static class Works
         Player.m_localPlayer?.Message(MessageHud.MessageType.Center, "Work-order board is not in yet.");
     }
 }
+
 

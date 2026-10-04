@@ -169,7 +169,7 @@ internal sealed class StorageSource : IStorageWindowSource
                 return;
             }
 
-            var bag = _player != null ? _player.GetInventory() : null;
+            var bag = IsAvailable ? _player.GetInventory() : null;
             if (bag == null)
             {
                 if (batch.Id == 0)

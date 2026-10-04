@@ -12,7 +12,7 @@ internal sealed partial class WorkshopWindow
     {
         RestlessUi.PaperControl(_make.gameObject,_mode==WorksOrderMode.Make?RestlessUi.Accent:(Color?)null);
         RestlessUi.PaperControl(_keep.gameObject,_mode==WorksOrderMode.Keep?RestlessUi.Accent:(Color?)null);
-        _modeHelp.text=_mode==WorksOrderMode.Make?"Produce this many additional units, then stop.":"Maintain this much usable stock. Refill as supplies are used.";
+        _modeHelp.text=_mode==WorksOrderMode.Make?"Produce this many additional units, then stop.":"Maintain this much shared stock. Player bags are excluded.";
         Caption(_stationFilter,_station.Length==0?"All machines":Local(_recipes.FirstOrDefault(r=>r.Station==_station)?.StationName??_station));
         var rows=_recipes.Where(r=>Matches(r.OutputName)&&(_station.Length==0||r.Station==_station)).OrderBy(r=>r.OutputName).ToList();
         for(var i=0;i<rows.Count;i++)
@@ -101,7 +101,7 @@ internal sealed partial class WorkshopWindow
         for(var i=0;i<counts.Length;i++){var c=Get(_cards,i+1,_body.content);Place(c.Root,0,170+i*112,536,104);c.Set(counts[i],"",null,()=>{});}
         Hide(_cards,4);Size(_body,506);
         var distance=Vector3.Distance(_board.transform.position,machine.Position);
-        Detail("MACHINE STATUS\n\n"+Local(machine.Name)+"\n"+distance.ToString("0.0")+" m from board\n\n"+(machine.FuelMax>0?"FUEL\n"+machine.Fuel+" / "+machine.FuelMax:"No fuel required")+"\n\n"+(string.IsNullOrEmpty(machine.Block)?"No reported block.":machine.Block)+"\n\nCounts are live machine queues. Processing time and machine conditions remain native.\n\nA finished unit drops at the machine.");
+        Detail("MACHINE STATUS\n\n"+Local(machine.Name)+"\n"+distance.ToString("0.0")+" m from board\n\n"+(machine.FuelMax>0?"FUEL\n"+machine.Fuel+" / "+machine.FuelMax:"No fuel required")+"\n\n"+(string.IsNullOrEmpty(machine.Block)?"No reported block.":machine.Block)+"\n\nCounts are live machine queues. Processing time and machine conditions remain native.\n\nOutput from an active board-controlled machine is delivered to that board. Unmanaged output drops at the machine.");
         _hint.text="Manage what this machine makes through Production and Orders.";_action.gameObject.SetActive(false);
     }
     private void PaintOutput()
@@ -119,7 +119,7 @@ internal sealed partial class WorkshopWindow
         var hero=Get(_cards,0,_body.content);Place(hero.Root,0,4,536,148);hero.Set(Local(selected.Name),selected.Count+" stored on this board",Icon(selected.Prefab),()=>{},true);
         var a=Get(_cards,1,_body.content);Place(a.Root,0,176,536,116);a.Set(available+" available to take",selected.Reserved+" reserved for Make orders",Icon(selected.Prefab),()=>{});
         Hide(_cards,2);Size(_body,312);
-        Detail("BOARD OUTPUT\n\nUnreserved materials can be taken into your inventory.\n\nMake output is reserved for its order. Collect it from Orders.\n\nKeep output is unreserved. Taking it into your bag may still count towards the Keep target while you remain nearby.\n\nAutomatic delivery to a designated chest is not connected yet.");
+        Detail("BOARD OUTPUT\n\nUnreserved materials can be taken into your inventory.\n\nMake output is reserved for its order. Collect it from Orders.\n\nKeep output is unreserved. Taking it into your bag reduces shared stock and the Keep target replenishes it.\n\nAutomatic delivery to a designated chest is not connected yet.");
         _hint.text=available>0?"Take up to one stack. Anything that does not fit stays here.":"All of this item is reserved. Open its Make order to collect it.";
         Caption(_action,"Take a stack");_action.interactable=available>0;
     }
@@ -129,3 +129,4 @@ internal sealed partial class WorkshopWindow
         Detail(description);_hint.text="";_action.gameObject.SetActive(false);_secondary.gameObject.SetActive(false);
     }
 }
+

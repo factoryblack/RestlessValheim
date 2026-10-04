@@ -62,6 +62,7 @@ foreach (var handle in reader.TypeDefinitions)
 }
 if (!inputPrefix || !firstInput) throw new Exception("Native smelter input queue contract changed; inspect QueueOre before updating ProductionQueue.");
 Console.WriteLine("Native smelter input queue contract passed.");
+var spawnContract = false;
 foreach (var handle in reader.TypeDefinitions)
 {
     var type = reader.GetTypeDefinition(handle);
@@ -69,15 +70,13 @@ foreach (var handle in reader.TypeDefinitions)
     foreach (var mh in type.GetMethods())
     {
         var method = reader.GetMethodDefinition(mh);
-        var name = reader.GetString(method.Name);
+        if (reader.GetString(method.Name) != "Spawn") continue;
         var signature = method.DecodeSignature(provider,(object?)null);
-        Console.WriteLine("TOKEN " + System.Reflection.Metadata.Ecma335.MetadataTokens.GetToken(mh).ToString("X8") + " " + name);
-        Console.WriteLine("SMELTER " + name + "(" + string.Join(",",signature.ParameterTypes) + ") " + signature.ReturnType);
-        if (method.RelativeVirtualAddress == 0 || (!name.Contains("Spawn") && !name.Contains("Processed"))) continue;
-        var il = pe.GetMethodBody(method.RelativeVirtualAddress).GetILBytes()!;
-        Console.WriteLine("IL " + name + " " + Convert.ToHexString(il));
+        spawnContract = signature.ReturnType == "Void" && signature.ParameterTypes.SequenceEqual(new[] { "String", "Int32" });
     }
 }
+if (!spawnContract) throw new Exception("Native Smelter.Spawn contract changed; inspect finished-output delivery before updating WorksOutputDelivery.");
+Console.WriteLine("Native Workshop output-delivery contract passed.");
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";

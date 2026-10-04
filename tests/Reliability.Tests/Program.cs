@@ -119,3 +119,31 @@ Equal("CopperOre", ProductionQueue.Input(smelter, 0), "first input uses native g
 Equal("TinOre", ProductionQueue.Input(smelter, 1), "second input is independent of first/output buffer");
 Equal("", ProductionQueue.Input(smelter, 2), "outside queue is empty");
 Console.WriteLine("Reliability regressions passed.");
+
+
+// Actual Workshop accounting, including standing targets before finite orders.
+var keep = new RestlessWorks.WorksOrder { Output = "Copper", Mode = RestlessWorks.WorksOrderMode.Keep, Count = 30 };
+var make = new RestlessWorks.WorksOrder { Output = "Copper", Mode = RestlessWorks.WorksOrderMode.Make, Count = 10, Ready = 2, Collected = 1 };
+var orders = new[] { keep, make };
+var stock = new Dictionary<string,int> { ["Copper"] = 20 };
+var machines = new Dictionary<string,int> { ["Copper"] = 9 };
+RestlessWorks.WorksAccounting.Describe(orders,stock,machines);
+Equal(7,make.InProduction,"Make reservations get incoming output first even when Keep was placed first");
+Equal(2,keep.InProduction,"Keep sees only unreserved incoming output");
+Equal(18,keep.Available,"ready Make output is excluded from shared stock");
+Equal(10,keep.Remaining,"Keep shortage excludes incoming work");
+Equal(0,make.Remaining,"Make does not load finished or incoming output again");
+RestlessWorks.WorksAccounting.Credit(orders,"Copper",9);
+stock["Copper"] += 9;
+machines.Clear();
+RestlessWorks.WorksAccounting.Describe(orders,stock,machines);
+Equal(9,make.Ready,"native output credits exact remaining Make amount");
+Equal(20,keep.Available,"excess native output is shared rather than reserved twice");
+Equal(10,keep.Remaining,"native delivery conserves Keep shortage");
+RestlessWorks.WorksAccounting.Credit(orders,"Copper",4);
+Equal(9,make.Ready,"completed Make order is not overcredited");
+Equal(false,ProductionLease.Controls(machine,b),"output cannot be captured by an unassigned controller");
+Equal(false,ProductionLease.Controls(machine,a),"idle controller does not capture native output");
+ProductionLease.SetActive(a,true);
+Equal(true,ProductionLease.Controls(machine,a),"output belongs to its active assigned controller");
+Console.WriteLine("Workshop stock accounting regressions passed.");

@@ -92,7 +92,7 @@ internal static class WorksRun
         var ledger = Read(view);
         var origin = board.transform.position;
         var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
-        Describe(ledger, Stock(origin, playerId, ledger), Production(Scan(origin, false)));
+        Describe(ledger, Stock(origin, playerId, ledger), Production(Scan(origin, false, view)));
         return ledger.Orders;
     }
 
@@ -101,7 +101,7 @@ internal static class WorksRun
         if (board == null)
             return Array.Empty<WorksMachine>();
         var list = new List<WorksMachine>();
-        foreach (var hit in Scan(board.transform.position, false))
+        foreach (var hit in Scan(board.transform.position, false, View(board)))
             list.Add(hit.Info);
         return list;
     }
@@ -167,6 +167,7 @@ internal static class WorksRun
         var ledger = Read(view);
         ledger.Orders.RemoveAll(order => order.Id == orderId);
         Write(view, ledger);
+        if (ledger.Orders.Count == 0) ProductionLease.SetActive(view, false);
     }
 
     internal static int Collect(Piece board, int orderId)
@@ -223,10 +224,16 @@ internal static class WorksRun
     {
         var ledger = Read(view);
         if (ledger.Orders.Count == 0)
+        {
+            ProductionLease.SetActive(view, false);
             return;
+        }
         var origin = board.transform.position;
         var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
-        var hits = Scan(origin, true);
+        if (!ledger.Orders.Exists(order => order.Mode == WorksOrderMode.Keep || order.Count > order.Ready + order.Collected))
+        { ProductionLease.SetActive(view, false); return; }
+        ProductionLease.SetActive(view, true);
+        var hits = Scan(origin, true, view);
         CollectFinished(hits, ledger);
         var loads = 0;
         Describe(ledger, Stock(origin, playerId, ledger), Production(hits));
@@ -249,6 +256,7 @@ internal static class WorksRun
 
         FuelQueued(hits, ledger, origin, playerId);
         Write(view, ledger);
+        ProductionLease.SetActive(view, ledger.Orders.Exists(order => order.Mode == WorksOrderMode.Keep || order.Remaining > 0 || order.InProduction > 0));
     }
 
     private static void Describe(Ledger ledger, Dictionary<string, int> stock, Dictionary<string, int> machines)
@@ -343,13 +351,14 @@ internal static class WorksRun
                 continue;
             if (station.GetQueueSize() <= 0)
                 continue;
-            var source = station.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre);
-            var conversion = string.IsNullOrEmpty(source) ? null : station.GetItemConversion(source);
-            if (conversion?.m_to == null)
-                continue;
-            if (!Wanted(ledger, Clean(conversion.m_to.gameObject.name)))
-                continue;
-            AddFuel(station, Clean(station.m_fuelItem.gameObject.name), ledger, origin, playerId);
+            var relevant = false;
+            for (var i = 0; i < station.GetQueueSize(); i++)
+            {
+                var conversion = station.GetItemConversion(ProductionQueue.Input(station, i));
+                if (conversion?.m_to != null && Wanted(ledger, Clean(conversion.m_to.gameObject.name)))
+                { relevant = true; break; }
+            }
+            if (relevant) AddFuel(station, Clean(station.m_fuelItem.gameObject.name), ledger, origin, playerId);
         }
     }
 
@@ -466,10 +475,17 @@ internal static class WorksRun
         }
     }
 
-    private static List<Hit> Scan(Vector3 origin, bool claim)
+    private static List<Hit> Scan(Vector3 origin, bool claim, ZNetView? controller = null)
     {
         var list = new List<Hit>();
         var seen = new HashSet<int>();
+        HashSet<string>? demand = null;
+        if (claim && controller != null)
+        {
+            demand = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var order in Read(controller).Orders)
+                if (order.Mode == WorksOrderMode.Keep || order.Count > order.Ready + order.Collected) demand.Add(order.Output);
+        }
         var hits = Physics.OverlapSphere(origin, Range(), ~0, QueryTriggerInteraction.Collide);
         foreach (var col in hits)
         {
@@ -478,7 +494,16 @@ internal static class WorksRun
             var station = col.GetComponentInParent<Smelter>();
             if (station == null || !seen.Add(station.GetInstanceID()) || FoodOven(Utils.GetPrefabName(station.gameObject)))
                 continue;
-            list.Add(Describe(station, claim));
+            if (demand != null)
+            {
+                var relevant = false;
+                foreach (var conversion in station.m_conversion)
+                    if (conversion?.m_to != null && demand.Contains(Clean(conversion.m_to.gameObject.name))) { relevant = true; break; }
+                if (!relevant) continue;
+            }
+            if (controller != null && !ProductionLease.Available(station.m_nview, controller)) continue;
+            if (claim && (controller == null || !ProductionLease.Acquire(station.m_nview, controller))) continue;
+            list.Add(Describe(station, false));
         }
 
         return list;
@@ -517,14 +542,16 @@ internal static class WorksRun
             var station = hit.Station;
             if (station?.m_nview == null || !station.m_nview.IsValid())
                 continue;
-            var source = station.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre);
-            var conversion = string.IsNullOrEmpty(source) ? null : station.GetItemConversion(source);
-            if (conversion?.m_to == null)
-                continue;
-            var product = Clean(conversion.m_to.gameObject.name);
-            var n = station.GetQueueSize() + station.GetProcessedQueueSize();
-            map.TryGetValue(product, out var have);
-            map[product] = have + Math.Max(0, n);
+            void AddSource(string source, int count)
+            {
+                var conversion = string.IsNullOrEmpty(source) ? null : station.GetItemConversion(source);
+                if (conversion?.m_to == null || count <= 0) return;
+                var product = Clean(conversion.m_to.gameObject.name);
+                map.TryGetValue(product, out var have);
+                map[product] = have + count;
+            }
+            for (var i = 0; i < station.GetQueueSize(); i++) AddSource(ProductionQueue.Input(station, i), 1);
+            AddSource(station.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre), station.GetProcessedQueueSize());
         }
 
         return map;
@@ -843,6 +870,7 @@ internal static class WorksRun
         var origin = board.transform.position + Vector3.up;
         var drops = new List<KeyValuePair<string, int>>(ledger.Pantry);
         view.GetZDO().Set(Key, "");
+        ProductionLease.SetActive(view, false);
         foreach (var drop in drops)
             Drop(drop.Key, drop.Value, origin);
     }

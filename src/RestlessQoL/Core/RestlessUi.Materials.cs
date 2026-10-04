@@ -1,3 +1,4 @@
+using RestlessQoL.Api;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,15 +7,12 @@ namespace RestlessQoL.Core;
 // Opt-in material vocabulary. Tooltip is the first consumer, not a separate kit.
 internal static partial class RestlessUi
 {
-    private static readonly Vector4 PaperPanelBorder = new(32f, 32f, 32f, 32f);
-    private static readonly Vector4 PaperChipBorder = new(32f, 16f, 32f, 16f);
     public static readonly Color PaperMuted = Hex(0xB4A99A);
 
     public static void PaperSurface(GameObject target, bool small = false, Color? accent = null)
     {
-        var name = small ? "paper-chip" : "paper-panel";
-        var border = small ? PaperChipBorder : PaperPanelBorder;
-        var sprite = Kit.Sprite(name, border);
+        var material = UiKitAssets.Get(small ? UiKitAsset.Chip : UiKitAsset.Panel);
+        var sprite = Kit.Sprite(material.Name, material.Border);
         if (sprite == null) return; // Existing kit remains the missing-asset fallback.
         var image = target.GetComponent<Image>();
         if (image == null) return;
@@ -31,7 +29,7 @@ internal static partial class RestlessUi
             return;
         }
 
-        image.sprite = sprite;
+        UiKitAssets.Apply(image,small ? UiKitAsset.Chip : UiKitAsset.Panel);
         image.color = Color.white; // Material already contains its charcoal colour.
         image.type = Image.Type.Tiled;
         image.pixelsPerUnitMultiplier = 1f;
@@ -42,9 +40,7 @@ internal static partial class RestlessUi
         (rim.GetComponent<LayoutElement>() ?? rim.AddComponent<LayoutElement>()).ignoreLayout = true;
         Stretch(rim, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var overlay = rim.GetComponent<Image>();
-        overlay.sprite = Kit.Sprite(name + "-rim", border);
-        overlay.type = Image.Type.Tiled;
-        overlay.pixelsPerUnitMultiplier = 1f;
+        UiKitAssets.Apply(overlay,small ? UiKitAsset.ChipRim : UiKitAsset.PanelRim);
         // Cover the baked gold edge on idle surfaces; reserve amber for emphasis.
         overlay.color = overlayColor;
         overlay.raycastTarget = false;
@@ -55,7 +51,7 @@ internal static partial class RestlessUi
         var corner = panel.transform.Find("paperCorner")?.gameObject
             ?? Graphic(panel.transform, "paperCorner", Color.white, false);
         var image = corner.GetComponent<Image>();
-        image.sprite = Kit.Sprite("corner-overlay");
+        UiKitAssets.Apply(image,UiKitAsset.Corner);
         if (image.sprite == null) { corner.SetActive(false); return; }
         image.preserveAspect = true;
         Pin(corner, Vector2.one, Vector2.one, Vector2.zero, new Vector2(112f, 112f));

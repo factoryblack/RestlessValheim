@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RestlessQoL.Core;
+using RestlessQoL.Api;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -50,47 +51,14 @@ internal sealed partial class WorkshopWindow
     { var t=RestlessUi.Label(p,value,size,RestlessUi.Text,TextAnchor.MiddleLeft); Place(t.gameObject,x,y,w,h);t.horizontalOverflow=HorizontalWrapMode.Wrap;return t; }
     private static void Rule(Transform p,float x,float y,float w,float h)=>Place(RestlessUi.Graphic(p,"rule",new Color(.5f,.43f,.32f,.5f),false),x,y,w,h);
     private static Button Button(Transform p,string title,float x,float y,float w,float h,Action action)
-    {
-        var go=RestlessUi.Chip(p,"button");RestlessUi.PaperControl(go);Place(go,x,y,w,h);
-        var b=go.AddComponent<Button>();b.targetGraphic=go.GetComponent<Image>();RestlessUi.PaperSelectable(b);
-        var t=Label(go.transform,title,18,8,3,w-16,h-6);t.alignment=TextAnchor.MiddleCenter;RestlessUi.BoundedLabel(t,18,14);
-        b.onClick.AddListener(()=>action());return b;
-    }
+        => UiKitApi.Button(p,title,new Rect(x,y,w,h),action);
     private static InputField Field(Transform p,string placeholder,float x,float y,float w,float h,bool number)
-    {
-        var go=RestlessUi.Chip(p,"input");RestlessUi.PaperControl(go);Place(go,x,y,w,h);
-        var f=go.AddComponent<InputField>();f.targetGraphic=go.GetComponent<Image>();
-        f.textComponent=Label(go.transform,"",18,10,3,w-20,h-6);
-        f.placeholder=Label(go.transform,placeholder,18,10,3,w-20,h-6);f.placeholder.color=RestlessUi.PaperMuted;
-        f.lineType=InputField.LineType.SingleLine;f.characterLimit=number?3:80;
-        if(number){f.contentType=InputField.ContentType.IntegerNumber;f.textComponent.alignment=TextAnchor.MiddleCenter;}
-        RestlessUi.PaperSelectable(f);return f;
-    }
+        => UiKitApi.Field(p,placeholder,new Rect(x,y,w,h),number,number ? 3 : 80);
     private static RestlessScrollRect Reader(Transform p,string name,float x,float y,float w,float h,float row)
-    {
-        var go=RestlessUi.Node(p,name);Place(go,x,y,w,h);
-        var s=go.AddComponent<RestlessScrollRect>();s.horizontal=false;s.RowHeight=row;s.RowsPerNotch=2;
-        var view=RestlessUi.Graphic(go.transform,"viewport",Color.clear,true);Place(view,0,0,w-24,h);view.AddComponent<RectMask2D>();
-        s.viewport=(RectTransform)view.transform;
-        var content=RestlessUi.Node(view.transform,"content");Place(content,0,0,w-24,h);s.content=(RectTransform)content.transform;
-        if(InventoryGui.instance?.m_recipeListScroll!=null)
-        {
-            var bar=Instantiate(InventoryGui.instance.m_recipeListScroll,go.transform,false);bar.onValueChanged=new Scrollbar.ScrollEvent();
-            Place(bar.gameObject,w-6,0,6,h);bar.transform.localScale=Vector3.one;
-            if(bar.handleRect!=null)
-            {
-                var area=bar.handleRect.parent as RectTransform;
-                if(area!=null&&area!=bar.transform)RestlessUi.Stretch(area.gameObject,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);
-                bar.handleRect.sizeDelta=new Vector2(0,bar.handleRect.sizeDelta.y);bar.handleRect.anchoredPosition=new Vector2(0,bar.handleRect.anchoredPosition.y);
-            }
-            s.verticalScrollbar=bar;s.verticalScrollbarVisibility=ScrollRect.ScrollbarVisibility.AutoHide;
-        }
-        return s;
-    }
+        => UiKitApi.Reader(p,name,new Rect(x,y,w,h),row);
     private static void ResizeReader(RestlessScrollRect s,float x,float y,float w,float h)
-    {Place(s.gameObject,x,y,w,h);s.viewport.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,h);if(s.verticalScrollbar!=null)Place(s.verticalScrollbar.gameObject,w-6,0,6,h);}
-    private static void Size(RestlessScrollRect s,float height)
-    {height=Mathf.Max(s.viewport.rect.height,height);s.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);var y=Mathf.Clamp(s.content.anchoredPosition.y,0,height-s.viewport.rect.height);if(!Mathf.Approximately(y,s.content.anchoredPosition.y)){s.CancelWheel();s.content.anchoredPosition=new Vector2(0,y);}}
+        => UiKitApi.ResizeReader(s,new Rect(x,y,w,h));
+    private static void Size(RestlessScrollRect s,float height) => UiKitApi.SizeReader(s,height);
     private static void Reset(RestlessScrollRect s){s.CancelWheel();s.content.anchoredPosition=Vector2.zero;}
     private void Fit()
     {var size=((RectTransform)transform).rect.size;if(size==_canvas)return;_canvas=size;_sheet.localScale=Vector3.one*Mathf.Min(1,Mathf.Max(.1f,(size.x-24)/1280),Mathf.Max(.1f,(size.y-24)/800));}
@@ -98,9 +66,9 @@ internal sealed partial class WorkshopWindow
     private sealed class Card
     {
         internal readonly GameObject Root;
-        private readonly Image _icon,_done,_running;
+        private readonly Image _icon;
         private readonly Text _name,_summary;
-        private readonly GameObject _track;
+        private readonly UiKitProgress _progress;
         private Action? _click;
         internal Card(Transform parent)
         {
@@ -109,9 +77,7 @@ internal sealed partial class WorkshopWindow
             _icon=RestlessUi.Graphic(Root.transform,"item",Color.white,false).GetComponent<Image>();_icon.preserveAspect=true;
             _name=Label(Root.transform,"",21,0,0,100,50);RestlessUi.BoundedLabel(_name,21,17);
             _summary=Label(Root.transform,"",17,0,0,100,40);RestlessUi.BoundedLabel(_summary,17,14);
-            _track=RestlessUi.Graphic(Root.transform,"coverage-track",RestlessUi.Ink,false);
-            _running=RestlessUi.Graphic(_track.transform,"in-production",RestlessUi.Accent,false).GetComponent<Image>();
-            _done=RestlessUi.Graphic(_track.transform,"finished",new Color(.58f,.76f,.56f),false).GetComponent<Image>();
+            _progress=UiKitApi.Progress(Root.transform,"coverage-track");
         }
         internal void Set(string name,string summary,Sprite? icon,Action click,bool selected=false,bool compact=false)
         {
@@ -123,13 +89,13 @@ internal sealed partial class WorkshopWindow
             else if(z.y<=116) Place(_summary.gameObject,titleX,62,z.x-titleX-18,z.y-72);
             else Place(_summary.gameObject,12,80,z.x-24,z.y-96);
             _name.text=name;_summary.text=summary;_summary.color=RestlessUi.PaperMuted;_summary.gameObject.SetActive(!string.IsNullOrEmpty(summary));
-            _track.SetActive(false);RestlessUi.PaperControl(Root,selected?RestlessUi.Accent:new Color(.32f,.29f,.24f));
+            _progress.Hide();RestlessUi.PaperControl(Root,selected?RestlessUi.Accent:new Color(.32f,.29f,.24f));
         }
         internal void Coverage(int completed,int running,int target)
         {
-            var z=((RectTransform)Root.transform).rect.size;_track.SetActive(true);Place(_track,14,z.y-12,z.x-28,5);
+            var z=((RectTransform)Root.transform).rect.size;
             var denominator=Math.Max(1,target);var done=Mathf.Clamp01((float)completed/denominator);var total=Mathf.Clamp01(((float)completed+running)/denominator);
-            Place(_running.gameObject,0,0,(z.x-28)*total,5);Place(_done.gameObject,0,0,(z.x-28)*done,5);
+            _progress.Set(new Rect(14,z.y-12,z.x-28,5),done,total,UiKitApi.Accent,new Color(.58f,.76f,.56f));
         }
     }
     private static Card Get(List<Card> pool,int index,Transform parent){if(index==pool.Count)pool.Add(new Card(parent));pool[index].Root.SetActive(true);return pool[index];}

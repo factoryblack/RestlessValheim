@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## Unreleased
+
+- Added a public shared UI kit API, validated material sizing contracts and shared texture caching; warm-up now covers every embedded kit asset.
+
 ## 0.2.2
 
 - Refreshed package information and player guides, with screenshot areas ready for new captures.

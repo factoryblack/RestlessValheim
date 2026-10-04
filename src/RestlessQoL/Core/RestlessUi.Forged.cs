@@ -1,3 +1,4 @@
+using RestlessQoL.Api;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,10 +11,7 @@ internal static partial class RestlessUi
     {
         var image = target.GetComponent<Image>();
         if (image == null) return;
-        image.sprite = Kit.Sprite(action ? "forged-action" : "forged-badge",
-            action ? new Vector4(80f, 20f, 80f, 20f) : new Vector4(52f, 14f, 52f, 14f));
-        image.type = Image.Type.Sliced;
-        image.pixelsPerUnitMultiplier = 2f;
+        UiKitAssets.Apply(image,action ? UiKitAsset.Action : UiKitAsset.Badge);
         image.color = Color.white;
         image.raycastTarget = interactive;
         Rim(target, on: false);
@@ -25,9 +23,7 @@ internal static partial class RestlessUi
     {
         var image = target.GetComponent<Image>();
         if (image == null) return;
-        image.sprite = Kit.Sprite("category-strip", new Vector4(64f, 12f, 64f, 12f));
-        image.type = Image.Type.Sliced;
-        image.pixelsPerUnitMultiplier = 3f;
+        UiKitAssets.Apply(image,UiKitAsset.Category);
         image.color = selected ? Color.white : new Color(0.72f, 0.72f, 0.72f, 0.45f);
         image.raycastTarget = true;
         Rim(target, on: false);

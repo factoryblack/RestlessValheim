@@ -1,3 +1,5 @@
+> Historical design/playtest record. Branch status and implementation notes below describe the original work, not current main. See [the maintained UI kit reference](maintainers/ui-kit.md) for current contracts and supported APIs.
+
 # Forged component kit
 
 Adds 19 embedded PNG assets to the shared RestlessUi kit. This branch includes all
@@ -100,3 +102,4 @@ Verify recipe/action buttons, navigation panels and Settings tab markers. Check 
 UI scales, held wheel input, drag scrolling, skin disable/re-enable and menu teardown.
 Dedicated controller scrolling of the detail body remains a follow-up; existing
 game controller selection and button callbacks are retained.
+

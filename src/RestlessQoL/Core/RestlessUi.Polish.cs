@@ -1,3 +1,4 @@
+using RestlessQoL.Api;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,9 +22,7 @@ internal static partial class RestlessUi
     {
         var image = target.GetComponent<Image>();
         if (image == null) return;
-        image.sprite = Kit.Sprite("portrait-frame");
-        image.type = Image.Type.Simple;
-        image.preserveAspect = true;
+        UiKitAssets.Apply(image,UiKitAsset.Portrait);
         image.color = Color.white;
         image.raycastTarget = false;
         Rim(target, on: false);
@@ -32,9 +31,7 @@ internal static partial class RestlessUi
     public static void CategoryStrip(GameObject target)
     {
         var image = target.GetComponent<Image>();
-        image.sprite = Kit.Sprite("category-strip", new Vector4(64f, 12f, 64f, 12f));
-        image.type = Image.Type.Sliced;
-        image.pixelsPerUnitMultiplier = 3f;
+        UiKitAssets.Apply(image,UiKitAsset.Category);
         image.color = Color.white;
         image.raycastTarget = false;
     }

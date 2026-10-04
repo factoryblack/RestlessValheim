@@ -7,44 +7,29 @@ namespace RestlessQoL.Core;
 
 internal static class Kit
 {
-    private static readonly string[] Library =
-    {
-        "craft-station-corner", "craft-material-socket", "craft-tab-ribbon", "craft-selection-clasp",
-        "row-idle", "btn-small", "diamond", "map-player", "eat-fork",
-        "inventory-slot", "empty-head", "empty-chest", "empty-legs", "empty-cape",
-        "empty-utility", "empty-trinket", "carry-weight",
-        "mouse-left", "mouse-right", "mouse-middle",
-        "tab-glow", "panel-back",
-        "paper-panel", "paper-panel-rim", "paper-chip", "paper-chip-rim",
-        "paper-corner", "paper-tree", "paper-knot",
-        "forged-badge", "forged-action", "quality-gem", "category-ribbon",
-        "station-medallion", "tab-inset", "tab-marker", "scroll-thumb",
-        "glyph-blunt", "glyph-slash", "glyph-pierce", "glyph-fire", "glyph-frost",
-        "glyph-poison", "glyph-lightning", "glyph-spirit", "glyph-chop", "glyph-pickaxe", "glyph-station",
-        "corner-overlay", "craft-hammer", "station-socket", "portrait-frame", "knot-divider", "category-strip", "pine-emblem",
-        "nav-raven", "nav-knot", "nav-shield", "nav-trophy", "nav-swords",
-        "utility-lock", "utility-equipped", "utility-repair", "utility-missing",
-        "utility-expand", "utility-collapse", "utility-close", "quality-lozenge", "selection-marker", "focus-corners",
-        "loadout-corner", "loadout-crest", "loadout-stat-plaque", "equipment-set-seal",
-    };
-
-    private static readonly Dictionary<string, Sprite> Cache = new();
+    private const string ResourcePrefix = "RestlessQoL.Assets.";
+    private static readonly Dictionary<(string Name, Vector4 Border), Sprite> Cache = new();
+    private static readonly Dictionary<string, Texture2D> Textures = new(StringComparer.Ordinal);
+    private static readonly HashSet<string> Failed = new(StringComparer.Ordinal);
+    private static readonly HashSet<string> Warnings = new(StringComparer.Ordinal);
     private static MethodInfo? _loadImage;
     private static bool _searched;
-    private static bool _logged;
 
     public static void Warm()
     {
         var ok = 0;
-        foreach (var name in Library)
+        var total = 0;
+        // The embedded resources are the catalogue. New assets cannot silently
+        // miss validation because someone forgot a second handwritten list.
+        foreach (var resource in typeof(Kit).Assembly.GetManifestResourceNames())
         {
-            if (Sprite(name) != null)
-                ok++;
-            else
-                Plugin.Log.LogWarning("kit: missing " + name);
+            if (!resource.StartsWith(ResourcePrefix, StringComparison.Ordinal) ||
+                !resource.EndsWith(".png", StringComparison.Ordinal)) continue;
+            var name = resource.Substring(ResourcePrefix.Length, resource.Length - ResourcePrefix.Length - 4);
+            total++;
+            if (Texture(name) != null) ok++;
         }
-
-        Plugin.Log.LogInfo("kit: " + ok + "/" + Library.Length + " sprites ready");
+        Plugin.Log.LogInfo("kit: " + ok + "/" + total + " textures ready");
     }
 
     public static Sprite? Sprite(string name, Vector4 border = default)
@@ -54,7 +39,7 @@ internal static class Kit
         if (name == "row-fill")
             return FillIdle();
 
-        var key = name + border;
+        var key = (name, border);
         if (Cache.TryGetValue(key, out var sprite) && sprite != null)
             return sprite;
 
@@ -79,7 +64,7 @@ internal static class Kit
     // the slot's right edge is ragged on every side. Top/bottom still 9-slice.
     private static Sprite? WearSlit()
     {
-        const string key = "wear-slit-w";
+        var key = ("wear-slit-w", Vector4.zero);
         if (Cache.TryGetValue(key, out var sprite) && sprite != null)
             return sprite;
 
@@ -93,7 +78,7 @@ internal static class Kit
         {
             wrapMode = TextureWrapMode.Clamp,
             filterMode = FilterMode.Bilinear,
-            name = key
+            name = key.Item1
         };
         tex.SetPixels(0, 0, edge, tall, src.GetPixels(0, 0, edge, tall));
         tex.SetPixels(edge, 0, edge, tall, src.GetPixels(src.width - edge, 0, edge, tall));
@@ -116,7 +101,7 @@ internal static class Kit
             0,
             SpriteMeshType.FullRect,
             new Vector4(0f, 28f, 0f, 28f));
-        sprite.name = key;
+        sprite.name = key.Item1;
         Cache[key] = sprite;
         return sprite;
     }
@@ -124,7 +109,7 @@ internal static class Kit
     // row-idle bleached to white so a pool tint is the colour you see.
     private static Sprite? FillIdle()
     {
-        const string key = "row-fill";
+        var key = ("row-fill", Vector4.zero);
         if (Cache.TryGetValue(key, out var sprite) && sprite != null)
             return sprite;
 
@@ -136,7 +121,7 @@ internal static class Kit
         {
             wrapMode = src.wrapMode,
             filterMode = src.filterMode,
-            name = key
+            name = key.Item1
         };
         var pix = src.GetPixels();
         for (var i = 0; i < pix.Length; i++)
@@ -157,16 +142,20 @@ internal static class Kit
             0,
             SpriteMeshType.FullRect,
             new Vector4(28f, 14f, 28f, 14f));
-        sprite.name = key;
+        sprite.name = key.Item1;
         Cache[key] = sprite;
         return sprite;
     }
 
     public static Texture2D? Texture(string name)
     {
-        var stream = typeof(Kit).Assembly.GetManifestResourceStream("RestlessQoL.Assets." + name + ".png");
+        if (string.IsNullOrWhiteSpace(name)) return null;
+        if (Textures.TryGetValue(name, out var cached) && cached != null) return cached;
+        if (Failed.Contains(name)) return null;
+        var stream = typeof(Kit).Assembly.GetManifestResourceStream(ResourcePrefix + name + ".png");
         if (stream == null)
         {
+            Failed.Add(name);
             Warn("missing " + name);
             return null;
         }
@@ -186,6 +175,7 @@ internal static class Kit
             var tex = LoadBytes(bytes);
             if (tex == null)
             {
+                Failed.Add(name);
                 Warn("decode failed " + name);
                 return null;
             }
@@ -193,6 +183,7 @@ internal static class Kit
             tex.name = name;
             tex.wrapMode = TextureWrapMode.Clamp;
             tex.filterMode = FilterMode.Bilinear;
+            Textures[name] = tex;
             return tex;
         }
     }
@@ -238,9 +229,7 @@ internal static class Kit
 
     private static void Warn(string message)
     {
-        if (_logged)
-            return;
-        _logged = true;
+        if (!Warnings.Add(message)) return;
         Plugin.Log.LogWarning("kit: " + message);
     }
 }

@@ -7,37 +7,9 @@ using UnityEngine.UI;
 
 namespace RestlessQoL.Core;
 
-// One language for every Restless surface (F8, buffs, map, notices, hotbar, Tab):
-//   Strip  — sliced row-idle (StripBorder), RowTint. Settings rows, buffs, biome bar, toasts.
-//   Chip   — same slice, tighter ChipBorder, ChipTint. Keys, Q/E, switches.
-//   Tray   — solid Nested + Rim. F8 sheet, item inspect. Never 9-slice row-idle tall.
-//   TrayHead — F8 title atom. Ink Strip at RowWidth, inset (TrayPad / TrayGutter).
-//   TitleTear — solid Ink Strip behind a title, may escape the tray top-right.
-//   Rim    — Unity Outline (Accent 0.85, 1.2/−1.2). Trays always. Torn atoms skip
-//            it except F8 row hover. Call Rim(); do not copy Outline by hand.
-//   Well   — generated dark circle. Do not use on the hotbar or toast icons.
-//   Card   — abandoned tall-lip experiment. Do not use.
-//   Type   — Averia regular; Bold only at TitleSize. Text / Muted / Accent.
-//   Fade   — FadeSeconds. Slide uses the same clock.
-//   HudRow — Strip + left-anchored torn fill + icon + title + meta. Notices and buffs.
-//   HudMeter — thin Ink track sized to max + masked fill (current).
-//              18px on purpose (thinner is the look). Health left of Bar
-//              (grows left); adrenaline stacks above it. Stamina right of
-//              Bar (grows right); eitr stacks above it. Each pair is
-//              vertically centered on the hotbar midline.
-//   Wear    — vertical torn slit on the right of a slot (row-idle left+right
-//              edges, 9-sliced top/bottom). Cream when healthy, red when not.
-//   KeyChip— Chip + Bind(). Mouse binds use cream mouse-left/right/middle.
-//   KeyStack — KeyChip column. BottomRight (combat / hammer / Tab) stays
-//              bottom-right; baseline = hotbar bottom. Look is world hover.
-//   Quiet  — CanvasGroup hide. Loud restores. MapOpen / InventoryOpen are the HUD gates.
-//   HudTuck — FadeSeconds slide. Map + buffs + notices ease off while Tab / chest is open.
-//   Dock   — TopLeft = every notice. Bar = item hotbar. Health docks left of Bar
-//            (grows left). Stamina docks right of Bar (grows right).
-//            BottomRight = action hints. No TMP.
-//            No hotkey-btn / slider.png / toggle-on / map-compass / 9-sliced
-//            panel-back as a card.
-//   Mask   — panel-back alpha only (minimap tear). Never UI-Mask the vanilla map RawImage.
+// Internal implementation of the shared visual language. Supported expansion
+// components live in Api/UiKitApi.cs; see docs/maintainers/ui-kit.md.
+// HUD-specific atoms remain internal and are not a public compatibility promise.
 internal static partial class RestlessUi
 {
     public static readonly Color Text = Hex(0xE2D6C0);

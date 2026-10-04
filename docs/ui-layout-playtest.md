@@ -1,3 +1,5 @@
+> Historical design/playtest record. Branch status and implementation notes below describe the original work, not current main. See [the maintained UI kit reference](maintainers/ui-kit.md) for current contracts and supported APIs.
+
 # Layout follow-up after in-game review
 
 Follow-up on PR #7, based on its tested head 38eeef140ea4b440ca64b02ef2bb43e7e86be63b.
@@ -31,3 +33,4 @@ Validation: syntax parsing plus review of resource references, input forwarding,
 layout ownership and restore paths. This environment cannot compile or run Valheim.
 Check long item names, recipe changes, several material counts, empty station
 requirements, PVP on/off by mouse/controller, and disabling/re-enabling the dresser.
+

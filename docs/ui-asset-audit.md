@@ -1,3 +1,5 @@
+> Historical design/playtest record. Branch status and implementation notes below describe the original work, not current main. See [the maintained UI kit reference](maintainers/ui-kit.md) for current contracts and supported APIs.
+
 # Reusable UI asset audit — 20 September 2026
 
 Scope: assets embedded in RestlessCore plus the ESC, map and building dressers.
@@ -43,3 +45,4 @@ These are proposed candidates, not assets added or features implemented here.
 For any new bitmap, deliver transparent, tightly bounded art without baked words,
 document intended pixel size and slicing, and compare idle/focus/disabled states on
 the same charcoal surface. Test at game scale before expanding the set.
+

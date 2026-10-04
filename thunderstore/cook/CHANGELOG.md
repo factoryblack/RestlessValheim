@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## Unreleased
+
+- A feast can start at a lit cauldron in range. Standing in the cauldron's use bubble is not required.
+- Cauldron and preparation levels match the live recipes. Bread and lox pie stay on the preparation table.
+
 ## 0.3.2
 
 - Cookbook controls use the shared UI kit. The layout is unchanged.

@@ -128,9 +128,17 @@ internal static class PlantGrid
     private static float Spacing(Piece? piece)
     {
         var grow = piece != null ? piece.GetComponent<Plant>() : null;
-        var natural = grow != null && grow.m_growRadius > 0.05f
-            ? grow.m_growRadius * 2f + GrowGap
-            : 1f;
+        var radius = 0f;
+        if (grow != null)
+        {
+            radius = grow.m_growRadius;
+            // Ivy keeps a wider climb circle than its root. Two seeds inside it
+            // both look legal, then one grown vine wilts the other.
+            if (grow.m_growRadiusVines > radius)
+                radius = grow.m_growRadiusVines;
+        }
+
+        var natural = radius > 0.05f ? radius * 2f + GrowGap : 1f;
         var chosen = PlantConfig.Spacing.Value;
         if (chosen <= 0.01f)
             return natural;

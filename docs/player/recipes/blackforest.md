@@ -28,7 +28,7 @@ Meal · New dish
 
 - Ingredients: 1 Cooked bear meat + 2 Yellow mushroom + 1 Carrot
 - Output quantity: 1
-- Station: Cauldron 2
+- Station: Cauldron 1
 - Health: 48 · Stamina: 18 · Eitr: 0 · Regeneration: 3 per tick · Duration: 25 minutes
 - Used in: [Forester's Game Supper](blackforest.md#foresters-game-supper)
 
@@ -42,7 +42,7 @@ Meal · New dish
 
 - Ingredients: 2 Carrot + 2 Yellow mushroom + 1 Thistle
 - Output quantity: 1
-- Station: Cauldron 2
+- Station: Cauldron 1
 - Health: 18 · Stamina: 50 · Eitr: 0 · Regeneration: 2 per tick · Duration: 25 minutes
 - Used in: [Forager's Breakfast Board](blackforest.md#foragers-breakfast-board)
 
@@ -84,7 +84,7 @@ Meal · Changed vanilla recipe
 
 - Ingredients: 1 Cooked boar meat + 1 Grilled neck tail + 1 Carrot
 - Output quantity: 1
-- Station: Cauldron 2
+- Station: Cauldron 1
 - Vanilla values; not overridden by this graph.
 - Used in: [Forester's Game Supper](blackforest.md#foresters-game-supper)
 
@@ -112,7 +112,7 @@ Meal · Vanilla reference
 
 - Ingredients: 1 Cooked deer meat + 1 Blueberries + 1 Carrot
 - Output quantity: 1
-- Station: Cauldron 2
+- Station: Cauldron 1
 - Vanilla values; not overridden by this graph.
 - Used in: [Black Forest Buffet Platter](blackforest.md#black-forest-buffet-platter)
 
@@ -126,7 +126,7 @@ Meal · Vanilla reference
 
 - Ingredients: 1 Cooked bear meat + 2 Carrot + 1 Blueberries
 - Output quantity: 1
-- Station: Cauldron 2
+- Station: Cauldron 1
 - Vanilla values; not overridden by this graph.
 - Used in: [Forester's Game Supper](blackforest.md#foresters-game-supper)
 

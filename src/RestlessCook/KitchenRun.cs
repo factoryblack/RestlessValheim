@@ -952,12 +952,10 @@ internal static partial class KitchenRun
     {
         if (station.m_craftRequireFire && !FireLit(station))
             return "Needs a fire";
+        // Orders are placed at the preparation table. A lit cauldron inside the
+        // kitchen scan is enough; its own use bubble is under two metres.
         var player = Player.m_localPlayer;
-        if (player == null)
-            return null;
-        if (!station.InUseDistance(player))
-            return "Too far from the station";
-        if (station.CheckUsable(player, false))
+        if (player == null || station.CheckUsable(player, false))
             return null;
         return station.m_craftRequireRoof ? "Needs a roof" : "Station is not usable";
     }

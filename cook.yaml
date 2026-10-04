@@ -9,8 +9,8 @@
 # kit: early vanilla Food preparation table + Serving tray. Meadows workbench materials.
 # Meadows/Black Forest custom feasts do not use Bog Witch spices.
 #
-updated: 2026-09-18
-last_audit: 2026-09-18
+updated: 2026-10-05
+last_audit: 2026-10-05 — Cauldron and preparation levels match the live recipes. Bread and lox pie stay on the preparation table.
 version: 0.1.1
 kit:
   - id: food_preparation_table
@@ -138,7 +138,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 2
+    station_level: 1
   - id: forest_root_medley
     name: Forest Root Medley
     kind: meal
@@ -162,7 +162,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 2
+    station_level: 1
   - id: sausage_turnip_bake
     name: "Sausage & Turnip Bake"
     kind: meal
@@ -186,7 +186,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: bogroot_mash
     name: Bogroot Mash
     kind: meal
@@ -210,7 +210,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: serpent_steak
     name: Serpent Steak
     kind: meal
@@ -234,7 +234,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: fishermans_chowder
     name: "Fisherman's Chowder"
     kind: meal
@@ -259,7 +259,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: pickled_catch
     name: Pickled Catch
     kind: meal
@@ -283,7 +283,7 @@ items:
         amount: 2
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: wolf_roast
     name: Wolf Roast
     kind: meal
@@ -307,7 +307,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 4
+    station_level: 3
   - id: frostberry_preserve
     name: Frostberry Preserve
     kind: meal
@@ -331,7 +331,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 4
+    station_level: 3
   - id: lox_rib_roast
     name: Lox Rib Roast
     kind: meal
@@ -921,7 +921,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 2
+    station_level: 1
   - id: boar_jerky
     name: Boar Jerky
     kind: meal
@@ -997,7 +997,7 @@ items:
         amount: 1
     output_amount: 2
     station: piece_cauldron
-    station_level: 4
+    station_level: 3
   - id: wolf_skewer
     name: Wolf Skewer
     kind: meal
@@ -1018,7 +1018,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 4
+    station_level: 3
   - id: lox_meat_pie
     name: Lox Meat Pie
     kind: meal
@@ -1038,8 +1038,8 @@ items:
       - item: BarleyFlour
         amount: 4
     output_amount: 1
-    station: piece_cauldron
-    station_level: 4
+    station: piece_preptable
+    station_level: 1
   - id: meat_platter
     name: Meat Platter
     kind: meal
@@ -1140,7 +1140,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 6
+    station_level: 5
   - id: mashed_meat
     name: Mashed Meat
     kind: meal
@@ -1242,7 +1242,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 2
+    station_level: 1
   - id: pulled_bear
     name: Pulled Bear
     kind: meal
@@ -1262,7 +1262,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 2
+    station_level: 1
   - id: carrot_soup
     name: Carrot Soup
     kind: meal
@@ -1319,7 +1319,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: muckshake
     name: Muckshake
     kind: meal
@@ -1339,7 +1339,7 @@ items:
         amount: 2
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: serpent_stew
     name: Serpent Stew
     kind: meal
@@ -1359,7 +1359,7 @@ items:
         amount: 2
     output_amount: 1
     station: piece_cauldron
-    station_level: 3
+    station_level: 2
   - id: onion_soup
     name: Onion Soup
     kind: meal
@@ -1375,7 +1375,7 @@ items:
         amount: 3
     output_amount: 1
     station: piece_cauldron
-    station_level: 4
+    station_level: 2
   - id: eyescream
     name: Eyescream
     kind: meal
@@ -1393,7 +1393,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 4
+    station_level: 3
   - id: fish_wraps
     name: Fish Wraps
     kind: meal
@@ -1446,8 +1446,8 @@ items:
       - item: BarleyFlour
         amount: 10
     output_amount: 2
-    station: piece_cauldron
-    station_level: 4
+    station: piece_preptable
+    station_level: 1
   - id: mushroom_omelette
     name: Mushroom Omelette
     kind: meal
@@ -1642,7 +1642,7 @@ items:
         amount: 1
     output_amount: 1
     station: piece_cauldron
-    station_level: 6
+    station_level: 5
   - id: sizzling_berry_broth
     name: Sizzling Berry Broth
     kind: meal
@@ -1662,7 +1662,7 @@ items:
         amount: 2
     output_amount: 1
     station: piece_cauldron
-    station_level: 6
+    station_level: 5
   - id: marinated_greens
     name: Marinated Greens
     kind: meal

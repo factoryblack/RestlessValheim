@@ -26,7 +26,7 @@ Meal · New dish
 
 - Ingredients: 1 Cooked wolf meat + 2 Onion + 1 Honey
 - Output quantity: 1
-- Station: Cauldron 4
+- Station: Cauldron 3
 - Health: 72 · Stamina: 24 · Eitr: 0 · Regeneration: 4 per tick · Duration: 30 minutes
 - Used in: [Wolf King's Carving Board](mountain.md#wolf-kings-carving-board)
 
@@ -40,7 +40,7 @@ Meal · New dish
 
 - Ingredients: 3 Blueberries + 2 Honey + 1 Freeze gland
 - Output quantity: 1
-- Station: Cauldron 4
+- Station: Cauldron 3
 - Health: 24 · Stamina: 72 · Eitr: 0 · Regeneration: 2 per tick · Duration: 30 minutes
 - Used in: [Peak Runner's Supper](mountain.md#peak-runners-supper)
 
@@ -82,7 +82,7 @@ Meal · Changed vanilla recipe
 
 - Ingredients: 1 Cooked wolf meat + 1 Honey → 2
 - Output quantity: 2
-- Station: Cauldron 4
+- Station: Cauldron 3
 - Vanilla values; not overridden by this graph.
 - Used in: [Wolf King's Carving Board](mountain.md#wolf-kings-carving-board)
 
@@ -96,7 +96,7 @@ Meal · Changed vanilla recipe
 
 - Ingredients: 1 Cooked wolf meat + 2 Mushroom + 1 Onion
 - Output quantity: 1
-- Station: Cauldron 4
+- Station: Cauldron 3
 - Vanilla values; not overridden by this graph.
 - Used in: [Wolf King's Carving Board](mountain.md#wolf-kings-carving-board), [Hearty Mountain Logger's Stew](mountain.md#hearty-mountain-loggers-stew)
 
@@ -110,7 +110,7 @@ Meal · Vanilla reference
 
 - Ingredients: 3 Onion
 - Output quantity: 1
-- Station: Cauldron 4
+- Station: Cauldron 2
 - Vanilla values; not overridden by this graph.
 - Used in: [Peak Runner's Supper](mountain.md#peak-runners-supper)
 
@@ -124,7 +124,7 @@ Meal · Vanilla reference
 
 - Ingredients: 3 Greydwarf Eye + 1 Freeze gland
 - Output quantity: 1
-- Station: Cauldron 4
+- Station: Cauldron 3
 - Vanilla values; not overridden by this graph.
 - Used in: [Peak Runner's Supper](mountain.md#peak-runners-supper)
 

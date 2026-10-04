@@ -104,5 +104,63 @@ internal static class PlantGrow
             if (map == null || map.GetBiome(__instance.transform.position) == Heightmap.Biome.None)
                 __instance.m_status = Plant.Status.Healthy;
         }
+
+        // Each client was running the vine check on its own physics, so one
+        // player saw a healthy sapling and another saw a dead one. The owner
+        // is who grows or removes it; everyone else shows that result.
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(Plant), nameof(Plant.UpdateHealth))]
+        private static void ClimbRoom(Plant __instance)
+        {
+            if (Free || !Climber(__instance))
+                return;
+            Share(__instance);
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(Player), nameof(Player.UpdatePlacementGhost))]
+        private static void ClimbGhost(Player __instance)
+        {
+            if (!PlantConfig.On || Free || __instance.m_placementStatus != Player.PlacementStatus.Valid)
+                return;
+            var plant = __instance.m_placementGhost != null ? __instance.m_placementGhost.GetComponent<Plant>() : null;
+            if (plant == null || !Climber(plant))
+                return;
+            plant.UpdateHealth(11.0);
+            var status = plant.GetStatus();
+            if (status == Plant.Status.Healthy)
+                return;
+            __instance.m_placementStatus = status switch
+            {
+                Plant.Status.WrongBiome => Player.PlacementStatus.WrongBiome,
+                Plant.Status.NotCultivated => Player.PlacementStatus.NeedCultivated,
+                _ => Player.PlacementStatus.MoreSpace
+            };
+            plant.GetComponent<Piece>()?.SetInvalidPlacementHeightlight(true);
+        }
+
+        private static bool Climber(Plant plant) =>
+            plant.m_attachDistance > 0f || plant.m_growRadiusVines > 0f;
+
+        private const string ClimbKey = "RestlessClimb";
+
+        private static void Share(Plant plant)
+        {
+            var view = plant.GetComponent<ZNetView>();
+            if (view == null || !view.IsValid())
+                return;
+            var zdo = view.GetZDO();
+            if (view.IsOwner())
+            {
+                zdo.Set(ClimbKey, (int)plant.m_status);
+                return;
+            }
+
+            var shared = zdo.GetInt(ClimbKey, -1);
+            if (shared >= 0)
+                plant.m_status = (Plant.Status)shared;
+        }
     }
 }

@@ -82,7 +82,7 @@ Meal · Changed vanilla recipe
 
 - Ingredients: 2 Cloudberry + 2 Cooked lox meat + 4 Barley flour
 - Output quantity: 1
-- Station: Cauldron 4
+- Station: Food preparation table 1
 - Vanilla values; not overridden by this graph.
 - Used in: [Jarl's Lox Table](plains.md#jarls-lox-table), [Plains Pie Picnic](plains.md#plains-pie-picnic)
 
@@ -124,7 +124,7 @@ Meal · Vanilla reference
 
 - Ingredients: 10 Barley flour → 2
 - Output quantity: 2
-- Station: Cauldron 4
+- Station: Food preparation table 1
 - Vanilla values; not overridden by this graph.
 - Used in: [Golden Harvest Board](plains.md#golden-harvest-board)
 

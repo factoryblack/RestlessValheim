@@ -24,7 +24,7 @@ Meal · New dish
 
 - Ingredients: 1 Cooked serpent meat + 1 Thistle + 1 Honey
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Health: 75 · Stamina: 28 · Eitr: 0 · Regeneration: 4 per tick · Duration: 30 minutes
 - Used in: [Longship Leviathan Spread](ocean.md#longship-leviathan-spread)
 
@@ -38,7 +38,7 @@ Meal · New dish
 
 - Ingredients: 2 Cooked fish + 1 Turnip + 1 Fresh seaweed
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Health: 28 · Stamina: 70 · Eitr: 0 · Regeneration: 3 per tick · Duration: 30 minutes
 - Used in: [Longship Leviathan Spread](ocean.md#longship-leviathan-spread), [Deckhand's Provision](ocean.md#deckhands-provision)
 
@@ -52,7 +52,7 @@ Meal · New dish
 
 - Ingredients: 2 Cooked fish + 1 Fresh seaweed + 2 Thistle
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Health: 25 · Stamina: 65 · Eitr: 0 · Regeneration: 3 per tick · Duration: 30 minutes
 - Used in: [Deckhand's Provision](ocean.md#deckhands-provision)
 
@@ -94,7 +94,7 @@ Meal · Vanilla reference
 
 - Ingredients: 1 Mushroom + 1 Cooked serpent meat + 2 Honey
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Vanilla values; not overridden by this graph.
 - Used in: [Longship Leviathan Spread](ocean.md#longship-leviathan-spread)
 

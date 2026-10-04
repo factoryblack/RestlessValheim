@@ -23,7 +23,7 @@ Saplings and decorative plants are separate host-controlled options. Ordinary ca
 
 Grid width and depth can be changed independently, up to seven cells each. Spacing follows the crop's growth needs; a minimum-spacing value of zero means use the crop's own spacing.
 
-Each cell is checked for ground, biome, sun, space and materials. Invalid cells are red and skipped. An oversized preview can still plant its valid cells. **Every placed cell pays its own cost.** The till tool still cultivates one patch; expanding the crop grid does not enlarge terrain cultivation.
+Each cell is checked for ground, biome, sun, space and materials. Invalid cells are red and skipped. Ivy and ashvine use the game's own plant check. The seed stays in the bag when that check says the vine cannot grow. An oversized preview can still plant its valid cells. **Every placed cell pays its own cost.** The till tool still cultivates one patch; expanding the crop grid does not enlarge terrain cultivation.
 
 ## Harvest and regrow
 

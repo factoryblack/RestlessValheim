@@ -87,7 +87,7 @@ Meal · Changed vanilla recipe
 
 - Ingredients: 1 Cooked asksvin meat + 2 Vineberry + 1 Smoke puff
 - Output quantity: 1
-- Station: Cauldron 6
+- Station: Cauldron 5
 - Vanilla values; not overridden by this graph.
 - Used in: [Emberlord's Carving Table](ashlands.md#emberlords-carving-table)
 
@@ -185,7 +185,7 @@ Meal · Vanilla reference
 
 - Ingredients: 3 Vineberry + 1 Honey + 1 Fiddlehead
 - Output quantity: 1
-- Station: Cauldron 6
+- Station: Cauldron 5
 - Vanilla values; not overridden by this graph.
 - Used in: [Cinder Sideboard](ashlands.md#cinder-sideboard)
 
@@ -199,7 +199,7 @@ Meal · Vanilla reference
 
 - Ingredients: 3 Sap + 2 Fiddlehead + 2 Vineberry
 - Output quantity: 1
-- Station: Cauldron 6
+- Station: Cauldron 5
 - Vanilla values; not overridden by this graph.
 - Used in: [Cinder Sideboard](ashlands.md#cinder-sideboard)
 

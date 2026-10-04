@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## Unreleased
+
+- Ivy and ashvine use the game's own plant check before the seed is spent. A failed check leaves the seed in the bag, and every player sees the owner's sapling.
+
 ## 0.2.1
 
 - Berry-bush hover names now identify their own crop instead of displaying generic Pickable text.

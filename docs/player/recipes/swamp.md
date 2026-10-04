@@ -26,7 +26,7 @@ Meal · New dish
 
 - Ingredients: 2 Sausages + 2 Turnip + 1 Thistle
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Health: 60 · Stamina: 22 · Eitr: 0 · Regeneration: 4 per tick · Duration: 30 minutes
 - Used in: [Cryptkeeper's Supper](swamp.md#cryptkeepers-supper)
 
@@ -40,7 +40,7 @@ Meal · New dish
 
 - Ingredients: 3 Turnip + 1 Yellow mushroom + 1 Honey
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Health: 22 · Stamina: 60 · Eitr: 0 · Regeneration: 2 per tick · Duration: 30 minutes
 - Used in: [Bog Harvester's Table](swamp.md#bog-harvesters-table)
 
@@ -110,7 +110,7 @@ Meal · Vanilla reference
 
 - Ingredients: 1 Bloodbag + 1 Honey + 1 Turnip
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Vanilla values; not overridden by this graph.
 - Used in: [Cryptkeeper's Supper](swamp.md#cryptkeepers-supper)
 
@@ -124,7 +124,7 @@ Meal · Vanilla reference
 
 - Ingredients: 1 Ooze + 2 Raspberry + 2 Blueberries
 - Output quantity: 1
-- Station: Cauldron 3
+- Station: Cauldron 2
 - Vanilla values; not overridden by this graph.
 - Used in: [Bog Harvester's Table](swamp.md#bog-harvesters-table)
 

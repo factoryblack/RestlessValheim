@@ -1,12 +1,14 @@
 # Changelog
 
-## Unreleased
-
-- Added a public shared UI kit API, validated material sizing contracts and shared texture caching; warm-up now covers every embedded kit asset.
-- Keep remote chest transfer reservations across ownership changes; retry character settlement decisions until confirmed.
-- Bind storage requests to the character's owning peer and reject duplicate or cancelled transfers.
-
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## 0.2.3
+
+- Crafting and building count a chest ingredient only after it has been removed.
+- An open chest transfer stays reserved when the chest changes owner, and the same request is not taken twice.
+- Restock skips the hotbar, equipment, quick slots and locked cells, and adds items only after the chest confirms the pull.
+- F8 still lists Storage and Workshop when those plugins are not installed.
+- Shared screens use one UI kit, with checked material sizes and a shared texture cache.
 
 ## 0.2.2
 

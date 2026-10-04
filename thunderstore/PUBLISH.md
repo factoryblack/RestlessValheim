@@ -15,20 +15,29 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-Workshop joins the pack. Publish Workshop first, then the pack. One tag per push.
+Chest transfers, kitchen stock and workshop queues. One tag per push. Core first, the pack last. These tags are not pushed.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessWorkshop | 0.1.0 | **0.1.1** | The listing now belongs to the pack |
-| Restless Valheim pack | 0.1.25 | **0.1.26** | Workshop is a required member |
+| RestlessCore | 0.2.2 | **0.2.3** | A chest ingredient counts only after it is removed, and an open transfer is not taken twice |
+| RestlessCook | 0.3.1 | **0.3.2** | Kitchen chests count in full, a finished rack meal stays reserved, and a cold cauldron pauses |
+| RestlessStorage | 0.2.1 | **0.2.2** | A withdrawal stays reserved until it settles |
+| RestlessWorkshop | 0.1.1 | **0.1.2** | A smelter gets the coal a bar burns, and the finished unit drops at the machine |
+| Restless Valheim pack | 0.1.26 | **0.1.27** | Joins the versions above |
 
-The other packages stay on the versions published in 0.1.25. Jötunn stays 2.30.2.
+Plant 0.2.1, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
 
 ## Tag order
 
 ```
-git tag works-v0.1.1
-git push origin works-v0.1.1
-git tag pack-v0.1.26
-git push origin pack-v0.1.26
+git tag v0.2.3
+git push origin v0.2.3
+git tag cook-v0.3.2
+git push origin cook-v0.3.2
+git tag storage-v0.2.2
+git push origin storage-v0.2.2
+git tag works-v0.1.2
+git push origin works-v0.1.2
+git tag pack-v0.1.27
+git push origin pack-v0.1.27
 ```

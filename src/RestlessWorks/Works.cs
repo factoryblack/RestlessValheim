@@ -28,6 +28,7 @@ public sealed class WorksRecipe
     public string StationName = "";
     public string Fuel = "";
     public string FuelName = "";
+    public int FuelEach = 1;
 }
 
 public sealed class WorksUse

@@ -1,10 +1,12 @@
 # Changelog
 
-## Unreleased
-
-- Persist reserved withdrawals and validate settlement against the original batch; delayed packets cannot reopen a cancelled take.
-
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## 0.2.2
+
+- A withdrawal stays reserved on the chest until it settles, and a late packet cannot take that batch again.
+- A second take while one is already running is refused.
+- Requires Core 0.2.3.
 
 ## 0.2.1
 

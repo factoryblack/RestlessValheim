@@ -101,7 +101,7 @@ internal sealed partial class WorkshopWindow
         for(var i=0;i<counts.Length;i++){var c=Get(_cards,i+1,_body.content);Place(c.Root,0,170+i*112,536,104);c.Set(counts[i],"",null,()=>{});}
         Hide(_cards,4);Size(_body,506);
         var distance=Vector3.Distance(_board.transform.position,machine.Position);
-        Detail("MACHINE STATUS\n\n"+Local(machine.Name)+"\n"+distance.ToString("0.0")+" m from board\n\n"+(machine.FuelMax>0?"FUEL\n"+machine.Fuel+" / "+machine.FuelMax:"No fuel required")+"\n\n"+(string.IsNullOrEmpty(machine.Block)?"No reported block.":machine.Block)+"\n\nCounts are live machine queues. Processing time and machine conditions remain native.\n\nFinished output for active orders is collected onto the board.");
+        Detail("MACHINE STATUS\n\n"+Local(machine.Name)+"\n"+distance.ToString("0.0")+" m from board\n\n"+(machine.FuelMax>0?"FUEL\n"+machine.Fuel+" / "+machine.FuelMax:"No fuel required")+"\n\n"+(string.IsNullOrEmpty(machine.Block)?"No reported block.":machine.Block)+"\n\nCounts are live machine queues. Processing time and machine conditions remain native.\n\nA finished unit drops at the machine.");
         _hint.text="Manage what this machine makes through Production and Orders.";_action.gameObject.SetActive(false);
     }
     private void PaintOutput()

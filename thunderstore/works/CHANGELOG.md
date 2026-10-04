@@ -1,12 +1,16 @@
 # Changelog
 
-## Unreleased
-
-- Workshop controls, readers and production coverage now use the shared Core UI kit while preserving the existing layout.
-- Refuel unfinished input queues independently of the completed-output buffer.
-- Count each queued ore conversion toward production and reserve machines for the active board.
-
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## 0.1.2
+
+- A smelter or blast furnace is given the coal that bar actually burns, and the finished unit drops at the machine.
+- Workshop controls use the shared UI kit. The layout is unchanged.
+- A machine that still has ore queued keeps receiving fuel after the order has enough ore.
+- Each queued conversion counts toward the order, and that machine stays reserved for the board using it.
+- Background pulls skip locked cells, the hotbar and quick slots.
+- Destroying the board drops its pantry.
+- Requires Core 0.2.3.
 
 ## 0.1.1
 

@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessStorage"
-versionNumber = "0.2.1"
+versionNumber = "0.2.2"
 description = "Search nearby storage, see combined item totals and take what you need from the Storekeeper's Table."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/storage.md"
 containsNsfwContent = false
@@ -12,7 +12,7 @@ containsNsfwContent = false
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2351"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.2.2"
+Restless-RestlessCore = "0.2.3"
 
 [build]
 icon = "./icon.png"

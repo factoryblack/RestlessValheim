@@ -2,6 +2,11 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
+## 0.1.27
+
+- Chest transfers stay with the player who asked. Kitchen orders keep the materials they already paid for, and a finished workshop unit drops at the machine.
+- Included version changes: RestlessCore 0.2.3, RestlessCook 0.3.2, RestlessPlant 0.2.1, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.2, RestlessWorkshop 0.1.2.
+
 ## 0.1.26
 
 - RestlessWorkshop is included. Installing the collection also installs the work-order board.

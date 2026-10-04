@@ -38,13 +38,13 @@ Kilns, smelters, blast furnaces, windmills, spinning wheels and eitr refineries 
 
 A plan can reveal recipes for inputs or fuel, but **dependencies must currently be ordered separately**. For example, order coal if the workshop needs it; an ingot order does not automatically queue every upstream material.
 
-Fuel quantities in plans are estimates. The real machine's fuel consumption still applies. Missing inputs, fuel or machine capacity can leave an order waiting.
+Plans use the machine's own fuel rate. A smelter burns two coal for one bar. Missing inputs, fuel or machine capacity can leave an order waiting.
 
 The workbench and forge still craft/upgrade equipment normally. Bronze, nails and other forge recipes are not automatically added as board products.
 
 ## Collect and cancel
 
-Finished order output is collected onto the board. The player who placed a Make order collects its reserved output from **Orders**. Unreserved stock can be taken from **Output**, up to a stack at a time; anything that does not fit stays on the board.
+A finished unit drops at the machine. The board does not pick it up.
 
 Keep stock is unreserved. Taking it into your bag can still count towards the target while you remain nearby. Automatic delivery into a chosen output chest is not implemented.
 

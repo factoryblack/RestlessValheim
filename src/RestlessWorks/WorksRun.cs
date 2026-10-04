@@ -333,13 +333,21 @@ internal static class WorksRun
 
     private static bool Fuel(Smelter station, WorksRecipe recipe, Ledger ledger, Vector3 origin, long playerId)
     {
-        if (station.m_fuelItem == null || station.m_maxFuel <= 0 || station.GetFuel() >= 1f)
+        var target = FuelTarget(station);
+        if (target <= 0)
             return true;
         var prefab = string.IsNullOrEmpty(recipe.Fuel) ? Clean(station.m_fuelItem.gameObject.name) : recipe.Fuel;
-        return AddFuel(station, prefab, ledger, origin, playerId);
+        while (station.GetFuel() + 0.05f < target)
+        {
+            if (!AddFuel(station, prefab, ledger, origin, playerId))
+                break;
+        }
+
+        return station.GetFuel() >= 1f;
     }
 
-    // Ore already in a machine still burns fuel after the order stops queueing more.
+    // A smelter burns two coal for one bar. Keep that much in the tank while ore is queued,
+    // including after the order has stopped loading more ore.
     private static void FuelQueued(List<Hit> hits, Ledger ledger, Vector3 origin, long playerId)
     {
         foreach (var hit in hits)
@@ -347,9 +355,8 @@ internal static class WorksRun
             var station = hit.Station;
             if (station?.m_nview == null || !station.m_nview.IsOwner())
                 continue;
-            if (station.m_fuelItem == null || station.m_maxFuel <= 0 || station.GetFuel() >= 1f)
-                continue;
-            if (station.GetQueueSize() <= 0)
+            var target = FuelTarget(station);
+            if (target <= 0 || station.GetFuel() + 0.05f >= target || station.GetQueueSize() <= 0)
                 continue;
             var relevant = false;
             for (var i = 0; i < station.GetQueueSize(); i++)
@@ -358,8 +365,21 @@ internal static class WorksRun
                 if (conversion?.m_to != null && Wanted(ledger, Clean(conversion.m_to.gameObject.name)))
                 { relevant = true; break; }
             }
-            if (relevant) AddFuel(station, Clean(station.m_fuelItem.gameObject.name), ledger, origin, playerId);
+            if (!relevant)
+                continue;
+            var prefab = Clean(station.m_fuelItem.gameObject.name);
+            while (station.GetFuel() + 0.05f < target && AddFuel(station, prefab, ledger, origin, playerId))
+            {
+            }
         }
+    }
+
+    private static int FuelTarget(Smelter station)
+    {
+        if (station.m_fuelItem == null || station.m_maxFuel <= 0)
+            return 0;
+        var each = station.m_fuelPerProduct > 0 ? station.m_fuelPerProduct : 1;
+        return Math.Min(station.m_maxFuel, each);
     }
 
     private static bool AddFuel(Smelter station, string prefab, Ledger ledger, Vector3 origin, long playerId)
@@ -396,19 +416,23 @@ internal static class WorksRun
                 continue;
             var amount = station.GetProcessedQueueSize();
             Add(ledger, made, amount);
-            var left = amount;
-            foreach (var order in ledger.Orders)
-            {
-                if (left < 1 || order.Mode != WorksOrderMode.Make || order.Output != made)
-                    continue;
-                var room = Math.Max(0, order.Count - order.Ready - order.Collected);
-                var give = Math.Min(room, left);
-                order.Ready += give;
-                left -= give;
-            }
-
+            Credit(ledger, made, amount);
             station.m_nview.GetZDO().Set(ZDOVars.s_spawnOre, "");
             station.m_nview.GetZDO().Set(ZDOVars.s_spawnAmount, 0);
+        }
+    }
+
+    private static void Credit(Ledger ledger, string made, int amount)
+    {
+        var left = amount;
+        foreach (var order in ledger.Orders)
+        {
+            if (left < 1 || order.Mode != WorksOrderMode.Make || order.Output != made)
+                continue;
+            var room = Math.Max(0, order.Count - order.Ready - order.Collected);
+            var give = Math.Min(room, left);
+            order.Ready += give;
+            left -= give;
         }
     }
 
@@ -450,28 +474,30 @@ internal static class WorksRun
             Amount = count,
             Available = inputHave
         });
+        var fuelNeed = 0;
         if (!string.IsNullOrEmpty(recipe.Fuel))
         {
+            fuelNeed = count * Math.Max(1, recipe.FuelEach);
             stock.TryGetValue(recipe.Fuel, out var fuelHave);
             step.Uses.Add(new WorksUse
             {
                 Item = recipe.Fuel,
                 Name = recipe.FuelName,
-                Amount = count,
+                Amount = fuelNeed,
                 Available = fuelHave
             });
-            step.Note = "Fuel is a planning estimate of one per product.";
+            step.Note = "Fuel follows the machine. A finished unit drops at the machine.";
         }
 
         steps.Add(step);
         var child = Find(recipe.Input);
         if (child != null)
             AddStep(steps, child, count, recipe.Output, depth + 1, stock, guard);
-        if (!string.IsNullOrEmpty(recipe.Fuel))
+        if (fuelNeed > 0)
         {
             var fuel = Find(recipe.Fuel);
             if (fuel != null)
-                AddStep(steps, fuel, count, recipe.Output, depth + 1, stock, guard);
+                AddStep(steps, fuel, fuelNeed, recipe.Output, depth + 1, stock, guard);
         }
     }
 
@@ -581,17 +607,14 @@ internal static class WorksRun
 
         foreach (var container in NearbyStorage.Around(origin, Range(), playerId))
         {
-            var view = container.m_nview;
-            if (view == null || !view.IsOwner() || container.GetInventory() == null)
+            var inv = container.GetInventory();
+            if (inv == null)
                 continue;
-            foreach (var item in container.GetInventory().GetAllItems())
+            foreach (var item in inv.GetAllItems())
             {
                 if (item?.m_dropPrefab == null)
                     continue;
-                var count = item.m_stack;
-                if (ModConfig.LeaveOne.Value && count > 0)
-                    count -= 1;
-                AddStock(Clean(item.m_dropPrefab.name), count);
+                AddStock(Clean(item.m_dropPrefab.name), item.m_stack);
             }
         }
 
@@ -634,24 +657,11 @@ internal static class WorksRun
         var sharedName = Shared(prefab);
         if (string.IsNullOrEmpty(sharedName))
             return;
-        foreach (var container in NearbyStorage.Around(origin, Range(), playerId))
+        var fromChests = NearbyStorage.TryConsumeAround(origin, Range(), playerId, sharedName, count, false, -1, false);
+        if (fromChests > 0)
         {
-            var view = container.m_nview;
-            var inv = container.GetInventory();
-            if (view == null || !view.IsOwner() || inv == null)
-                continue;
-            var have = inv.CountItems(sharedName);
-            if (ModConfig.LeaveOne.Value && have > 0)
-                have -= 1;
-            var take = Math.Min(have, count);
-            if (take < 1)
-                continue;
-            inv.RemoveItem(sharedName, take);
-            container.Save();
-            Add(ledger, prefab, take);
-            count -= take;
-            if (count < 1)
-                return;
+            Add(ledger, prefab, fromChests);
+            count -= fromChests;
         }
 
         var fromPiles = NearbyLots.Drain(origin, Range(), sharedName, count);
@@ -718,7 +728,8 @@ internal static class WorksRun
                     Station = stationName,
                     StationName = LabelToken(station.m_name),
                     Fuel = fuel,
-                    FuelName = string.IsNullOrEmpty(fuel) ? "" : Label(fuel)
+                    FuelName = string.IsNullOrEmpty(fuel) ? "" : Label(fuel),
+                    FuelEach = station.m_fuelPerProduct > 0 ? station.m_fuelPerProduct : 1
                 });
             }
         }

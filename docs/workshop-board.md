@@ -45,8 +45,8 @@ The preparation table used to list every `Smelter`. Kilns, smelters and the othe
 ## Not in this pass
 
 - Recipes are the machines' own conversions. Bronze, nails and gear are still forge crafts, not board recipes.
-- Finished output waits on the board until Collect or Take. A designated output chest is not wired yet.
-- Fuel on a plan is an estimate of one fuel item per product. The machine still burns on its own timer.
+- A finished unit drops at the machine. The board does not pick it up.
+- Fuel on a plan follows the machine. A smelter burns two coal for one bar.
 - The UI prevents a second Keep target for the same output. API callers remain responsible for duplicate targets.
 - The last player to use the board owns it, and the tick follows them. Same rule as the kitchen.
 - Not playtested.

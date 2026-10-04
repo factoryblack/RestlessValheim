@@ -1,11 +1,11 @@
 {
   "name": "RestlessWorkshop",
-  "version_number": "0.1.1",
+  "version_number": "0.1.2",
   "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/works.md",
   "description": "Manage nearby production from a work-order board. Make a batch or keep essential supplies stocked.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",
-    "Restless-RestlessCore-0.2.2"
+    "Restless-RestlessCore-0.2.3"
   ]
 }

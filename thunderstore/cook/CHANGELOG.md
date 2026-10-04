@@ -1,12 +1,16 @@
 # Changelog
 
-## Unreleased
-
-- Cooking controls, readers and preparation progress now use the shared Core UI kit while preserving the existing layout.
-- Reserve native racks and ovens for an active kitchen controller so overlapping tables do not collect the same queue.
-- Include queued oven ingredients in production planning.
-
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
+
+## 0.3.2
+
+- Cookbook controls use the shared UI kit. The layout is unchanged.
+- Accessible chests count in full, including the last item and a chest this client does not own. Leave one does not hold kitchen ingredients back.
+- A rack or oven meal ordered on its own is marked ready when that item finishes, and that stack stays reserved.
+- Overlapping preparation tables do not collect the same rack or oven. Queued oven ingredients count in the plan.
+- A cauldron job pauses when the fire is out or the station cannot be used, and resumes without paying again.
+- Destroying the preparation table drops the pantry and unpaid inputs.
+- Requires Core 0.2.3.
 
 ## 0.3.1
 

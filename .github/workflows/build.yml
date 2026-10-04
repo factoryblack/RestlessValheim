@@ -44,6 +44,7 @@ jobs:
           python3 scripts/sync-public-docs.py --check
           python3 scripts/sync-cook-readme.py --check
           python3 scripts/check-public-docs.py
+          python3 scripts/check-ui-kit.py
           echo "JOTUNN=$(python3 scripts/sync-versions.py --print jotunn)" >> "$GITHUB_ENV"
           echo "BEPINEX_PACK=$(python3 scripts/sync-versions.py --print bepinex)" >> "$GITHUB_ENV"
 
@@ -123,6 +124,9 @@ jobs:
           dotnet build src/RestlessDrawers/RestlessDrawers.csproj -c Release --nologo
           dotnet build src/RestlessStorage/RestlessStorage.csproj -c Release --nologo
           dotnet build src/RestlessWorks/RestlessWorks.csproj -c Release --nologo
+
+      - name: External UI kit API contract
+        run: dotnet build tests/UiKit.Consumer/UiKit.Consumer.csproj -c Release --nologo
 
       - name: Upload RestlessCore.dll
         uses: actions/upload-artifact@v4

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RestlessQoL.Core;
+using RestlessQoL.Api;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -106,57 +107,15 @@ internal sealed partial class CookbookWindow
         Position(label.gameObject,x,y,w,h); label.horizontalOverflow = HorizontalWrapMode.Wrap; return label;
     }
     private static Button Button(Transform parent, string text, float x, float y, float w, float h, Action action)
-    {
-        var go = RestlessUi.Chip(parent,"control"); RestlessUi.PaperControl(go); Position(go,x,y,w,h);
-        var button = go.AddComponent<Button>(); button.targetGraphic = go.GetComponent<Image>(); RestlessUi.PaperSelectable(button);
-        var label = Label(go.transform,text,18,8,3,w-16,h-6); label.alignment = TextAnchor.MiddleCenter;
-        RestlessUi.BoundedLabel(label,18,14); button.onClick.AddListener(() => action()); return button;
-    }
+        => UiKitApi.Button(parent,text,new Rect(x,y,w,h),action);
     private static InputField Field(Transform parent, float x, float y, float w, float h)
-    {
-        var go = RestlessUi.Chip(parent,"search"); RestlessUi.PaperControl(go); Position(go,x,y,w,h);
-        var field = go.AddComponent<InputField>(); field.targetGraphic = go.GetComponent<Image>();
-        field.textComponent = Label(go.transform,"",18,10,3,w-20,h-6);
-        field.placeholder = Label(go.transform,"Search recipes…",18,10,3,w-20,h-6);
-        field.placeholder.color = RestlessUi.PaperMuted; field.characterLimit = 128;
-        field.lineType = InputField.LineType.SingleLine; RestlessUi.PaperSelectable(field); return field;
-    }
+        => UiKitApi.Field(parent,"Search recipes…",new Rect(x,y,w,h));
     private static void Rule(Transform parent,float x,float y,float w,float h)
     { Position(RestlessUi.Graphic(parent,"rule",new Color(.5f,.43f,.32f,.5f),false),x,y,w,h); }
     private static RestlessScrollRect Reader(Transform parent,string name,float x,float y,float w,float h,float row)
-    {
-        var root = RestlessUi.Node(parent,name); Position(root,x,y,w,h);
-        var scroll = root.AddComponent<RestlessScrollRect>(); scroll.horizontal = false; scroll.RowHeight = row; scroll.RowsPerNotch = 2;
-        var view = RestlessUi.Graphic(root.transform,"viewport",Color.clear,true); Position(view,0,0,w-24,h); view.AddComponent<RectMask2D>();
-        scroll.viewport = (RectTransform)view.transform;
-        var content = RestlessUi.Node(view.transform,"content"); Position(content,0,0,w-24,h); scroll.content = (RectTransform)content.transform;
-        if (InventoryGui.instance != null && InventoryGui.instance.m_recipeListScroll != null)
-        {
-            var bar = Instantiate(InventoryGui.instance.m_recipeListScroll,root.transform,false);
-            bar.onValueChanged = new Scrollbar.ScrollEvent(); Position(bar.gameObject,w-6,0,6,h);
-            bar.transform.localScale = Vector3.one;
-            // The native prefab can retain a wide sliding area after its root is resized.
-            if (bar.handleRect != null)
-            {
-                var area = bar.handleRect.parent as RectTransform;
-                if (area != null && area != bar.transform)
-                    RestlessUi.Stretch(area.gameObject,Vector2.zero,Vector2.one,Vector2.zero,Vector2.zero);
-                var handle = bar.handleRect;
-                handle.sizeDelta = new Vector2(0,handle.sizeDelta.y);
-                handle.anchoredPosition = new Vector2(0,handle.anchoredPosition.y);
-            }
-            scroll.verticalScrollbar = bar; scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
-        }
-        return scroll;
-    }
+        => UiKitApi.Reader(parent,name,new Rect(x,y,w,h),row);
     private static void Size(RestlessScrollRect scroll,float height,bool reset)
-    {
-        height = Mathf.Max(scroll.viewport.rect.height,height);
-        scroll.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,height);
-        var y = reset ? 0 : Mathf.Clamp(scroll.content.anchoredPosition.y,0,height-scroll.viewport.rect.height);
-        if (reset || !Mathf.Approximately(y,scroll.content.anchoredPosition.y))
-        { scroll.CancelWheel(); scroll.content.anchoredPosition = new Vector2(0,y); }
-    }
+        => UiKitApi.SizeReader(scroll,height,reset);
     private static Card GetCard(List<Card> cards,int i,Transform parent)
     {
         if (i == cards.Count) cards.Add(new Card(parent));
@@ -170,8 +129,7 @@ internal sealed partial class CookbookWindow
         private readonly Button _button;
         private readonly Image _icon;
         private readonly Text _name, _state, _expand;
-        private readonly Image _bar;
-        private readonly GameObject _track;
+        private readonly UiKitProgress _progress;
         private readonly Image _statusDiamond;
         private Action? _clicked;
         internal Card(Transform parent)
@@ -184,19 +142,17 @@ internal sealed partial class CookbookWindow
             _expand.color = RestlessUi.PaperMuted; _expand.raycastTarget = false;
             _statusDiamond = RestlessUi.Graphic(Root.transform,"status-diamond",Color.white,false).GetComponent<Image>();
             _statusDiamond.rectTransform.localRotation = Quaternion.Euler(0,0,45);
-            _track = RestlessUi.Graphic(Root.transform,"preparation-track",RestlessUi.Ink,false);
-            _bar = RestlessUi.Graphic(_track.transform,"progress",RestlessUi.Accent,false).GetComponent<Image>();
+            _progress = UiKitApi.Progress(Root.transform,"preparation-track");
             _state = Label(Root.transform,"",15,0,0,100,30); _state.alignment = TextAnchor.MiddleLeft;
             RestlessUi.BoundedLabel(_state,15,13); _button.onClick.AddListener(() => _clicked?.Invoke());
         }
         internal void Progress(KitchenStep step)
         {
             var size = ((RectTransform)Root.transform).rect.size;
-            _track.SetActive(step.State == KitchenStepState.Cooking && step.DurationSeconds > 0); Position(_track,20,size.y-(_statusDiamond.gameObject.activeSelf ? 34 : 10),size.x-40,4);
             float fraction = step.State == KitchenStepState.Prepared ? 1f : step.DurationSeconds > 0
                 ? Mathf.Clamp01(step.ElapsedSeconds/step.DurationSeconds) : 0f;
-            Position(_bar.gameObject,0,0,(size.x-40)*fraction,4);
-            _bar.color = Tint(step.State);
+            _progress.Set(new Rect(20,size.y-(_statusDiamond.gameObject.activeSelf ? 34 : 10),size.x-40,4),
+                0,fraction,Tint(step.State),Tint(step.State),step.State == KitchenStepState.Cooking && step.DurationSeconds > 0);
         }
         internal void Set(string name,string state,Sprite? icon,Color tint,Action action,bool selected = false,bool featured = false,bool listEntry = false,bool expandable = false)
         {
@@ -232,7 +188,7 @@ internal sealed partial class CookbookWindow
             _name.alignment = TextAnchor.MiddleLeft;
             _state.alignment = size.y <= 64 ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
             _icon.sprite = icon; _icon.enabled = icon != null; _name.text = name; _state.text = state; _state.color = tint;
-            _track.SetActive(false);
+            _progress.Hide();
             _statusDiamond.color = tint;
             if (featured) RestlessUi.CookHeroSurface(Root);
             else

@@ -19,7 +19,7 @@ Use a work-order board to manage nearby production machines from one window.
 | Make | Produce this many additional units, then stop | Make 30 coal even if you already have coal |
 | Keep | Replenish usable stock when it falls below the target | Keep 30 coal available around the workshop |
 
-Keep accounts for usable bag, nearby-container, pile and board stock after Make reservations, plus allocated incoming production. It does not require each machine to fill the entire shortage independently. The UI prevents a second Keep target for the same output.
+Keep accounts for accessible nearby-container, pile and board stock after Make reservations, plus allocated incoming production. Player bags are neither counted nor consumed. Chest access follows the player who placed the board, so changing network ownership does not change its supplies. It does not require each machine to fill the entire shortage independently. The order API prevents a second Keep target for the same output.
 
 ## Read the window
 
@@ -44,19 +44,20 @@ The workbench and forge still craft/upgrade equipment normally. Bronze, nails an
 
 ## Collect and cancel
 
-A finished unit drops at the machine. The board does not pick it up.
+Output from an active board-controlled machine is collected on that board. Collect reserved Make output through Orders, or take unreserved stock through Output. Unmanaged output retains its normal drop behaviour.
 
-Keep stock is unreserved. Taking it into your bag can still count towards the target while you remain nearby. Automatic delivery into a chosen output chest is not implemented.
+Keep stock is unreserved. Taking it into your bag reduces shared stock, and Keep replenishes the shortage. Automatic delivery into a chosen output chest is not implemented.
 
 Stopping an order removes its instruction. Materials already inside machines keep processing. Cancellation requires a second click.
 
 ## Multiplayer and settings
 
-The last player to use the board takes ownership, and owned processing follows that player. If control changes while the window is open, mutation controls are disabled until you reopen it. Collection of a Make order remains restricted to its ordering player.
+The last player to use the board takes ownership, and that peer runs production. Supply permissions stay tied to the player who placed the board. If control changes while the window is open, mutation controls are disabled until you reopen it. Collection of a Make order remains restricted to its ordering player.
 
 Use **F8 → RestlessWorkshop** for the local window toggle. Closing or disabling the window does not stop placed orders. Wider multiplayer ownership behaviour still needs playtesting.
 
 Workshop requires Core. The Restless Valheim pack installs it with the rest of the collection. If an older installed release reports that the workshop window is not included, update to the build containing the UI.
 
 [Install](install.md) · [Troubleshoot](troubleshooting.md) · [All guides](README.md)
+
 

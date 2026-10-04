@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace RestlessQoL.Storage;
@@ -14,11 +15,11 @@ public static class ItemKey
             return "";
         var text = new StringBuilder();
         Part(text, item.m_dropPrefab != null ? item.m_dropPrefab.name : item.m_shared.m_name);
-        Part(text, item.m_quality.ToString());
-        Part(text, item.m_variant.ToString());
-        Part(text, item.m_worldLevel.ToString());
-        Part(text, item.m_durability.ToString("R"));
-        Part(text, item.m_crafterID.ToString());
+        Part(text, item.m_quality.ToString(CultureInfo.InvariantCulture));
+        Part(text, item.m_variant.ToString(CultureInfo.InvariantCulture));
+        Part(text, item.m_worldLevel.ToString(CultureInfo.InvariantCulture));
+        Part(text, item.m_durability.ToString("R", CultureInfo.InvariantCulture));
+        Part(text, item.m_crafterID.ToString(CultureInfo.InvariantCulture));
         if (item.m_customData != null)
         {
             var keys = new List<string>(item.m_customData.Keys);
@@ -40,3 +41,4 @@ public static class ItemKey
         text.Append(value.Length).Append(':').Append(value);
     }
 }
+

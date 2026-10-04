@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## Unreleased
+
+- Capture native smelter output when it is delivered, so Ready counts and finite Make completion no longer depend on the one-second collector catching a temporary buffer.
+- Use shared storage instead of player bags for Keep totals and background supplies, with stable board-creator chest access. Prioritise Make reservations consistently and reject duplicate Keep targets.
+
 ## 0.1.2
 
 - A smelter or blast furnace is given the coal that bar actually burns, and the finished unit drops at the machine.
@@ -25,3 +30,4 @@ Changes are listed newest first. **Unreleased** describes current source changes
 - The listing, F8 entry and window are RestlessWorkshop. A board already placed keeps its orders.
 - Updated the package icon to the shared Restless ecosystem artwork, with a matching ring size, centred artwork and transparent background.
 - Requires Core 0.2.2. This package is not part of the Restless Valheim pack.
+

@@ -78,10 +78,20 @@ public sealed class Container
 }
 public sealed class ItemDrop
 {
-    public sealed class ItemData { public int m_stack; }
+    public sealed class SharedData { public string m_name = ""; }
+    public sealed class ItemData
+    {
+        public int m_stack, m_quality, m_variant, m_worldLevel;
+        public float m_durability;
+        public long m_crafterID;
+        public SharedData m_shared = new();
+        public GameObject? m_dropPrefab;
+        public Dictionary<string,string> m_customData = new();
+    }
 }
 public sealed class GameObject
 {
+    public string name = "";
     public Container Container = null!;
     public T? GetComponent<T>() where T : class => Container as T;
 }
@@ -123,3 +133,4 @@ public sealed class Smelter
     public int GetQueueSize() => _count;
     public string GetQueuedOre() => m_nview.GetZDO().GetString("item0");
 }
+

@@ -12,7 +12,7 @@ Manage kilns, smelters and other production machines from one work-order board. 
 
 **Make** produces an additional quantity, then stops. **Keep** replenishes usable stock when it falls below your target.
 
-Keep 30 coal accounts for nearby usable supplies and incoming production instead of asking every kiln to make another 30. Make output is reserved for its ordering player; Keep output is unreserved stock.
+Keep 30 coal accounts for nearby usable supplies and incoming production instead of asking every kiln to make another 30. Make output is reserved for its ordering player; Keep output is unreserved stock. Player bags are excluded from shared stock and automatic pulls. Chest access follows the player who placed the board, independent of which peer currently owns it.
 
 > (screenshot coming) — Keep 30 order showing stock, incoming production and remaining shortage.
 
@@ -51,3 +51,4 @@ Requires **RestlessCore**, BepInExPack and Jötunn. A mod manager installs the r
 [Player guide](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/works.md) · [Installation](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/install.md) · [Changelog](https://github.com/factoryblack/RestlessValheim/blob/main/thunderstore/works/CHANGELOG.md) · [Report a problem](https://github.com/factoryblack/RestlessValheim/issues/new/choose)
 
 [RestlessCore](https://thunderstore.io/c/valheim/p/Restless/RestlessCore/) is the shared foundation. [Explore the collection](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/).
+

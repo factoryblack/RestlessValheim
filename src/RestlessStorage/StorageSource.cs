@@ -122,10 +122,16 @@ internal sealed class StorageSource : IStorageWindowSource
         chests.Sort((a, b) =>
             (a.transform.position - origin).sqrMagnitude.CompareTo((b.transform.position - origin).sqrMagnitude));
         var label = LabelFor(chests, resourceId);
+        var scanned = chests.Count;
+        chests.RemoveAll(chest => chest != null && chest.GetInventory() != null
+            && !StorageWithdraw.Contains(chest.GetInventory(),resourceId));
+        var started = Time.realtimeSinceStartup;
         _busy = true;
         Walk(chests, resourceId, 0, amount, 0, false, false, label, message =>
         {
             _busy = false;
+            Plugin.Log.LogDebug("Storage take: " + chests.Count + "/" + scanned + " candidate chests, "
+                + (Time.realtimeSinceStartup-started).ToString("0.00") + " s · " + message);
             completed(message);
         });
     }

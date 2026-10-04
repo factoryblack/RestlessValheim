@@ -37,3 +37,8 @@ Persistence follows Valheim's ordinary character/world saves. This is not an ato
 7. Extinguish required fires and test cauldron usability from the controller's location. Confirm pause/resume without paying twice.
 
 Profile the overlap scene with storage/UI open. Reservations and receipt retries are gated; do not add per-frame station scans or UI rebuilds to fix acceptance failures.
+
+
+## Workshop/storage follow-up
+
+See [the multiplayer follow-up](workshop-network-audit.md) for remote withdrawal routing, native Workshop delivery, shared-stock accounting and the focused two-client checks.

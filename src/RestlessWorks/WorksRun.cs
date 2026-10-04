@@ -78,7 +78,7 @@ internal static class WorksRun
         if (recipe == null || board == null)
             return steps;
         var origin = board.transform.position;
-        var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
+        var playerId = board.GetCreator();
         var stock = Stock(origin, playerId, Read(View(board)));
         AddStep(steps, recipe, Math.Max(1, count), "", 0, stock, new HashSet<string>(StringComparer.Ordinal));
         return steps;
@@ -91,7 +91,7 @@ internal static class WorksRun
             return Array.Empty<WorksOrder>();
         var ledger = Read(view);
         var origin = board.transform.position;
-        var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
+        var playerId = board.GetCreator();
         Describe(ledger, Stock(origin, playerId, ledger), Production(Scan(origin, false, view)));
         return ledger.Orders;
     }
@@ -230,7 +230,7 @@ internal static class WorksRun
             return;
         }
         var origin = board.transform.position;
-        var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
+        var playerId = board.GetCreator();
         if (!ledger.Orders.Exists(order => order.Mode == WorksOrderMode.Keep || order.Count > order.Ready + order.Collected))
         { ProductionLease.SetActive(view, false); return; }
         ProductionLease.SetActive(view, true);
@@ -571,6 +571,7 @@ internal static class WorksRun
 
         foreach (var container in NearbyStorage.Around(origin, Range(), playerId))
         {
+            if (!container.CheckAccess(playerId)) continue;
             var inv = container.GetInventory();
             if (inv == null)
                 continue;
@@ -601,7 +602,13 @@ internal static class WorksRun
         var sharedName = Shared(prefab);
         if (string.IsNullOrEmpty(sharedName))
             return;
-        var fromChests = NearbyStorage.TryConsumeAround(origin, Range(), playerId, sharedName, count, false, -1, false);
+        var fromChests = 0;
+        foreach (var container in NearbyStorage.Around(origin,Range(),playerId))
+        {
+            if (!container.CheckAccess(playerId) || !container.GetInventory().HaveItem(sharedName)) continue;
+            fromChests += StorageSync.RequestPull(container,playerId,sharedName,count-fromChests,false,-1,false,null);
+            if (fromChests >= count) break;
+        }
         if (fromChests > 0)
         {
             Add(ledger, prefab, fromChests);

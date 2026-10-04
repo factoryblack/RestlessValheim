@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## Unreleased
+
+- Storage withdrawals skip unrelated chests, report debug timing, and return delayed batches when the table is no longer usable.
+
 ## 0.2.2
 
 - A withdrawal stays reserved on the chest until it settles, and a late packet cannot take that batch again.
@@ -28,3 +32,4 @@ Changes are listed newest first. **Unreleased** describes current source changes
 - Withdrawal is performed by the source owner, with overflow and interrupted-transfer rollback.
 - Added a local F8 window toggle and shared Core range/access rules.
 - Requires Core 0.1.18.
+

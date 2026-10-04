@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## Unreleased
+
+- Item identities use invariant numeric formatting so different host/client number formats do not prevent matching gear.
+- Storage withdrawals retry the same reservation after lost packets or ownership changes; active Workshop machines can identify their exact controller for native output delivery.
+
 ## 0.2.3
 
 - Crafting and building count a chest ingredient only after it has been removed.
@@ -146,3 +151,4 @@ Changes are listed newest first. **Unreleased** describes current source changes
 - Swimming equipment, crossbow state, tame protection, axe combo and death-pin improvements.
 - Persistent fires, extended terrain limits, floating drops and network settings.
 - Initial Restless HUD, inventory and map presentation.
+

@@ -231,9 +231,7 @@ public static class StorageWithdraw
     public static bool Contains(Inventory inventory, string identity)
     {
         if (inventory == null || string.IsNullOrEmpty(identity)) return false;
-        foreach (var item in inventory.GetAllItems())
-            if (item?.m_shared != null && item.m_stack > 0 && ItemKey.Of(item) == identity) return true;
-        return false;
+        return ItemKey.Contains(inventory.GetAllItems(),identity);
     }
 
     private static void Send(Container container, ZPackage pkg)

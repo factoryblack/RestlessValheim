@@ -35,6 +35,14 @@ public static class ItemKey
         return text.ToString();
     }
 
+    internal static bool Contains(IEnumerable<ItemDrop.ItemData> items, string identity)
+    {
+        if (items == null || string.IsNullOrEmpty(identity)) return false;
+        foreach (var item in items)
+            if (item?.m_shared != null && item.m_stack > 0 && Of(item) == identity) return true;
+        return false;
+    }
+
     private static void Part(StringBuilder text, string value)
     {
         value ??= "";

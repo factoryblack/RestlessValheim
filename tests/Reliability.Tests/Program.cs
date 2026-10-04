@@ -151,13 +151,16 @@ Console.WriteLine("Workshop stock accounting regressions passed.");
 var locale = System.Globalization.CultureInfo.CurrentCulture;
 try
 {
-    var gear = new ItemDrop.ItemData { m_durability = 12.5f, m_quality = 3, m_variant = 1,
+    var gear = new ItemDrop.ItemData { m_stack = 10, m_durability = 12.5f, m_quality = 3, m_variant = 1,
         m_shared = new ItemDrop.SharedData { m_name = "gear" }, m_customData = new() { ["rarity"] = "rare" } };
     System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("en-AU");
     var australianKey = ItemKey.Of(gear);
     System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
     Equal(australianKey,ItemKey.Of(gear),"withdrawal identity survives different host/client number formats");
+    Equal(true,ItemKey.Contains(new[] { gear },australianKey),"matching chest remains a withdrawal candidate");
+    Equal(false,ItemKey.Contains(Array.Empty<ItemDrop.ItemData>(),australianKey),"empty chest is skipped");
     gear.m_quality++;
+    Equal(false,ItemKey.Contains(new[] { gear },australianKey),"other item identity is skipped");
     Equal(false,australianKey == ItemKey.Of(gear),"different quality is still a different item");
 }
 finally { System.Globalization.CultureInfo.CurrentCulture = locale; }

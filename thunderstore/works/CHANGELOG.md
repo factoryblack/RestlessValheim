@@ -2,14 +2,11 @@
 
 ## Unreleased
 
+- Workshop controls, readers and production coverage now use the shared Core UI kit while preserving the existing layout.
 - Refuel unfinished input queues independently of the completed-output buffer.
 - Count each queued ore conversion toward production and reserve machines for the active board.
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
-
-## Unreleased
-
-- Workshop controls, readers and production coverage now use the shared Core UI kit while preserving the existing layout.
 
 ## 0.1.1
 

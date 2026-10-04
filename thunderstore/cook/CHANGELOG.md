@@ -2,14 +2,11 @@
 
 ## Unreleased
 
+- Cooking controls, readers and preparation progress now use the shared Core UI kit while preserving the existing layout.
 - Reserve native racks and ovens for an active kitchen controller so overlapping tables do not collect the same queue.
 - Include queued oven ingredients in production planning.
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
-
-## Unreleased
-
-- Cooking controls, readers and preparation progress now use the shared Core UI kit while preserving the existing layout.
 
 ## 0.3.1
 

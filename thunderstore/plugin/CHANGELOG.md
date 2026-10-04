@@ -2,14 +2,11 @@
 
 ## Unreleased
 
+- Added a public shared UI kit API, validated material sizing contracts and shared texture caching; warm-up now covers every embedded kit asset.
 - Keep remote chest transfer reservations across ownership changes; retry character settlement decisions until confirmed.
 - Bind storage requests to the character's owning peer and reject duplicate or cancelled transfers.
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
-
-## Unreleased
-
-- Added a public shared UI kit API, validated material sizing contracts and shared texture caching; warm-up now covers every embedded kit asset.
 
 ## 0.2.2
 

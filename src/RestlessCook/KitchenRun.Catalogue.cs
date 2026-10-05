@@ -12,6 +12,7 @@ internal static partial class KitchenRun
     // Costs/outputs/station levels come from ObjectDB; Cook overrides remain authoritative.
     private static void EnsureMeads()
     {
+        EnsureConversions();
         var db = ObjectDB.instance;
         if (db == null || db.m_recipes == null || db.m_recipes.Count == 0
             || (db == _meadDb && _nativeRecipeCount == db.m_recipes.Count)) return;
@@ -25,6 +26,40 @@ internal static partial class KitchenRun
             foreach (var use in row.Uses) pending.Enqueue(use.Item);
         foreach (var output in native.Keys)
             if (output.StartsWith("Mead",StringComparison.OrdinalIgnoreCase)) pending.Enqueue(output);
+        // Native processes always win over a direct finished-item recipe. Baking
+        // prepares the raw conversion input using the Cook recipe's ingredients.
+        foreach (var pair in Products)
+        {
+            var conversion = pair.Value;
+            if (conversion.Kind == KitchenStationKind.Oven && ByOutput.TryGetValue(pair.Key, out var finished))
+            {
+                native.TryGetValue(conversion.From, out var preparation);
+                var raw = Item(conversion.From);
+                if (raw == null || preparation == null) continue;
+                var row = new CookRow { Id = "prepare:" + conversion.From, Prefab = conversion.From,
+                    Name = Label(conversion.From), Kind = "ingredient", Source = "vanilla", Operation = "reference",
+                    Station = preparation.m_craftingStation != null ? Clean(preparation.m_craftingStation.gameObject.name) : finished.Station,
+                    StationLevel = Math.Max(preparation.m_minStationLevel, finished.StationLevel),
+                    OutputAmount = Math.Max(1, finished.OutputAmount), PreparationSeconds = finished.PreparationSeconds };
+                foreach (var use in finished.Uses) row.Uses.Add(new CookUse { Item = use.Item, Amount = use.Amount });
+                ByOutput[conversion.From] = row; ById[row.Id] = row;
+                foreach (var use in row.Uses)
+                {
+                    pending.Enqueue(use.Item);
+                    if (!UsedBy.TryGetValue(use.Item,out var list)) UsedBy[use.Item] = list = new List<CookRow>();
+                    list.Add(row);
+                }
+            }
+            if (conversion.Kind != KitchenStationKind.Fermenter) continue;
+            pending.Enqueue(conversion.From);
+            if (ByOutput.ContainsKey(pair.Key)) continue;
+            var mead = new CookRow { Id = "ferment:" + pair.Key, Prefab = pair.Key, Name = Label(pair.Key),
+                Kind = "mead", Source = "vanilla", Operation = "reference", Station = "fermenter", OutputAmount = conversion.Amount };
+            mead.Uses.Add(new CookUse { Item = conversion.From, Amount = 1 });
+            _rows.Add(mead); ById[mead.Id] = mead; ByOutput[pair.Key] = mead;
+            if (!UsedBy.TryGetValue(conversion.From,out var parents)) UsedBy[conversion.From] = parents = new List<CookRow>();
+            parents.Add(mead);
+        }
         var visited = new HashSet<string>(StringComparer.Ordinal);
         while (pending.Count > 0)
         {
@@ -50,3 +85,4 @@ internal static partial class KitchenRun
         }
     }
 }
+

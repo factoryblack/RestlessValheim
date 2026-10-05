@@ -327,11 +327,11 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     {
         var count = KitchenStock.Count(s.Available, s.Need);
         if (Covered(s)) return "Covered by another step";
-        if (s.State == KitchenStepState.Blocked) return "Blocked · " + count;
+        if (s.State == KitchenStepState.Blocked) return Local(s.Note) + " · " + count;
         if (s.Cooking > 0)
         {
             var timer = s.DurationSeconds > 0 ? " · " + Mathf.CeilToInt(Mathf.Max(0, s.DurationSeconds - s.ElapsedSeconds)) + "s" : "";
-            return s.Available + " prepared · " + s.Cooking + " cooking" + timer;
+            return s.Cooking + " cooking" + timer + (string.IsNullOrEmpty(s.ActiveStation) ? "" : " · " + Local(s.ActiveStation));
         }
         if (s.Uses.Count == 0)
             return (s.Available >= s.Need ? "Available · " : "Missing · ") + count;
@@ -364,5 +364,6 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         private static bool Prefix() => _current == null && Time.frameCount != _closedFrame;
     }
 }
+
 
 

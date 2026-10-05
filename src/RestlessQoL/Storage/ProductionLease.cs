@@ -19,6 +19,12 @@ public static class ProductionLease
         var previous = ZDOMan.instance != null ? ZDOMan.instance.GetZDO(assigned) : null;
         return previous == null || !previous.GetBool(ActiveKey);
     }
+    public static bool Controls(ZNetView machine, ZNetView controller)
+    {
+        return machine != null && controller != null && machine.IsValid() && controller.IsValid()
+            && controller.GetZDO().GetBool(ActiveKey)
+            && machine.GetZDO().GetZDOID(OwnerKey) == controller.GetZDO().m_uid;
+    }
     public static bool Acquire(ZNetView machine, ZNetView controller)
     {
         if (controller == null || !controller.IsValid() || !controller.IsOwner() || !Available(machine, controller)) return false;

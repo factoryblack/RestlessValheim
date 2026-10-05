@@ -28,6 +28,7 @@ internal static partial class KitchenRun
     {
         public string From = "";
         public KitchenStationKind Kind;
+        public int Amount = 1;
     }
 
     private sealed class Ledger
@@ -35,6 +36,7 @@ internal static partial class KitchenRun
         public readonly Dictionary<string, int> Pantry = new(StringComparer.Ordinal);
         public readonly List<KitchenOrder> Orders = new();
         public readonly List<Work> Work = new();
+        public readonly List<TapReceipt> Taps = new();
     }
 
     private static List<CookRow> _rows = new();
@@ -44,6 +46,7 @@ internal static partial class KitchenRun
     {
         _rows = new List<CookRow>(book.Items);
         _meadDb = null;
+        _conversions = false; Products.Clear();
         ById.Clear();
         ByOutput.Clear();
         UsedBy.Clear();
@@ -347,7 +350,7 @@ internal static partial class KitchenRun
         }
 
         var origin = table.transform.position;
-        if (ledger.Work.Count == 0 && !ledger.Orders.Exists(order => Outstanding(order) > 0))
+        if (ledger.Work.Count == 0 && ledger.Taps.Count == 0 && !ledger.Orders.Exists(order => Outstanding(order) > 0))
         {
             foreach (var order in ledger.Orders) Deliver(order, ledger);
             ledger.Orders.RemoveAll(order => order.Collected >= order.Count && order.Ready <= 0);
@@ -359,8 +362,9 @@ internal static partial class KitchenRun
         EnsureConversions();
         var hits = Scan(origin, true, view);
         AdvanceWork(table, hits, ledger, elapsed);
-        CollectFinished(hits, ledger);
-        Fuel(hits, ledger, origin);
+        RecoverTaps(table, hits, ledger);
+        CollectFinished(table, hits, ledger);
+        Fuel(hits, ledger, origin, table.GetComponent<Piece>()?.GetCreator() ?? 0L);
         var crafts = 0;
         var loads = 0;
         var shared = Stock(origin, 0L, ledger);
@@ -378,7 +382,7 @@ internal static partial class KitchenRun
                 var step = steps[i];
                 if (step.State != KitchenStepState.Ready && step.State != KitchenStepState.Queued)
                     continue;
-                if (step.Station == KitchenStationKind.Rack || step.Station == KitchenStationKind.Oven)
+                if (step.Station == KitchenStationKind.Rack || step.Station == KitchenStationKind.Oven || step.Station == KitchenStationKind.Fermenter)
                 {
                     if (loads >= LoadsPerTick)
                         continue;
@@ -389,15 +393,16 @@ internal static partial class KitchenRun
 
                 if (step.Station != KitchenStationKind.Cauldron && step.Station != KitchenStationKind.PrepTable && step.Station != KitchenStationKind.MeadKettle)
                     continue;
-                if (crafts >= CraftsPerTick || Busy(ledger, step.Station))
+                if (crafts >= CraftsPerTick)
                     continue;
-                if (!StationReady(table, hits, step))
+                var station = PreparationStation(hits, step, ledger);
+                if (station == null)
                     continue;
                 if (!PullOne(step, ledger, origin, order.PlayerId))
                     continue;
                 if (!Pay(step, ledger))
                     continue;
-                StartWork(ledger, order, step);
+                StartWork(ledger, order, step, station);
 
                 crafts++;
             }
@@ -407,7 +412,7 @@ internal static partial class KitchenRun
 
         ledger.Orders.RemoveAll(order => order.Collected >= order.Count && order.Ready <= 0);
         Write(view, ledger);
-        ProductionLease.SetActive(view, ledger.Work.Count > 0 || ledger.Orders.Exists(order => Outstanding(order) > 0));
+        ProductionLease.SetActive(view, ledger.Work.Count > 0 || ledger.Taps.Count > 0 || ledger.Orders.Exists(order => Outstanding(order) > 0));
     }
 
     private static string OutputOf(CookRow row)
@@ -440,14 +445,14 @@ internal static partial class KitchenRun
             Parent = parent,
             Depth = depth,
             Need = need,
-            Station = row != null ? KindOf(row.Station) : conversion != null ? conversion.Kind : KitchenStationKind.None,
+            Station = conversion != null ? conversion.Kind : row != null ? KindOf(row.Station) : KitchenStationKind.None,
             StationPrefab = row != null ? row.Station : "",
             StationLevel = row != null && row.StationLevel > 0 ? row.StationLevel : 1,
             ParentIndex = parentIndex
         };
         var index = steps.Count;
         steps.Add(step);
-        if (row != null)
+        if (conversion == null && row != null)
         {
             var crafts = CraftsFor(need, row.OutputAmount);
             foreach (var use in row.Uses)
@@ -464,8 +469,9 @@ internal static partial class KitchenRun
 
         if (conversion == null || string.IsNullOrEmpty(conversion.From))
             return;
-        step.Uses.Add(new KitchenUse { Item = conversion.From, Amount = need, Name = Label(conversion.From) });
-        Walk(conversion.From, need, depth + 1, output, index, steps, guard);
+        var inputs = CraftsFor(need, conversion.Amount);
+        step.Uses.Add(new KitchenUse { Item = conversion.From, Amount = inputs, Name = Label(conversion.From) });
+        Walk(conversion.From, inputs, depth + 1, output, index, steps, guard);
     }
 
     private static void Assign(CraftingStation table, List<KitchenStep> steps, Dictionary<string, int> free, Dictionary<string, int> cooking, long? playerId, int completedForOrder = 0, List<Hit>? hits = null)
@@ -587,6 +593,7 @@ internal static partial class KitchenRun
 
     private static int OutputAmount(KitchenStep step)
     {
+        if (Products.TryGetValue(step.Output, out var conversion)) return Math.Max(1, conversion.Amount);
         if (ByOutput.TryGetValue(step.Output, out var row) && row.OutputAmount > 0)
             return row.OutputAmount;
         return 1;
@@ -694,6 +701,15 @@ internal static partial class KitchenRun
         var map = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var hit in hits ?? Scan(origin))
         {
+            if (hit.Fermenter != null && hit.Fermenter.m_nview.IsValid())
+            {
+                var conversion = hit.Fermenter.GetItemConversion(hit.Fermenter.GetContent());
+                if (conversion?.m_to != null)
+                {
+                    var product = Clean(conversion.m_to.gameObject.name);
+                    map.TryGetValue(product, out var have); map[product] = have + conversion.m_producedItems;
+                }
+            }
             if (hit.Oven != null && hit.Oven.m_nview != null && hit.Oven.m_nview.IsValid())
             {
                 for (var i = 0; i < hit.Oven.GetQueueSize(); i++)
@@ -725,7 +741,7 @@ internal static partial class KitchenRun
         return map;
     }
 
-    private static void CollectFinished(List<Hit> hits, Ledger ledger)
+    private static void CollectFinished(CraftingStation table, List<Hit> hits, Ledger ledger)
     {
         foreach (var hit in hits)
         {
@@ -746,36 +762,33 @@ internal static partial class KitchenRun
                 }
             }
 
-            var oven = hit.Oven;
-            if (oven == null || oven.m_nview == null || !oven.m_nview.IsOwner() || oven.GetProcessedQueueSize() <= 0)
-                continue;
-            var source = oven.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre);
-            var conversion = oven.GetItemConversion(source);
-            if (conversion?.m_to == null)
-                continue;
-            var made = Clean(conversion.m_to.gameObject.name);
-            if (!Wanted(ledger, made))
-                continue;
-            var amount = oven.GetProcessedQueueSize();
-            CreditFinished(ledger, made, amount);
-            oven.m_nview.GetZDO().Set(ZDOVars.s_spawnOre, "");
-            oven.m_nview.GetZDO().Set(ZDOVars.s_spawnAmount, 0);
+            var fermenter = hit.Fermenter;
+            if (fermenter != null && fermenter.m_nview.IsOwner() && fermenter.GetStatus() == Fermenter.Status.Ready
+                && !ledger.Taps.Exists(t => t.StationId == StationId(hit)))
+            {
+                var conversion = fermenter.GetItemConversion(fermenter.GetContent());
+                if (conversion?.m_to != null && Wanted(ledger, Clean(conversion.m_to.gameObject.name)))
+                    StartTap(table, fermenter, conversion.m_to, conversion.m_producedItems, ledger);
+            }
+            // Oven output is intercepted at native Spawn, before the game ejects
+            // and clears it; polling the processed buffer misses immediate spawns.
+
         }
     }
 
-    private static void Fuel(List<Hit> hits, Ledger ledger, Vector3 origin)
+    private static void Fuel(List<Hit> hits, Ledger ledger, Vector3 origin, long playerId)
     {
         foreach (var hit in hits)
         {
             if (hit.Rack != null && hit.Rack.m_useFuel && hit.Rack.m_fuelItem != null && hit.Rack.m_nview != null && hit.Rack.m_nview.IsOwner())
             {
-                if (hit.Rack.GetFuel() < 1f && SpendFuel(hit.Rack.m_fuelItem, ledger, origin))
+                if (hit.Rack.GetFuel() < 1f && SpendFuel(hit.Rack.m_fuelItem, ledger, origin, playerId))
                     hit.Rack.SetFuel(Math.Min(hit.Rack.m_maxFuel, hit.Rack.GetFuel() + 1f));
             }
 
             if (hit.Oven == null || hit.Oven.m_fuelItem == null || hit.Oven.m_maxFuel <= 0 || hit.Oven.m_nview == null || !hit.Oven.m_nview.IsOwner())
                 continue;
-            if (hit.Oven.GetFuel() < 1f && SpendFuel(hit.Oven.m_fuelItem, ledger, origin))
+            if (hit.Oven.GetFuel() < 1f && SpendFuel(hit.Oven.m_fuelItem, ledger, origin, playerId))
                 hit.Oven.SetFuel(Math.Min(hit.Oven.m_maxFuel, hit.Oven.GetFuel() + 1f));
         }
     }
@@ -795,26 +808,37 @@ internal static partial class KitchenRun
 
         foreach (var hit in hits)
         {
-            if (hit.Info.Kind != step.Station || !string.IsNullOrEmpty(hit.Info.Block) || hit.Info.Free < 1)
-                continue;
-            if (hit.Rack != null && hit.Rack.m_nview != null && hit.Rack.m_nview.IsOwner() && hit.Rack.IsItemAllowed(raw))
+            if (hit.Info.Kind != step.Station || !Accepts(hit, step.Output) || hit.View == null || !hit.View.IsOwner()) continue;
+            var accepted = false;
+            if (hit.Rack != null && hit.Rack.GetFreeSlot() >= 0
+                && (!hit.Rack.m_requireFire || hit.Rack.IsFireLit())
+                && (!hit.Rack.m_useFuel || hit.Rack.GetFuel() > 0))
             {
-                ledger.Pantry[raw] = held - 1;
-                if (ledger.Pantry[raw] <= 0)
-                    ledger.Pantry.Remove(raw);
-                hit.Rack.m_nview.InvokeRPC("RPC_AddItem", raw, false);
-                return true;
+                var slot = hit.Rack.GetFreeSlot();
+                hit.Rack.RPC_AddItem(0L, raw, false);
+                hit.Rack.GetSlot(slot, out var actual, out _, out _, out _);
+                accepted = actual == raw;
+                hit.Info.Free = Math.Max(0, hit.Info.Free - (accepted ? 1 : 0));
             }
-
-            if (hit.Oven != null && hit.Oven.m_nview != null && hit.Oven.m_nview.IsOwner()
-                && hit.Oven.GetQueueSize() < hit.Oven.m_maxOre && hit.Oven.IsItemAllowed(raw))
+            if (hit.Oven != null && hit.Oven.GetQueueSize() < hit.Oven.m_maxOre
+                && (hit.Oven.m_maxFuel <= 0 || hit.Oven.GetFuel() > 0))
             {
-                ledger.Pantry[raw] = held - 1;
-                if (ledger.Pantry[raw] <= 0)
-                    ledger.Pantry.Remove(raw);
+                var before = hit.Oven.GetQueueSize();
                 hit.Oven.QueueOre(raw, false);
-                return true;
+                accepted = hit.Oven.GetQueueSize() == before + 1;
+                hit.Info.Free = Math.Max(0, hit.Oven.m_maxOre - hit.Oven.GetQueueSize());
             }
+            if (hit.Fermenter != null && !ledger.Taps.Exists(t => t.StationId == StationId(hit))
+                && hit.Fermenter.GetStatus() == Fermenter.Status.Empty && !hit.Fermenter.m_exposed && hit.Fermenter.m_hasRoof)
+            {
+                var hash = raw.GetStableHashCode();
+                hit.Fermenter.RPC_AddItem(0L, hash, false);
+                accepted = hit.Fermenter.GetContent() == hash;
+                hit.Info.Free = accepted ? 0 : 1;
+            }
+            if (!accepted) continue;
+            if (held == 1) ledger.Pantry.Remove(raw); else ledger.Pantry[raw] = held - 1;
+            return true;
         }
 
         return false;
@@ -900,7 +924,7 @@ internal static partial class KitchenRun
             Add(ledger, prefab, fromPiles);
     }
 
-    private static bool SpendFuel(ItemDrop fuel, Ledger ledger, Vector3 origin)
+    private static bool SpendFuel(ItemDrop fuel, Ledger ledger, Vector3 origin, long playerId)
     {
         var prefab = Clean(fuel.gameObject.name);
         if (ledger.Pantry.TryGetValue(prefab, out var have) && have > 0)
@@ -911,10 +935,7 @@ internal static partial class KitchenRun
             return true;
         }
 
-        var player = Player.m_localPlayer;
-        if (player == null)
-            return false;
-        PullInto(ledger, prefab, 1, origin, player.GetPlayerID());
+        PullInto(ledger, prefab, 1, origin, playerId);
         if (!ledger.Pantry.TryGetValue(prefab, out have) || have < 1)
             return false;
         ledger.Pantry[prefab] = have - 1;
@@ -924,40 +945,30 @@ internal static partial class KitchenRun
     }
 
     private static bool StationReady(CraftingStation table, List<Hit> hits, KitchenStep step)
+        => PreparationStation(hits, step, null) != null;
+
+    private static Hit? PreparationStation(List<Hit> hits, KitchenStep step, Ledger? ledger)
     {
-        if (step.Station == KitchenStationKind.PrepTable)
-            return table.GetLevel() >= step.StationLevel;
-        if (step.Station != KitchenStationKind.Cauldron && step.Station != KitchenStationKind.MeadKettle)
-            return false;
         foreach (var hit in hits)
-        {
-            if (hit.Info.Kind == step.Station && Usable(hit.Craft, step.StationLevel))
-                return true;
-        }
-
-        return false;
+            if (hit.Info.Kind == step.Station && hit.Craft != null && Usable(hit.Craft, step.StationLevel)
+                && hit.View != null && hit.View.IsValid()
+                && (ledger == null || (hit.View.IsOwner() && !Busy(ledger, StationId(hit))))) return hit;
+        return null;
     }
-
+    private static string StationId(Hit hit) => hit.View != null && hit.View.IsValid() ? hit.View.GetZDO().m_uid.ToString() : "";
     private static bool Usable(CraftingStation? station, int level)
-    {
-        if (station == null || station.GetLevel() < level)
-            return false;
-        if (station.m_craftRequireFire && !FireLit(station))
-            return false;
-        var player = Player.m_localPlayer;
-        return player == null || station.CheckUsable(player, false);
-    }
+        => station != null && station.GetLevel() >= level && Unusable(station) == null;
 
     private static string? Unusable(CraftingStation station)
     {
-        if (station.m_craftRequireFire && !FireLit(station))
-            return "Needs a fire";
-        // Orders are placed at the preparation table. A lit cauldron inside the
-        // kitchen scan is enough; its own use bubble is under two metres.
-        var player = Player.m_localPlayer;
-        if (player == null || station.CheckUsable(player, false))
-            return null;
-        return station.m_craftRequireRoof ? "Needs a roof" : "Station is not usable";
+        if (station.m_craftRequireFire && !FireLit(station)) return "Needs a fire";
+        if (station.m_craftRequireRoof)
+        {
+            Cover.GetCoverForPoint(station.m_roofCheckPoint.position, out var cover, out var roof, 0.5f);
+            if (!roof) return "Needs a roof";
+            if (cover < 0.7f) return "Too exposed";
+        }
+        return null;
     }
 
     private static bool FireLit(CraftingStation station)
@@ -970,9 +981,7 @@ internal static partial class KitchenRun
     {
         if (step.Station == KitchenStationKind.None)
             return null;
-        if (step.Station == KitchenStationKind.PrepTable)
-            return table.GetLevel() >= step.StationLevel ? null : "Requires preparation table level " + step.StationLevel;
-        if (step.Station == KitchenStationKind.Cauldron || step.Station == KitchenStationKind.MeadKettle)
+        if (step.Station == KitchenStationKind.PrepTable || step.Station == KitchenStationKind.Cauldron || step.Station == KitchenStationKind.MeadKettle)
         {
             var best = 0;
             var found = false;
@@ -1005,7 +1014,7 @@ internal static partial class KitchenRun
         string? block = null;
         foreach (var hit in hits)
         {
-            if (hit.Info.Kind != step.Station)
+            if (hit.Info.Kind != step.Station || !Accepts(hit, step.Output))
                 continue;
             any = true;
             if (string.IsNullOrEmpty(hit.Info.Block) && hit.Info.Free > 0)
@@ -1015,7 +1024,7 @@ internal static partial class KitchenRun
         }
 
         if (!any)
-            return step.Station == KitchenStationKind.Oven ? "No oven in range" : "No cooking rack in range";
+            return "No " + step.Station + " in range";
         return block ?? "Stations are full";
     }
 
@@ -1055,6 +1064,8 @@ internal static partial class KitchenRun
         public CookingStation? Rack;
         public Smelter? Oven;
         public CraftingStation? Craft;
+        public Fermenter? Fermenter;
+        public ZNetView? View => Rack != null ? Rack.m_nview : Oven != null ? Oven.m_nview : Fermenter != null ? Fermenter.m_nview : Craft != null ? Craft.m_nview : null;
         public KitchenStationInfo Info = new();
     }
 
@@ -1066,8 +1077,11 @@ internal static partial class KitchenRun
         if (claim && controller != null)
         {
             demand = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var order in Read(controller).Orders)
+            var ledger = Read(controller);
+            foreach (var order in ledger.Orders)
                 foreach (var step in Expand(order.Feast, Outstanding(order), 0, "")) demand.Add(step.Output);
+            foreach (var work in ledger.Work) demand.Add(work.Output);
+            foreach (var tap in ledger.Taps) demand.Add(tap.Output);
         }
         var hits = Physics.OverlapSphere(origin, Range(), ~0, QueryTriggerInteraction.Collide);
         foreach (var col in hits)
@@ -1092,8 +1106,20 @@ internal static partial class KitchenRun
                 && (controller == null || ProductionLease.Available(oven.m_nview, controller))
                 && (!claim || (controller != null && ProductionLease.Acquire(oven.m_nview, controller))))
                 list.Add(DescribeOven(oven, false));
+            var fermenter = col.GetComponentInParent<Fermenter>();
+            var fermenterRelevant = demand == null;
+            if (fermenter != null && demand != null)
+                foreach (var conversion in fermenter.m_conversion)
+                    if (conversion?.m_to != null && demand.Contains(Clean(conversion.m_to.gameObject.name))) { fermenterRelevant = true; break; }
+            if (fermenter != null && fermenterRelevant && seen.Add(fermenter.GetInstanceID())
+                && (controller == null || ProductionLease.Available(fermenter.m_nview, controller))
+                && (!claim || (controller != null && ProductionLease.Acquire(fermenter.m_nview, controller))))
+                list.Add(DescribeFermenter(fermenter));
             var craft = col.GetComponentInParent<CraftingStation>();
-            if (craft != null && seen.Add(craft.GetInstanceID()) && (KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.Cauldron || KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.MeadKettle))
+            if (craft != null && seen.Add(craft.GetInstanceID())
+                && (KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.Cauldron || KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.MeadKettle || KindOf(Utils.GetPrefabName(craft.gameObject)) == KitchenStationKind.PrepTable)
+                && (controller == null || ProductionLease.Available(craft.m_nview, controller))
+                && (!claim || (controller != null && ProductionLease.Acquire(craft.m_nview, controller))))
                 list.Add(DescribeCauldron(craft));
         }
 
@@ -1172,6 +1198,7 @@ internal static partial class KitchenRun
         {
             Name = station.m_name,
             Kind = KindOf(Utils.GetPrefabName(station.gameObject)),
+            Free = 1,
             Level = station.GetLevel(),
             NeedsFire = station.m_craftRequireFire,
             FireLit = lit,
@@ -1204,6 +1231,11 @@ internal static partial class KitchenRun
                     Remember(conversion?.m_from, conversion?.m_to, KitchenStationKind.Oven);
             }
 
+            var fermenter = prefab.GetComponent<Fermenter>();
+            if (fermenter != null)
+                foreach (var conversion in fermenter.m_conversion)
+                    Remember(conversion?.m_from, conversion?.m_to, KitchenStationKind.Fermenter, conversion?.m_producedItems ?? 1);
+
             var rack = prefab.GetComponent<CookingStation>();
             if (rack == null)
                 continue;
@@ -1212,7 +1244,7 @@ internal static partial class KitchenRun
         }
     }
 
-    private static void Remember(ItemDrop? from, ItemDrop? to, KitchenStationKind kind)
+    private static void Remember(ItemDrop? from, ItemDrop? to, KitchenStationKind kind, int amount = 1)
     {
         if (from == null || to == null)
             return;
@@ -1221,7 +1253,7 @@ internal static partial class KitchenRun
         if (string.IsNullOrEmpty(product) || string.IsNullOrEmpty(raw))
             return;
         if (!Products.TryGetValue(product, out var existing) || (existing.Kind != KitchenStationKind.Rack && kind == KitchenStationKind.Rack))
-            Products[product] = new Conversion { From = raw, Kind = kind };
+            Products[product] = new Conversion { From = raw, Kind = kind, Amount = Math.Max(1, amount) };
     }
 
     private static bool FoodOven(string prefab) =>
@@ -1239,6 +1271,8 @@ internal static partial class KitchenRun
             return KitchenStationKind.PrepTable;
         if (station.IndexOf("oven", StringComparison.OrdinalIgnoreCase) >= 0 || station.IndexOf("smelter", StringComparison.OrdinalIgnoreCase) >= 0)
             return KitchenStationKind.Oven;
+        if (station.IndexOf("fermenter", StringComparison.OrdinalIgnoreCase) >= 0)
+            return KitchenStationKind.Fermenter;
         if (station.IndexOf("cooking", StringComparison.OrdinalIgnoreCase) >= 0)
             return KitchenStationKind.Rack;
         return KitchenStationKind.None;
@@ -1316,6 +1350,7 @@ internal static partial class KitchenRun
             if (line.Length < 2)
                 continue;
             var parts = line.Split('\t');
+            if (parts[0] == "T") { var tap = ReadTap(parts); if (tap != null) ledger.Taps.Add(tap); continue; }
             if (parts[0] == "W") { var work = ReadWork(parts); if (work != null) ledger.Work.Add(work); continue; }
             if (parts[0] == "P" && parts.Length >= 3 && int.TryParse(parts[2], out var count) && count > 0)
                 ledger.Pantry[parts[1]] = count;
@@ -1353,6 +1388,7 @@ internal static partial class KitchenRun
         foreach (var order in ledger.Orders)
             text.Append("O\t").Append(order.Id).Append('\t').Append(order.Feast).Append('\t').Append(order.Count).Append('\t').Append(order.PlayerId).Append('\t').Append(order.Ready).Append('\t').Append(order.Collected).Append('\n');
         foreach (var work in ledger.Work) text.Append(WorkLine(work));
+        foreach (var tap in ledger.Taps) text.Append(TapLine(tap));
         var body = text.ToString();
         var zdo = view.GetZDO();
         if (zdo.GetString(Key) == body)
@@ -1379,6 +1415,7 @@ internal static partial class KitchenRun
             foreach (var input in work.Inputs)
                 if (input.Value > 0)
                     drops.Add(input);
+        foreach (var tap in ledger.Taps) drops.Add(new KeyValuePair<string, int>(tap.Output, tap.Amount));
         view.GetZDO().Set(Key, "");
         ProductionLease.SetActive(view, false);
         foreach (var drop in drops)
@@ -1407,7 +1444,7 @@ internal static partial class KitchenRun
 [HarmonyPatch]
 internal static class KitchenHook
 {
-    private static readonly List<CraftingStation> Tables = new();
+    internal static readonly List<CraftingStation> Tables = new();
 
     internal static void TickOwned(float elapsed)
     {
@@ -1482,4 +1519,5 @@ internal static class KitchenHook
         __result = name + "\n[E] Kitchen";
     }
 }
+
 

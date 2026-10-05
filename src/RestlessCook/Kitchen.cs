@@ -18,7 +18,8 @@ public enum KitchenStationKind
     PrepTable,
     Rack,
     Oven,
-    MeadKettle
+    MeadKettle,
+    Fermenter
 }
 
 public enum KitchenStepState
@@ -60,6 +61,7 @@ public sealed class KitchenStep
     // Zero duration means no reliable native timer is available; UI must not invent one.
     public float ElapsedSeconds;
     public float DurationSeconds;
+    public string ActiveStation = "";
     public readonly List<KitchenUse> Uses = new();
 }
 

@@ -11,6 +11,13 @@ public static class ProductionLease
         if (controller != null && controller.IsValid() && controller.IsOwner()
             && controller.GetZDO().GetBool(ActiveKey) != active) controller.GetZDO().Set(ActiveKey, active);
     }
+    // Exact assignment for native delivery interception. Available includes
+    // unassigned machines and must never be used to decide who owns output.
+    public static bool Controls(ZNetView machine, ZNetView controller) =>
+        machine != null && controller != null && machine.IsValid() && controller.IsValid()
+        && controller.GetZDO().GetBool(ActiveKey)
+        && machine.GetZDO().GetZDOID(OwnerKey) == controller.GetZDO().m_uid;
+
     public static bool Available(ZNetView machine, ZNetView controller)
     {
         if (machine == null || controller == null || !machine.IsValid() || !controller.IsValid()) return false;
@@ -18,12 +25,6 @@ public static class ProductionLease
         if (assigned == ZDOID.None || assigned == controller.GetZDO().m_uid) return true;
         var previous = ZDOMan.instance != null ? ZDOMan.instance.GetZDO(assigned) : null;
         return previous == null || !previous.GetBool(ActiveKey);
-    }
-    public static bool Controls(ZNetView machine, ZNetView controller)
-    {
-        return machine != null && controller != null && machine.IsValid() && controller.IsValid()
-            && controller.GetZDO().GetBool(ActiveKey)
-            && machine.GetZDO().GetZDOID(OwnerKey) == controller.GetZDO().m_uid;
     }
     public static bool Acquire(ZNetView machine, ZNetView controller)
     {
@@ -35,3 +36,4 @@ public static class ProductionLease
         return true;
     }
 }
+

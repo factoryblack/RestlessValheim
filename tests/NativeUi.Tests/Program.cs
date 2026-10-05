@@ -62,20 +62,34 @@ foreach (var handle in reader.TypeDefinitions)
 }
 if (!inputPrefix || !firstInput) throw new Exception("Native smelter input queue contract changed; inspect QueueOre before updating ProductionQueue.");
 Console.WriteLine("Native smelter input queue contract passed.");
+// The cooking adapters call native owner-side insertion and collection paths.
+// Fail CI rather than silently compiling a changed timer or content contract.
+var cookingContracts = new Dictionary<string,string[]>
+{
+    ["CookingStation.RPC_AddItem"] = new[]{"Void","Int64","String","Boolean"},
+    ["CookingStation.GetFreeSlot"] = new[]{"Int32"},
+    ["CookingStation.GetSlot"] = new[]{"Void","Int32","String&","Single&","Status&","Boolean&"},
+    ["Fermenter.RPC_AddItem"] = new[]{"Void","Int64","Int32","Boolean"},
+    ["Fermenter.GetContent"] = new[]{"Int32"},
+    ["Fermenter.GetFermentationTime"] = new[]{"Double"},
+    ["Fermenter.RPC_Tap"] = new[]{"Void","Int64"},
+    ["Fermenter.DelayedTap"] = new[]{"Void"},
+    ["Smelter.GetBakeTimer"] = new[]{"Single"},
+    ["Smelter.Spawn"] = new[]{"Void","String","Int32"}
+};
 foreach (var handle in reader.TypeDefinitions)
 {
-    var type = reader.GetTypeDefinition(handle); var name = reader.GetString(type.Name);
-    if (name != "Fermenter" && name != "CookingStation" && name != "CraftingStation" && name != "Smelter" && name != "ItemConversion" && name != "Cover") continue;
-    foreach (var fh in type.GetFields())
-    { var f = reader.GetFieldDefinition(fh); Console.WriteLine(name + "." + reader.GetString(f.Name) + ": " + f.DecodeSignature(provider,(object?)null)); }
+    var type=reader.GetTypeDefinition(handle);var typeName=reader.GetString(type.Name);
     foreach (var mh in type.GetMethods())
     {
-        var m=reader.GetMethodDefinition(mh); var s=m.DecodeSignature(provider,(object?)null);
-        Console.WriteLine(name + "." + reader.GetString(m.Name) + "(" + string.Join(",",s.ParameterTypes) + ") -> " + s.ReturnType);
-        if (m.RelativeVirtualAddress != 0 && (name=="Fermenter" || reader.GetString(m.Name)=="GetBakeTimer" || reader.GetString(m.Name)=="RPC_AddItem" || reader.GetString(m.Name)=="CheckUsable"))
-            Console.WriteLine("IL " + name + "." + reader.GetString(m.Name) + " " + Convert.ToHexString(pe.GetMethodBody(m.RelativeVirtualAddress).GetILBytes()!));
+        var method=reader.GetMethodDefinition(mh);var key=typeName+"."+reader.GetString(method.Name);
+        if (!cookingContracts.TryGetValue(key,out var expected)) continue;
+        var signature=method.DecodeSignature(provider,(object?)null);
+        if (signature.ReturnType==expected[0] && signature.ParameterTypes.SequenceEqual(expected.Skip(1))) cookingContracts.Remove(key);
     }
 }
+if (cookingContracts.Count>0) throw new Exception("Native cooking contracts changed: "+string.Join(", ",cookingContracts.Keys));
+Console.WriteLine("10 native cooking adapter contracts passed.");
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";
@@ -93,3 +107,4 @@ sealed class Types : ISignatureTypeProvider<string, object?>
     public string GetTypeFromReference(MetadataReader r, TypeReferenceHandle h, byte k) => r.GetString(r.GetTypeReference(h).Name);
     public string GetTypeFromSpecification(MetadataReader r, object? c, TypeSpecificationHandle h, byte k) => r.GetTypeSpecification(h).DecodeSignature(this,c);
 }
+

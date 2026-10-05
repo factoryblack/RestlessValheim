@@ -34,11 +34,18 @@ Orders draw from eligible nearby stock, including supported resource piles, load
 
 > (screenshot coming) — Orders with an active multi-step preparation track.
 
-The Orders view shows preparation progress for each step. Cauldron and preparation crafts take their configured crafting time. Existing dishes in your bag are not treated as the finished output of a new order.
+The Orders view shows preparation progress for each step. Cauldron, mead-kettle and preparation crafts take their configured crafting time at a specific physical station. Existing dishes in your bag are not treated as the finished output of a new order.
 
 ## Stations still do the work
 
-Cooking racks, ovens, cauldron upgrades, fire, fuel and capacity still determine what can be made. A bigger order does not create extra hooks or remove station requirements.
+Each machine step uses the placed station and its native processing state:
+
+- **Racks:** meat and fish occupy real hooks and use the rack's cooking time, fire and fuel requirements.
+- **Ovens:** baked foods first become dough or an uncooked dish at the required preparation station, then enter a real oven queue. The oven consumes fuel and uses its normal baking time.
+- **Meads:** the required kettle prepares a base, which occupies one real fermenter. Fermentation uses the barrel's normal world-time timer, roof/cover requirements and batch yield, including its short tapping delay.
+- **Cauldron and preparation:** these stations have no native unattended queue. Cook gives each physical station one preparation job using the recipe's normal crafting duration and upgrade requirements. Losing fire or shelter pauses that job; it does not move to a different station.
+
+Prepared results are collected into the table's pantry and feed the next recipe step. Existing cooked stock can satisfy an ingredient without cooking it again. A bigger order does not create extra hooks or remove station requirements.
 
 The stone oven belongs to this kitchen. Kilns, smelters and other workshop machines belong to [Workshop](works.md).
 
@@ -46,7 +53,7 @@ If an order is waiting, inspect its ingredients and station requirements before 
 
 ## Cancellation and output
 
-Cancelling an active timed cauldron/preparation craft returns its ingredients. Food already prepared can remain in the table's pantry, where it can be inspected and taken. An order's completed feast goes to its ordering player; cancellation is not a way to undo every earlier machine operation.
+Cancelling an active timed cauldron/preparation craft returns its ingredients. Food already prepared can remain in the table's pantry, where it can be inspected and taken. An order's completed feast goes to its ordering player; cancellation is not a way to undo every earlier machine operation. Loaded rack, oven and fermenter ingredients continue their native process; cancellation does not refund those inputs.
 
 Keep inventory space available and check the order/pantry if delivery cannot complete. In multiplayer, another player taking control of the table can affect which player its owned processing follows. Multiplayer ownership edge cases still need broader playtesting.
 
@@ -57,4 +64,3 @@ Open **F8 → RestlessCook** for the local Cookbook toggle. Disabling the window
 > (screenshot coming) — Different finished feast boards placed on a well-lit dining table.
 
 [Recipe reference](recipes/README.md) · [Install](install.md) · [Troubleshoot](troubleshooting.md) · [All guides](README.md)
-

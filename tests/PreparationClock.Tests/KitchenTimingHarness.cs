@@ -42,7 +42,8 @@ namespace RestlessCook
         private static string StationId(Hit h)=>h.Id;
         private static bool WorkReady(CraftingStation table,List<Hit> hits,Work work,bool requireOwner=true)=>table.Available&&hits.Exists(h=>h.Id==work.StationId);
         private static void PaintNativeTiming(List<Hit> hits,KitchenStep step) { }
-        private static List<Hit> Scan(object position)=>new();
+        private static List<Hit> Scan(object position,bool claim=false,object? controller=null)=>new();
+        private static object View(CraftingStation table)=>table;
         private static string ProductOf(CookingStation rack,string raw)=>raw;
         private static int OutputAmount(KitchenStep s)=>s.OutputCount;
         private static int CraftsFor(int need,int amount)=>need<=0?0:(need+amount-1)/amount;

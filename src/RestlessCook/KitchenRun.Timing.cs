@@ -78,7 +78,7 @@ internal static partial class KitchenRun
     }
     private static void PaintTiming(CraftingStation table, List<KitchenStep> steps, Ledger ledger, int orderId)
     {
-        var hits = Scan(table.transform.position);
+        var hits = Scan(table.transform.position, false, View(table));
         foreach (var step in steps)
         {
             // Have/Cooking counts are allocated by Assign; don't attach another branch's timer.

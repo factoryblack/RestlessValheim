@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/RestlessCook/CookRow.cs" Link="CookRow.cs" />
+    <Compile Include="../../src/RestlessCook/KitchenRun.Catalogue.cs" Link="KitchenRun.Catalogue.cs" />
+    <Compile Include="../../src/RestlessCook/KitchenRun.Routing.cs" Link="KitchenRun.Routing.cs" />
+  </ItemGroup>
+</Project>

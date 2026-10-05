@@ -11,12 +11,6 @@ internal static partial class KitchenRun
     private const string AutoTapKey = "restless.kitchen.tap.v1";
     // Native Tap clears the barrel before its delayed spawn. Persist that handoff
     // so unloading the scene or changing peer ownership cannot lose the batch.
-    private sealed class TapReceipt
-    {
-        internal string StationId = "", Output = "";
-        internal int Amount;
-        internal long Due;
-    }
     private static long WorldTicks() => ZNet.instance != null ? ZNet.instance.GetTime().Ticks : DateTime.UtcNow.Ticks;
     private static void StartTap(CraftingStation table, Fermenter fermenter, ItemDrop output, int amount, Ledger ledger)
     {
@@ -27,6 +21,7 @@ internal static partial class KitchenRun
         fermenter.RPC_Tap(0L);
         if (fermenter.GetContent() != 0)
         { ledger.Taps.Remove(receipt); Write(table.m_nview, ledger); return; }
+        receipt.Committed = true; Write(table.m_nview, ledger);
         fermenter.m_nview.GetZDO().Set(AutoTapKey, true);
     }
     private static void RecoverTaps(CraftingStation table, List<Hit> hits, Ledger ledger)
@@ -39,21 +34,14 @@ internal static partial class KitchenRun
             {
                 if (hit.Fermenter == null || StationId(hit) != receipt.StationId || !hit.Fermenter.m_nview.IsOwner()
                     || !ProductionLease.Controls(hit.Fermenter.m_nview, table.m_nview)) continue;
-                if (hit.Fermenter.GetContent() != 0) break;
+                if (!receipt.Committed && hit.Fermenter.GetContent() != 0)
+                { ledger.Taps.RemoveAt(i); break; } // Tap had not cleared its source before unload.
+                hit.Fermenter.m_nview.GetZDO().Set(AutoTapKey, true);
                 hit.Fermenter.CancelInvoke(nameof(Fermenter.DelayedTap));
-                CreditFinished(ledger, receipt.Output, receipt.Amount);
-                ledger.Taps.RemoveAt(i); break;
+                FinishTapReceipt(ledger, receipt); break;
             }
         }
     }
-    private static string TapLine(TapReceipt tap) => "T\t" + tap.StationId + "\t" + tap.Output + "\t"
-        + tap.Amount.ToString(CultureInfo.InvariantCulture) + "\t" + tap.Due.ToString(CultureInfo.InvariantCulture) + "\n";
-    private static TapReceipt? ReadTap(string[] p)
-        => p.Length >= 5 && !string.IsNullOrEmpty(p[1]) && !string.IsNullOrEmpty(p[2])
-            && int.TryParse(p[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var amount) && amount > 0
-            && long.TryParse(p[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out var due) && due > 0
-            ? new TapReceipt { StationId = p[1], Output = p[2], Amount = amount, Due = due } : null;
-
     internal static bool CaptureOven(CraftingStation table, Smelter oven, string raw, int amount)
     {
         if (!FoodOven(Utils.GetPrefabName(oven.gameObject)) || table == null || !table.m_nview.IsOwner()
@@ -73,8 +61,31 @@ internal static partial class KitchenRun
         var ledger = Read(table.m_nview);
         var receipt = ledger.Taps.Find(t => t.StationId == fermenter.m_nview.GetZDO().m_uid.ToString());
         if (receipt == null) return false;
-        CreditFinished(ledger, receipt.Output, receipt.Amount); ledger.Taps.Remove(receipt);
+        FinishTapReceipt(ledger, receipt);
         Write(table.m_nview, ledger); return true;
+    }
+    internal static void StationRemoved(ZNetView machine)
+    {
+        if (!machine.IsValid() || !machine.IsOwner()) return;
+        var id = machine.GetZDO().m_uid.ToString();
+        foreach (var table in KitchenHook.Tables)
+        {
+            if (table == null || table.m_nview == null || !table.m_nview.IsValid() || !table.m_nview.IsOwner()) continue;
+            var ledger = Read(table.m_nview); var changed = false;
+            for (var i = ledger.Work.Count - 1; i >= 0; i--)
+                if (ledger.Work[i].StationId == id)
+                {
+                    foreach (var input in ledger.Work[i].Inputs) Add(ledger, input.Key, input.Value);
+                    ledger.Work.RemoveAt(i); changed = true;
+                }
+            for (var i = ledger.Taps.Count - 1; i >= 0; i--)
+                if (ledger.Taps[i].StationId == id)
+                {
+                    CreditFinished(ledger, ledger.Taps[i].Output, ledger.Taps[i].Amount);
+                    ledger.Taps.RemoveAt(i); changed = true;
+                }
+            if (changed) Write(table.m_nview, ledger);
+        }
     }
     internal static bool IsAutoTap(Fermenter fermenter) => fermenter.m_nview != null && fermenter.m_nview.IsValid()
         && fermenter.m_nview.GetZDO().GetBool(AutoTapKey);
@@ -95,7 +106,8 @@ internal static class KitchenMachineHook
     }
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Fermenter), nameof(Fermenter.RPC_Tap))]
-    private static void BeforeTap(Fermenter __instance) => KitchenRun.ResetTapMarker(__instance);
+    private static void BeforeTap(Fermenter __instance)
+    { if (__instance.GetStatus() == Fermenter.Status.Ready) KitchenRun.ResetTapMarker(__instance); }
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Fermenter), nameof(Fermenter.DelayedTap))]
     private static bool CollectMead(Fermenter __instance)

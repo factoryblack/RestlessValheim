@@ -10,7 +10,7 @@ Expand your kitchen from Meadows through Ashlands with prepared meals, feast boa
 
 Use the **food preparation table** to browse dishes and filter for feasts, meals, ingredients or meads. Inspect what a recipe needs, then order it from one place.
 
-Orders draw from eligible nearby supplies, load cooking racks and ovens, collect prepared food and use it in the next recipe step. Station levels, fire, fuel and capacity still matter. Cauldron and preparation crafts take their crafting time; Orders shows each step's progress.
+Orders draw from eligible nearby supplies, put meat on real rack hooks, prepare raw dishes before baking them in real ovens, and ferment mead bases in real barrels. Prepared results are collected and used in the next recipe step. Native cooking times, station upgrades, fire, fuel, cover and capacity still matter. Each cauldron, kettle or preparation station handles its own timed preparation job; Orders shows the active station and progress.
 
 > (screenshot coming) — A real multi-step kitchen order preparing.
 

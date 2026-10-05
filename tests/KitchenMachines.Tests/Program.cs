@@ -56,6 +56,10 @@ namespace RestlessCook
             fermenter.m_exposed=false;fermenter.m_hasRoof=false;Check(!TryLoadRaw(hit,"Base",ledger),"Unroofed fermenter must wait");
             fermenter.m_hasRoof=true;var receipt=new TapReceipt{StationId=hit.Id,Output="Mead",Amount=6,Due=100,Committed=true};ledger.Taps.Add(receipt);
             Check(!TryLoadRaw(hit,"Base",ledger),"A barrel being tapped must not start a second batch");
+            Check(!CanRecoverTap(receipt,0,99),"Recovery must wait for the native tapping delay");
+            Check(CanRecoverTap(receipt,123,100),"A committed completed batch must survive manual refill during collection");
+            var interrupted=new TapReceipt{StationId=hit.Id,Output="Mead",Amount=6,Due=100};
+            Check(!CanRecoverTap(interrupted,123,100)&&CanRecoverTap(interrupted,0,100),"Interrupted tap intent must only recover if native source was cleared");
             var saved=ReadTap(TapLine(receipt).TrimEnd('\n').Split('\t'));
             Check(saved!=null&&saved.StationId==hit.Id&&saved.Amount==6&&saved.Due==100&&saved.Committed,"Tap handoff must retain machine, yield and native delay across saves");
             ledger.Taps.Clear();ledger.Taps.Add(saved!);

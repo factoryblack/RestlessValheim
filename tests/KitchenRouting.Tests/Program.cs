@@ -64,7 +64,7 @@ namespace RestlessCook
             ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe}};
             EnsureMeads();
             var steps=Expand("Bread",3,0,"");
-            Check(steps[0].Station==KitchenStationKind.Oven,"A finished food row must never bypass its native oven conversion");
+            Check(steps[0].Station==KitchenStationKind.Oven && steps[0].StationLevel==1 && steps[0].StationPrefab=="","A finished food row must never bypass its native oven conversion");
             Check(steps[0].Uses.Single().Item=="BreadDough" && steps[0].Uses.Single().Amount==3,"Oven must require one raw item per finished item");
             Check(steps[1].Station==KitchenStationKind.PrepTable && steps[1].StationLevel==2,"Dough must use the native preparation station and its upgrade requirement");
             Check(steps[1].Uses.Single().Amount==20,"Three bread must prepare two batches of dough at the configured cost");

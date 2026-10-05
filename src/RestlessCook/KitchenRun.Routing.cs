@@ -48,8 +48,8 @@ internal static partial class KitchenRun
             Depth = depth,
             Need = need,
             Station = conversion != null ? conversion.Kind : row != null ? KindOf(row.Station) : KitchenStationKind.None,
-            StationPrefab = row != null ? row.Station : "",
-            StationLevel = row != null && row.StationLevel > 0 ? row.StationLevel : 1,
+            StationPrefab = conversion == null && row != null ? row.Station : "",
+            StationLevel = conversion == null && row != null && row.StationLevel > 0 ? row.StationLevel : 1,
             ParentIndex = parentIndex
         };
         var index = steps.Count;

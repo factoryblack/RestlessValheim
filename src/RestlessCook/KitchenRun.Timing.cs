@@ -18,13 +18,13 @@ internal static partial class KitchenRun
         internal float Elapsed, Duration;
         internal readonly Dictionary<string, int> Inputs = new(StringComparer.Ordinal);
     }
+    private static readonly System.Reflection.FieldInfo? CraftDurationField = AccessTools.Field(typeof(InventoryGui), "m_craftDuration");
     private static float PreparationDuration(KitchenStep step)
     {
         if (ByOutput.TryGetValue(step.Output, out var row) && row.PreparationSeconds > 0)
             return row.PreparationSeconds;
         // Same duration as native player crafting; rack/oven timers are never replaced.
-        var field = AccessTools.Field(typeof(InventoryGui), "m_craftDuration");
-        var value = InventoryGui.instance != null ? field?.GetValue(InventoryGui.instance) : null;
+        var value = InventoryGui.instance != null ? CraftDurationField?.GetValue(InventoryGui.instance) : null;
         return value is float seconds && seconds > 0 && !float.IsInfinity(seconds) ? seconds : 2f;
     }
     private static bool Busy(Ledger ledger, string stationId)

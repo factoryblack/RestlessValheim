@@ -21,6 +21,8 @@ internal static partial class KitchenRun
             && long.TryParse(p[4], NumberStyles.Integer, CultureInfo.InvariantCulture, out var due) && due > 0
             ? new TapReceipt { StationId = p[1], Output = p[2], Amount = amount, Due = due, Committed = p.Length > 5 && p[5] == "1" } : null;
 
+    private static bool CanRecoverTap(TapReceipt receipt, int content, long now)
+        => now >= receipt.Due && (receipt.Committed || content == 0);
     private static bool FinishTapReceipt(Ledger ledger, TapReceipt receipt)
     {
         if (!ledger.Taps.Remove(receipt)) return false;

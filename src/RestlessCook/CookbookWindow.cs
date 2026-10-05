@@ -207,7 +207,8 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         _dishKind.text = s == null ? "" : State(s);
         _dishKind.color = s == null ? RestlessUi.PaperMuted : Tint(s.State);
         _station.text = s == null ? "" : s.Station == KitchenStationKind.None ? "Gather from the world"
-            : StationName(s.Station) + "\nRequired level " + s.StationLevel;
+            : StationName(s.Station) + (s.Station == KitchenStationKind.Cauldron || s.Station == KitchenStationKind.PrepTable || s.Station == KitchenStationKind.MeadKettle
+                ? "\nRequired level " + s.StationLevel : s.Station == KitchenStationKind.Fermenter ? "\nUses native fermentation time" : "\nUses native cooking time");
         var b = new StringBuilder();
         var rowCount = s?.Uses.Count ?? 0;
         var children = s == null ? new List<int>() : Children(detailIndex);

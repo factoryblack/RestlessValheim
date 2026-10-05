@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using HarmonyLib;
 using RestlessQoL.Storage;
 
@@ -34,7 +33,8 @@ internal static partial class KitchenRun
             {
                 if (hit.Fermenter == null || StationId(hit) != receipt.StationId || !hit.Fermenter.m_nview.IsOwner()
                     || !ProductionLease.Controls(hit.Fermenter.m_nview, table.m_nview)) continue;
-                if (!receipt.Committed && hit.Fermenter.GetContent() != 0)
+                if (hit.Fermenter.IsInvoking(nameof(Fermenter.DelayedTap))) break;
+                if (!CanRecoverTap(receipt, hit.Fermenter.GetContent(), WorldTicks()))
                 { ledger.Taps.RemoveAt(i); break; } // Tap had not cleared its source before unload.
                 hit.Fermenter.m_nview.GetZDO().Set(AutoTapKey, true);
                 hit.Fermenter.CancelInvoke(nameof(Fermenter.DelayedTap));
@@ -81,8 +81,10 @@ internal static partial class KitchenRun
             for (var i = ledger.Taps.Count - 1; i >= 0; i--)
                 if (ledger.Taps[i].StationId == id)
                 {
-                    CreditFinished(ledger, ledger.Taps[i].Output, ledger.Taps[i].Amount);
-                    ledger.Taps.RemoveAt(i); changed = true;
+                    if (ledger.Taps[i].Committed || machine.GetComponent<Fermenter>()?.GetContent() == 0)
+                        FinishTapReceipt(ledger, ledger.Taps[i]);
+                    else ledger.Taps.RemoveAt(i);
+                    changed = true;
                 }
             if (changed) Write(table.m_nview, ledger);
         }

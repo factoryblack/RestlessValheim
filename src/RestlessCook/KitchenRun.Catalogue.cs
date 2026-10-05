@@ -63,6 +63,8 @@ internal static partial class KitchenRun
                     OutputAmount = Math.Max(1, finished.OutputAmount), PreparationSeconds = finished.PreparationSeconds };
                 foreach (var use in finished.Uses) row.Uses.Add(new CookUse { Item = use.Item, Amount = use.Amount });
                 ByOutput[conversion.From] = row; ById[row.Id] = row;
+                if (!UsedBy.TryGetValue(conversion.From,out var bakedUses)) UsedBy[conversion.From] = bakedUses = new List<CookRow>();
+                bakedUses.Add(finished);
                 foreach (var use in row.Uses)
                 {
                     pending.Enqueue(use.Item);
@@ -86,6 +88,7 @@ internal static partial class KitchenRun
             var output = pending.Dequeue();
             if (!visited.Add(output) || ByOutput.ContainsKey(output) || !native.TryGetValue(output,out var recipe)) continue;
             var item = recipe.m_item;
+            if (item == null) continue;
             var row = new CookRow { Id = "native:" + output, Prefab = output,
                 Name = Localization.instance != null ? Localization.instance.Localize(item.m_itemData.m_shared.m_name) : item.m_itemData.m_shared.m_name,
                 Kind = output.StartsWith("Mead",StringComparison.OrdinalIgnoreCase) ? "mead" : "ingredient",

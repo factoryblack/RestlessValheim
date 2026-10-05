@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.1.3
+
+- An iron order takes iron scraps. Iron ore is used only when no scraps are on hand.
+- Requires Core 0.2.4.
+
 ## 0.1.2
 
 - A smelter or blast furnace is given the coal that bar actually burns, and the finished unit drops at the machine.

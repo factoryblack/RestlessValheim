@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-10-06 — Extra saplings plant beech, pine, fir, birch, and oak.
+# last_audit: 2026-10-06 — Iron orders take iron scraps.
 
 updated: 2026-10-06
 
@@ -534,7 +534,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessWorkshop
-    note: "RestlessWorkshop 0.1.2. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. A machine that already holds ore keeps receiving its own fuel until that queue finishes, even when the order needs no more ore. Background pulls skip locked cells, the hotbar and quick slots. Place, cancel, collect and take refuse a caller who does not own the board. Destroying the board drops its pantry. A finished unit drops at the machine. A smelter or blast furnace is fed the coal that bar burns, from the bag, chests and piles, including the last item in a chest. Leave one does not hold that ore or fuel back. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Included in the Restless Valheim pack. Needs Core 0.2.3."
+    note: "RestlessWorkshop 0.1.3. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. A machine that already holds ore keeps receiving its own fuel until that queue finishes, even when the order needs no more ore. Background pulls skip locked cells, the hotbar and quick slots. Place, cancel, collect and take refuse a caller who does not own the board. Destroying the board drops its pantry. A finished unit drops at the machine. A smelter or blast furnace is fed the coal that bar burns, from the bag, chests and piles, including the last item in a chest. Leave one does not hold that ore or fuel back. An iron order takes iron scraps. Iron ore is used only when no scraps are on hand. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Included in the Restless Valheim pack. Needs Core 0.2.4."
 
   - id: piles.stacks
     name: Uncapped resource piles

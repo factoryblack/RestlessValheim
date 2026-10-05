@@ -236,7 +236,8 @@ internal static class WorksRun
         var hits = Scan(origin, true, view);
         CollectFinished(hits, ledger);
         var loads = 0;
-        Describe(ledger, Stock(origin, playerId, ledger), Production(hits));
+        var stock = Stock(origin, playerId, ledger);
+        Describe(ledger, stock, Production(hits));
         foreach (var order in ledger.Orders)
         {
             if (loads >= LoadsPerTick || order.Remaining < 1)
@@ -246,7 +247,7 @@ internal static class WorksRun
                 continue;
             while (loads < LoadsPerTick && order.Remaining > 0)
             {
-                if (!LoadOne(recipe, hits, ledger, origin, playerId))
+                if (!LoadOne(recipe, hits, ledger, origin, playerId, stock))
                     break;
                 loads++;
                 order.Remaining--;
@@ -299,12 +300,13 @@ internal static class WorksRun
         return n;
     }
 
-    private static bool LoadOne(WorksRecipe recipe, List<Hit> hits, Ledger ledger, Vector3 origin, long playerId)
+    private static bool LoadOne(WorksRecipe recipe, List<Hit> hits, Ledger ledger, Vector3 origin, long playerId, Dictionary<string, int> stock)
     {
-        if (!ledger.Pantry.TryGetValue(recipe.Input, out var held) || held < 1)
+        var input = InputFor(recipe, stock);
+        if (!ledger.Pantry.TryGetValue(input, out var held) || held < 1)
         {
-            PullInto(ledger, recipe.Input, 1, origin, playerId);
-            if (!ledger.Pantry.TryGetValue(recipe.Input, out held) || held < 1)
+            PullInto(ledger, input, 1, origin, playerId);
+            if (!ledger.Pantry.TryGetValue(input, out held) || held < 1)
                 return false;
         }
 
@@ -313,17 +315,19 @@ internal static class WorksRun
             var station = hit.Station;
             if (station?.m_nview == null || !station.m_nview.IsOwner())
                 continue;
-            if (station.GetQueueSize() >= station.m_maxOre || !station.IsItemAllowed(recipe.Input))
+            if (station.GetQueueSize() >= station.m_maxOre || !station.IsItemAllowed(input))
                 continue;
             var source = station.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre);
-            if (!string.IsNullOrEmpty(source) && source != recipe.Input && Clean(source) != recipe.Input)
+            if (!string.IsNullOrEmpty(source) && source != input && Clean(source) != input)
                 continue;
             if (!Fuel(station, recipe, ledger, origin, playerId))
                 continue;
-            ledger.Pantry[recipe.Input] = held - 1;
-            if (ledger.Pantry[recipe.Input] <= 0)
-                ledger.Pantry.Remove(recipe.Input);
-            station.QueueOre(recipe.Input, false);
+            ledger.Pantry[input] = held - 1;
+            if (ledger.Pantry[input] <= 0)
+                ledger.Pantry.Remove(input);
+            station.QueueOre(input, false);
+            if (stock.TryGetValue(input, out var have) && have > 0)
+                stock[input] = have - 1;
             hit.Info.Free = Math.Max(0, hit.Info.Free - 1);
             return true;
         }
@@ -466,11 +470,12 @@ internal static class WorksRun
             Available = have,
             Station = recipe.Station
         };
-        stock.TryGetValue(recipe.Input, out var inputHave);
+        var input = InputFor(recipe, stock);
+        stock.TryGetValue(input, out var inputHave);
         step.Uses.Add(new WorksUse
         {
-            Item = recipe.Input,
-            Name = recipe.InputName,
+            Item = input,
+            Name = input == recipe.Input ? recipe.InputName : Label(input),
             Amount = count,
             Available = inputHave
         });
@@ -490,7 +495,7 @@ internal static class WorksRun
         }
 
         steps.Add(step);
-        var child = Find(recipe.Input);
+        var child = Find(input);
         if (child != null)
             AddStep(steps, child, count, recipe.Output, depth + 1, stock, guard);
         if (fuelNeed > 0)
@@ -716,25 +721,73 @@ internal static class WorksRun
                 if (conversion?.m_from == null || conversion.m_to == null)
                     continue;
                 var output = Clean(conversion.m_to.gameObject.name);
-                if (string.IsNullOrEmpty(output) || !seen.Add(output))
+                var input = Clean(conversion.m_from.gameObject.name);
+                if (string.IsNullOrEmpty(output) || string.IsNullOrEmpty(input))
                     continue;
+                if (!seen.Add(output))
+                {
+                    NoteIron(list, output, input, stationName);
+                    continue;
+                }
                 var fuel = station.m_fuelItem != null ? Clean(station.m_fuelItem.gameObject.name) : "";
-                list.Add(new WorksRecipe
+                var recipe = new WorksRecipe
                 {
                     Output = output,
                     OutputName = Label(output),
-                    Input = Clean(conversion.m_from.gameObject.name),
-                    InputName = Label(Clean(conversion.m_from.gameObject.name)),
+                    Input = input,
+                    InputName = Label(input),
                     Station = stationName,
                     StationName = LabelToken(station.m_name),
                     Fuel = fuel,
                     FuelName = string.IsNullOrEmpty(fuel) ? "" : Label(fuel),
                     FuelEach = station.m_fuelPerProduct > 0 ? station.m_fuelPerProduct : 1
-                });
+                };
+                recipe.Inputs.Add(input);
+                list.Add(recipe);
             }
         }
 
         _recipes = list;
+    }
+
+    // The smelter lists iron ore before iron scraps. Scraps are the metal an iron order takes.
+    // Ore stays on the recipe and is used only when no scraps are on hand.
+    private static void NoteIron(List<WorksRecipe> list, string output, string input, string station)
+    {
+        if (input != "IronScrap" && input != "IronOre")
+            return;
+        foreach (var recipe in list)
+        {
+            if (recipe.Output != output || recipe.Station != station || recipe.Inputs.Contains(input))
+                continue;
+            recipe.Inputs.Add(input);
+            if (input != "IronScrap")
+                return;
+            recipe.Input = input;
+            recipe.InputName = Label(input);
+            return;
+        }
+    }
+
+    private static string InputFor(WorksRecipe recipe, Dictionary<string, int> stock)
+    {
+        if (!recipe.Inputs.Contains("IronScrap"))
+            return recipe.Input;
+        if (OnHand(stock, "IronScrap") > 0)
+            return "IronScrap";
+        foreach (var input in recipe.Inputs)
+        {
+            if (input != "IronScrap" && OnHand(stock, input) > 0)
+                return input;
+        }
+
+        return "IronScrap";
+    }
+
+    private static int OnHand(Dictionary<string, int> stock, string prefab)
+    {
+        stock.TryGetValue(prefab, out var have);
+        return have;
     }
 
     private static bool FoodOven(string prefab) =>

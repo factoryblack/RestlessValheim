@@ -15,26 +15,20 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-Kitchen orders use a real oven and a real fermenter. A placed feast stays on the floor. Extra saplings are beech, pine, fir, birch, and oak. One tag per push. Core first, the pack last. These tags are not pushed.
+An iron order takes iron scraps. Iron ore is used only when no scraps are on hand. One tag per push. Workshop first, the pack last. These tags are not pushed.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCore | 0.2.3 | **0.2.4** | A kitchen collects oven output only from an oven that kitchen is running |
-| RestlessCook | 0.3.2 | **0.4.0** | Baked food and mead finish on the real oven and fermenter. A feast stays where it was set. Sap-Glazed Garden Medley asks for Sap |
-| RestlessPlant | 0.2.1 | **0.2.2** | Ivy uses the game's plant check. Extra saplings are beech, pine, fir, birch, and oak |
-| Restless Valheim pack | 0.1.27 | **0.1.28** | Joins the versions above |
+| RestlessWorkshop | 0.1.2 | **0.1.3** | An iron order takes iron scraps |
+| Restless Valheim pack | 0.1.28 | **0.1.29** | Joins Workshop 0.1.3 |
 
-Storage 0.2.2, Workshop 0.1.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
+Core 0.2.4, Cook 0.4.0, Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
 
 ## Tag order
 
 ```
-git tag v0.2.4
-git push origin v0.2.4
-git tag cook-v0.4.0
-git push origin cook-v0.4.0
-git tag plant-v0.2.2
-git push origin plant-v0.2.2
-git tag pack-v0.1.28
-git push origin pack-v0.1.28
+git tag works-v0.1.3
+git push origin works-v0.1.3
+git tag pack-v0.1.29
+git push origin pack-v0.1.29
 ```

@@ -24,6 +24,7 @@ public sealed class WorksRecipe
     public string OutputName = "";
     public string Input = "";
     public string InputName = "";
+    public readonly List<string> Inputs = new();
     public string Station = "";
     public string StationName = "";
     public string Fuel = "";

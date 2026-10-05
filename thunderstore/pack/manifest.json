@@ -1,6 +1,6 @@
 {
   "name": "Restless_Valheim",
-  "version_number": "0.1.28",
+  "version_number": "0.1.29",
   "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md",
   "description": "The Restless collection in one install: a cohesive interface, smoother storage, expanded cooking and easier farming.",
   "dependencies": [
@@ -12,6 +12,6 @@
     "Restless-RestlessPlant-0.2.2",
     "Restless-RestlessDrawers-0.2.0",
     "Restless-RestlessStorage-0.2.2",
-    "Restless-RestlessWorkshop-0.1.2"
+    "Restless-RestlessWorkshop-0.1.3"
   ]
 }

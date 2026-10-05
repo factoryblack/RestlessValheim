@@ -62,6 +62,20 @@ foreach (var handle in reader.TypeDefinitions)
 }
 if (!inputPrefix || !firstInput) throw new Exception("Native smelter input queue contract changed; inspect QueueOre before updating ProductionQueue.");
 Console.WriteLine("Native smelter input queue contract passed.");
+foreach (var handle in reader.TypeDefinitions)
+{
+    var type = reader.GetTypeDefinition(handle); var name = reader.GetString(type.Name);
+    if (name != "Fermenter" && name != "CookingStation" && name != "CraftingStation") continue;
+    foreach (var fh in type.GetFields())
+    { var f = reader.GetFieldDefinition(fh); Console.WriteLine(name + "." + reader.GetString(f.Name) + ": " + f.DecodeSignature(provider,(object?)null)); }
+    foreach (var mh in type.GetMethods())
+    {
+        var m=reader.GetMethodDefinition(mh); var s=m.DecodeSignature(provider,(object?)null);
+        Console.WriteLine(name + "." + reader.GetString(m.Name) + "(" + string.Join(",",s.ParameterTypes) + ") -> " + s.ReturnType);
+        if (m.RelativeVirtualAddress != 0 && (name=="Fermenter" || reader.GetString(m.Name)=="RPC_AddItem" || reader.GetString(m.Name)=="CheckUsable"))
+            Console.WriteLine("IL " + name + "." + reader.GetString(m.Name) + " " + Convert.ToHexString(pe.GetMethodBody(m.RelativeVirtualAddress).GetILBytes()!));
+    }
+}
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";

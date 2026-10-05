@@ -128,6 +128,23 @@ internal static class CookVisual
         hit.enabled = true;
     }
 
+    // The plate collider is only for the serving-tray ghost. A placed board
+    // still needs the cloned feast's support volume, or the game treats it as
+    // unsupported and removes it on the first wear tick.
+    public static void RestoreSupport(GameObject placed)
+    {
+        if (placed == null)
+            return;
+        var plate = placed.transform.Find(ChildName);
+        foreach (var col in placed.GetComponentsInChildren<Collider>(true))
+        {
+            if (col == null)
+                continue;
+            var onPlate = plate != null && (col.transform == plate || col.transform.IsChildOf(plate));
+            col.enabled = !onPlate;
+        }
+    }
+
     private static void SitOnGround(Transform keep)
     {
         var filter = keep.GetComponent<MeshFilter>();

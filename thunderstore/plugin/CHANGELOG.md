@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.4
+
+- A kitchen collects oven output only from an oven that kitchen is running.
+
 ## 0.2.3
 
 - Crafting and building count a chest ingredient only after it has been removed.

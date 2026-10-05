@@ -56,10 +56,8 @@ internal static class CropPieces
             // Some vanilla forage pickables (e.g. mushrooms) ship with an LODGroup
             // or a mesh nested under a child tuned for how they're scattered in the
             // world; that setup doesn't always yield a visible model once cloned
-            // into a standalone placeable piece. Force every renderer visible and
-            // drop any LODGroup so the placed/ghost model always shows.
-            foreach (var lod in go.GetComponentsInChildren<LODGroup>(true))
-                Object.Destroy(lod);
+            // into a standalone placeable piece. Force every renderer visible.
+            // FlattenLod then keeps the near mesh and removes the group once.
             foreach (var renderer in go.GetComponentsInChildren<Renderer>(true))
             {
                 renderer.gameObject.SetActive(true);

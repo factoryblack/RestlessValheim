@@ -51,10 +51,11 @@ internal static class CropBook
         new CropRow("Pickable_SmokePuff", "MushroomSmokePuff", "Smoke puff", "Plant smoke puff."),
         new CropRow("Pickable_Fiddlehead", "Fiddleheadfern", "Fiddlehead", "Plant fiddlehead."),
 
-        new CropRow("Ancient_Sapling", "ElderBark", "Ancient sapling", "Plant an ancient sapling.", CropGate.Sapling, false),
-        new CropRow("Ygga_Sapling", "YggdrasilWood", "Ygga sapling", "Plant a ygga sapling.", CropGate.Sapling, false),
-        new CropRow("Autumn_Birch_Sapling", "FineWood", "Autumn birch sapling", "Plant an autumn birch sapling.", CropGate.Sapling, false),
-        new CropRow("Ashwood_Sapling", "Blackwood", "Ashwood sapling", "Plant an ashwood sapling.", CropGate.Sapling, false),
+        new CropRow("Beech_Sapling", "BeechSeeds", "Beech sapling", "Plant a beech sapling.", CropGate.Sapling, false),
+        new CropRow("PineTree_Sapling", "PineCone", "Pine sapling", "Plant a pine sapling.", CropGate.Sapling, false),
+        new CropRow("FirTree_Sapling", "FirCone", "Fir sapling", "Plant a fir sapling.", CropGate.Sapling, false),
+        new CropRow("Birch_Sapling", "BirchSeeds", "Birch sapling", "Plant a birch sapling.", CropGate.Sapling, false),
+        new CropRow("Oak_Sapling", "Acorn", "Oak sapling", "Plant an oak sapling.", CropGate.Sapling, false),
 
         new CropRow("Beech_small1", "Wood", "Small beech", "Plant a small beech.", CropGate.Flora, false),
         new CropRow("FirTree_small", "Wood", "Small fir", "Plant a small fir.", CropGate.Flora, false),

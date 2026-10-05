@@ -42,7 +42,7 @@ internal static class PlantConfig
             new ConfigDescription("Add berry bushes, mushrooms, thistle, and later-biome forage to the cultivator. Host-locked.",
                 null, Admin));
         ExtraSaplings = config.Bind("Plant", "ExtraSaplings", true,
-            new ConfigDescription("Add ancient, ygga, autumn birch, and ashwood saplings to the cultivator. Host-locked.",
+            new ConfigDescription("Add beech, pine, fir, birch, and oak saplings to the cultivator. Host-locked.",
                 null, Admin));
         ExtraFlora = config.Bind("Plant", "DecorativeTrees", true,
             new ConfigDescription("Add small trees, shrubs, vines, and stick/stone/flint pickables to the cultivator. Host-locked.",

@@ -2,9 +2,12 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
-## Unreleased
+## 0.2.2
 
 - Ivy and ashvine use the game's own plant check before the seed is spent. A failed check leaves the seed in the bag, and every player sees the owner's sapling.
+- Switching cultivator crops no longer logs a renderer error for each planting ghost.
+- Extra saplings plant beech, pine, fir, birch, and oak.
+- Requires Core 0.2.4.
 
 ## 0.2.1
 

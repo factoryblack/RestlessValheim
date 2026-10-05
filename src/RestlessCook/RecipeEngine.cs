@@ -599,22 +599,26 @@ internal static class RecipeEngine
 
     private static GameObject? FindItem(ObjectDB db, string name)
     {
-        var go = db.GetItemPrefab(name);
+        // PrefabManager can return a non-item named "sap" before the item "Sap".
+        var go = WithDrop(db.GetItemPrefab(name));
         if (go != null)
             return go;
-        go = PrefabManager.Instance.GetPrefab(name);
+        go = WithDrop(PrefabManager.Instance.GetPrefab(name));
         if (go != null)
             return go;
         if (db.m_items == null)
             return null;
         foreach (var item in db.m_items)
         {
-            if (item != null && item.name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            if (item != null && item.name.Equals(name, StringComparison.OrdinalIgnoreCase) && item.GetComponent<ItemDrop>() != null)
                 return item;
         }
 
         return null;
     }
+
+    private static GameObject? WithDrop(GameObject? go) =>
+        go != null && go.GetComponent<ItemDrop>() != null ? go : null;
 
     private static bool Ours(Recipe? recipe)
     {
@@ -813,6 +817,41 @@ internal static class RecipeEngine
                 CookVisual.KeepPlate(__instance.gameObject);
             }
         }
+    }
+
+    [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.OnPlaced))]
+    public static class FeastSupportPatch
+    {
+        public static void Postfix(WearNTear __instance) => KeepFeastSupport(__instance, requireView: false);
+    }
+
+    [HarmonyPatch(typeof(Feast), "Start")]
+    public static class FeastLoadSupportPatch
+    {
+        public static void Postfix(Feast __instance)
+        {
+            var wear = __instance != null ? __instance.GetComponent<WearNTear>() : null;
+            if (wear != null)
+                KeepFeastSupport(wear, requireView: true);
+        }
+    }
+
+    private static void KeepFeastSupport(WearNTear wear, bool requireView)
+    {
+        if (wear == null)
+            return;
+        var name = Utils.GetPrefabName(wear.gameObject);
+        if (_rows.FirstOrDefault(r => r.IsAdd && r.IsFeast && r.Prefab == name) == null)
+            return;
+        if (requireView)
+        {
+            var view = wear.GetComponent<ZNetView>();
+            if (view == null || !view.IsValid())
+                return;
+        }
+
+        CookVisual.RestoreSupport(wear.gameObject);
+        wear.SetupColliders();
     }
 
 

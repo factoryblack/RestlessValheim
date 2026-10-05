@@ -15,29 +15,26 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-Chest transfers, kitchen stock and workshop queues. One tag per push. Core first, the pack last. These tags are not pushed.
+Kitchen orders use a real oven and a real fermenter. A placed feast stays on the floor. Extra saplings are beech, pine, fir, birch, and oak. One tag per push. Core first, the pack last. These tags are not pushed.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCore | 0.2.2 | **0.2.3** | A chest ingredient counts only after it is removed, and an open transfer is not taken twice |
-| RestlessCook | 0.3.1 | **0.3.2** | Kitchen chests count in full, a finished rack meal stays reserved, and a cold cauldron pauses |
-| RestlessStorage | 0.2.1 | **0.2.2** | A withdrawal stays reserved until it settles |
-| RestlessWorkshop | 0.1.1 | **0.1.2** | A smelter gets the coal a bar burns, and the finished unit drops at the machine |
-| Restless Valheim pack | 0.1.26 | **0.1.27** | Joins the versions above |
+| RestlessCore | 0.2.3 | **0.2.4** | A kitchen collects oven output only from an oven that kitchen is running |
+| RestlessCook | 0.3.2 | **0.4.0** | Baked food and mead finish on the real oven and fermenter. A feast stays where it was set. Sap-Glazed Garden Medley asks for Sap |
+| RestlessPlant | 0.2.1 | **0.2.2** | Ivy uses the game's plant check. Extra saplings are beech, pine, fir, birch, and oak |
+| Restless Valheim pack | 0.1.27 | **0.1.28** | Joins the versions above |
 
-Plant 0.2.1, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
+Storage 0.2.2, Workshop 0.1.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
 
 ## Tag order
 
 ```
-git tag v0.2.3
-git push origin v0.2.3
-git tag cook-v0.3.2
-git push origin cook-v0.3.2
-git tag storage-v0.2.2
-git push origin storage-v0.2.2
-git tag works-v0.1.2
-git push origin works-v0.1.2
-git tag pack-v0.1.27
-git push origin pack-v0.1.27
+git tag v0.2.4
+git push origin v0.2.4
+git tag cook-v0.4.0
+git push origin cook-v0.4.0
+git tag plant-v0.2.2
+git push origin plant-v0.2.2
+git tag pack-v0.1.28
+git push origin pack-v0.1.28
 ```

@@ -373,8 +373,24 @@ internal static class PlantGrid
             Object.DestroyImmediate(body);
         foreach (var col in go.GetComponentsInChildren<Collider>(true))
             Object.DestroyImmediate(col);
+        // A cloned placement ghost copies MaterialManNotifier. That notifier
+        // unregisters an instance that was never registered, once per ghost.
+        ReleaseMaterial(go);
         foreach (var lod in go.GetComponentsInChildren<LODGroup>(true))
             lod.enabled = false;
+    }
+
+    private static void ReleaseMaterial(GameObject go)
+    {
+        var man = MaterialMan.instance;
+        foreach (var notifier in go.GetComponentsInChildren<MaterialManNotifier>(true))
+        {
+            if (notifier == null)
+                continue;
+            if (man != null)
+                man.SetValue(notifier.gameObject, 0, 0f);
+            Object.DestroyImmediate(notifier);
+        }
     }
 
     private static void Paint(GameObject go, bool ok)

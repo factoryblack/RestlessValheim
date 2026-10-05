@@ -400,7 +400,7 @@ items:
     uses:
       - item: Salad
         amount: 1
-      - item: sap
+      - item: Sap
         amount: 2
       - item: MushroomJotunPuffs
         amount: 2
@@ -1535,7 +1535,7 @@ items:
     feeds:
       - hidden_hills_sideboard
     uses:
-      - item: sap
+      - item: Sap
         amount: 4
       - item: Barley
         amount: 3
@@ -1612,7 +1612,7 @@ items:
     feeds:
       - cinder_runners_spread
     uses:
-      - item: sap
+      - item: Sap
         amount: 4
       - item: Vineberry
         amount: 2
@@ -1654,7 +1654,7 @@ items:
     feeds:
       - cinder_sideboard
     uses:
-      - item: sap
+      - item: Sap
         amount: 3
       - item: Fiddleheadfern
         amount: 2
@@ -1674,7 +1674,7 @@ items:
     feeds:
       - cinder_sideboard
     uses:
-      - item: sap
+      - item: Sap
         amount: 3
       - item: MushroomMagecap
         amount: 2

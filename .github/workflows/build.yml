@@ -109,6 +109,10 @@ jobs:
         run: dotnet run --project tests/WheelMotion.Tests -c Release
       - name: Preparation timing regressions
         run: dotnet run --project tests/PreparationClock.Tests -c Release
+      - name: Physical kitchen routing and machine regressions
+        run: |
+          dotnet run --project tests/KitchenRouting.Tests -c Release
+          dotnet run --project tests/KitchenMachines.Tests -c Release
       - name: Set tooltip regressions
         run: dotnet run --project tests/TooltipSetBlock.Tests -c Release
 

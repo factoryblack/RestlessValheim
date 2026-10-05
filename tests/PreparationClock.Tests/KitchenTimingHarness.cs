@@ -21,7 +21,7 @@ namespace RestlessCook
     internal class KitchenUse { internal string Item=""; internal int Amount; }
     internal class KitchenStep
     {
-        internal string Output="",Note=""; internal int StationLevel=1,Depth,Need,Have,Cooking,OutputCount=1;
+        internal string Output="",Note="",ActiveStation=""; internal int StationLevel=1,Depth,Need,Have,Cooking,OutputCount=1;
         internal float ElapsedSeconds,DurationSeconds; internal KitchenStationKind Station; internal KitchenStepState State;
         internal List<KitchenUse> Uses=new();
     }
@@ -29,15 +29,21 @@ namespace RestlessCook
     internal class CookRow { internal float PreparationSeconds; }
     internal static partial class KitchenRun
     {
-        private class Hit { internal CookingStation? Rack; }
+        private class Hit { internal CookingStation? Rack; internal string Id="table"; internal Info Info=new(); }
+        private class Info { internal string Name="Preparation table"; }
+        private class TapReceipt { internal string Output=""; internal int Amount; }
         private class Ledger
         {
-            internal List<Work> Work=new(); internal List<KitchenOrder> Orders=new();
+            internal List<Work> Work=new(); internal List<KitchenOrder> Orders=new(); internal List<TapReceipt> Taps=new();
             internal Dictionary<string,int> Pantry=new();
         }
         private static Dictionary<string,CookRow> ByOutput=new();
-        private static bool StationReady(CraftingStation table,List<Hit> hits,KitchenStep step)=>table.Available;
-        private static List<Hit> Scan(object position)=>new();
+        private static Hit? PreparationStation(List<Hit> hits,KitchenStep step,Ledger? ledger)=>hits.Find(h=>ledger==null||!Busy(ledger,h.Id));
+        private static string StationId(Hit h)=>h.Id;
+        private static bool WorkReady(CraftingStation table,List<Hit> hits,Work work,bool requireOwner=true)=>table.Available&&hits.Exists(h=>h.Id==work.StationId);
+        private static void PaintNativeTiming(List<Hit> hits,KitchenStep step) { }
+        private static List<Hit> Scan(object position,bool claim=false,object? controller=null)=>new();
+        private static object View(CraftingStation table)=>table;
         private static string ProductOf(CookingStation rack,string raw)=>raw;
         private static int OutputAmount(KitchenStep s)=>s.OutputCount;
         private static int CraftsFor(int need,int amount)=>need<=0?0:(need+amount-1)/amount;
@@ -45,17 +51,17 @@ namespace RestlessCook
         internal static void TestJobs()
         {
             void Check(bool ok,string message) { if(!ok)throw new Exception(message); }
-            var table=new CraftingStation(); var hits=new List<Hit>(); var ledger=new Ledger();
+            var table=new CraftingStation(); var station=new Hit(); var hits=new List<Hit>{station}; var ledger=new Ledger();
             var order=new KitchenOrder{Id=1,Count=1}; ledger.Orders.Add(order);
             var step=new KitchenStep{Output="Feast",Need=1,Station=KitchenStationKind.PrepTable};
             step.Uses.Add(new KitchenUse{Item="Meal",Amount=3});
-            StartWork(ledger,order,step);
-            Check(ledger.Work.Count==1 && Busy(ledger,step.Station),"Job must occupy its station");
+            StartWork(ledger,order,step,station);
+            Check(ledger.Work.Count==1 && Busy(ledger,station.Id),"Job must occupy its station");
             Check(ledger.Pantry.Count==0,"Starting a job must not award instant food");
             AdvanceWork(table,hits,ledger,1);
             Check(ledger.Work[0].Elapsed==1 && order.Ready==0,"First tick must remain in progress");
             var persisted=ReadWork(WorkLine(ledger.Work[0]).TrimEnd('\n').Split('\t'));
-            Check(persisted!=null && persisted.Elapsed==1 && persisted.Inputs["Meal"]==3,"Reload must preserve time and paid inputs");
+            Check(persisted!=null && persisted.StationId==station.Id && persisted.Elapsed==1 && persisted.Inputs["Meal"]==3,"Reload must preserve time and paid inputs");
             ledger.Work.Clear();ledger.Work.Add(persisted!);
             table.Available=false;AdvanceWork(table,hits,ledger,1);
             Check(ledger.Work[0].Elapsed==1,"Unavailable station must pause");
@@ -64,11 +70,22 @@ namespace RestlessCook
             AdvanceWork(table,hits,ledger,1);
             Check(ledger.Pantry["Feast"]==1,"Finished job must not award twice");
             step.Depth=1;step.Output="Meal";step.Uses[0]=new KitchenUse{Item="Raw",Amount=2};
-            StartWork(ledger,order,step);AdvanceWork(table,hits,ledger,2);
+            StartWork(ledger,order,step,station);AdvanceWork(table,hits,ledger,2);
             Check(ledger.Pantry["Meal"]==1 && order.Ready==1,"Intermediate completion must stay in pantry without marking the feast ready");
-            StartWork(ledger,order,step);ledger.Orders.Clear();AdvanceWork(table,hits,ledger,1);
+            StartWork(ledger,order,step,station);ledger.Orders.Clear();AdvanceWork(table,hits,ledger,1);
             Check(ledger.Work.Count==0 && ledger.Pantry["Raw"]==2,"Orphaned job must refund paid ingredients once");
-            Console.WriteLine("9 timed-job lifecycle regressions passed");
+            ledger.Orders.Add(order); StartWork(ledger,order,step,station);
+            hits.Clear(); hits.Add(new Hit{Id="different cauldron"}); AdvanceWork(table,hits,ledger,2);
+            Check(ledger.Work.Count==1 && ledger.Work[0].Elapsed==0,"A replacement station must not finish a bound job");
+            Check(!Busy(ledger,"different cauldron"),"Another physical station of the same kind must have its own capacity");
+            var other=hits[0]; StartWork(ledger,order,step,other); AdvanceWork(table,hits,ledger,2);
+            Check(ledger.Work.Count==1 && ledger.Work[0].StationId==station.Id,"Each station must advance only its own work");
+            var old=WorkLine(ledger.Work[0]).TrimEnd('\n').Split('\t').Take(10).ToArray();
+            var legacy=ReadWork(old); Check(legacy!=null && legacy.StationId=="","Old jobs must remain readable");
+            ledger.Work.Clear();ledger.Work.Add(legacy!); AdvanceWork(table,hits,ledger,1);
+            Check(ledger.Work[0].StationId==other.Id && ledger.Work[0].Elapsed==1,"Old jobs must bind once when resumed");
+            Console.WriteLine("14 timed-job lifecycle regressions passed");
         }
     }
 }
+

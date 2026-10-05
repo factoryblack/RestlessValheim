@@ -207,7 +207,8 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         _dishKind.text = s == null ? "" : State(s);
         _dishKind.color = s == null ? RestlessUi.PaperMuted : Tint(s.State);
         _station.text = s == null ? "" : s.Station == KitchenStationKind.None ? "Gather from the world"
-            : StationName(s.Station) + "\nRequired level " + s.StationLevel;
+            : StationName(s.Station) + (s.Station == KitchenStationKind.Cauldron || s.Station == KitchenStationKind.PrepTable || s.Station == KitchenStationKind.MeadKettle
+                ? "\nRequired level " + s.StationLevel : s.Station == KitchenStationKind.Fermenter ? "\nUses native fermentation time" : "\nUses native cooking time");
         var b = new StringBuilder();
         var rowCount = s?.Uses.Count ?? 0;
         var children = s == null ? new List<int>() : Children(detailIndex);
@@ -327,11 +328,11 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     {
         var count = KitchenStock.Count(s.Available, s.Need);
         if (Covered(s)) return "Covered by another step";
-        if (s.State == KitchenStepState.Blocked) return "Blocked · " + count;
+        if (s.State == KitchenStepState.Blocked) return Local(s.Note) + " · " + count;
         if (s.Cooking > 0)
         {
             var timer = s.DurationSeconds > 0 ? " · " + Mathf.CeilToInt(Mathf.Max(0, s.DurationSeconds - s.ElapsedSeconds)) + "s" : "";
-            return s.Available + " prepared · " + s.Cooking + " cooking" + timer;
+            return s.Cooking + " cooking" + timer + (string.IsNullOrEmpty(s.ActiveStation) ? "" : " · " + Local(s.ActiveStation));
         }
         if (s.Uses.Count == 0)
             return (s.Available >= s.Need ? "Available · " : "Missing · ") + count;
@@ -364,5 +365,6 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         private static bool Prefix() => _current == null && Time.frameCount != _closedFrame;
     }
 }
+
 
 

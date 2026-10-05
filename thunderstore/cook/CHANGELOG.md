@@ -4,8 +4,15 @@ Changes are listed newest first. **Unreleased** describes current source changes
 
 ## Unreleased
 
+- Kitchen orders now route baked foods through raw preparation and a real oven instead of producing the finished food directly.
+- Finished meads are available in the Cookbook. Their bases use the required kettle, then a physical fermenter with native fermentation time, cover requirements and batch yield.
+- Preparation jobs are bound to individual stations. Each station has its own capacity, and paused work stays at its assigned station.
+- Rack and oven loads recheck live capacity and only spend the ingredient after native insertion succeeds.
+- Oven collection catches the native output event. Fermenter tapping is saved so its delayed output can recover after unloading or ownership changes.
+- Orders show their active station and native process timers. Cancelling a preparation job returns its paid inputs; loaded machine inputs continue cooking.
+
 - A feast can start at a lit cauldron in range. Standing in the cauldron's use bubble is not required.
-- Cauldron and preparation levels match the live recipes. Bread and lox pie stay on the preparation table.
+- Cauldron and preparation levels match the live recipes. Bread and lox pie use the preparation table before baking in the oven.
 
 ## 0.3.2
 

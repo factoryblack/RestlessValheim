@@ -12,28 +12,28 @@ internal static partial class KitchenRun
     private sealed class Work
     {
         internal int Order, Made, Level;
-        internal string Output = "";
+        internal string Output = "", StationId = "", StationName = "";
         internal KitchenStationKind Station;
         internal bool Root;
         internal float Elapsed, Duration;
         internal readonly Dictionary<string, int> Inputs = new(StringComparer.Ordinal);
     }
+    private static readonly System.Reflection.FieldInfo? CraftDurationField = AccessTools.Field(typeof(InventoryGui), "m_craftDuration");
     private static float PreparationDuration(KitchenStep step)
     {
         if (ByOutput.TryGetValue(step.Output, out var row) && row.PreparationSeconds > 0)
             return row.PreparationSeconds;
         // Same duration as native player crafting; rack/oven timers are never replaced.
-        var field = AccessTools.Field(typeof(InventoryGui), "m_craftDuration");
-        var value = InventoryGui.instance != null ? field?.GetValue(InventoryGui.instance) : null;
+        var value = InventoryGui.instance != null ? CraftDurationField?.GetValue(InventoryGui.instance) : null;
         return value is float seconds && seconds > 0 && !float.IsInfinity(seconds) ? seconds : 2f;
     }
-    private static bool Busy(Ledger ledger, KitchenStationKind kind)
-        => ledger.Work.Exists(w => w.Station == kind);
+    private static bool Busy(Ledger ledger, string stationId)
+        => ledger.Work.Exists(w => w.StationId == stationId);
 
-    private static void StartWork(Ledger ledger, KitchenOrder order, KitchenStep step)
+    private static void StartWork(Ledger ledger, KitchenOrder order, KitchenStep step, Hit station)
     {
         var work = new Work { Order = order.Id, Output = step.Output, Made = Math.Max(1, OutputAmount(step)),
-            Station = step.Station, Level = step.StationLevel, Root = step.Depth == 0, Duration = PreparationDuration(step) };
+            Station = step.Station, StationId = StationId(station), StationName = station.Info.Name, Level = step.StationLevel, Root = step.Depth == 0, Duration = PreparationDuration(step) };
         foreach (var use in step.Uses)
         {
             var amount = Math.Max(1, use.Amount / Math.Max(1, CraftsFor(step.Need, OutputAmount(step))));
@@ -53,7 +53,15 @@ internal static partial class KitchenRun
                 ledger.Work.RemoveAt(i); continue;
             }
             var requirement = new KitchenStep { Station = w.Station, StationLevel = w.Level };
-            if (!StationReady(table, hits, requirement)) continue;
+            // Old saves are assigned once. A bound job never jumps to a different
+            // cauldron when its station loses fire, is destroyed, or leaves range.
+            if (string.IsNullOrEmpty(w.StationId))
+            {
+                var station = PreparationStation(hits, requirement, ledger);
+                if (station == null) continue;
+                w.StationId = StationId(station); w.StationName = station.Info.Name;
+            }
+            if (!WorkReady(table, hits, w)) continue;
             w.Elapsed = PreparationClock.Advance(w.Elapsed, w.Duration, elapsed, true);
             if (w.Elapsed < w.Duration) continue;
             Add(ledger, w.Output, w.Made);
@@ -63,12 +71,14 @@ internal static partial class KitchenRun
     }
     private static void IncludeWork(Ledger ledger, Dictionary<string,int> cooking)
     {
+        foreach (var tap in ledger.Taps)
+        { cooking.TryGetValue(tap.Output, out var count); cooking[tap.Output] = count + tap.Amount; }
         foreach (var w in ledger.Work)
         { cooking.TryGetValue(w.Output, out var count); cooking[w.Output] = count + w.Made; }
     }
     private static void PaintTiming(CraftingStation table, List<KitchenStep> steps, Ledger ledger, int orderId)
     {
-        var hits = Scan(table.transform.position);
+        var hits = Scan(table.transform.position, false, View(table));
         foreach (var step in steps)
         {
             // Have/Cooking counts are allocated by Assign; don't attach another branch's timer.
@@ -77,25 +87,13 @@ internal static partial class KitchenRun
             if (w != null)
             {
                 step.ElapsedSeconds = w.Elapsed; step.DurationSeconds = w.Duration;
-                var valid = StationReady(table, hits, step);
+                var valid = WorkReady(table, hits, w, false);
+                step.ActiveStation = w.StationName;
                 step.State = valid ? KitchenStepState.Cooking : KitchenStepState.Blocked;
-                step.Note = valid ? "Preparing" : "Paused · required station unavailable";
+                step.Note = valid ? "Preparing · " + w.StationName : "Paused · assigned station unavailable";
                 continue;
             }
-            foreach (var hit in hits)
-            {
-                if (hit.Rack == null) continue;
-                for (var i = 0; i < hit.Rack.m_slots.Length; i++)
-                {
-                    hit.Rack.GetSlot(i, out var raw, out var time, out var status, out _);
-                    if (status != CookingStation.Status.NotDone || ProductOf(hit.Rack, raw) != step.Output) continue;
-                    var conversion = hit.Rack.GetItemConversion(raw);
-                    if (conversion == null || conversion.m_cookTime <= 0) continue;
-                    // Multiple portions can finish at different times: display the next one.
-                    if (step.DurationSeconds <= 0 || conversion.m_cookTime - time < step.DurationSeconds - step.ElapsedSeconds)
-                    { step.DurationSeconds = conversion.m_cookTime; step.ElapsedSeconds = Mathf.Clamp(time, 0, conversion.m_cookTime); }
-                }
-            }
+            PaintNativeTiming(hits, step);
         }
     }
     private static string WorkLine(Work w)
@@ -104,7 +102,8 @@ internal static partial class KitchenRun
         foreach (var input in w.Inputs) inputs.Add(input.Key + "=" + input.Value);
         return "W\t" + w.Order + "\t" + w.Output + "\t" + (int)w.Station + "\t" + w.Level + "\t" + w.Made + "\t"
             + (w.Root ? 1 : 0) + "\t" + w.Elapsed.ToString("R", CultureInfo.InvariantCulture) + "\t"
-            + w.Duration.ToString("R", CultureInfo.InvariantCulture) + "\t" + string.Join(";", inputs) + "\n";
+            + w.Duration.ToString("R", CultureInfo.InvariantCulture) + "\t" + string.Join(";", inputs)
+            + "\t" + w.StationId + "\t" + w.StationName.Replace("\t", " ").Replace("\n", " ") + "\n";
     }
     private static Work? ReadWork(string[] p)
     {
@@ -114,9 +113,10 @@ internal static partial class KitchenRun
             || !float.TryParse(p[8], NumberStyles.Float, CultureInfo.InvariantCulture, out var duration)
             || duration <= 0 || float.IsNaN(duration) || float.IsInfinity(duration) || float.IsNaN(elapsed) || float.IsInfinity(elapsed)) return null;
         var w = new Work { Order = order, Output = p[2], Station = (KitchenStationKind)kind, Level = level,
-            Made = made, Root = p[6] == "1", Elapsed = Math.Max(0, elapsed), Duration = duration };
+            Made = made, StationId = p.Length > 10 ? p[10] : "", StationName = p.Length > 11 ? p[11] : "", Root = p[6] == "1", Elapsed = Math.Max(0, elapsed), Duration = duration };
         foreach (var item in p[9].Split(';'))
         { var pair = item.Split('='); if (pair.Length == 2 && int.TryParse(pair[1], out var n) && n > 0) w.Inputs[pair[0]] = n; }
         return w;
     }
 }
+

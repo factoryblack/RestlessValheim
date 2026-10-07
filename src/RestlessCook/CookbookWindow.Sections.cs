@@ -17,7 +17,7 @@ internal sealed partial class CookbookWindow
         {
             "Feasts" => row.IsFeast,
             "Meals" => row.IsMeal && !mead,
-            "Prep" => row.Kind == "ingredient",
+            "Prep" => row.Kind == "ingredient" || row.IsSideboard,
             "Bait" => row.Kind == "bait",
             "Meads" => mead,
             _ => row.IsFeast || row.IsMeal || row.IsSideboard || mead || row.Kind == "ingredient" || row.Kind == "bait"

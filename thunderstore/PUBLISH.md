@@ -15,11 +15,11 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-The Cookbook prepares dough, the uncooked dishes, and fishing bait. Prep and Bait are separate filters. One tag per push. Cook first, the pack last. These tags are not pushed.
+The Cookbook prepares dough, the uncooked dishes, the sideboards, and fishing bait. Prep and Bait are separate filters. One tag per push. Cook first, the pack last. These tags are not pushed.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCook | 0.4.0 | **0.5.0** | Prep lists dough and the uncooked dishes. Bait is its own filter |
+| RestlessCook | 0.4.0 | **0.5.0** | Prep lists dough, the uncooked dishes, and the sideboards. Bait is its own filter |
 | Restless Valheim pack | 0.1.29 | **0.1.30** | Joins Cook 0.5.0 |
 
 Core 0.2.4, Plant 0.2.2, Storage 0.2.2, Workshop 0.1.3, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.

@@ -4,7 +4,7 @@ Changes are listed newest first. **Unreleased** describes current source changes
 
 ## 0.5.0
 
-- Fishing bait and the other vanilla food-station recipes are prepared from the Cookbook. Prep is dough and the uncooked dishes. Bait is its own filter. Sideboards stay with the other dishes, and barley wine base is a mead.
+- Fishing bait and the other vanilla food-station recipes are prepared from the Cookbook. Prep is dough, the uncooked dishes, and the sideboards. Bait is its own filter. Barley wine base is a mead.
 - Requires Core 0.2.4.
 
 ## 0.4.0

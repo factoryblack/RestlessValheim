@@ -23,6 +23,7 @@ namespace RestlessCook
     {
         internal string name = ""; internal bool m_enabled = true; internal ItemDrop? m_item;
         internal CraftingStation? m_craftingStation; internal int m_minStationLevel=1, m_amount=1;
+        internal bool m_requireOnlyOneIngredient;
         internal Requirement[] m_resources = Array.Empty<Requirement>();
     }
     internal enum KitchenStationKind { None,Cauldron,PrepTable,Rack,Oven,MeadKettle,Fermenter }
@@ -69,7 +70,9 @@ namespace RestlessCook
                 m_resources=new[]{new Requirement{m_resItem=new("FishRaw"),m_amount=1}}};
             var sword=new Recipe{name="Recipe_Sword",m_item=new("Sword"),m_craftingStation=new("forge"),
                 m_resources=new[]{new Requirement{m_resItem=new("Iron"),m_amount=1}}};
-            ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe,bait,wine,soup,sword}};
+            var fish=new Recipe{name="Recipe_Fish1",m_item=new("FishRaw"),m_craftingStation=new("piece_preptable"),m_requireOnlyOneIngredient=true,
+                m_resources=new[]{new Requirement{m_resItem=new("Fish1"),m_amount=1},new Requirement{m_resItem=new("Fish9"),m_amount=1},new Requirement{m_resItem=new("Fish12"),m_amount=1}}};
+            ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe,bait,wine,soup,sword,fish}};
             EnsureMeads();
             var steps=Expand("Bread",3,0,"");
             Check(steps[0].Station==KitchenStationKind.Oven && steps[0].StationLevel==1 && steps[0].StationPrefab=="","A finished food row must never bypass its native oven conversion");
@@ -91,7 +94,14 @@ namespace RestlessCook
             Check(_rows.Any(r=>r.Prefab=="BarleyWineBase" && r.Kind=="mead"),"Barley wine base belongs with the meads");
             Check(_rows.Any(r=>r.Prefab=="FishSoup" && r.Kind=="meal"),"A vanilla cauldron dish is a meal the kitchen can cook");
             Check(!_rows.Any(r=>r.Prefab=="Sword"),"Forge recipes stay on the forge");
-            var count=_rows.Count; ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe,bait,wine,soup,sword}}; EnsureMeads();
+            var plate=_rows.First(r=>r.Prefab=="FishRaw");
+            Check(plate.AnyOne && plate.Uses.Count==3,"Raw fish keeps every species and accepts any one of them");
+            steps=Expand("FishRaw",1,0,"");
+            Check(steps[0].Uses.Count==1 && steps[0].Uses[0].Item=="Fish1" && steps[0].Uses[0].Amount==1,"An empty larder still asks for one fish");
+            var held=new Dictionary<string,int>{{"Fish9",4}};
+            steps=Expand("FishRaw",2,0,"",held);
+            Check(steps[0].Uses.Single().Item=="Fish9" && steps[0].Uses.Single().Amount==2,"Raw fish uses the fish that is on hand");
+            var count=_rows.Count; ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe,bait,wine,soup,sword,fish}}; EnsureMeads();
             Check(_rows.Count==count,"Changing world database must rebuild without duplicate native rows");
             var plain=new CookRow{Prefab="Soup",Station="piece_cauldron",OutputAmount=1}; plain.Uses.Add(new CookUse{Item="Vegetable",Amount=2});ByOutput["Soup"]=plain;
             steps=Expand("Soup",1,0,"");

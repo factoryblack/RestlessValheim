@@ -43,7 +43,7 @@ internal sealed partial class WorkshopWindow
         var details=new StringBuilder("PRODUCTION REQUIREMENTS\n\n").AppendLine(Local(selected.StationName))
             .AppendLine(matching.Count+" machines in range").AppendLine(matching.Sum(m=>m.Free)+" free input slots").AppendLine()
             .AppendLine(_mode==WorksOrderMode.Make?"Make produces additional units.":"Keep counts usable stock after Make reservations, plus incoming production when the order is running.")
-            .AppendLine().AppendLine("OUTPUT DESTINATION").AppendLine("Collected onto this board. Use Orders to collect Make output, or Output for unreserved stock.")
+            .AppendLine().AppendLine("OUTPUT DESTINATION").AppendLine("A finished unit drops at the machine. The order counts it there and then stops.")
             .AppendLine().AppendLine("DEPENDENCIES").AppendLine("Input and fuel recipes can be ordered separately. This plan does not automatically queue them.");
         if(!string.IsNullOrEmpty(selected.Fuel))details.AppendLine().AppendLine("Fuel quantities are estimates. Machines retain their normal fuel use and processing time.");
         Detail(details.ToString());
@@ -72,9 +72,9 @@ internal sealed partial class WorkshopWindow
         Hide(_cards,4);Size(_body,532);
         var recipe=_recipes.FirstOrDefault(r=>r.Output==order.Output);
         var matching=_machines.Where(m=>m.Prefab==recipe?.Station).ToList();
-        var state=order.Mode==WorksOrderMode.Keep&&order.Available>=order.Count?"Target met · monitoring stock":order.InProduction>0?"Production underway":order.Ready>0&&order.Remaining==0?"Ready to collect":matching.Count==0?"Waiting for a matching machine":"Waiting for inputs, fuel or a free machine slot";
+        var state=order.Mode==WorksOrderMode.Keep&&order.Available>=order.Count?"Target met · monitoring stock":order.Mode==WorksOrderMode.Make&&order.Collected>=order.Count&&order.Ready<1?"Finished. Each unit dropped at the machine.":order.InProduction>0?"Production underway":order.Ready>0&&order.Remaining==0?"Ready to collect":matching.Count==0?"Waiting for a matching machine":"Waiting for inputs, fuel or a free machine slot";
         var detail=new StringBuilder("ORDER #").Append(order.Id).Append("\n\n").AppendLine(state).AppendLine()
-            .AppendLine(order.Mode==WorksOrderMode.Keep?"This target stays active and replenishes supplies as stock falls.":"This order stops after its requested additional output is made and collected.")
+            .AppendLine(order.Mode==WorksOrderMode.Keep?"This target stays active and replenishes supplies as stock falls.":"This order stops after its requested additional output has dropped at the machine.")
             .AppendLine().AppendLine("MACHINES").AppendLine(recipe==null?"Recipe unavailable":Local(recipe.StationName)).AppendLine(matching.Count+" in range")
             .AppendLine().AppendLine("Stopping an order removes its instruction. Material already inside machines continues processing.");
         Detail(detail.ToString());

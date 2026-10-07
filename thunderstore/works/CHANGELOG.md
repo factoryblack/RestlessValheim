@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.1.4
+
+- A Make order counts each unit as it drops at the machine, and then stops.
+- Requires Core 0.2.5.
+
 ## 0.1.3
 
 - An iron order takes iron scraps. Iron ore is used only when no scraps are on hand.

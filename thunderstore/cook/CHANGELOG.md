@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.5.1
+
+- A raw fish plate takes any one fish.
+- Requires Core 0.2.5.
+
 ## 0.5.0
 
 - Fishing bait and the other vanilla food-station recipes are prepared from the Cookbook. Prep is dough, the uncooked dishes, and the sideboards. Bait is its own filter. Barley wine base is a mead.

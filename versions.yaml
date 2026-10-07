@@ -14,14 +14,14 @@ jotunn: "2.30.2"
 
 packages:
   core:
-    version: "0.2.4"
+    version: "0.2.5"
     guid: "restless.core"
     thunderstore: "RestlessCore"
     plugin: "src/RestlessQoL/Plugin.cs"
     csproj: "src/RestlessQoL/RestlessQoL.csproj"
     thunderstore_dir: "thunderstore/plugin"
   cook:
-    version: "0.5.0"
+    version: "0.5.1"
     guid: "restless.cook"
     thunderstore: "RestlessCook"
     plugin: "src/RestlessCook/Plugin.cs"
@@ -61,7 +61,7 @@ packages:
     thunderstore_dir: "thunderstore/storage"
     needs_core: true
   works:
-    version: "0.1.3"
+    version: "0.1.4"
     guid: "restless.works"
     thunderstore: "RestlessWorkshop"
     plugin: "src/RestlessWorks/Plugin.cs"
@@ -69,7 +69,7 @@ packages:
     thunderstore_dir: "thunderstore/works"
     needs_core: true
   pack:
-    version: "0.1.30"
+    version: "0.1.31"
     thunderstore: "Restless_Valheim"
     thunderstore_dir: "thunderstore/pack"
     members: [core, cook, piles, plant, drawers, storage, works]

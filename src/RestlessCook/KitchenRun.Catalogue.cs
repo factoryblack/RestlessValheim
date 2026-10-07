@@ -104,6 +104,7 @@ internal static partial class KitchenRun
                 StationLevel = recipe.m_minStationLevel, OutputAmount = recipe.m_amount };
             foreach (var req in recipe.m_resources)
                 if (req?.m_resItem != null && req.m_amount > 0) row.Uses.Add(new CookUse { Item = req.m_resItem.name, Amount = req.m_amount });
+            row.AnyOne = recipe.m_requireOnlyOneIngredient;
             if (row.Uses.Count == 0) continue;
             _rows.Add(row); ById[row.Id] = row; ByOutput[output] = row;
             foreach (var use in row.Uses)

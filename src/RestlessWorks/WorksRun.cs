@@ -234,7 +234,6 @@ internal static class WorksRun
         { ProductionLease.SetActive(view, false); return; }
         ProductionLease.SetActive(view, true);
         var hits = Scan(origin, true, view);
-        CollectFinished(hits, ledger);
         var loads = 0;
         var stock = Stock(origin, playerId, ledger);
         Describe(ledger, stock, Production(hits));
@@ -404,29 +403,38 @@ internal static class WorksRun
         return station.GetFuel() >= 1f;
     }
 
-    private static void CollectFinished(List<Hit> hits, Ledger ledger)
+    // The machine drops the finished unit. Counting happens there, in NoteDrop,
+    // because the processed queue is already empty by the next board tick.
+    internal static void NoteDrop(Smelter station, string raw, int amount)
     {
-        foreach (var hit in hits)
+        if (station?.m_nview == null || !station.m_nview.IsOwner() || amount < 1)
+            return;
+        if (FoodOven(Utils.GetPrefabName(station.gameObject)))
+            return;
+        var conversion = station.GetItemConversion(raw);
+        if (conversion?.m_to == null)
+            return;
+        var made = Clean(conversion.m_to.gameObject.name);
+        for (var i = Boards.Count - 1; i >= 0; i--)
         {
-            var station = hit.Station;
-            if (station?.m_nview == null || !station.m_nview.IsOwner() || station.GetProcessedQueueSize() <= 0)
+            var board = Boards[i];
+            if (board == null)
                 continue;
-            var source = station.m_nview.GetZDO().GetString(ZDOVars.s_spawnOre);
-            var conversion = station.GetItemConversion(source);
-            if (conversion?.m_to == null)
+            var view = board.GetComponent<ZNetView>();
+            if (view == null || !view.IsValid() || !view.IsOwner())
                 continue;
-            var made = Clean(conversion.m_to.gameObject.name);
+            if (!ProductionLease.Controls(station.m_nview, view))
+                continue;
+            var ledger = Read(view);
             if (!Wanted(ledger, made))
                 continue;
-            var amount = station.GetProcessedQueueSize();
-            Add(ledger, made, amount);
-            Credit(ledger, made, amount);
-            station.m_nview.GetZDO().Set(ZDOVars.s_spawnOre, "");
-            station.m_nview.GetZDO().Set(ZDOVars.s_spawnAmount, 0);
+            CreditDrop(ledger, made, amount);
+            Write(view, ledger);
+            return;
         }
     }
 
-    private static void Credit(Ledger ledger, string made, int amount)
+    private static void CreditDrop(Ledger ledger, string made, int amount)
     {
         var left = amount;
         foreach (var order in ledger.Orders)
@@ -435,7 +443,7 @@ internal static class WorksRun
                 continue;
             var room = Math.Max(0, order.Count - order.Ready - order.Collected);
             var give = Math.Min(room, left);
-            order.Ready += give;
+            order.Collected += give;
             left -= give;
         }
     }
@@ -970,6 +978,14 @@ internal static class WorksRun
         public readonly List<WorksOrder> Orders = new();
         public readonly Dictionary<string, int> Pantry = new(StringComparer.Ordinal);
     }
+}
+
+[HarmonyPatch]
+internal static class WorksDrop
+{
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(Smelter), nameof(Smelter.Spawn), typeof(string), typeof(int))]
+    private static void AfterSpawn(Smelter __instance, string __0, int __1) => WorksRun.NoteDrop(__instance, __0, __1);
 }
 
 [HarmonyPatch]

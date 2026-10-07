@@ -96,9 +96,9 @@ public static class StorageWithdraw
             if (fit > 0)
             {
                 var clone = Copy(item, fit);
-                var before = clone.m_stack;
+                var before = Count(dest, clone);
                 dest.AddItem(clone);
-                landed = before - Math.Max(0, clone.m_stack);
+                landed = Math.Max(0, Count(dest, clone) - before);
             }
 
             added += landed;
@@ -199,6 +199,24 @@ public static class StorageWithdraw
         }
 
         return taken;
+    }
+
+    // AddItem merges into a stack, or stores the same object in an empty slot,
+    // without lowering the source stack count. The bag total is the landing.
+    private static int Count(Inventory dest, ItemDrop.ItemData item)
+    {
+        var name = item.m_shared != null ? item.m_shared.m_name : "";
+        var total = 0;
+        foreach (var have in dest.GetAllItems())
+        {
+            if (have?.m_shared == null || have.m_shared.m_name != name)
+                continue;
+            if (have.m_quality != item.m_quality || have.m_worldLevel != item.m_worldLevel)
+                continue;
+            total += have.m_stack;
+        }
+
+        return total;
     }
 
     private static int Fit(Inventory dest, ItemDrop.ItemData item)

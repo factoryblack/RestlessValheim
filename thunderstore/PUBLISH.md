@@ -15,20 +15,26 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-The Cookbook prepares dough, the uncooked dishes, the sideboards, and fishing bait. Prep and Bait are separate filters. One tag per push. Cook first, the pack last. These tags are not pushed.
+A raw fish plate takes any one fish. A storage take counts what landed in the bag. A Make order counts each unit as it drops at the machine, and then stops. One tag per push. Core first, then Cook, then Workshop, and the pack last. These tags are not pushed.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCook | 0.4.0 | **0.5.0** | Prep lists dough, the uncooked dishes, and the sideboards. Bait is its own filter |
-| Restless Valheim pack | 0.1.29 | **0.1.30** | Joins Cook 0.5.0 |
+| RestlessCore | 0.2.4 | **0.2.5** | A take counts the stacks that landed in the bag |
+| RestlessCook | 0.5.0 | **0.5.1** | A raw fish plate takes any one fish |
+| RestlessWorkshop | 0.1.3 | **0.1.4** | A Make order counts each drop and then stops |
+| Restless Valheim pack | 0.1.30 | **0.1.31** | Joins Core 0.2.5, Cook 0.5.1, and Workshop 0.1.4 |
 
-Core 0.2.4, Plant 0.2.2, Storage 0.2.2, Workshop 0.1.3, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
+Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
 
 ## Tag order
 
 ```
-git tag cook-v0.5.0
-git push origin cook-v0.5.0
-git tag pack-v0.1.30
-git push origin pack-v0.1.30
+git tag v0.2.5
+git push origin v0.2.5
+git tag cook-v0.5.1
+git push origin cook-v0.5.1
+git tag works-v0.1.4
+git push origin works-v0.1.4
+git tag pack-v0.1.31
+git push origin pack-v0.1.31
 ```

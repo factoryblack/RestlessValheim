@@ -2,6 +2,11 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
+## 0.1.31
+
+- A raw fish plate takes any one fish. A storage take counts what landed in the bag. A Make order counts each unit as it drops at the machine, and then stops.
+- Included version changes: RestlessCore 0.2.5, RestlessCook 0.5.1, RestlessPlant 0.2.2, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.2, RestlessWorkshop 0.1.4.
+
 ## 0.1.30
 
 - The Cookbook prepares dough, the uncooked dishes, the sideboards, and fishing bait. Bait has its own filter.

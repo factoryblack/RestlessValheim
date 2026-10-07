@@ -24,15 +24,34 @@ internal static partial class KitchenRun
         return KitchenStationKind.None;
     }
 
-    private static List<KitchenStep> Expand(string output, int need, int depth, string parent)
+    private static List<KitchenStep> Expand(string output, int need, int depth, string parent, Dictionary<string, int>? onHand = null)
     {
         var steps = new List<KitchenStep>();
         var guard = new HashSet<string>(StringComparer.Ordinal);
-        Walk(output, need, depth, parent, -1, steps, guard);
+        Walk(output, need, depth, parent, -1, steps, guard, onHand);
         return steps;
     }
 
-    private static void Walk(string output, int need, int depth, string parent, int parentIndex, List<KitchenStep> steps, HashSet<string> guard)
+    private static CookUse ChooseOne(CookRow row, Dictionary<string, int>? onHand)
+    {
+        var best = row.Uses[0];
+        var bestHave = -1;
+        foreach (var use in row.Uses)
+        {
+            var have = 0;
+            if (onHand != null)
+                onHand.TryGetValue(use.Item, out have);
+            if (have > bestHave)
+            {
+                best = use;
+                bestHave = have;
+            }
+        }
+
+        return best;
+    }
+
+    private static void Walk(string output, int need, int depth, string parent, int parentIndex, List<KitchenStep> steps, HashSet<string> guard, Dictionary<string, int>? onHand)
     {
         if (need < 1 || depth > 12 || string.IsNullOrEmpty(output) || !guard.Add(output + "#" + parent))
             return;
@@ -57,13 +76,20 @@ internal static partial class KitchenRun
         if (conversion == null && row != null)
         {
             var crafts = CraftsFor(need, row.OutputAmount);
-            foreach (var use in row.Uses)
+            var uses = row.Uses;
+            CookUse? only = null;
+            if (row.AnyOne && row.Uses.Count > 0)
+            {
+                only = ChooseOne(row, onHand);
+                uses = new List<CookUse> { only };
+            }
+            foreach (var use in uses)
             {
                 if (use.Amount < 1 || string.IsNullOrEmpty(use.Item))
                     continue;
                 var want = crafts * use.Amount;
                 step.Uses.Add(new KitchenUse { Item = use.Item, Amount = want, Name = Label(use.Item) });
-                Walk(use.Item, want, depth + 1, output, index, steps, guard);
+                Walk(use.Item, want, depth + 1, output, index, steps, guard, onHand);
             }
 
             return;
@@ -73,7 +99,7 @@ internal static partial class KitchenRun
             return;
         var inputs = CraftsFor(need, conversion.Amount);
         step.Uses.Add(new KitchenUse { Item = conversion.From, Amount = inputs, Name = Label(conversion.From) });
-        Walk(conversion.From, inputs, depth + 1, output, index, steps, guard);
+        Walk(conversion.From, inputs, depth + 1, output, index, steps, guard, onHand);
     }
 
     private static int OutputAmount(KitchenStep step)

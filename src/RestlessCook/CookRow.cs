@@ -27,6 +27,7 @@ public sealed class CookRow
     public List<string> Feeds { get; } = new();
     public List<CookUse> Uses { get; } = new();
     public int OutputAmount { get; set; } = 1;
+    public bool AnyOne { get; set; }
     public string Station { get; set; } = "";
     public int StationLevel { get; set; } = 1;
     public float PreparationSeconds { get; set; }

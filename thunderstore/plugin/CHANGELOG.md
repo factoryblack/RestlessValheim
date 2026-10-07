@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.5
+
+- A storage take counts the stacks that landed in the bag, including a new stack and gear.
+
 ## 0.2.4
 
 - A kitchen collects oven output only from an oven that kitchen is running.

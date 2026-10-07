@@ -99,11 +99,11 @@ internal static partial class KitchenRun
         IncludeWork(ledger, cooking);
         foreach (var order in ledger.Orders)
         {
-            var prior = Expand(order.Feast, Outstanding(order), 0, "");
+            var prior = Expand(order.Feast, Outstanding(order), 0, "", free);
             Assign(table, prior, free, cooking, order.PlayerId, order.Ready);
         }
 
-        var steps = Expand(OutputOf(row), count, 0, "");
+        var steps = Expand(OutputOf(row), count, 0, "", free);
         Assign(table, steps, free, cooking, null);
         PaintTiming(table, steps, ledger, 0);
         return steps;
@@ -125,7 +125,7 @@ internal static partial class KitchenRun
         var free = Stock(table.transform.position, player, ledger);
         var cooking = OnStations(table.transform.position, Scan(table.transform.position, false, View(table)));
         IncludeWork(ledger, cooking);
-        var steps = Expand(order.Feast, Outstanding(order), 0, "");
+        var steps = Expand(order.Feast, Outstanding(order), 0, "", free);
         Assign(table, steps, free, cooking, player, order.Ready);
         PaintTiming(table, steps, ledger, orderId);
         return steps;
@@ -355,7 +355,7 @@ internal static partial class KitchenRun
             var outstanding = Outstanding(order);
             if (outstanding < 1)
                 continue;
-            var steps = Expand(order.Feast, outstanding, 0, "");
+            var steps = Expand(order.Feast, outstanding, 0, "", shared);
             Assign(table, steps, shared, cooking, order.PlayerId, order.Ready, hits);
             for (var i = steps.Count - 1; i >= 0; i--)
             {

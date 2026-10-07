@@ -46,6 +46,12 @@ internal static partial class KitchenRun
             foreach (var use in row.Uses) pending.Enqueue(use.Item);
         foreach (var output in native.Keys)
             if (output.StartsWith("Mead",StringComparison.OrdinalIgnoreCase)) pending.Enqueue(output);
+        foreach (var recipe in native.Values)
+        {
+            var stationName = recipe.m_craftingStation != null ? Clean(recipe.m_craftingStation.gameObject.name) : "";
+            if (KitchenCraft(stationName) && recipe.m_item != null)
+                pending.Enqueue(recipe.m_item.name);
+        }
         // Native processes always win over a direct finished-item recipe. Baking
         // prepares the raw conversion input using the Cook recipe's ingredients.
         foreach (var pair in Products)
@@ -62,7 +68,7 @@ internal static partial class KitchenRun
                     StationLevel = Math.Max(preparation?.m_minStationLevel ?? 1, finished.StationLevel),
                     OutputAmount = Math.Max(1, finished.OutputAmount), PreparationSeconds = finished.PreparationSeconds };
                 foreach (var use in finished.Uses) row.Uses.Add(new CookUse { Item = use.Item, Amount = use.Amount });
-                ByOutput[conversion.From] = row; ById[row.Id] = row;
+                ByOutput[conversion.From] = row; ById[row.Id] = row; _rows.Add(row);
                 if (!UsedBy.TryGetValue(conversion.From,out var bakedUses)) UsedBy[conversion.From] = bakedUses = new List<CookRow>();
                 bakedUses.Add(finished);
                 foreach (var use in row.Uses)
@@ -89,11 +95,12 @@ internal static partial class KitchenRun
             if (!visited.Add(output) || ByOutput.ContainsKey(output) || !native.TryGetValue(output,out var recipe)) continue;
             var item = recipe.m_item;
             if (item == null) continue;
+            var station = recipe.m_craftingStation != null ? Clean(recipe.m_craftingStation.gameObject.name) : "";
             var row = new CookRow { Id = "native:" + output, Prefab = output,
                 Name = Localization.instance != null ? Localization.instance.Localize(item.m_itemData.m_shared.m_name) : item.m_itemData.m_shared.m_name,
-                Kind = output.StartsWith("Mead",StringComparison.OrdinalIgnoreCase) ? "mead" : "ingredient",
+                Kind = NativeKind(output, station),
                 Source = "vanilla", Operation = "reference", RecipeId = recipe.name,
-                Station = recipe.m_craftingStation != null ? Clean(recipe.m_craftingStation.gameObject.name) : "",
+                Station = station,
                 StationLevel = recipe.m_minStationLevel, OutputAmount = recipe.m_amount };
             foreach (var req in recipe.m_resources)
                 if (req?.m_resItem != null && req.m_amount > 0) row.Uses.Add(new CookUse { Item = req.m_resItem.name, Amount = req.m_amount });
@@ -106,6 +113,30 @@ internal static partial class KitchenRun
                 list.Add(row);
             }
         }
+    }
+
+    private static bool KitchenCraft(string station)
+    {
+        var kind = KindOf(station);
+        return kind == KitchenStationKind.Cauldron || kind == KitchenStationKind.PrepTable || kind == KitchenStationKind.MeadKettle;
+    }
+
+    // Mead-kettle products are meads, including barley wine base. A finished cauldron
+    // dish is a meal. Fishing bait has its own filter. Dough, raw fish and uncooked
+    // oven loads stay prep.
+    private static string NativeKind(string output, string station)
+    {
+        if (output.StartsWith("FishingBait", StringComparison.Ordinal))
+            return "bait";
+        if (KindOf(station) == KitchenStationKind.MeadKettle
+            || output.StartsWith("Mead", StringComparison.OrdinalIgnoreCase)
+            || output.StartsWith("BarleyWine", StringComparison.OrdinalIgnoreCase))
+            return "mead";
+        if (output.IndexOf("Feast", StringComparison.OrdinalIgnoreCase) >= 0)
+            return "feast";
+        if (KindOf(station) == KitchenStationKind.Cauldron && !output.EndsWith("Uncooked", StringComparison.Ordinal))
+            return "meal";
+        return "ingredient";
     }
 }
 

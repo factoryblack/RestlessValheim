@@ -28,7 +28,7 @@ Meadows and Black Forest custom feasts do not need Bog Witch spices. Later feast
 
 ## Using the Cookbook
 
-Search and filter for **feasts, meals, ingredients or meads**. Select a dish to see its requirements and the preparation steps leading to it. Amounts on hand can exceed the requirement: 8/6 means you have eight and need six.
+Search and filter for **feasts, meals, prep, bait or meads**. Prep is dough and the uncooked dishes. Bait is its own list. Sideboards stay with the other dishes, and mead bases stay under Meads. Select a dish to see its requirements and the preparation steps leading to it. Amounts on hand can exceed the requirement: 8/6 means you have eight and need six.
 
 Orders draw from eligible nearby stock, including supported resource piles, load nearby cooking stations, collect prepared results and use those results in later recipe steps. The finished feast is handed to the player who ordered it.
 

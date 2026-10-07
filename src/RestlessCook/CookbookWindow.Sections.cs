@@ -17,9 +17,10 @@ internal sealed partial class CookbookWindow
         {
             "Feasts" => row.IsFeast,
             "Meals" => row.IsMeal && !mead,
-            "Ingredients" => row.IsSideboard || row.Kind == "ingredient",
+            "Prep" => row.Kind == "ingredient",
+            "Bait" => row.Kind == "bait",
             "Meads" => mead,
-            _ => row.IsFeast || row.IsMeal || row.IsSideboard || mead || row.Kind == "ingredient"
+            _ => row.IsFeast || row.IsMeal || row.IsSideboard || mead || row.Kind == "ingredient" || row.Kind == "bait"
         };
     }
     private void HideDish()

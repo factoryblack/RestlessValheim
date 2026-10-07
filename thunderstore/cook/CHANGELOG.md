@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.5.0
+
+- Fishing bait and the other vanilla food-station recipes are prepared from the Cookbook. Prep is dough and the uncooked dishes. Bait is its own filter. Sideboards stay with the other dishes, and barley wine base is a mead.
+- Requires Core 0.2.4.
+
 ## 0.4.0
 
 - Kitchen orders now route baked foods through raw preparation and a real oven instead of producing the finished food directly.

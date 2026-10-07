@@ -3,7 +3,7 @@
 ## Presentation
 Generated cook-portrait.png is a reusable shared Core asset (real alpha centre/outside), used around actual game icons. The recipe tree now uses larger portrait cards; a selected dish has its own portrait, title and state ribbon. Orders show every requirement with a separate status/progress track. Fractions come from native rack timers or the persisted preparation job; unavailable timers are not fabricated. Pantry uses Kitchen.Pantry/Take and protects reserved food.
 
-Filters: All, Feasts, Meals, Ingredients (prepared sideboards), Meads. Vanilla mead-base recipes are discovered from ObjectDB with actual ingredients, quantities and station levels. This adds no fermentation automation. Unsupported station/conversion types still need backend adapters; no brewing duration is simulated.
+Filters: All, Feasts, Meals, Prep, Bait, Meads. Six equal buttons, three per row. Prep is dough, raw fish and uncooked oven loads. Bait is the fishing-bait recipes. Sideboards stay with the other dishes. Mead-kettle recipes, including barley wine base, are meads. Vanilla recipes are discovered from ObjectDB with actual ingredients, quantities and station levels. This adds no fermentation automation. Unsupported station/conversion types still need backend adapters; no brewing duration is simulated.
 
 ## Real preparation jobs
 Cauldron, mead kettle and preparation-table crafts now commit ingredients and start a persisted job instead of adding output immediately. Output is added only on completion. Jobs use the native InventoryGui crafting duration when available (2-second headless fallback); cook.yaml rows may explicitly override it with preparation_seconds. Zero/omitted means native. No existing recipe durations are arbitrarily lengthened.

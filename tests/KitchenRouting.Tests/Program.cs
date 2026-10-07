@@ -61,13 +61,23 @@ namespace RestlessCook
             var raw=new Recipe{name="Recipe_Bread",m_item=new("BreadDough"),m_amount=2,m_minStationLevel=2,m_craftingStation=new("piece_preptable")};
             var baseRecipe=new Recipe{name="Mead base",m_item=new("MeadBaseHealth"),m_craftingStation=new("piece_meadcauldron"),
                 m_resources=new[]{new Requirement{m_resItem=new("Honey"),m_amount=10}}};
-            ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe}};
+            var bait=new Recipe{name="Recipe_FishingBaitForest",m_item=new("FishingBaitForest"),m_amount=20,m_craftingStation=new("piece_preptable"),
+                m_resources=new[]{new Requirement{m_resItem=new("FishingBait"),m_amount=20}}};
+            var wine=new Recipe{name="Recipe_BarleyWineBase",m_item=new("BarleyWineBase"),m_craftingStation=new("piece_MeadCauldron"),
+                m_resources=new[]{new Requirement{m_resItem=new("Barley"),m_amount=10}}};
+            var soup=new Recipe{name="Recipe_FishSoup",m_item=new("FishSoup"),m_craftingStation=new("piece_cauldron"),
+                m_resources=new[]{new Requirement{m_resItem=new("FishRaw"),m_amount=1}}};
+            var sword=new Recipe{name="Recipe_Sword",m_item=new("Sword"),m_craftingStation=new("forge"),
+                m_resources=new[]{new Requirement{m_resItem=new("Iron"),m_amount=1}}};
+            ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe,bait,wine,soup,sword}};
             EnsureMeads();
             var steps=Expand("Bread",3,0,"");
             Check(steps[0].Station==KitchenStationKind.Oven && steps[0].StationLevel==1 && steps[0].StationPrefab=="","A finished food row must never bypass its native oven conversion");
             Check(steps[0].Uses.Single().Item=="BreadDough" && steps[0].Uses.Single().Amount==3,"Oven must require one raw item per finished item");
             Check(steps[1].Station==KitchenStationKind.PrepTable && steps[1].StationLevel==2,"Dough must use the native preparation station and its upgrade requirement");
             Check(steps[1].Uses.Single().Amount==20,"Three bread must prepare two batches of dough at the configured cost");
+            Check(_rows.Any(r=>r.Prefab=="BreadDough" && r.Kind=="ingredient"),"Dough stays on Prep when the oven owns the finished bread");
+            Check(_rows.Any(r=>r.Prefab=="LoxPieUncooked" && r.Kind=="ingredient"),"An uncooked dish stays on Prep");
             Check(OutputAmount(steps[1])==2,"Preparation must retain its configured batch yield");
             steps=Expand("LoxPie",1,0,"");
             Check(steps.Select(s=>s.Output).SequenceEqual(new[]{"LoxPie","LoxPieUncooked","CookedLoxMeat","LoxMeat"}),"Pie must prepare cooked meat on the rack, assemble a raw pie, then bake it");
@@ -77,7 +87,11 @@ namespace RestlessCook
             Check(steps[0].Station==KitchenStationKind.Fermenter && steps[0].Uses.Single().Amount==2,"Seven meads must require two native six-item fermenter batches");
             Check(steps[1].Station==KitchenStationKind.MeadKettle && steps[1].Uses.Single().Amount==20,"Mead must first prepare its bases at the native kettle using native costs");
             Check(_rows.Any(r=>r.Prefab=="MeadHealth" && r.Kind=="mead"),"Finished meads must be browsable and filterable");
-            var count=_rows.Count; ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe}}; EnsureMeads();
+            Check(_rows.Any(r=>r.Prefab=="FishingBaitForest" && r.Kind=="bait" && r.OutputAmount==20),"Fishing bait has its own kind");
+            Check(_rows.Any(r=>r.Prefab=="BarleyWineBase" && r.Kind=="mead"),"Barley wine base belongs with the meads");
+            Check(_rows.Any(r=>r.Prefab=="FishSoup" && r.Kind=="meal"),"A vanilla cauldron dish is a meal the kitchen can cook");
+            Check(!_rows.Any(r=>r.Prefab=="Sword"),"Forge recipes stay on the forge");
+            var count=_rows.Count; ObjectDB.instance=new ObjectDB{m_recipes=new(){raw,baseRecipe,bait,wine,soup,sword}}; EnsureMeads();
             Check(_rows.Count==count,"Changing world database must rebuild without duplicate native rows");
             var plain=new CookRow{Prefab="Soup",Station="piece_cauldron",OutputAmount=1}; plain.Uses.Add(new CookUse{Item="Vegetable",Amount=2});ByOutput["Soup"]=plain;
             steps=Expand("Soup",1,0,"");

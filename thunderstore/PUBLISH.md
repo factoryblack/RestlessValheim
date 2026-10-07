@@ -15,20 +15,20 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-An iron order takes iron scraps. Iron ore is used only when no scraps are on hand. One tag per push. Workshop first, the pack last. These tags are not pushed.
+The Cookbook prepares dough, the uncooked dishes, and fishing bait. Prep and Bait are separate filters. One tag per push. Cook first, the pack last. These tags are not pushed.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessWorkshop | 0.1.2 | **0.1.3** | An iron order takes iron scraps |
-| Restless Valheim pack | 0.1.28 | **0.1.29** | Joins Workshop 0.1.3 |
+| RestlessCook | 0.4.0 | **0.5.0** | Prep lists dough and the uncooked dishes. Bait is its own filter |
+| Restless Valheim pack | 0.1.29 | **0.1.30** | Joins Cook 0.5.0 |
 
-Core 0.2.4, Cook 0.4.0, Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
+Core 0.2.4, Plant 0.2.2, Storage 0.2.2, Workshop 0.1.3, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
 
 ## Tag order
 
 ```
-git tag works-v0.1.3
-git push origin works-v0.1.3
-git tag pack-v0.1.29
-git push origin pack-v0.1.29
+git tag cook-v0.5.0
+git push origin cook-v0.5.0
+git tag pack-v0.1.30
+git push origin pack-v0.1.30
 ```

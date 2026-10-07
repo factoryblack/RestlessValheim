@@ -2,6 +2,11 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
+## 0.1.30
+
+- The Cookbook prepares dough, the uncooked dishes, and fishing bait. Bait has its own filter. Sideboards stay with the other dishes.
+- Included version changes: RestlessCore 0.2.4, RestlessCook 0.5.0, RestlessPlant 0.2.2, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.2, RestlessWorkshop 0.1.3.
+
 ## 0.1.29
 
 - An iron order takes iron scraps. Iron ore is used only when no scraps are on hand.

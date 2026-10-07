@@ -24,11 +24,11 @@ internal sealed partial class CookbookWindow
         Rule(_sheet, 28, 112, 1176, 1);
         var search = Field(_sheet, 28, 132, 252, 40);
         search.onValueChanged.AddListener(value => { _query = value; if (_tab == 0) { RecipeList(); Refresh(true); Size(_recipes,_recipes.content.rect.height,true); } });
-        var categories = new[] { "All", "Feasts", "Meals", "Ingredients", "Meads" };
+        var categories = new[] { "All", "Feasts", "Meals", "Prep", "Bait", "Meads" };
         for (var i = 0; i < categories.Length; i++)
         {
             var category = categories[i];
-            var button = Button(_sheet, category, 28 + (i == 4 ? 168 : i % 3 * 84), 182 + i / 3 * 36, i == 3 ? 164 : 80, 30, () =>
+            var button = Button(_sheet, category, 28 + i % 3 * 84, 182 + i / 3 * 36, 80, 30, () =>
             {
                 _category = category;
                 for (var j = 0; j < _filters.Count; j++) RestlessUi.PaperControl(_filters[j].gameObject, categories[j] == category ? RestlessUi.Accent : (Color?)null);

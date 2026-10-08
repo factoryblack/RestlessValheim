@@ -90,6 +90,19 @@ foreach (var handle in reader.TypeDefinitions)
 }
 if (cookingContracts.Count>0) throw new Exception("Native cooking contracts changed: "+string.Join(", ",cookingContracts.Keys));
 Console.WriteLine("10 native cooking adapter contracts passed.");
+foreach (var handle in reader.TypeDefinitions)
+{
+    var type=reader.GetTypeDefinition(handle); var name=reader.GetString(type.Name);
+    if(name!="WearNTear" && name!="Feast") continue;
+    foreach(var fh in type.GetFields()) { var f=reader.GetFieldDefinition(fh); Console.WriteLine(name+"."+reader.GetString(f.Name)+": "+f.DecodeSignature(provider,(object?)null)); }
+    foreach(var mh in type.GetMethods())
+    {
+        var m=reader.GetMethodDefinition(mh); var n=reader.GetString(m.Name);var sig=m.DecodeSignature(provider,(object?)null);
+        Console.WriteLine(name+"."+n+"("+string.Join(",",sig.ParameterTypes)+") -> "+sig.ReturnType);
+        if(m.RelativeVirtualAddress==0 || !(n=="SetupColliders" || n=="UpdateSupport" || n=="UpdateWear" || n=="UpdateVisual" || n=="Start" || n=="Awake"))continue;
+        Console.WriteLine("IL "+name+"."+n+" "+Convert.ToHexString(pe.GetMethodBody(m.RelativeVirtualAddress).GetILBytes()!));
+    }
+}
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";
@@ -107,4 +120,3 @@ sealed class Types : ISignatureTypeProvider<string, object?>
     public string GetTypeFromReference(MetadataReader r, TypeReferenceHandle h, byte k) => r.GetString(r.GetTypeReference(h).Name);
     public string GetTypeFromSpecification(MetadataReader r, object? c, TypeSpecificationHandle h, byte k) => r.GetTypeSpecification(h).DecodeSignature(this,c);
 }
-

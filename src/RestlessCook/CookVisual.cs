@@ -101,13 +101,17 @@ internal static class CookVisual
         keep.localScale = Vector3.one * FeastMeshScale;
         keep.localPosition = new Vector3(0f, 0.02f, 0f);
 
-        foreach (var col in prefab.GetComponentsInChildren<Collider>(true))
+        // Capture the cloned prefab's intended collider state before changing
+        // the preview. Serialized references survive Instantiate on placed pieces.
+        var state = prefab.GetComponent<FeastColliderState>() ?? prefab.AddComponent<FeastColliderState>();
+        if (state.Colliders == null)
         {
-            if (col == null)
-                continue;
-            if (col.transform == keep || col.transform.IsChildOf(keep))
-                continue;
-            col.enabled = false;
+            var originals = new System.Collections.Generic.List<Collider>();
+            foreach (var col in prefab.GetComponentsInChildren<Collider>(true))
+                if (col != null && col.transform != keep && !col.transform.IsChildOf(keep))
+                    originals.Add(col);
+            state.Colliders = originals.ToArray();
+            state.Enabled = System.Array.ConvertAll(state.Colliders, col => col.enabled);
         }
 
         var piece = prefab.GetComponent<Piece>();
@@ -125,7 +129,8 @@ internal static class CookVisual
         var hit = keep.GetComponent<MeshCollider>() ?? keep.gameObject.AddComponent<MeshCollider>();
         hit.sharedMesh = filter.sharedMesh;
         hit.convex = true;
-        hit.enabled = true;
+        var view = prefab.GetComponent<ZNetView>();
+        FeastColliderState.Apply(state.Colliders, state.Enabled, hit, view != null && view.IsValid());
     }
 
     // The plate collider is only for the serving-tray ghost. A placed board
@@ -135,14 +140,12 @@ internal static class CookVisual
     {
         if (placed == null)
             return;
-        var plate = placed.transform.Find(ChildName);
-        foreach (var col in placed.GetComponentsInChildren<Collider>(true))
-        {
-            if (col == null)
-                continue;
-            var onPlate = plate != null && (col.transform == plate || col.transform.IsChildOf(plate));
-            col.enabled = !onPlate;
-        }
+        var state = placed.GetComponent<FeastColliderState>();
+        // A missing custom mesh keeps the vanilla appearance and physics.
+        if (state?.Colliders == null)
+            return;
+        var hit = placed.transform.Find(ChildName)?.GetComponent<MeshCollider>();
+        FeastColliderState.Apply(state.Colliders, state.Enabled, hit, true);
     }
 
     private static void SitOnGround(Transform keep)

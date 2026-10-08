@@ -884,7 +884,6 @@ internal static class RecipeEngine
 
         if (feast.m_eatStacks < 1)
             feast.m_eatStacks = 10;
-        CookVisual.EnsureHit(feast.gameObject);
     }
 
     [HarmonyPatch(typeof(Player), nameof(Player.AddKnownRecipe))]

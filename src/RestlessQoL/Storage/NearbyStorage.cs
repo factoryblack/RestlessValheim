@@ -366,7 +366,7 @@ public static class NearbyStorage
     {
         if (player == null || drop?.m_itemData?.m_shared == null || drop.m_nview == null || !drop.m_nview.IsValid())
             return 0;
-        if (!drop.CanPickup(true))
+        if (drop.IsPiece() || !drop.CanPickup(true))
             return 0;
         var id = drop.m_nview.GetZDO().m_uid;
         if (!BeginDeposit(id))

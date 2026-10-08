@@ -2,6 +2,11 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
+## 0.1.32
+
+- Ground vacuum leaves a placed piece where it is. A feast board stays.
+- Included version changes: RestlessCore 0.2.6, RestlessCook 0.5.1, RestlessPlant 0.2.2, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.2, RestlessWorkshop 0.1.4.
+
 ## 0.1.31
 
 - A raw fish plate takes any one fish. A storage take counts what landed in the bag. A Make order counts each unit as it drops at the machine, and then stops.

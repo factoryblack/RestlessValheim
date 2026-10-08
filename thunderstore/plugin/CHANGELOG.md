@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.6
+
+- Ground vacuum leaves a placed piece where it is. A feast board is not a pile.
+
 ## 0.2.5
 
 - A storage take counts the stacks that landed in the bag, including a new stack and gear.

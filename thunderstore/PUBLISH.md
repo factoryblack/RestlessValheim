@@ -15,26 +15,20 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-A raw fish plate takes any one fish. A storage take counts what landed in the bag. A Make order counts each unit as it drops at the machine, and then stops. One tag per push. Core first, then Cook, then Workshop, and the pack last. These tags are not pushed.
+Ground vacuum leaves a placed piece where it is. A feast board stays. One tag per push. Core first, then the pack.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCore | 0.2.4 | **0.2.5** | A take counts the stacks that landed in the bag |
-| RestlessCook | 0.5.0 | **0.5.1** | A raw fish plate takes any one fish |
-| RestlessWorkshop | 0.1.3 | **0.1.4** | A Make order counts each drop and then stops |
-| Restless Valheim pack | 0.1.30 | **0.1.31** | Joins Core 0.2.5, Cook 0.5.1, and Workshop 0.1.4 |
+| RestlessCore | 0.2.5 | **0.2.6** | Ground vacuum leaves a placed piece where it is |
+| Restless Valheim pack | 0.1.31 | **0.1.32** | Joins Core 0.2.6 |
 
-Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
+Cook 0.5.1, Workshop 0.1.4, Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
 
 ## Tag order
 
 ```
-git tag v0.2.5
-git push origin v0.2.5
-git tag cook-v0.5.1
-git push origin cook-v0.5.1
-git tag works-v0.1.4
-git push origin works-v0.1.4
-git tag pack-v0.1.31
-git push origin pack-v0.1.31
+git tag v0.2.6
+git push origin v0.2.6
+git tag pack-v0.1.32
+git push origin pack-v0.1.32
 ```

@@ -1,12 +1,12 @@
 {
   "name": "Restless_Valheim",
-  "version_number": "0.1.31",
+  "version_number": "0.1.32",
   "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/README.md",
   "description": "The Restless collection in one install: a cohesive interface, smoother storage, expanded cooking and easier farming.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",
-    "Restless-RestlessCore-0.2.5",
+    "Restless-RestlessCore-0.2.6",
     "Restless-RestlessCook-0.5.1",
     "Restless-RestlessPiles-0.2.1",
     "Restless-RestlessPlant-0.2.2",

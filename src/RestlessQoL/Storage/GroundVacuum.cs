@@ -33,6 +33,9 @@ public sealed class GroundVacuum : FeatureModule
                 continue;
             if (drop.m_itemData.m_shared.m_questItem)
                 continue;
+            // A placed feast is an item drop and a piece. It is not a pile.
+            if (drop.IsPiece())
+                continue;
             if ((drop.transform.position - origin).sqrMagnitude > range * range)
                 continue;
             NearbyStorage.TryDepositDrop(player, drop);

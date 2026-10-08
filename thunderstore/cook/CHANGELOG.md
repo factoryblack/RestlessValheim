@@ -2,6 +2,12 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## Unreleased
+
+- Fixed custom feasts switching back to placement-preview physics during visual refresh. Placed and reloaded feasts retain their original support colliders.
+- Preserve deliberately disabled clone colliders and leave missing-model fallback physics alone.
+- Kitchen collection now obtains ownership before reading the pantry and order state.
+
 ## 0.5.1
 
 - A raw fish plate takes any one fish.

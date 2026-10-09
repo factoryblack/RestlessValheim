@@ -26,6 +26,7 @@ WorksHarness.Tick(new(),new());Check(WorksHarness.Paid.SequenceEqual(new long[]{
 CookHarness.Current=new();CookHarness.Planned.Clear();CookHarness.Paid.Clear();
 CookHarness.Current.Orders.Add(new(){PlayerId=11});CookHarness.Current.Orders.Add(new(){PlayerId=22});
 CookHarness.Tick(new(),1);Check(CookHarness.Planned.SequenceEqual(new long[]{11,22})&&CookHarness.Paid.SequenceEqual(new long[]{11,22}),"actual kitchen tick uses matching plan and payment actors");
+WorksHarness.Paid.Clear();var fuelLedger=new WorksHarness.Ledger();fuelLedger.Orders.Add(new(){PlayerId=22,Count=1,Collected=1});fuelLedger.Orders.Add(new(){PlayerId=11,Count=1});var machine=new WorksHarness.Hit();WorksHarness.FuelQueued(new(){machine},fuelLedger,new());Check(machine.Station.Fuel==2&&WorksHarness.Paid.SequenceEqual(new long[]{11,11}),"actual queued-machine refuelling uses outstanding order creator and skips completed orders");
 ZNetScene.instance=new();PlantHarness.Tick();
 var grown=new GameObject{name="Pickable_Carrot"};var seed=new GameObject{name="carrot"};var piece=seed.Add(new Piece());seed.Add(new Plant{m_grownPrefabs=new[]{grown}});ZNetScene.instance.m_prefabs.Add(seed);
 var ripe=new GameObject{name=grown.name}.Add(new Pickable());

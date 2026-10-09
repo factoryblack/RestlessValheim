@@ -12,7 +12,7 @@ def method(path, signature):
 groups = {
     'PileHarness': ('src/RestlessPiles/PileBag.cs', ['internal static void List(', 'internal static void Take(', 'public static int CountNearby(', 'public static int ConsumeNearby(', 'internal static int Drain(', 'private static int PullFromPile(', 'private static int TakeOwned(', 'private static ItemDrop.ItemData? RoomInBag(']),
     'PlantHarness': ('src/RestlessPlant/PlantHarvest.cs', ['private static Piece? SeedFor(', 'private static void AfterPick(', 'private static void Replant(', 'internal static void Tick()']),
-    'WorksHarness': ('src/RestlessWorks/WorksRun.cs', ['private static void Tick(', 'private static void Describe(']),
+    'WorksHarness': ('src/RestlessWorks/WorksRun.cs', ['private static void Tick(', 'private static void Describe(', 'private static void FuelQueued(', 'private static int FuelTarget(']),
     'CookHarness': ('src/RestlessCook/KitchenRun.cs', ['internal static void Tick(']),
 }
 body = 'using System; using System.Collections.Generic; using UnityEngine; using RestlessQoL.Storage;\n'

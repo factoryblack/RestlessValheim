@@ -32,15 +32,18 @@ public enum WorksOrderMode{Make,Keep}
 public class WorksOrder{public int Id,Count,Ready,Collected,Remaining,InProduction,Available;public long PlayerId;public string Output="ore";public WorksOrderMode Mode;}
 public class WorksRecipe{}
 partial class WorksHarness {
+    internal class Hit {internal Smelter Station=new();}
     internal class Ledger{public List<WorksOrder> Orders=new();}
     internal static Ledger Current=new();internal static List<long> Planned=new(),Paid=new();const int LoadsPerTick=4;
     static Ledger Read(ZNetView v)=>Current;static void Write(ZNetView v,Ledger l){}
-    static List<int> Scan(Vector3 o,bool b,ZNetView v)=>new();static Dictionary<string,int> Production(List<int> hits)=>new();
+    static List<Hit> Scan(Vector3 o,bool b,ZNetView v)=>new();static Dictionary<string,int> Production(List<Hit> hits)=>new();
     static Dictionary<string,int> Stock(Vector3 o,long actor,Ledger l){Planned.Add(actor);return new();}
     static int Reserved(Ledger l,string output)=>0;static WorksRecipe Find(string s)=>new();
-    static bool LoadOne(WorksRecipe r,List<int> h,Ledger l,Vector3 o,long actor,Dictionary<string,int> s){Paid.Add(actor);return true;}
-    static void FuelQueued(List<int> h,Ledger l,Vector3 o){}
+    static bool LoadOne(WorksRecipe r,List<Hit> h,Ledger l,Vector3 o,long actor,Dictionary<string,int> s){Paid.Add(actor);return true;}
+    static string Clean(string s)=>s;
+    static bool AddFuel(Smelter station,string prefab,Ledger l,Vector3 o,long actor){Paid.Add(actor);station.Fuel++;return true;}
 }
+public class Smelter{public ZNetView m_nview=new();public int m_maxFuel=10,m_fuelPerProduct=2;public ItemDrop m_fuelItem=new();public float Fuel;public List<string> Queue=new(){"ore"};public float GetFuel()=>Fuel;public int GetQueueSize()=>Queue.Count;public Conversion GetItemConversion(string input)=>new();public class Conversion{public ItemDrop m_to=new(){gameObject=new(){name="ore"}};}}
 public enum KitchenStepState{Ready,Queued,Missing}
 public enum KitchenStationKind{Rack,Oven,Fermenter,Cauldron,PrepTable,MeadKettle}
 public class KitchenStep{public KitchenStepState State=KitchenStepState.Ready;public KitchenStationKind Station=KitchenStationKind.Cauldron;}
@@ -65,6 +68,7 @@ partial class CookHarness {
 }
 namespace RestlessQoL.Storage {
     public static class ProductionLease{public static void SetActive(ZNetView v,bool b){}}
+    public static class ProductionQueue{public static string Input(Smelter s,int i)=>s.Queue[i];}
     public class NearbyLot{public int Count;public NearbyLot(string place,ItemDrop.ItemData item,int count){Count=count;}}
     public static class NearbyStorage{public static bool EnsureDropPrefab(ItemDrop.ItemData i){i.m_dropPrefab??=new(){name="Wood"};return true;}}
 }

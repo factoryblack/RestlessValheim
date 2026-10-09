@@ -43,3 +43,5 @@ The host controls extra crops, saplings, decorative flora, grow-anywhere, harves
 
 [Install](install.md) · [Troubleshoot](troubleshooting.md) · [All guides](README.md)
 
+
+Global Reach optionally controls the shared crop/beehive harvest radius with a smaller 2.5–8 m profile set. Its slider shows the effective radius and is disabled while the profile controls it. Turning the profile off restores the saved custom radius. Plant spacing and field snapping remain personal; snapping respects its configured radius.

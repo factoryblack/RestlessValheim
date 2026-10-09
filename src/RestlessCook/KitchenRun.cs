@@ -987,6 +987,12 @@ internal static partial class KitchenRun
         {
             if (col == null)
                 continue;
+            // Effect triggers can overlap the sphere while their station is outside it.
+            var owner = col.GetComponentInParent<CookingStation>()?.transform
+                ?? col.GetComponentInParent<Smelter>()?.transform
+                ?? col.GetComponentInParent<Fermenter>()?.transform
+                ?? col.GetComponentInParent<CraftingStation>()?.transform;
+            if (owner != null && (owner.position - origin).sqrMagnitude > Range() * Range()) continue;
             var rack = col.GetComponentInParent<CookingStation>();
             var rackRelevant = demand == null;
             if (rack != null && demand != null)
@@ -1208,7 +1214,7 @@ internal static partial class KitchenRun
 
     private static float Range()
     {
-        var range = ModConfig.StorageRange != null ? ModConfig.StorageRange.Value : 20f;
+        var range = ModConfig.StorageRange != null ? ReachPolicy.ResourceReach : 20f;
         return range < 4f ? 20f : range;
     }
 

@@ -529,6 +529,7 @@ public sealed partial class SettingsUi : FeatureModule
             _hint.text = "";
         (_scroll as RestlessScrollRect)?.CancelWheel();
         ClearSettingBindings();
+        WatchReachSettings();
         _settingsRevision = RestlessQoL.Api.SettingsPageApi.ControlsRevision;
         _settingsHost = ExpansionHostCanEdit();
         _settingsCoreHost = CanEditGameplay();
@@ -540,10 +541,11 @@ public sealed partial class SettingsUi : FeatureModule
         switch (id)
         {
             case "storage":
+                PaintReachSettings();
                 Head("Chests");
                 Bunch(
                     t => Bool("Use nearby chests", ModConfig.StorageEnabled, locked, t, editable: CoreEditable),
-                    t => Step("Search range", "m", ModConfig.StorageRange, locked, t, true, editable: CoreEditable),
+                    t => Step("Search range", "m", ModConfig.StorageRange, locked, t, true, editable: () => CoreEditable() && ModConfig.StorageEnabled.Value && !ReachPolicy.Global, effective: () => ReachPolicy.ResourceReach, status: () => !ModConfig.StorageEnabled.Value ? "Feature disabled" : ReachPolicy.Global ? "Controlled by Global Reach" : "Custom"),
                     t => Bool("Leave one when pulling", ModConfig.LeaveOne, locked, t, true, editable: CoreEditable));
                 Bool("Craft from chests", ModConfig.CraftFromStorageEnabled, locked, editable: CoreEditable);
                 Bool("Build from chests", ModConfig.BuildFromStorageEnabled, locked, editable: CoreEditable);
@@ -558,17 +560,18 @@ public sealed partial class SettingsUi : FeatureModule
                 Bool("Tames eat from chests", ModConfig.PetPantryEnabled, locked, editable: CoreEditable);
                 break;
             case "building":
+                PaintReachSettings();
                 Head("Hammer");
                 Bunch(
                     t => Bool("Area repair", ModConfig.AreaRepairEnabled, locked, t, editable: CoreEditable),
-                    t => Step("Repair radius", "m", ModConfig.AreaRepairRadius, locked, t, true, editable: CoreEditable));
+                    t => Step("Repair radius", "m", ModConfig.AreaRepairRadius, locked, t, true, editable: () => CoreEditable() && ModConfig.AreaRepairEnabled.Value && !ReachPolicy.Global, effective: () => ReachPolicy.RepairReach, status: () => !ModConfig.AreaRepairEnabled.Value ? "Feature disabled" : ReachPolicy.Global ? "Controlled by Global Reach" : "Custom"));
                 Bunch(
                     t => Bool("Area seal", ModConfig.AreaSealEnabled, locked, t, editable: CoreEditable),
-                    t => Step("Seal radius", "m", ModConfig.AreaSealRadius, locked, t, true, editable: CoreEditable));
+                    t => Step("Seal radius", "m", ModConfig.AreaSealRadius, locked, t, true, editable: () => CoreEditable() && ModConfig.AreaSealEnabled.Value && !ReachPolicy.Global, effective: () => ReachPolicy.SealReach, status: () => !ModConfig.AreaSealEnabled.Value ? "Feature disabled" : ReachPolicy.Global ? "Controlled by Global Reach" : "Custom"));
                 Head("Stations");
                 Bunch(
                     t => Bool("Workbench range override", ModConfig.WorkbenchTweaksEnabled, locked, t, editable: CoreEditable),
-                    t => Step("Station range", "m", ModConfig.WorkbenchRange, locked, t, true, editable: CoreEditable));
+                    t => Step("Station range", "m", ModConfig.WorkbenchRange, locked, t, true, editable: () => CoreEditable() && ModConfig.WorkbenchTweaksEnabled.Value && !ReachPolicy.Global, effective: () => ReachPolicy.StationReach, status: () => !ModConfig.WorkbenchTweaksEnabled.Value ? "Feature disabled" : ReachPolicy.Global ? "Controlled by Global Reach" : "Custom"));
                 Bool("Stations pull ore and fuel", ModConfig.StationPullEnabled, locked, editable: CoreEditable);
                 Bool("Fires and held torches stay lit", ModConfig.EternalFireEnabled, locked, editable: CoreEditable);
                 Bool("Repair on station use", ModConfig.AutoRepairEnabled, locked, editable: CoreEditable);
@@ -864,11 +867,12 @@ public sealed partial class SettingsUi : FeatureModule
     private static string Metres(PlayerStatType stat) =>
         Mathf.RoundToInt(Ledger.Get(stat)) + " m";
 
-    private static void Step(string title, string unit, ConfigEntry<float> entry, bool locked, Transform? parent = null, bool nested = false, Func<bool>? editable = null)
+    private static void Step(string title, string unit, ConfigEntry<float> entry, bool locked, Transform? parent = null, bool nested = false, Func<bool>? editable = null, Func<float>? effective = null, Func<string>? status = null)
     {
         editable ??= () => !_closing && !locked;
         var row = Row(parent, nested);
         Titles(row, title, Hint(entry), 320f);
+        var caption = row.GetComponentInChildren<Text>();
         var value = RestlessUi.Label(row.transform, Format(entry.Value, unit, entry), RestlessUi.BodySize, RestlessUi.Accent, TextAnchor.MiddleRight);
         RestlessUi.Pin(value.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f), new Vector2(72f, 24f));
 
@@ -903,8 +907,10 @@ public sealed partial class SettingsUi : FeatureModule
         });
         ObserveSetting(entry, slider, editable, () =>
         {
-            slider.SetValueWithoutNotify(entry.Value);
-            value.text = Format(entry.Value, unit, entry);
+            var shown = effective != null ? effective() : entry.Value;
+            slider.SetValueWithoutNotify(shown);
+            value.text = Format(shown, unit, entry);
+            if (caption != null && status != null) caption.text = title + " · " + status();
         });
     }
 

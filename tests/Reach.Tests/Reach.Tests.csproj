@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/RestlessQoL/Core/ReachProfile.cs" Link="ReachProfile.cs" />
+    <Compile Include="../../src/RestlessQoL/Core/ReachPolicy.cs" Link="ReachPolicy.cs" />
+    <Compile Include="../../src/RestlessQoL/Core/ReachGeometry.cs" Link="ReachGeometry.cs" />
+    <Compile Include="../../src/RestlessQoL/Building/StationReachState.cs" Link="StationReachState.cs" />
+  </ItemGroup>
+</Project>

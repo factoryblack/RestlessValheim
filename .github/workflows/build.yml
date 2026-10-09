@@ -105,6 +105,9 @@ jobs:
       - name: Native UI contract
         run: dotnet run --project tests/NativeUi.Tests -c Release
 
+      - name: Reach profile and station restoration
+        run: dotnet run --project tests/Reach.Tests -c Release
+
       - name: Audit regressions
         run: dotnet run --project tests/Audit.Tests -c Release
 

@@ -15,7 +15,7 @@ internal static class PileConfig
     public static bool On => Enabled.Value;
 
     // One nearby radius: Core Search range, unless this host isolates piles.
-    public static float Nearby => Isolate.Value ? Range.Value : ModConfig.StorageRange.Value;
+    public static float Nearby => Isolate.Value ? Range.Value : ReachPolicy.ResourceReach;
 
     public static void Bind(ConfigFile config)
     {
@@ -30,6 +30,6 @@ internal static class PileConfig
         Range = config.Bind("Piles", "Range", 10f,
             new ConfigDescription(
                 "How far piles reach when Isolate pile range is on. Ignored otherwise — piles use Core Search range.",
-                new AcceptableValueRange<float>(2f, 30f), Admin));
+                new AcceptableValueRange<float>(2f, 120f), Admin));
     }
 }

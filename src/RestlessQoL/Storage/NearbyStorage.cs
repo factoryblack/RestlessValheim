@@ -110,7 +110,7 @@ public static class NearbyStorage
         var player = Player.m_localPlayer;
         if (player == null || !ModConfig.StorageEnabled.Value)
             return Array.Empty<Container>();
-        return ForPlayer(player, ModConfig.StorageRange.Value);
+        return ForPlayer(player, ReachPolicy.ResourceReach);
     }
 
     // Chests around a world point (tames, stations). playerId 0 skips access on dedicated.
@@ -289,7 +289,7 @@ public static class NearbyStorage
             return 0;
         var playerInv = player.GetInventory();
         var moved = 0;
-        foreach (var container in ForPlayer(player, ModConfig.StorageRange.Value))
+        foreach (var container in ForPlayer(player, ReachPolicy.ResourceReach))
         {
             if (!PlayerBuilt(container) || !CanWrite(container))
                 continue;
@@ -402,7 +402,7 @@ public static class NearbyStorage
 
         var playerId = player.GetPlayerID();
         var left = new List<Container>();
-        foreach (var container in ForPlayer(player, ModConfig.StorageRange.Value))
+        foreach (var container in ForPlayer(player, ReachPolicy.ResourceReach))
         {
             if (!PlayerBuilt(container) || CanWrite(container))
                 continue;
@@ -580,6 +580,13 @@ public static class NearbyStorage
 
         var chest = chests[0];
         chests.RemoveAt(0);
+        var player = Player.m_localPlayer;
+        if (player == null || player.GetPlayerID() != playerId || !ModConfig.StorageEnabled.Value || chest == null
+            || !ReachGeometry.Sphere(chest.transform.position, player.transform.position, ReachPolicy.ResourceReach))
+        {
+            RequestConsumeFrom(chests, playerId, sharedName, amount, honorLeaveOne, quality, worldLevel, moved, done);
+            return;
+        }
         StorageSync.RequestPull(chest, playerId, sharedName, amount, honorLeaveOne, quality, worldLevel, taken =>
             RequestConsumeFrom(chests, playerId, sharedName, amount - taken, honorLeaveOne, quality, worldLevel,
                 moved + taken, done));
@@ -596,6 +603,13 @@ public static class NearbyStorage
 
         var chest = chests[index];
         var local = CanWrite(chest);
+        var player = Player.m_localPlayer;
+        if (player == null || player.GetPlayerID() != playerId || !ModConfig.StorageEnabled.Value || chest == null
+            || !ReachGeometry.Sphere(chest.transform.position, player.transform.position, ReachPolicy.ResourceReach))
+        {
+            PushWalk(chests, index + 1, playerId, item, drop, moved, done);
+            return;
+        }
         StorageSync.RequestPush(chest, playerId, item, drop, taken =>
         {
             if (taken > 0 && !local)

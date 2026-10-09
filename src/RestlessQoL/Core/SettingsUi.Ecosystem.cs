@@ -223,7 +223,7 @@ public sealed partial class SettingsUi
         RestlessUi.BoundedLabel(status, 18, 15);
     }
 
-    private static void EcosystemCopy(string copy)
+    private static Text EcosystemCopy(string copy)
     {
         var text = RestlessUi.Label(_body!.transform, copy, 20, RestlessUi.PaperMuted, TextAnchor.UpperLeft);
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
@@ -232,6 +232,7 @@ public sealed partial class SettingsUi
         var width = RestlessUi.PanelWidth - 238f - RestlessUi.TrayGutter - 14f;
         text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
         text.gameObject.AddComponent<LayoutElement>().preferredHeight = text.preferredHeight + 12f;
+        return text;
     }
 
     private static void EcosystemAction(string title, Action action, Sprite? icon = null)

@@ -25,7 +25,7 @@ public sealed class GroundVacuum : FeatureModule
         if (player == null)
             return;
 
-        var range = ModConfig.StorageRange.Value;
+        var range = ReachPolicy.ResourceReach;
         var origin = player.transform.position;
         foreach (var drop in ItemDrop.s_instances.ToArray())
         {

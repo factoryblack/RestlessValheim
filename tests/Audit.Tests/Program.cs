@@ -45,4 +45,14 @@ Check(lots.Count==0&&taken==0&&PileHarness.CountNearby("material")==0&&PileHarne
 ward.Permitted.Add(22);PileHarness.Take(player,pileKey,4,n=>taken=n);Check(taken==4&&box.Stored==6&&player.Bag.Items.Sum(i=>i.m_stack)==4,"permitted pile transfer conserves items");
 box.Stored=10;box.transform.position=new(8);lots.Clear();PileHarness.List(new(),20,22,lots);PileHarness.Take(player,pileKey,4,n=>taken=n);Check(lots.Count==0&&taken==0&&box.Stored==10,"actual browser listing and withdrawal share isolated pile range");
 box.transform.position=new();Pile.Delay=true;PileHarness.Take(player,pileKey,4,n=>taken=n);ward.Permitted.Clear();foreach(var action in Pile.Pending)action();Check(taken==0&&box.Stored==10,"delayed ownership callback rechecks permission before adding items");Pile.Pending.Clear();Pile.Delay=false;
+PrivateArea.m_allAreas.Clear();
+PileConfig.Isolate.Value=true;PileConfig.Nearby=30;ModConfig.StorageRange.Value=10;box.transform.position=new(20);box.Stored=10;player.Bag=new();lots.Clear();
+PileHarness.List(new(),10,22,lots);Check(lots.Count==1,"isolated piles beyond Core reach appear in browser and automation stock");
+PileHarness.Take(player,pileKey,2,n=>taken=n);Check(taken==2&&box.Stored==8,"isolated browser take follows isolated reach beyond Core");
+Check(PileHarness.Drain(new(),10,22,"material",2)==2&&box.Stored==6,"isolated production drain agrees with stock beyond Core");
+PileConfig.Isolate.Value=false;PileConfig.Nearby=10;lots.Clear();PileHarness.List(new(),10,22,lots);PileHarness.Take(player,pileKey,2,n=>taken=n);
+Check(lots.Count==0&&taken==0&&box.Stored==6,"disabling isolation restores shared reach without altering stock");
+PileConfig.Isolate.Value=true;PileConfig.Nearby=30;box.Stored=10;box.transform.position=new(20);Pile.Delay=true;
+PileHarness.Take(player,pileKey,2,n=>taken=n);PileConfig.Nearby=10;foreach(var action in Pile.Pending)action();
+Check(taken==0&&box.Stored==10,"reach shrink during ownership wait prevents a stale pile withdrawal");Pile.Pending.Clear();Pile.Delay=false;
 Console.WriteLine("Audit regressions passed.");

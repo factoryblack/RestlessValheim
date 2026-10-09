@@ -8,6 +8,6 @@ internal static class PileSettings
     internal static IDisposable Register() => SettingsPageApi.RegisterSettings(Plugin.PluginGuid,
         new SettingsSection("Resource piles",
             new SettingsOption("Enable RestlessPiles", PileConfig.Enabled, true),
-            new SettingsOption("Isolate pile range", PileConfig.Isolate, true),
-            new SettingsOption("Pile range", PileConfig.Range, true, "m", false, () => PileConfig.Isolate.Value)));
+            new SettingsOption("Isolate pile range", PileConfig.Isolate, true, "", false, null, () => PileConfig.On, null, null),
+            new SettingsOption("Pile range", PileConfig.Range, true, "m", false, () => PileConfig.Isolate.Value, () => PileConfig.On, () => PileConfig.Nearby, () => PileConfig.On ? "Isolated from Global Reach" : "Feature disabled")));
 }

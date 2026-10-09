@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.5.4
+
+- Use Core Global Reach for kitchen supplies and machine discovery; exclude machines whose centres lie outside the radius. Needs Core 0.3.0.
+
 ## 0.5.3
 
 - Each kitchen order plans and withdraws stock using its creator’s identity and the same nearby-bag rules.

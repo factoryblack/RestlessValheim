@@ -2,6 +2,12 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.3.0
+
+- Add opt-in Global Reach profiles: storage and stations share up to 120 m, with smaller repair, seal and crop/hive harvest sets. Preserve custom settings and feature switches.
+- Show named profiles, effective values and disabled controls with a live explanation. Refresh station circles/coverage immediately; disabling restores native upgrade scaling.
+- Use strict resource/action boundaries and native horizontal station sealing; prevent subsequent transfers from stale range snapshots. Live UI, multiplayer and 120 m performance acceptance remain pending.
+
 ## 0.2.7
 
 - Storage item identities use invariant regional formatting across peers.

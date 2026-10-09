@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.4
+
+- Use the smaller Global Reach harvest set for crops and hives, preserving custom harvest settings underneath. Explain and disable dependent sliders when controlled or inactive.
+- Keep spacing and snapping personal; enforce the explicit snap and harvest boundaries. Needs Core 0.3.0.
+
 ## 0.2.3
 
 - Normal grown crops resolve their original sapling for replanting, including fields planted before this update; saved sapling identity supports custom crops.

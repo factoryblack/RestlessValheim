@@ -64,6 +64,9 @@ public sealed class SettingsOption
     public string Unit { get; }
     public bool RequiresRestart { get; }
     public Func<bool>? Visible { get; }
+    public Func<bool>? Editable { get; }
+    public Func<float>? EffectiveFloat { get; }
+    public Func<string>? Status { get; }
 
     /// <summary>HostControlled must match the expansion's sync policy. Core does
     /// not create RPCs or alter config metadata. Numeric entries require ranges.
@@ -73,6 +76,10 @@ public sealed class SettingsOption
 
     // Five-argument form stays. Plant 0.1.5 and Piles 0.1.5 on Thunderstore call it.
     public SettingsOption(string label, ConfigEntryBase entry, bool hostControlled, string unit, bool requiresRestart, Func<bool>? visible)
+        : this(label, entry, hostControlled, unit, requiresRestart, visible, null, null, null) {}
+
+    public SettingsOption(string label, ConfigEntryBase entry, bool hostControlled, string unit, bool requiresRestart,
+        Func<bool>? visible, Func<bool>? editable, Func<float>? effectiveFloat, Func<string>? status)
     {
         Label = label ?? "";
         Entry = entry ?? throw new ArgumentNullException(nameof(entry));
@@ -80,6 +87,9 @@ public sealed class SettingsOption
         Unit = unit ?? "";
         RequiresRestart = requiresRestart;
         Visible = visible;
+        Editable = editable;
+        EffectiveFloat = effectiveFloat;
+        Status = status;
         if (entry is ConfigEntry<bool> || entry is ConfigEntry<KeyboardShortcut>) return;
         if (entry is ConfigEntry<float> && entry.Description.AcceptableValues is AcceptableValueRange<float>) return;
         if (entry is ConfigEntry<int> && entry.Description.AcceptableValues is AcceptableValueRange<int>) return;

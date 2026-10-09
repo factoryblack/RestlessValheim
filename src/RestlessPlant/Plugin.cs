@@ -8,14 +8,14 @@ namespace RestlessPlant;
 
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 [BepInDependency(Main.ModGuid, BepInDependency.DependencyFlags.HardDependency)]
-[BepInDependency("restless.core", BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency("restless.core", "0.3.0")]
 [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 [SynchronizationMode(AdminOnlyStrictness.IfOnServer)]
 public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.plant";
     public const string PluginName = "RestlessPlant";
-    public const string PluginVersion = "0.2.3";
+    public const string PluginVersion = "0.2.4";
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;

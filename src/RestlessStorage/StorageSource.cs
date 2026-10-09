@@ -49,7 +49,7 @@ internal sealed class StorageSource : IStorageWindowSource
             }
         }
         var lots = new List<NearbyLot>();
-        NearbyLots.Collect(_player, ModConfig.StorageRange.Value, lots);
+        NearbyLots.Collect(_player, ReachPolicy.ResourceReach, lots);
         foreach (var lot in lots)
         {
             if (lot.Item?.m_shared == null || lot.Count <= 0) continue;
@@ -139,6 +139,11 @@ internal sealed class StorageSource : IStorageWindowSource
             return;
         }
 
+        if (!IsAvailable || !ModConfig.StorageEnabled.Value)
+        {
+            completed(Result(label, moved, blocked, timedOut));
+            return;
+        }
         if (index == chests.Count)
         {
             NearbyLots.Take(_player, resourceId, left, taken =>
@@ -151,6 +156,11 @@ internal sealed class StorageSource : IStorageWindowSource
         }
 
         var chest = chests[index];
+        if (chest == null || (chest.transform.position - _player.transform.position).sqrMagnitude > ReachPolicy.ResourceReach * ReachPolicy.ResourceReach)
+        {
+            Walk(chests, resourceId, index + 1, left, moved, blocked, timedOut, label, completed);
+            return;
+        }
         StorageWithdraw.Request(chest, _player.GetPlayerID(), resourceId, left, batch =>
         {
             if (batch.TimedOut)
@@ -199,7 +209,7 @@ internal sealed class StorageSource : IStorageWindowSource
         }
 
         var lots = new List<NearbyLot>();
-        NearbyLots.Collect(_player, ModConfig.StorageRange.Value, lots);
+        NearbyLots.Collect(_player, ReachPolicy.ResourceReach, lots);
         foreach (var lot in lots)
         {
             if (lot.Item?.m_shared == null || ItemKey.Of(lot.Item) != resourceId)

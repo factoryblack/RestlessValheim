@@ -23,7 +23,7 @@ internal static class PileBag
     {
         if (!PileConfig.On || range <= 0f)
             return;
-        var reach = StorageAccess.Reach(range, PileConfig.Nearby);
+        var reach = PileConfig.Isolate.Value ? PileConfig.Nearby : StorageAccess.Reach(range, PileConfig.Nearby);
         reach *= reach;
         foreach (var box in PileBox.All)
         {
@@ -51,7 +51,7 @@ internal static class PileBag
         }
 
         var origin = player.transform.position;
-        var reach = StorageAccess.Reach(ModConfig.StorageRange.Value, PileConfig.Nearby);
+        var reach = PileConfig.Isolate.Value ? PileConfig.Nearby : StorageAccess.Reach(ReachPolicy.ResourceReach, PileConfig.Nearby);
         reach *= reach;
         var boxes = new System.Collections.Generic.List<PileBox>();
         foreach (var box in PileBox.All)
@@ -80,7 +80,8 @@ internal static class PileBag
             var box = boxes[index];
             Pile.OwnThen(box.View, _ =>
             {
-                var n = box != null && player != null && (box.transform.position - player.transform.position).sqrMagnitude <= reach
+                var current = PileConfig.Isolate.Value ? PileConfig.Nearby : StorageAccess.Reach(ReachPolicy.ResourceReach, PileConfig.Nearby);
+                var n = box != null && player != null && PileConfig.On && (box.transform.position - player.transform.position).sqrMagnitude <= Mathf.Min(reach, current * current)
                     ? TakeOwned(player, box, amount - got) : 0;
                 Step(index + 1, got + n);
             }, () => Step(index + 1, got));
@@ -182,7 +183,7 @@ internal static class PileBag
     {
         if (amount <= 0 || range <= 0f || string.IsNullOrEmpty(sharedName) || !PileConfig.On)
             return 0;
-        var reach = StorageAccess.Reach(range, PileConfig.Nearby);
+        var reach = PileConfig.Isolate.Value ? PileConfig.Nearby : StorageAccess.Reach(range, PileConfig.Nearby);
         reach *= reach;
         var taken = 0;
         foreach (var box in PileBox.All)
@@ -431,6 +432,12 @@ internal static class PileBag
             if (box == null || !box.Live || !box.View.IsOwner()
                 || !StorageAccess.Allows(box.transform.position, Player.m_localPlayer?.GetPlayerID() ?? 0L)) yield break;
             DroppedStack.Apply(drop);
+            var player = Player.m_localPlayer;
+            var radius = PileConfig.Nearby;
+            if (player == null || !PileConfig.On || !ModConfig.VacuumEnabled.Value
+                || (drop.transform.position - player.transform.position).sqrMagnitude > radius * radius
+                || (box.transform.position - player.transform.position).sqrMagnitude > radius * radius)
+                yield break;
             var n = DroppedStack.Count(drop);
             if (n <= 0)
                 yield break;

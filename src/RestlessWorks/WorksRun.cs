@@ -531,7 +531,7 @@ internal static class WorksRun
             if (col == null)
                 continue;
             var station = col.GetComponentInParent<Smelter>();
-            if (station == null || !seen.Add(station.GetInstanceID()) || FoodOven(Utils.GetPrefabName(station.gameObject)))
+            if (station == null || (station.transform.position - origin).sqrMagnitude > Range() * Range() || !seen.Add(station.GetInstanceID()) || FoodOven(Utils.GetPrefabName(station.gameObject)))
                 continue;
             if (demand != null)
             {
@@ -850,7 +850,7 @@ internal static class WorksRun
 
     private static float Range()
     {
-        var range = ModConfig.StorageRange != null ? ModConfig.StorageRange.Value : 20f;
+        var range = ModConfig.StorageRange != null ? ReachPolicy.ResourceReach : 20f;
         return range < 4f ? 20f : range;
     }
 

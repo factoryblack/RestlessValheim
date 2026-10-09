@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.3
+
+- Follow Core Global Reach unless explicitly isolated. Isolated ranges support 120 m and apply consistently to browser, crafting and automation, including ranges larger than Core.
+- Disable dependent controls when the feature is off and recheck reach after ownership waits. Needs Core 0.3.0.
+
 ## 0.2.2
 
 - Pile browsing, withdrawals, crafting, deposits and vacuum respect ward permissions, including permission changes while acquiring ownership.

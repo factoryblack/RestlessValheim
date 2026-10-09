@@ -30,7 +30,7 @@ public sealed class AreaRepair : FeatureModule
             try
             {
                 foreach (var other in NearbyQuery.UniqueInSphere<WearNTear>(
-                             __instance.transform.position, ModConfig.AreaRepairRadius.Value))
+                             __instance.transform.position, ReachPolicy.RepairReach))
                 {
                     if (other == __instance)
                         continue;
@@ -111,7 +111,8 @@ public sealed class AreaSeal : FeatureModule
     {
         public readonly Vector3 Origin;
         public readonly float Radius;
-        public Region(Vector3 origin, float radius) { Origin = origin; Radius = radius; }
+        public readonly bool Station;
+        public Region(Vector3 origin, float radius, bool station = false) { Origin = origin; Radius = radius; Station = station; }
     }
 
     // A piece inside a crafting station seals that station's build area, the same
@@ -121,25 +122,36 @@ public sealed class AreaSeal : FeatureModule
     {
         var list = new List<Region>();
         var point = hovering.transform.position;
-        var search = ModConfig.WorkbenchTweaksEnabled.Value ? ModConfig.WorkbenchRange.Value : 40f;
-        foreach (var station in NearbyQuery.UniqueInSphere<CraftingStation>(point, search))
+        foreach (var station in CraftingStation.m_allStations)
         {
-            var range = StationRange(station);
-            if (range < 1f || Vector3.Distance(station.transform.position, point) > range)
+            if (station == null) continue;
+            var range = station.GetStationBuildRange();
+            if (!ReachGeometry.Station(point, station.transform.position, range))
                 continue;
-            list.Add(new Region(station.transform.position, range));
+            list.Add(new Region(station.transform.position, range, true));
         }
 
         if (list.Count == 0)
-            list.Add(new Region(point, ModConfig.AreaSealRadius.Value));
+            list.Add(new Region(point, ReachPolicy.SealReach));
         return list;
     }
 
-    private static float StationRange(CraftingStation station)
+    private static IEnumerable<WearNTear> Covered(List<Region> regions)
     {
-        if (ModConfig.WorkbenchTweaksEnabled.Value)
-            return ModConfig.WorkbenchRange.Value;
-        return station.m_rangeBuild > 0f ? station.m_rangeBuild : ModConfig.AreaSealRadius.Value;
+        // One pass over loaded pieces, even when many station areas overlap.
+        foreach (var wear in WearNTear.GetAllInstances())
+        {
+            if (wear == null) continue;
+            foreach (var region in regions)
+            {
+                var inside = region.Station
+                    ? ReachGeometry.Station(wear.transform.position, region.Origin, region.Radius)
+                    : ReachGeometry.Sphere(wear.transform.position, region.Origin, region.Radius);
+                if (!inside) continue;
+                yield return wear;
+                break;
+            }
+        }
     }
 
     private static int Apply(Player player, Piece hovering)
@@ -149,37 +161,32 @@ public sealed class AreaSeal : FeatureModule
         var done = 0;
         var sealedCount = 0;
         var ranOut = false;
-        foreach (var region in Coverage(hovering))
+        foreach (var wear in Covered(Coverage(hovering)))
         {
-            foreach (var wear in NearbyQuery.UniqueInSphere<WearNTear>(region.Origin, region.Radius))
+            if (!seen.Add(wear.GetInstanceID()))
+                continue;
+            if (!Wooden(wear))
+                continue;
+            if (!Owned(wear))
+                continue;
+            if (Sealed(wear))
             {
-                if (!seen.Add(wear.GetInstanceID()))
-                    continue;
-                if (Vector3.Distance(wear.transform.position, region.Origin) > region.Radius)
-                    continue;
-                if (!Wooden(wear))
-                    continue;
-                if (!Owned(wear))
-                    continue;
-                if (Sealed(wear))
-                {
-                    done++;
-                    continue;
-                }
-
-                fresh++;
-                if (ranOut)
-                    continue;
-                if (!SpendResin(player))
-                {
-                    ranOut = true;
-                    continue;
-                }
-
-                wear.m_nview.GetZDO().Set(Flag, 1);
-                fresh--;
-                sealedCount++;
+                done++;
+                continue;
             }
+
+            fresh++;
+            if (ranOut)
+                continue;
+            if (!SpendResin(player))
+            {
+                ranOut = true;
+                continue;
+            }
+
+            wear.m_nview.GetZDO().Set(Flag, 1);
+            fresh--;
+            sealedCount++;
         }
 
         if (sealedCount > 0)
@@ -242,7 +249,7 @@ public sealed class AreaSeal : FeatureModule
 
         if (!ModConfig.StorageEnabled.Value)
             return false;
-        foreach (var container in NearbyStorage.Around(player.transform.position, ModConfig.StorageRange.Value, player.GetPlayerID()))
+        foreach (var container in NearbyStorage.Around(player.transform.position, ReachPolicy.ResourceReach, player.GetPlayerID()))
         {
             if (NearbyStorage.PullOwned(container, Resin, 1, ModConfig.LeaveOne.Value, -1, false) < 1)
                 continue;
@@ -258,6 +265,36 @@ public sealed class WorkbenchTweaks : FeatureModule
 {
     public override string Id => "building.workbench";
     public override bool Enabled => true;
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<CraftingStation, StationReachState> Native = new();
+
+    protected override void OnLoaded()
+    {
+        ModConfig.WorkbenchTweaksEnabled.SettingChanged += Changed;
+        ModConfig.WorkbenchRange.SettingChanged += Changed;
+        ModConfig.GlobalReachEnabled.SettingChanged += Changed;
+        ModConfig.GlobalReachProfile.SettingChanged += Changed;
+    }
+
+    private static void Changed(object sender, System.EventArgs args)
+    {
+        foreach (var station in CraftingStation.m_allStations)
+        {
+            if (station == null) continue;
+            Apply(station);
+            station.GetExtensions(); // Refresh the native marker and effect collider immediately.
+        }
+    }
+
+    private static void Apply(CraftingStation station)
+    {
+        var original = Native.GetValue(station, s => new StationReachState(s.m_useDistance, s.m_rangeBuild, s.m_extraRangePerLevel));
+        original.Resolve(ModConfig.WorkbenchTweaksEnabled.Value, ReachPolicy.StationReach, out var use, out var build, out var extra);
+        if (station.m_useDistance == use && station.m_rangeBuild == build && station.m_extraRangePerLevel == extra) return;
+        station.m_useDistance = use;
+        station.m_rangeBuild = build;
+        station.m_extraRangePerLevel = extra;
+        station.m_updateExtensionTimer = 2f;
+    }
 
     [HarmonyPatch]
     private static class Patches
@@ -266,20 +303,13 @@ public sealed class WorkbenchTweaks : FeatureModule
         [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.Start))]
         private static void Start(CraftingStation __instance)
         {
-            if (!ModConfig.WorkbenchTweaksEnabled.Value)
-                return;
-            var range = ModConfig.WorkbenchRange.Value;
-            __instance.m_useDistance = range;
-            __instance.m_rangeBuild = range;
-            __instance.m_buildRange = range;
+            if (__instance.m_nview == null || !__instance.m_nview.IsValid()) return;
+            Apply(__instance);
+            __instance.GetExtensions();
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.GetStationBuildRange))]
-        private static void GetStationBuildRange(ref float __result)
-        {
-            if (ModConfig.WorkbenchTweaksEnabled.Value)
-                __result = ModConfig.WorkbenchRange.Value;
-        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(CraftingStation), nameof(CraftingStation.GetExtensions))]
+        private static void GetExtensions(CraftingStation __instance) => Apply(__instance);
     }
 }

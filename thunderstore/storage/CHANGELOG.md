@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.3
+
+- Use Core Global Reach through 120 m, including consistently isolated piles. Subsequent withdrawal requests recheck current reach after changes. Needs Core 0.3.0.
+
 ## 0.2.2
 
 - A withdrawal stays reserved on the chest until it settles, and a late packet cannot take that batch again.

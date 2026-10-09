@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.1.6
+
+- Use Core Global Reach for workshop supplies and machine discovery; exclude machines whose centres lie outside the radius. Needs Core 0.3.0.
+
 ## 0.1.5
 
 - Workshop orders and queued-machine fuel use the order creator’s accessible stores rather than the controller owner’s inventory.

@@ -260,7 +260,7 @@ internal static class PlantHarvest
 
     private static void BulkHives(Beehive picked, Humanoid character)
     {
-        var range = PlantConfig.HarvestRange.Value;
+        var range = RestlessQoL.Core.ReachPolicy.HarvestReach(PlantConfig.HarvestRange.Value);
         var origin = picked.transform.position;
         _busy = true;
         try
@@ -280,7 +280,7 @@ internal static class PlantHarvest
 
     private static void Bulk(Pickable picked, Humanoid character)
     {
-        var range = PlantConfig.HarvestRange.Value;
+        var range = RestlessQoL.Core.ReachPolicy.HarvestReach(PlantConfig.HarvestRange.Value);
         var origin = picked.transform.position;
         _busy = true;
         try
@@ -317,7 +317,7 @@ internal static class PlantHarvest
             if (hit == null)
                 continue;
             var item = hit.GetComponentInParent<T>();
-            if (item == null || !Seen.Add(item.GetInstanceID()))
+            if (item == null || (item.transform.position - origin).sqrMagnitude > range * range || !Seen.Add(item.GetInstanceID()))
                 continue;
             yield return item;
         }

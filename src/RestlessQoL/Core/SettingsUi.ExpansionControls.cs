@@ -97,7 +97,8 @@ public sealed partial class SettingsUi
             {
                 Func<bool> editable = () => !_closing && Loaded(page)
                     && ReferenceEquals(sections, SettingsPageApi.SettingsFor(page.PluginGuid))
-                    && (!option.HostControlled || ExpansionHostCanEdit());
+                    && (!option.HostControlled || ExpansionHostCanEdit())
+                    && (option.Editable == null || option.Editable());
                 var label = option.Label + (option.RequiresRestart ? " (restart)" : "");
                 var before = _body!.transform.childCount;
                 switch (option.Entry)
@@ -106,7 +107,7 @@ public sealed partial class SettingsUi
                         Bool(label, entry, !editable(), editable: editable);
                         break;
                     case ConfigEntry<float> entry:
-                        Step(label, option.Unit, entry, !editable(), editable: editable);
+                        Step(label, option.Unit, entry, !editable(), editable: editable, effective: option.EffectiveFloat, status: option.Status);
                         break;
                     case ConfigEntry<int> entry:
                         IntegerStep(label, option.Unit, entry, editable);
@@ -137,13 +138,14 @@ public sealed partial class SettingsUi
         Apply();
     }
 
-    private static void IntegerStep(string title, string unit, ConfigEntry<int> entry, Func<bool> editable)
+    private static void IntegerStep(string title, string unit, ConfigEntry<int> entry, Func<bool> editable, Func<int, string>? format = null)
     {
         var range = (AcceptableValueRange<int>)entry.Description.AcceptableValues;
         var row = Row();
         Titles(row, title, Hint(entry), 320f);
         var value = RestlessUi.Label(row.transform, "", RestlessUi.BodySize, RestlessUi.Accent, TextAnchor.MiddleRight);
         RestlessUi.Pin(value.gameObject, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f), new Vector2(72f, 24f));
+        RestlessUi.BoundedLabel(value, RestlessUi.BodySize, RestlessUi.HintSize);
         var slider = RestlessUi.PaperSlider(row.transform);
         slider.minValue = range.MinValue;
         slider.maxValue = range.MaxValue;
@@ -152,7 +154,7 @@ public sealed partial class SettingsUi
         void Repaint()
         {
             slider.SetValueWithoutNotify(entry.Value);
-            value.text = (entry.Value + " " + unit).TrimEnd();
+            value.text = format != null ? format(entry.Value) : (entry.Value + " " + unit).TrimEnd();
         }
         slider.onValueChanged.AddListener(v =>
         {

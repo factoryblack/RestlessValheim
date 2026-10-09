@@ -293,7 +293,7 @@ internal static class PlantGrid
 
     private static Transform? Field(Vector3 from, float space, GameObject ghost)
     {
-        var range = Mathf.Max(PlantConfig.SnapRange.Value, space + 0.25f);
+        var range = PlantConfig.SnapRange.Value;
         var hits = Physics.OverlapSphere(from, range, FieldMask, QueryTriggerInteraction.Collide);
         Transform? best = null;
         var bestD = range * range;

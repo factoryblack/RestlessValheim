@@ -34,7 +34,7 @@ The table is an interaction point, not another chest with its own stored invento
 
 ## Settings and limitations
 
-Use **F8 → RestlessStorage** for the local window toggle. Core owns the shared range settings.
+Use **F8 → RestlessStorage** for the local window toggle. Core owns the shared range settings, including optional Global Reach profiles through 120 m. Isolated piles retain their separate radius.
 
 The current browser is designed around mouse and keyboard; complete controller grid navigation is still a follow-up. Local withdrawal has been playtested, while multiplayer ownership and interrupted transfers need broader in-game coverage.
 

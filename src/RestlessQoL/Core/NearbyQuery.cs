@@ -15,7 +15,7 @@ internal static class NearbyQuery
         foreach (var hit in hits)
         {
             var component = hit.GetComponentInParent<T>();
-            if (component == null)
+            if (component == null || !ReachGeometry.Sphere(component.transform.position, origin, radius))
                 continue;
             if (!seen.Add(component.GetInstanceID()))
                 continue;

@@ -15,6 +15,8 @@ public static class ModConfig
 
     public static ConfigEntry<bool> StorageEnabled = null!;
     public static ConfigEntry<float> StorageRange = null!;
+    public static ConfigEntry<bool> GlobalReachEnabled = null!;
+    public static ConfigEntry<int> GlobalReachProfile = null!;
     public static ConfigEntry<bool> LeaveOne = null!;
 
     public static ConfigEntry<bool> CraftFromStorageEnabled = null!;
@@ -177,9 +179,15 @@ public static class ModConfig
         LockConfiguration = AdminBool(config, "Server", "LockConfiguration", true,
             "If on, gameplay settings are admin-only and sync from the server.");
 
+        GlobalReachEnabled = AdminBool(config, "Reach", "Global", false,
+            "Use one reach profile for storage, production and stations, with smaller repair, seal and harvest radii. Does not enable disabled features. Off restores saved custom distances. Pile isolation is an explicit exception; crop spacing and snapping stay personal.");
+        GlobalReachProfile = config.Bind("Reach", "Profile", 2, new ConfigDescription(
+            "0 Small: 15/8/8/2.5m; 1 Standard: 25/15/15/4m; 2 Far: 50/25/25/6m; 3 Wide: 80/35/35/7m; 4 Maximum: 120/40/40/8m. Shared storage/station, repair, open-air seal, harvest. Only loaded objects; existing permissions and feature switches still apply.",
+            new AcceptableValueRange<int>(0, 4), Admin));
+
         StorageEnabled = AdminBool(config, "Storage", "Enabled", true,
             "Master switch for nearby-container access.");
-        StorageRange = AdminFloat(config, "Storage", "Range", 20f, 4f, 50f,
+        StorageRange = AdminFloat(config, "Storage", "Range", 20f, 4f, 120f,
             "How far to search for chests and, unless Piles isolates its own range, resource piles.");
         LeaveOne = AdminBool(config, "Storage", "LeaveOne", true,
             "Leave one item in a stack when pulling, so the chest stays a valid restock target.");
@@ -217,7 +225,7 @@ public static class ModConfig
             "Seal radius in metres for wood that is not inside a crafting station. Wood inside a station uses that station's build range instead.");
         WorkbenchTweaksEnabled = AdminBool(config, "Building.Workbench", "Enabled", true,
             "Override crafting-station use range.");
-        WorkbenchRange = AdminFloat(config, "Building.Workbench", "Range", 20f, 4f, 40f,
+        WorkbenchRange = AdminFloat(config, "Building.Workbench", "Range", 20f, 4f, 120f,
             "Crafting station range in metres.");
 
         DeathPinsEnabled = AdminBool(config, "Player.DeathPins", "Enabled", true,

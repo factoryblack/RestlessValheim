@@ -16,8 +16,9 @@ public class ItemDrop:Component { public ZNetView m_nview=new(); public class Sh
 public class Inventory{public List<ItemDrop.ItemData> Items=new();public List<ItemDrop.ItemData> GetAllItems()=>Items;public bool HaveEmptySlot()=>true;public bool AddItem(ItemDrop.ItemData i){Items.Add(i);return true;}public void Changed(bool a,bool b){}}
 public class MessageHud{public enum MessageType{Center}}
 public class PileBox:Component{public static List<PileBox> All=new();public bool Live=true;public int Stored=10;public ItemDrop.ItemData Item=new();public ZNetView View=new();public string GetHoverName()=>"pile";}
-public static class PileConfig{public static bool On=true;public static float Nearby=5;}
+public static class PileConfig{public static Config<bool> Isolate=new(false);public static bool On=true;public static float Nearby=5;}
 public static class ModConfig{public static Config<float> StorageRange=new(20);}
+public static class ReachPolicy{public static float ResourceReach=>ModConfig.StorageRange.Value;}
 public static class Pile{public static bool Delay;public static List<Action> Pending=new();public static int Claims;public static void Write(ZNetView v,int count){var box=PileBox.All.Find(b=>b.View==v);if(box!=null)box.Stored=count;}public static int Count(ZNetView v)=>PileBox.All.Find(b=>b.View==v)?.Stored??0;public static void OwnThen(ZNetView v,Action<ZNetView> act,Action? fail=null){Claims++;if(Delay)Pending.Add(()=>act(v));else act(v);}public static string Title(ItemDrop.ItemData i)=>i.m_shared.m_name;}
 partial class PileHarness{static void Tell(Player p,string s,int n,ItemDrop.ItemData i){}}
 public class Config<T>{public T Value;public Config(T value)=>Value=value;}

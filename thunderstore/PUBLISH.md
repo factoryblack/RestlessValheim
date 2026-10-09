@@ -15,20 +15,22 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-Ground vacuum leaves a placed piece where it is. A feast board stays. One tag per push. Core first, then the pack.
+Core 0.2.6 is already published and leaves placed feast boards out of ground collection. Cook 0.5.2 preserves native support colliders through visual refresh and reload, and reads kitchen collection state after obtaining ownership. Publish Cook first, verify it is available, then publish the pack. One tag per push.
 
 | Package | Was | Now | Why |
 |---|---|---|---|
-| RestlessCore | 0.2.5 | **0.2.6** | Ground vacuum leaves a placed piece where it is |
-| Restless Valheim pack | 0.1.31 | **0.1.32** | Joins Core 0.2.6 |
+| RestlessCook | 0.5.1 | **0.5.2** | Persistent feast support and collection snapshot correction |
+| Restless Valheim pack | 0.1.31 | **0.1.32** | Joins Core 0.2.6 and Cook 0.5.2 |
 
-Cook 0.5.1, Workshop 0.1.4, Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
+Core 0.2.6, Workshop 0.1.4, Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. Jötunn stays 2.30.2.
+
+In-game physics, save/reload and multiplayer acceptance remain pending. The user authorised publication after build/regression checks on 10 October 2026, with live testing and feedback to follow. See docs/cooking-lifecycle-audit.md and docs/maintainers/reliability.md for the outstanding checks.
 
 ## Tag order
 
 ```
-git tag v0.2.6
-git push origin v0.2.6
+git tag cook-v0.5.2
+git push origin cook-v0.5.2
 git tag pack-v0.1.32
 git push origin pack-v0.1.32
 ```

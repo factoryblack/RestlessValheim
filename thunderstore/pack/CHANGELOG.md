@@ -5,7 +5,8 @@ Changes are listed newest first. Unreleased notes are not assigned to a tagged p
 ## 0.1.32
 
 - Ground vacuum leaves a placed piece where it is. A feast board stays.
-- Included version changes: RestlessCore 0.2.6, RestlessCook 0.5.1, RestlessPlant 0.2.2, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.2, RestlessWorkshop 0.1.4.
+- Custom feasts retain their support colliders through visual refresh and reload. Kitchen collection reads its saved state after obtaining ownership.
+- Included version changes: RestlessCore 0.2.6, RestlessCook 0.5.2, RestlessPlant 0.2.2, RestlessPiles 0.2.1, RestlessDrawers 0.2.0, RestlessStorage 0.2.2, RestlessWorkshop 0.1.4.
 
 ## 0.1.31
 

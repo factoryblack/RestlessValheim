@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessCook"
-versionNumber = "0.5.1"
+versionNumber = "0.5.2"
 description = "Cook the haul, make meals and serve feasts. Plan kitchen orders at one table while nearby cooking stations do the work."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/cook.md"
 containsNsfwContent = false

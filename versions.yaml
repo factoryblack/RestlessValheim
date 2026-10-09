@@ -21,7 +21,7 @@ packages:
     csproj: "src/RestlessQoL/RestlessQoL.csproj"
     thunderstore_dir: "thunderstore/plugin"
   cook:
-    version: "0.5.1"
+    version: "0.5.2"
     guid: "restless.cook"
     thunderstore: "RestlessCook"
     plugin: "src/RestlessCook/Plugin.cs"

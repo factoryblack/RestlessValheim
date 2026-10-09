@@ -66,6 +66,10 @@ Console.WriteLine("Native smelter input queue contract passed.");
 // Fail CI rather than silently compiling a changed timer or content contract.
 var cookingContracts = new Dictionary<string,string[]>
 {
+    ["WearNTear.SetupColliders"] = new[]{"Void"},
+    ["WearNTear.OnPlaced"] = new[]{"Void"},
+    ["Feast.Start"] = new[]{"Void"},
+    ["Feast.UpdateVisual"] = new[]{"Void"},
     ["CookingStation.RPC_AddItem"] = new[]{"Void","Int64","String","Boolean"},
     ["CookingStation.GetFreeSlot"] = new[]{"Int32"},
     ["CookingStation.GetSlot"] = new[]{"Void","Int32","String&","Single&","Status&","Boolean&"},
@@ -89,7 +93,7 @@ foreach (var handle in reader.TypeDefinitions)
     }
 }
 if (cookingContracts.Count>0) throw new Exception("Native cooking contracts changed: "+string.Join(", ",cookingContracts.Keys));
-Console.WriteLine("10 native cooking adapter contracts passed.");
+Console.WriteLine("14 native cooking and feast lifecycle contracts passed.");
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";
@@ -107,4 +111,3 @@ sealed class Types : ISignatureTypeProvider<string, object?>
     public string GetTypeFromReference(MetadataReader r, TypeReferenceHandle h, byte k) => r.GetString(r.GetTypeReference(h).Name);
     public string GetTypeFromSpecification(MetadataReader r, object? c, TypeSpecificationHandle h, byte k) => r.GetTypeSpecification(h).DecodeSignature(this,c);
 }
-

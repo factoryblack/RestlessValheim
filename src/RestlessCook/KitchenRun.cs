@@ -186,6 +186,12 @@ internal static partial class KitchenRun
         var view = View(table);
         if (player == null || view == null)
             return 0;
+        // Obtain authority before taking a ledger snapshot. A remote owner's
+        // latest completion/collection must not be overwritten by a stale read.
+        if (!view.IsOwner())
+            view.ClaimOwnership();
+        if (!view.IsOwner())
+            return 0;
         var ledger = Read(view);
         KitchenOrder? order = null;
         foreach (var row in ledger.Orders)
@@ -197,10 +203,6 @@ internal static partial class KitchenRun
         if (order == null || order.Ready <= 0)
             return 0;
         if (order.PlayerId != 0 && player.GetPlayerID() != order.PlayerId)
-            return 0;
-        if (!view.IsOwner())
-            view.ClaimOwnership();
-        if (!view.IsOwner())
             return 0;
         var taken = Give(player, ledger, order.Feast, order.Ready);
         if (taken <= 0)
@@ -1402,5 +1404,3 @@ internal static class KitchenHook
         __result = name + "\n[E] Kitchen";
     }
 }
-
-

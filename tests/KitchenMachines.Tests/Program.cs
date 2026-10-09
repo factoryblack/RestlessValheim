@@ -1,5 +1,6 @@
 using RestlessCook;
 KitchenRun.TestMachines();
+FeastColliderTests.Run();
 
 namespace RestlessCook
 {
@@ -67,6 +68,42 @@ namespace RestlessCook
             Check(!FinishTapReceipt(ledger,saved!)&&ledger.Pantry["Mead"]==6,"Native callback and recovery must not both award the batch");
             Check(ReadTap(new[]{"T","machine","Mead","-1","100"})==null,"Corrupt negative batch must not enter ledger");
             Console.WriteLine($"{checks} physical kitchen machine regressions passed.");
+        }
+    }
+}
+
+namespace UnityEngine
+{
+    internal class MonoBehaviour { }
+    internal class Collider { public bool enabled; }
+}
+namespace RestlessCook
+{
+    internal static class FeastColliderTests
+    {
+        internal static void Run()
+        {
+            var support = new UnityEngine.Collider { enabled = true };
+            var unused = new UnityEngine.Collider { enabled = false };
+            var plate = new UnityEngine.Collider();
+            var original = new[]{support, unused}; var defaults = new[]{true, false};
+            void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
+            FeastColliderState.Apply(original, defaults, plate, false);
+            Check(!support.enabled && plate.enabled, "Preview must use the plate hitbox");
+            FeastColliderState.Apply(original, defaults, plate, true);
+            Check(support.enabled && !plate.enabled, "Placement must restore native support");
+            for (var i=0;i<20;i++) FeastColliderState.Apply(original, defaults, plate, true);
+            Check(support.enabled && !unused.enabled && !plate.enabled, "Repeated visual refresh must retain support and originally disabled colliders");
+            // Reloaded prefab starts with preview physics but inherits the saved
+            // original enabled-state array; never derive defaults from the ghost.
+            support.enabled=false;plate.enabled=true;
+            FeastColliderState.Apply(original, defaults, plate, true);
+            Check(support.enabled && !unused.enabled && !plate.enabled, "Reload must restore original prefab physics");
+            FeastColliderState.Apply(original, defaults, null, true);
+            Check(support.enabled, "Missing plate collider must not break support restoration");
+            FeastColliderState.Apply(original, defaults, plate, false);
+            Check(!support.enabled && plate.enabled && defaults[0], "Preview must not overwrite original defaults");
+            Console.WriteLine("6 feast collider lifecycle regressions passed.");
         }
     }
 }

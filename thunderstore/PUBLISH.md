@@ -15,22 +15,25 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-Core 0.2.6 is already published and leaves placed feast boards out of ground collection. Cook 0.5.2 preserves native support colliders through visual refresh and reload, and reads kitchen collection state after obtaining ownership. Publish Cook first, verify it is available, then publish the pack. One tag per push.
+Core 0.2.7 adds invariant storage identifiers and the shared actor-aware pile/production policy. Publish Core first, then Cook 0.5.3, Workshop 0.1.5, Piles 0.2.2 and Plant 0.2.3. Publish pack 0.1.33 after all five dependencies are publicly available. Drawers 0.2.0 and Storage 0.2.2 remain pack members. One tag per push.
 
-| Package | Was | Now | Why |
-|---|---|---|---|
-| RestlessCook | 0.5.1 | **0.5.2** | Persistent feast support and collection snapshot correction |
-| Restless Valheim pack | 0.1.31 | **0.1.32** | Joins Core 0.2.6 and Cook 0.5.2 |
+The source changes fix all six audit findings and add Plant preview caching and pickup-history cleanup. The new Audit regression suite runs in CI alongside the existing suites. Jötunn stays 2.30.2.
 
-Core 0.2.6, Workshop 0.1.4, Plant 0.2.2, Storage 0.2.2, Piles 0.2.1 and Drawers 0.2.0 stay. JÃ¶tunn stays 2.30.2.
-
-In-game physics, save/reload and multiplayer acceptance remain pending. The user authorised publication after build/regression checks on 10 October 2026, with live testing and feedback to follow. See docs/cooking-lifecycle-audit.md and docs/maintainers/reliability.md for the outstanding checks.
+The user authorised publication after build/regression checks, with live multiplayer, planting, Drawers visuals and physics acceptance to follow. See docs/maintainers/reliability.md for the remaining runtime checks.
 
 ## Tag order
 
 ```
-git tag cook-v0.5.2
-git push origin cook-v0.5.2
-git tag pack-v0.1.32
-git push origin pack-v0.1.32
+git tag v0.2.7
+git push origin v0.2.7
+git tag cook-v0.5.3
+git push origin cook-v0.5.3
+git tag works-v0.1.5
+git push origin works-v0.1.5
+git tag piles-v0.2.2
+git push origin piles-v0.2.2
+git tag plant-v0.2.3
+git push origin plant-v0.2.3
+git tag pack-v0.1.33
+git push origin pack-v0.1.33
 ```

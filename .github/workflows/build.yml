@@ -105,6 +105,9 @@ jobs:
       - name: Native UI contract
         run: dotnet run --project tests/NativeUi.Tests -c Release
 
+      - name: Audit regressions
+        run: dotnet run --project tests/Audit.Tests -c Release
+
       - name: Wheel motion regressions
         run: dotnet run --project tests/WheelMotion.Tests -c Release
       - name: Preparation timing regressions
@@ -638,5 +641,4 @@ jobs:
           export PATH="$HOME/.dotnet/tools:$PATH"
           works_zip=$(ls artifacts/tcli-works/*.zip | head -n 1)
           tcli publish --config-path thunderstore/works/thunderstore.toml --file "$works_zip"
-
 

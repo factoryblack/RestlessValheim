@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.5.3
+
+- Each kitchen order plans and withdraws stock using its creator’s identity and the same nearby-bag rules.
+- Pile stock respects ward permissions and the configured pile range. Requires Core 0.2.7.
+
 ## 0.5.2
 
 - Fixed custom feasts switching back to placement-preview physics during visual refresh. Placed and reloaded feasts retain their original support colliders.

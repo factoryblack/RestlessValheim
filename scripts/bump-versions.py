@@ -29,8 +29,9 @@ PACKAGES = {
     "piles": ("piles-v", "RestlessPiles", "Piles"),
     "drawers": ("drawers-v", "RestlessDrawers", "Drawers"),
     "storage": ("storage-v", "RestlessStorage", "Storage"),
+    "works": ("works-v", "RestlessWorkshop", "Workshop"),
 }
-TAG_ORDER = ["core", "cook", "plant", "piles", "drawers", "storage"]
+TAG_ORDER = ["core", "cook", "plant", "piles", "drawers", "storage", "works"]
 KINDS = {"new", "fix", "break", "done"}
 HEADING = re.compile(r"^## (\d+\.\d+\.\d+)[ \t]*$", re.M)
 

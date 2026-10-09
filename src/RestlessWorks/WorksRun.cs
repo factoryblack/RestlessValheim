@@ -229,18 +229,18 @@ internal static class WorksRun
             return;
         }
         var origin = board.transform.position;
-        var playerId = Player.m_localPlayer != null ? Player.m_localPlayer.GetPlayerID() : 0L;
         if (!ledger.Orders.Exists(order => order.Mode == WorksOrderMode.Keep || order.Count > order.Ready + order.Collected))
         { ProductionLease.SetActive(view, false); return; }
         ProductionLease.SetActive(view, true);
         var hits = Scan(origin, true, view);
         var loads = 0;
-        var stock = Stock(origin, playerId, ledger);
-        Describe(ledger, stock, Production(hits));
+        Describe(ledger, new Dictionary<string, int>(), Production(hits), actor => Stock(origin, actor, ledger));
         foreach (var order in ledger.Orders)
         {
             if (loads >= LoadsPerTick || order.Remaining < 1)
                 continue;
+            var playerId = order.PlayerId;
+            var stock = Stock(origin, playerId, ledger);
             var recipe = Find(order.Output);
             if (recipe == null)
                 continue;
@@ -254,12 +254,12 @@ internal static class WorksRun
             }
         }
 
-        FuelQueued(hits, ledger, origin, playerId);
+        FuelQueued(hits, ledger, origin);
         Write(view, ledger);
         ProductionLease.SetActive(view, ledger.Orders.Exists(order => order.Mode == WorksOrderMode.Keep || order.Remaining > 0 || order.InProduction > 0));
     }
 
-    private static void Describe(Ledger ledger, Dictionary<string, int> stock, Dictionary<string, int> machines)
+    private static void Describe(Ledger ledger, Dictionary<string, int> stock, Dictionary<string, int> machines, Func<long, Dictionary<string, int>>? stockFor = null)
     {
         var pool = new Dictionary<string, int>(machines, StringComparer.Ordinal);
         foreach (var order in ledger.Orders)
@@ -276,7 +276,7 @@ internal static class WorksRun
                 continue;
             }
 
-            stock.TryGetValue(order.Output, out var held);
+            (stockFor?.Invoke(order.PlayerId) ?? stock).TryGetValue(order.Output, out var held);
             held = Math.Max(0, held - Reserved(ledger, order.Output));
             var gap = Math.Max(0, order.Count - held);
             var filling = Math.Min(gap, running);
@@ -351,7 +351,7 @@ internal static class WorksRun
 
     // A smelter burns two coal for one bar. Keep that much in the tank while ore is queued,
     // including after the order has stopped loading more ore.
-    private static void FuelQueued(List<Hit> hits, Ledger ledger, Vector3 origin, long playerId)
+    private static void FuelQueued(List<Hit> hits, Ledger ledger, Vector3 origin)
     {
         foreach (var hit in hits)
         {
@@ -361,19 +361,19 @@ internal static class WorksRun
             var target = FuelTarget(station);
             if (target <= 0 || station.GetFuel() + 0.05f >= target || station.GetQueueSize() <= 0)
                 continue;
-            var relevant = false;
+            var actors = new HashSet<long>();
             for (var i = 0; i < station.GetQueueSize(); i++)
             {
                 var conversion = station.GetItemConversion(ProductionQueue.Input(station, i));
-                if (conversion?.m_to != null && Wanted(ledger, Clean(conversion.m_to.gameObject.name)))
-                { relevant = true; break; }
+                if (conversion?.m_to == null) continue;
+                var output = Clean(conversion.m_to.gameObject.name);
+                foreach (var order in ledger.Orders)
+                    if (order.Output == output && (order.Mode == WorksOrderMode.Keep || order.Ready + order.Collected < order.Count))
+                        actors.Add(order.PlayerId);
             }
-            if (!relevant)
-                continue;
             var prefab = Clean(station.m_fuelItem.gameObject.name);
-            while (station.GetFuel() + 0.05f < target && AddFuel(station, prefab, ledger, origin, playerId))
-            {
-            }
+            foreach (var actor in actors)
+                while (station.GetFuel() + 0.05f < target && AddFuel(station, prefab, ledger, origin, actor)) { }
         }
     }
 
@@ -608,7 +608,7 @@ internal static class WorksRun
         }
 
         var player = Player.m_localPlayer;
-        if (player != null && (playerId == 0 || player.GetPlayerID() == playerId))
+        if (StorageAccess.UsesBag(player, playerId, origin, Range()))
         {
             foreach (var item in player.GetInventory().GetAllItems())
             {
@@ -632,7 +632,7 @@ internal static class WorksRun
         }
 
         var lots = new List<NearbyLot>();
-        NearbyLots.CollectAround(origin, Range(), lots);
+        NearbyLots.CollectAround(origin, Range(), playerId, lots);
         foreach (var lot in lots)
         {
             if (lot.Item?.m_dropPrefab == null)
@@ -648,7 +648,7 @@ internal static class WorksRun
         if (count < 1)
             return;
         var player = Player.m_localPlayer;
-        if (player != null && (playerId == 0 || player.GetPlayerID() == playerId))
+        if (StorageAccess.UsesBag(player, playerId, origin, Range()))
         {
             var shared = Shared(prefab);
             var inv = player.GetInventory();
@@ -677,7 +677,7 @@ internal static class WorksRun
             count -= fromChests;
         }
 
-        var fromPiles = NearbyLots.Drain(origin, Range(), sharedName, count);
+        var fromPiles = NearbyLots.Drain(origin, Range(), playerId, sharedName, count);
         if (fromPiles > 0)
             Add(ledger, prefab, fromPiles);
     }

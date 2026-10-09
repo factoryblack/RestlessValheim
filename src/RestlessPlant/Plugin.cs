@@ -15,7 +15,7 @@ public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.plant";
     public const string PluginName = "RestlessPlant";
-    public const string PluginVersion = "0.2.2";
+    public const string PluginVersion = "0.2.3";
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;
@@ -37,6 +37,7 @@ public class Plugin : BaseUnityPlugin
 
     private void Update()
     {
+        PlantHarvest.Tick();
         if (Console.IsVisible())
             return;
         PlantGrid.Tick();

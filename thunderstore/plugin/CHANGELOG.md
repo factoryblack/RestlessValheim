@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.7
+
+- Storage item identities use invariant regional formatting across peers.
+- Shared pile access and production bag checks carry the acting player identity and enforce proximity. Existing addon registration signatures remain compatible.
+
 ## 0.2.6
 
 - Ground vacuum leaves a placed piece where it is. A feast board is not a pile.

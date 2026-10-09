@@ -55,7 +55,7 @@ If an order is waiting, inspect its ingredients and station requirements before 
 
 Cancelling an active timed cauldron/preparation craft returns its ingredients. Food already prepared can remain in the table's pantry, where it can be inspected and taken. An order's completed feast goes to its ordering player; cancellation is not a way to undo every earlier machine operation. Loaded rack, oven and fermenter ingredients continue their native process; cancellation does not refund those inputs.
 
-Keep inventory space available and check the order/pantry if delivery cannot complete. In multiplayer, another player taking control of the table can affect which player its owned processing follows. Multiplayer ownership edge cases still need broader playtesting.
+Keep inventory space available and check the order/pantry if delivery cannot complete. Each order plans and takes ingredients from its ordering player's accessible stores and nearby bag, even when another peer owns the table. Multiplayer ownership edge cases still need broader playtesting.
 
 ## Settings
 

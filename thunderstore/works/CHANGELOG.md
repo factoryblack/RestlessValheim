@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.1.5
+
+- Workshop orders and queued-machine fuel use the order creator’s accessible stores rather than the controller owner’s inventory.
+- Keep targets and input loads use stock belonging to the same actor. Requires Core 0.2.7.
+
 ## 0.1.4
 
 - A Make order counts each unit as it drops at the machine, and then stops.

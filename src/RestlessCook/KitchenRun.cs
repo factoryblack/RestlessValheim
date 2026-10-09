@@ -349,7 +349,7 @@ internal static partial class KitchenRun
         Fuel(hits, ledger, origin, table.GetComponent<Piece>()?.GetCreator() ?? 0L);
         var crafts = 0;
         var loads = 0;
-        var shared = Stock(origin, 0L, ledger);
+        // Each order plans against the same actor and range used for payment.
         var cooking = OnStations(origin, hits);
         IncludeWork(ledger, cooking);
         foreach (var order in ledger.Orders)
@@ -357,6 +357,7 @@ internal static partial class KitchenRun
             var outstanding = Outstanding(order);
             if (outstanding < 1)
                 continue;
+            var shared = Stock(origin, order.PlayerId, ledger);
             var steps = Expand(order.Feast, outstanding, 0, "", shared);
             Assign(table, steps, shared, cooking, order.PlayerId, order.Ready, hits);
             for (var i = steps.Count - 1; i >= 0; i--)
@@ -533,7 +534,7 @@ internal static partial class KitchenRun
         }
 
         var player = Player.m_localPlayer;
-        if (player != null && (playerId == 0 || player.GetPlayerID() == playerId))
+        if (StorageAccess.UsesBag(player, playerId, origin, Range()))
         {
             foreach (var item in player.GetInventory().GetAllItems())
             {
@@ -557,7 +558,7 @@ internal static partial class KitchenRun
         }
 
         var lots = new List<NearbyLot>();
-        NearbyLots.CollectAround(origin, Range(), lots);
+        NearbyLots.CollectAround(origin, Range(), playerId, lots);
         foreach (var lot in lots)
         {
             if (lot.Item?.m_dropPrefab == null)
@@ -782,7 +783,7 @@ internal static partial class KitchenRun
         if (count < 1)
             return;
         var player = Player.m_localPlayer;
-        if (player != null && (playerId == 0 || player.GetPlayerID() == playerId))
+        if (StorageAccess.UsesBag(player, playerId, origin, Range()))
         {
             var shared = Shared(prefab);
             var inv = player.GetInventory();
@@ -811,7 +812,7 @@ internal static partial class KitchenRun
             count -= fromChests;
         }
 
-        var fromPiles = NearbyLots.Drain(origin, Range(), sharedName, count);
+        var fromPiles = NearbyLots.Drain(origin, Range(), playerId, sharedName, count);
         if (fromPiles > 0)
             Add(ledger, prefab, fromPiles);
     }

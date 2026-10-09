@@ -1,11 +1,11 @@
 {
   "name": "RestlessPlant",
-  "version_number": "0.2.2",
+  "version_number": "0.2.3",
   "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/plant.md",
   "description": "Grow berries, mushrooms and more. Plant aligned rows, harvest nearby crops and replant as you go.",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",
-    "Restless-RestlessCore-0.2.6"
+    "Restless-RestlessCore-0.2.7"
   ]
 }

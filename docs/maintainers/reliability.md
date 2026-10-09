@@ -6,6 +6,8 @@ The transfer protocol is shared by Quick Stack, Restock and the Storage browser.
 
 `tests/Reliability.Tests` runs the production transaction-history, receipt, queue and lease classes. It checks duplicate requests, cancellation arriving before a request, duplicate acknowledgement, cancellation after commit, reservation serialization/ownership hand-off, per-chest scope, history compaction, overlapping controllers and controller destruction, saved receipt retries, character/peer binding and mixed input queues. The native assembly contract is checked separately. These tests do not emulate Unity networking or native machine timers.
 
+`tests/Audit.Tests` compiles the production item identity and storage-access policy, plus source-extracted production pile operations, controller ticks and harvest methods against controllable game boundaries. It covers regional settings, ward creator/invite/overlap permissions, permission revocation during ownership acquisition, pile range intersection and item conservation, order actor selection, bag identity/proximity, legacy and stamped crop replanting, seed costs, regrowing forage and pickup-history cleanup. Extraction runs before compilation so these checks cannot silently exercise an old copied implementation.
+
 ## Transfer behaviour
 
 - A chest stores unresolved reservation payloads and terminal outcomes on its ZDO. Duplicate requests repeat the original result, rather than taking another batch.
@@ -25,8 +27,12 @@ Persistence follows Valheim's ordinary character/world saves. This is not an ato
 4. Move/drop/consume a Quick Stack source and a Restock destination while waiting. Repeat while switching characters. No callback should mutate another character's inventory.
 5. Test a warded chest and requests carrying a different player's profile ID. Test a normal joining client, not only the host. Actor binding depends on a loaded Player ZDO.
 6. Exercise chest destruction and abrupt shutdown during each phase. Inspect saved character/world data and record any unresolved reservations; these cases are not certified by the helper suite.
+7. Repeat pile browsing, taking, crafting, vacuum and Quick Stack beside another player's ward. Test permission changes during a pending transfer, overlapping wards and an isolated pile range smaller than Core's range. Denied operations must not claim or move pile contents.
+8. Join clients with different regional settings and withdraw an item with fractional durability. Its identity and custom data must agree across peers.
 
 ## Production checks
+
+Change board/table ownership while two players have orders. Each order may use only its creator's nearby bag and accessible stores; the new controller owner must not supply another player's order accidentally. Check Keep targets and queued-machine fuel as well as new input loads.
 
 1. Order a smelter batch from a machine with no processed output and insufficient starting fuel. Once all ore is queued, refuelling must continue; queued output must already count toward the request.
 2. Queue different ore types and include an existing processed-output buffer. Count input queue entries separately from that buffer. A kiln does not need coal refuelling.

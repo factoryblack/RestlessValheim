@@ -76,4 +76,3 @@ namespace UnityEngine {
     public static class Time{public static float unscaledTime;}
     public static class Mathf{public static float Max(float a,float b)=>Math.Max(a,b);public static float Min(float a,float b)=>Math.Min(a,b);public static int Min(int a,int b)=>Math.Min(a,b);public static int RoundToInt(float x)=>(int)MathF.Round(x);}
 }
-

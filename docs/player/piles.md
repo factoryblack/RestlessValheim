@@ -32,7 +32,7 @@ No additional mixed-item chest inventory is created. Existing placed piles remai
 
 Use **F8 → RestlessPiles**. Piles follow Core's search range by default. Enable **Isolate pile range** to use a separate pile radius; the slider appears only when isolation is enabled.
 
-The gameplay toggle and range settings are host-controlled. A physical pile is a local store in the world, not access to every pile across the map.
+The gameplay toggle and range settings are host-controlled. A physical pile is a local store in the world, not access to every pile across the map. Ward permissions apply to browsing, taking, crafting, deposits and vacuum. Storage-browser takes use the same range as the displayed piles, including a smaller isolated pile range.
 
 [Install](install.md) · [Troubleshoot](troubleshooting.md) · [All guides](README.md)
 

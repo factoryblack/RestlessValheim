@@ -52,7 +52,7 @@ Stopping an order removes its instruction. Materials already inside machines kee
 
 ## Multiplayer and settings
 
-The last player to use the board takes ownership, and owned processing follows that player. If control changes while the window is open, mutation controls are disabled until you reopen it. Collection of a Make order remains restricted to its ordering player.
+The last player to use the board takes network ownership. Each order still uses its ordering player's accessible stores and nearby bag for inputs and fuel; changing ownership does not make the new owner pay for another player's order. If control changes while the window is open, mutation controls are disabled until you reopen it. Collection of a Make order remains restricted to its ordering player.
 
 Use **F8 → RestlessWorkshop** for the local window toggle. Closing or disabling the window does not stop placed orders. Wider multiplayer ownership behaviour still needs playtesting.
 

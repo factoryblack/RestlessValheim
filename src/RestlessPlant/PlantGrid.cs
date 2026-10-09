@@ -19,6 +19,11 @@ internal static class PlantGrid
     }
 
     private static readonly List<GameObject> Ghosts = new();
+    private static readonly Dictionary<GameObject, Renderer[]> Renderers = new();
+    private static readonly Dictionary<GameObject, bool> PaintState = new();
+    private static GameObject? _probeGhost;
+    private static Collider[] _probeColliders = System.Array.Empty<Collider>();
+    private static bool[] _probeEnabled = System.Array.Empty<bool>();
     private static readonly MaterialPropertyBlock Block = new();
     private static readonly int ColorId = Shader.PropertyToID("_Color");
     private static readonly Color Bad = new(1f, 0.35f, 0.35f, 1f);
@@ -195,10 +200,17 @@ internal static class PlantGrid
     {
         var t = ghost.transform;
         var saved = t.position;
-        var cols = ghost.GetComponentsInChildren<Collider>(true);
-        var on = new bool[cols.Length];
+        if (_probeGhost != ghost)
+        {
+            _probeGhost = ghost;
+            _probeColliders = ghost.GetComponentsInChildren<Collider>(true);
+            _probeEnabled = new bool[_probeColliders.Length];
+        }
+        var cols = _probeColliders;
+        var on = _probeEnabled;
         for (var i = 0; i < cols.Length; i++)
         {
+            if (cols[i] == null) continue;
             on[i] = cols[i].enabled;
             cols[i].enabled = false;
         }
@@ -341,6 +353,11 @@ internal static class PlantGrid
         }
 
         Ghosts.Clear();
+        Renderers.Clear();
+        PaintState.Clear();
+        _probeGhost = null;
+        _probeColliders = System.Array.Empty<Collider>();
+        _probeEnabled = System.Array.Empty<bool>();
         _lastPiece = null;
     }
 
@@ -395,9 +412,13 @@ internal static class PlantGrid
 
     private static void Paint(GameObject go, bool ok)
     {
+        if (PaintState.TryGetValue(go, out var previous) && previous == ok) return;
+        PaintState[go] = ok;
+        if (!Renderers.TryGetValue(go, out var renderers))
+            Renderers[go] = renderers = go.GetComponentsInChildren<Renderer>(true);
         Block.Clear();
         Block.SetColor(ColorId, ok ? Color.white : Bad);
-        foreach (var rend in go.GetComponentsInChildren<Renderer>(true))
+        foreach (var rend in renderers)
         {
             if (rend != null)
                 rend.SetPropertyBlock(Block);
@@ -500,7 +521,11 @@ internal static class PlantGrid
             for (var n = Ghosts.Count - 1; n >= i; n--)
             {
                 if (Ghosts[n] != null)
+                {
+                    Renderers.Remove(Ghosts[n]);
+                    PaintState.Remove(Ghosts[n]);
                     Object.Destroy(Ghosts[n]);
+                }
                 Ghosts.RemoveAt(n);
             }
 

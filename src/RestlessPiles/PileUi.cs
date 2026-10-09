@@ -1,5 +1,6 @@
 using Jotunn.Managers;
 using RestlessQoL.Core;
+using RestlessQoL.Storage;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -72,7 +73,8 @@ internal static class PileUi
             return;
         if (!PileConfig.On || Player.m_localPlayer == null || RestlessUi.MapOpen()
             || RestlessUi.InventoryOpen() || Menu.IsVisible()
-            || _box == null || !_box.isActiveAndEnabled)
+            || _box == null || !_box.isActiveAndEnabled
+            || !StorageAccess.Allows(_box.transform.position, Player.m_localPlayer.GetPlayerID()))
         {
             Close();
             return;

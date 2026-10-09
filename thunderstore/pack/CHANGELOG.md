@@ -2,6 +2,11 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
+## 0.1.33
+
+- Update Core to 0.2.7, Cook to 0.5.3, Workshop to 0.1.5, Piles to 0.2.2 and Plant to 0.2.3.
+- Fix pile permissions/range, multiplayer production payments, regional storage identifiers and normal-crop replanting; improve Plant preview and pickup-history cleanup. Drawers and Storage versions remain unchanged.
+
 ## 0.1.32
 
 - Ground vacuum leaves a placed piece where it is. A feast board stays.

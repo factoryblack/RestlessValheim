@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace RestlessQoL.Storage;
@@ -17,7 +18,7 @@ public static class ItemKey
         Part(text, item.m_quality.ToString());
         Part(text, item.m_variant.ToString());
         Part(text, item.m_worldLevel.ToString());
-        Part(text, item.m_durability.ToString("R"));
+        Part(text, item.m_durability.ToString("R", CultureInfo.InvariantCulture));
         Part(text, item.m_crafterID.ToString());
         if (item.m_customData != null)
         {

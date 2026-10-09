@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessPlant"
-versionNumber = "0.2.2"
+versionNumber = "0.2.3"
 description = "Grow berries, mushrooms and more. Plant aligned rows, harvest nearby crops and replant as you go."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/plant.md"
 containsNsfwContent = false
@@ -12,7 +12,7 @@ containsNsfwContent = false
 [package.dependencies]
 denikson-BepInExPack_Valheim = "5.4.2351"
 ValheimModding-Jotunn = "2.30.2"
-Restless-RestlessCore = "0.2.6"
+Restless-RestlessCore = "0.2.7"
 
 [build]
 icon = "./icon.png"

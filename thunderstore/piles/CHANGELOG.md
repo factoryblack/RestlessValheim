@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.2
+
+- Pile browsing, withdrawals, crafting, deposits and vacuum respect ward permissions, including permission changes while acquiring ownership.
+- Storage-browser listing and withdrawal share the smaller of Core and isolated pile ranges. Requires Core 0.2.7.
+
 ## 0.2.1
 
 - Refreshed the package page and added a guide to deposits, withdrawal and shared storage actions.

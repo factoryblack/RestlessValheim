@@ -10,6 +10,51 @@ internal static class PlantHarvest
 {
     private static Piece? _remembered;
     private static bool _busy;
+    private static ZNetScene? _scene;
+    private static float _nextCleanup;
+    private static readonly Dictionary<string, Piece> Seeds = new(StringComparer.Ordinal);
+    private const string SeedKey = "RestlessReplant";
+
+    internal static void Tick()
+    {
+        if (_scene != ZNetScene.instance)
+        {
+            _scene = ZNetScene.instance;
+            PickedDrops.Clear();
+            Seeds.Clear();
+            _remembered = null;
+        }
+        if (Time.unscaledTime < _nextCleanup) return;
+        _nextCleanup = Time.unscaledTime + 2f;
+        var gone = new List<ZDOID>();
+        foreach (var pair in PickedDrops)
+            if (pair.Value == null || pair.Value.m_nview == null || !pair.Value.m_nview.IsValid()) gone.Add(pair.Key);
+        foreach (var id in gone) PickedDrops.Remove(id);
+    }
+
+    private static Piece? SeedFor(Pickable crop)
+    {
+        var name = Utils.GetPrefabName(crop.gameObject);
+        var stamped = crop.m_nview != null && crop.m_nview.IsValid() ? crop.m_nview.GetZDO().GetString(SeedKey) : "";
+        if (!string.IsNullOrEmpty(stamped))
+        {
+            var prefab = ZNetScene.instance?.GetPrefab(stamped);
+            if (prefab != null) return prefab.GetComponent<Piece>();
+        }
+        if (Seeds.TryGetValue(name, out var seed)) return seed;
+        if (ZNetScene.instance == null) return null;
+        // Older crops only have the grown prefab. Discover its actual sapling,
+        // rather than using the last selected crop and replanting the wrong kind.
+        foreach (var prefab in ZNetScene.instance.m_prefabs)
+        {
+            var plant = prefab != null ? prefab.GetComponent<Plant>() : null;
+            var piece = prefab != null ? prefab.GetComponent<Piece>() : null;
+            if (plant == null || piece == null || plant.m_grownPrefabs == null) continue;
+            foreach (var grown in plant.m_grownPrefabs)
+                if (grown != null && Utils.GetPrefabName(grown) == name) { Seeds[name] = piece; return piece; }
+        }
+        return null;
+    }
 
     public static void Remember(Piece? piece)
     {
@@ -61,7 +106,7 @@ internal static class PlantHarvest
             if (!Ours(__instance))
                 return;
 
-            var piece = __instance.GetComponentInParent<Piece>();
+            var piece = SeedFor(__instance);
             if (piece != null)
                 Remember(piece);
 
@@ -69,7 +114,7 @@ internal static class PlantHarvest
                 Bulk(__instance, character);
 
             // Replant only one-shot crops. Forage and bushes regrow via Pickable.m_respawnTimeMinutes.
-            if (PlantConfig.Replant.Value && __instance.m_respawnTimeMinutes <= 0f && piece?.GetComponent<Plant>() != null)
+            if (PlantConfig.Replant.Value && __instance.m_respawnTimeMinutes <= 0f && piece != null)
                 Replant(character as Player, __instance.transform.position, __instance.transform.rotation, piece);
         }
 
@@ -99,6 +144,7 @@ internal static class PlantHarvest
             if (creator == 0L)
                 return;
             view.GetZDO().Set(PlantedKey, creator);
+            view.GetZDO().Set(SeedKey, Utils.GetPrefabName(__instance.gameObject));
         }
 
         // The nest reuses the beehive script. If its labels or drop were left
@@ -134,8 +180,9 @@ internal static class PlantHarvest
         }
     }
 
-    private static readonly HashSet<ZDOID> PickedDrops = new();
+    private static readonly Dictionary<ZDOID, ItemDrop> PickedDrops = new();
     private static ZDOID _picking;
+    private static ItemDrop? _pickingDrop;
 
     // A stack of 1 merges into what you already hold, so the drop's own item
     // never sits in the inventory and the "already picked" check misses it.
@@ -147,19 +194,22 @@ internal static class PlantHarvest
     private static bool OneDrop(GameObject go, ref bool __result)
     {
         _picking = ZDOID.None;
+        _pickingDrop = null;
+        if (!PlantConfig.On) return true;
         var drop = go != null ? go.GetComponent<ItemDrop>() : null;
         if (drop == null || drop.m_nview == null || !drop.m_nview.IsValid())
             return true;
         var id = drop.m_nview.GetZDO().m_uid;
         if (id.IsNone())
             return true;
-        if (PickedDrops.Contains(id))
+        if (PickedDrops.ContainsKey(id))
         {
             __result = false;
             return false;
         }
 
         _picking = id;
+        _pickingDrop = drop;
         return true;
     }
 
@@ -167,9 +217,10 @@ internal static class PlantHarvest
     [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.Pickup))]
     private static void RememberDrop(bool __result)
     {
-        if (__result && !_picking.IsNone())
-            PickedDrops.Add(_picking);
+        if (__result && !_picking.IsNone() && _pickingDrop != null)
+            PickedDrops[_picking] = _pickingDrop;
         _picking = ZDOID.None;
+        _pickingDrop = null;
     }
 
     // Owner id 0 makes the extract run on every peer that has the nest.
@@ -242,10 +293,10 @@ internal static class PlantHarvest
                     continue;
                 var pos = other.transform.position;
                 var rot = other.transform.rotation;
-                var piece = other.GetComponentInParent<Piece>();
+                var piece = SeedFor(other);
                 var oneShot = other.m_respawnTimeMinutes <= 0f;
                 other.Interact(character, false, false);
-                if (PlantConfig.Replant.Value && oneShot && piece?.GetComponent<Plant>() != null)
+                if (PlantConfig.Replant.Value && oneShot && piece != null)
                     Replant(character as Player, pos, rot, piece);
             }
         }

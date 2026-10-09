@@ -49,7 +49,8 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
 
     public bool Interact(Humanoid user, bool hold, bool alt)
     {
-        if (!PileConfig.On || hold || user != Player.m_localPlayer)
+        if (!PileConfig.On || hold || user != Player.m_localPlayer
+            || !StorageAccess.Allows(transform.position, Player.m_localPlayer.GetPlayerID()))
             return false;
         if (alt)
         {
@@ -63,7 +64,8 @@ public sealed class PileBox : MonoBehaviour, Interactable, Hoverable
 
     public bool UseItem(Humanoid user, ItemDrop.ItemData item)
     {
-        if (!PileConfig.On || user != Player.m_localPlayer || !PileBag.Matches(item, _item))
+        if (!PileConfig.On || user != Player.m_localPlayer || !PileBag.Matches(item, _item)
+            || !StorageAccess.Allows(transform.position, Player.m_localPlayer.GetPlayerID()))
             return false;
         PileBag.DumpInto(Player.m_localPlayer, this);
         return true;

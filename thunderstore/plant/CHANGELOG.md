@@ -2,6 +2,12 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.3
+
+- Normal grown crops resolve their original sapling for replanting, including fields planted before this update; saved sapling identity supports custom crops.
+- Replanting pays the matching seed cost and leaves regrowing forage on its normal cycle.
+- Grid previews cache renderer and collider lookups. Pickup history prunes vanished drops and clears between worlds.
+
 ## 0.2.2
 
 - Ivy and ashvine use the game's own plant check before the seed is spent. A failed check leaves the seed in the bag, and every player sees the owner's sapling.

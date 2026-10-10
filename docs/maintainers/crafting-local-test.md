@@ -70,11 +70,16 @@ checks, nine added native crafting API contracts, five release tooling tests,
 seven native mod builds, the external UI kit consumer, documentation/material
 checks and eight package archives. Builds have existing nullable/reference and
 unavailable NuGet audit warnings. In-game visual and interaction acceptance is
-still pending; successful compilation is not a gameplay test.
+still pending; successful compilation is not a gameplay test. The local game
+startup loaded Jotunn and all seven Restless plugins with zero skipped or failed
+plugins, and no logged exception in the captured startup. Crafting registered
+successfully; this does not validate its in-world window layout.
 
 Installation records, file hashes and previous files are under
 `artifacts/install-backups/`. The local installation receipt records the exact
 backup directory. Disable the F8 switch for immediate UI rollback. For a complete
-binary rollback, close Valheim and restore the backed-up plugin files and Core
-configuration according to that receipt; keep the saved worlds and characters.
+binary rollback, close Valheim and run
+`artifacts/restore-before-crafting-test.ps1`. It validates the receipt and backup
+hashes before restoring the previous plugins and Core configuration. Saved worlds
+and characters are untouched. The helper was syntax-checked, not executed.
 The original source branch and release archives are separate from this test.

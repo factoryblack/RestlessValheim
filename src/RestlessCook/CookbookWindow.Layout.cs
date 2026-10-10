@@ -112,6 +112,8 @@ internal sealed partial class CookbookWindow
     }
     private static void HideAfter(List<Card> cards,int count)
     { for(var i=count;i<cards.Count;i++) cards[i].Root.SetActive(false); }
+    private static void HideAfter(List<UiKitMaterialCard> cards,int count)
+    {for(var i=count;i<cards.Count;i++)cards[i].Root.SetActive(false);}
     private sealed class Card
     {
         internal readonly GameObject Root;

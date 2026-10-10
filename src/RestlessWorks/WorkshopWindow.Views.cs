@@ -23,7 +23,7 @@ internal sealed partial class WorkshopWindow
         }
         Hide(_choices,rows.Count);Size(_list,rows.Count*78);
         var selected=_recipes.FirstOrDefault(r=>r.Output==_output);
-        if(selected==null||_plan.Count==0){Empty("No matching production","Try another search or machine filter. Machine recipes become available when the world is loaded.");return;}
+        if(selected==null||_plan.Count==0){foreach(var card in _materialCards)card.Root.SetActive(false);Empty("No matching production","Try another search or machine filter. Machine recipes become available when the world is loaded.");return;}
         var root=_plan[0];
         var usable=Math.Max(0,root.Available-_orders.Where(o=>o.Output==_output&&o.Mode==WorksOrderMode.Make).Sum(o=>o.Ready));
         var requested=_mode==WorksOrderMode.Make?_count:Math.Max(0,_count-usable);
@@ -31,15 +31,16 @@ internal sealed partial class WorkshopWindow
         var hero=Get(_cards,0,_body.content);Place(hero.Root,0,4,536,148);
         hero.Set(title,_mode==WorksOrderMode.Make?"Additional output · existing finished stock is kept":usable+" usable now · target "+_count,Icon(_output),()=>{},true);
         if(_mode==WorksOrderMode.Keep)hero.Coverage(usable,0,_count);
-        var itemCount=1;
         for(var i=0;i<root.Uses.Count;i++)
         {
             var use=root.Uses[i];var amount=(int)Math.Ceiling((double)use.Amount*requested/Math.Max(1,root.Need));
             var fuel=use.Item==selected.Fuel;var craftable=_recipes.Any(r=>r.Output==use.Item);
-            var c=Get(_cards,itemCount++,_body.content);Place(c.Root,0,176+i*128,536,116);
-            c.Set(Local(use.Name)+(craftable?"  ›":""),(fuel?"Fuel estimate: ":"Input: ")+amount+" needed · "+use.Available+" available"+(craftable?"\nSelect to order this separately":""),Icon(use.Item),()=>{if(craftable)PickOutput(use.Item);});
+            if(i==_materialCards.Count)_materialCards.Add(new UiKitMaterialCard(_body.content));
+            _materialCards[i].Set(new Rect(0,176+i*84,536,76),Local(use.Name),use.Available+" / "+amount,
+                (fuel?"Fuel estimate":craftable?"Select to order this input":"Input stock / needed"),Icon(use.Item),use.Available<amount,craftable?(Action)(()=>PickOutput(use.Item)):null);
         }
-        Hide(_cards,itemCount);Size(_body,176+root.Uses.Count*128);
+        for(var i=root.Uses.Count;i<_materialCards.Count;i++)_materialCards[i].Root.SetActive(false);
+        Hide(_cards,1);Size(_body,176+root.Uses.Count*84);
         var matching=_machines.Where(m=>m.Prefab==selected.Station).ToList();
         var details=new StringBuilder("PRODUCTION REQUIREMENTS\n\n").AppendLine(Local(selected.StationName))
             .AppendLine(matching.Count+" machines in range").AppendLine(matching.Sum(m=>m.Free)+" free input slots").AppendLine()

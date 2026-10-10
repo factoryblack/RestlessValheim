@@ -10,6 +10,10 @@ public static class Consumer
         var window=new UiKitWindow(parent,"Consumer",new Vector2(900,640),()=>{});
         window.Fit();window.Resize(new Vector2(920,640));
         window.Subtitle.text=UiKitApi.StationState("");
+        var ingredient=new UiKitMaterialCard(window.Sheet);
+        ingredient.Set(new Rect(0,0,280,76),"Wood","8 / 8","Available",null,false);
+        var attribute=new UiKitDetailRow(window.Sheet);
+        attribute.Set(new Rect(0,90,500,58),"Damage","27","31",true);
         var button = UiKitApi.Button(parent,"Queue",new Rect(0,0,240,42),() => { });
         UiKitApi.ActionSurface(button.gameObject);
         UiKitApi.Tab(button,false);

@@ -17,6 +17,8 @@ requests and recipe planning belong to the expansion, not these controls.
 | Search / number input | `Field` | Single-line text; configurable limit; optional integer validation |
 | Tabs | `Tab` | Category strip and selected marker |
 | Window frame | `UiKitWindow` | Paper sheet, title, subtitle, close control, resize and fit; caller owns input/lifetime |
+| Material / input card | `UiKitMaterialCard` | Native icon, counts, shortage cue and optional caller action; shared by Crafting, Cookbook and Workshop |
+| Attribute comparison | `UiKitDetailRow` | Native current/next values with measured wrapping and a change marker |
 | Station status | `StationState` | Consistent ready/blocked wording from a caller-supplied blocker |
 | Quality | `Quality` | Diamonds and bounded numeric overflow |
 | Vertical reader | `Reader`, `ResizeReader`, `SizeReader` | Native scrollbar, content gutter, Restless wheel motion |

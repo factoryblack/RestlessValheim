@@ -56,10 +56,23 @@ gui.m_recipeRequirementList=new[]{Material("Hidden icon","3",true,false)};
 Check(CraftingBridge.Requirements(gui)=="No materials required","Hidden resource icon must exclude its old count");
 gui.m_recipeRequirementList=new[]{Material("Hidden count","3",false,true)};
 Check(CraftingBridge.Requirements(gui)=="No materials required","Hidden resource count must exclude its old name");
+var details=CraftingDetails.Read("A hide-breaker.\nWeight: <color=orange>0.1</color>\nPierce: <color=orange>27</color>","A hide-breaker.\nWeight: <color=orange>0.1</color>\nPierce: <color=orange>31</color>");
+Check(details.Description=="A hide-breaker."&&details.Attributes.Count==2,"Descriptions and native attributes must be separated");
+Check(!details.Attributes[0].Changed&&details.Attributes[1].Changed,"Upgrade comparisons must highlight only changed native values");
+Check(details.Attributes[1].Current.Contains("27")&&details.Attributes[1].Next!.Contains("31"),"Native current and next stats must be retained");
+var extended=CraftingDetails.Read("Native prose without stat separators", "Native prose\nNew effect: 5");
+Check(extended.Description=="Native prose without stat separators"&&extended.Attributes.Single().Current=="—","Unknown prose and new upgrade attributes must remain visible");
+Check(CraftingDetails.Plain("<color=orange>27</color>")=="27","Comparison must ignore formatting tags");
+var materialRows=CraftingBridge.Materials(gui);
+Check(materialRows.Count==0,"Card data must obey the same native hidden-slot contract");
+gui.m_recipeRequirementList=new[]{Material("Wood","3/8")};
+Check(CraftingBridge.Materials(gui).Single().Missing,"Shortage cards must use native have/needed counts even between blink frames");
+gui.m_recipeRequirementList=new[]{Material("Wood","8/8")};
+Check(!CraftingBridge.Materials(gui).Single().Missing,"Exact material coverage must not show a shortage");
 Console.WriteLine($"{checks} production crafting bridge checks passed.");
 
 // Controlled native boundaries; the production bridge above is compiled directly.
-public class Recipe{public ItemDrop m_item=new();public int GetInstanceID()=>System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);}
+public class Recipe{public string name="recipe";public ItemDrop m_item=new();public int GetInstanceID()=>System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);}
 public class ItemDrop
 {
     public ItemData m_itemData=new();
@@ -100,7 +113,7 @@ namespace UnityEngine
 namespace UnityEngine.UI
 {
     public class Button{public bool interactable=true;}
-    public class Image{public UnityEngine.GameObject gameObject=new(){activeSelf=true};public T? GetComponent<T>() where T:class=>null;}
+    public class Image{public UnityEngine.Sprite? sprite;public UnityEngine.GameObject gameObject=new(){activeSelf=true};public T? GetComponent<T>() where T:class=>null;}
 }
 namespace TMPro{public class TMP_Text{public UnityEngine.GameObject gameObject=new(){activeSelf=true};public string text="";public UnityEngine.Color color;}}
 namespace RestlessQoL.Core{public static class RestlessUi{public static T? Deep<T>(UnityEngine.Transform transform,string name) where T:class=>transform.Children.TryGetValue(name,out var value)?value as T:null;}}

@@ -18,19 +18,22 @@ inventory styling switch and does not change host range settings.
 
 ## What is implemented
 
-- **Craft:** native known recipes, search and category filters, item preview,
-  native material counts and eligibility, variant cycling, crafting progress and
+- **Craft:** native known recipes, search and category filters, available/name sorting,
+  persistent saved recipes and retained search/scroll, framed item preview,
+  ingredient cards with native icons/counts and shortage cues, native eligibility, variant cycling, crafting progress and
   cancellation. The game owns resource consumption and item creation.
 - **Upgrade:** individual owned equipment targets, including separate copies of
-  the same item; current and next-quality tooltips; exact-target revalidation
+  the same item; native attributes compared in current/next rows; exact-target revalidation
   before native execution. Previews clone item data.
 - **Stations:** actual connected extensions and station level; nearby extensions
-  which are not contributing; known extensions available to build, with costs.
+  which are not contributing; grouped connected/nearby/build choices and a
+  station level/connection overview; known extensions available to build, with costs.
   With an appropriate building tool equipped, select an extension and return to
   normal game placement. The game checks build-menu membership and placement.
   A build choice does not promise an extra level or list future recipe unlocks.
 - **Inventory:** the first ten items as a compact quick-access strip. Selecting
-  one opens its upgrade entry where eligible. Full inventory returns to ordinary
+  one opens its upgrade entry where eligible. Craft shows the selected recipe’s
+  ingredients in your bag; Upgrade prioritises eligible equipped items. Full inventory returns to ordinary
   inventory management; the strip does not support dragging or transfers.
 - **Shared presentation:** Crafting, Cookbook and Workshop use one paper window
   frame, header, close control, fitting behaviour and selected tab treatment.
@@ -63,7 +66,9 @@ losing access, dying, or disabling the feature restores the native presentation.
    resize flicker, pauses and stale rows after Craft/Stations switching.
    Test a small resolution, a large display, UI scaling, long item names, long
    tooltips, a long recipe list and controller navigation/scrolling.
-6. Open Cookbook's Kitchen tab, change selected station, search, then return to
+6. Check saved-recipe toggling and sorting, close/reopen with a search, test a
+   recipe with no matching results, and compare upgrades with long attribute text.
+   Open Cookbook's Kitchen tab, change selected station, search, then return to
    recipes/orders/pantry. Verify stale ingredient cards and quantity controls
    disappear in station view. Exercise Workshop's machines and queues too.
 7. Multiplayer ownership and second-player behaviour remain pending until
@@ -71,7 +76,7 @@ losing access, dying, or disabling the feature restores the native presentation.
 
 ## Verification and rollback
 
-Automated checks pass: ten existing suites, twenty-three production crafting bridge
+Automated checks pass: ten existing suites, thirty-one production crafting bridge
 checks, nine added native crafting API contracts, five release tooling tests,
 seven native mod builds, the external UI kit consumer, documentation/material
 checks and eight package archives. Builds have existing nullable/reference and

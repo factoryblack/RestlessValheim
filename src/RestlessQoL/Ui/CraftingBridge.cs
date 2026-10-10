@@ -18,6 +18,7 @@ internal static class CraftingBridge
         internal ItemDrop.ItemData? Item;
         internal string Name="", Category="", State="";
         internal Sprite? Icon;
+        internal bool Available;
     }
     internal static List<Choice> Choices(InventoryGui gui)
     {
@@ -27,8 +28,8 @@ internal static class CraftingBridge
             var item=pair.ItemData??pair.Recipe?.m_item?.m_itemData;
             if(pair.Recipe==null||item==null)continue;
             result.Add(new Choice{Recipe=pair.Recipe,Item=pair.ItemData,Name=Local(item.m_shared.m_name),
-                Category=item.m_shared.m_itemType.ToString(),Icon=item.GetIcon(),
-                State=pair.ItemData!=null ? "Quality "+item.m_quality+(item.m_equipped?" · Equipped":"") : pair.CanCraft?"Materials available":"Requirements missing"});
+                Category=item.m_shared.m_itemType.ToString(),Icon=item.GetIcon(),Available=pair.CanCraft,
+                State=pair.ItemData!=null ? (pair.CanCraft?"Ready · ":"Requirements missing · ")+"Quality "+item.m_quality+(item.m_equipped?" · Equipped":"") : pair.CanCraft?"Ready to craft":"Requirements missing"});
         }
         return result;
     }
@@ -52,6 +53,33 @@ internal static class CraftingBridge
     }
     internal static bool Selected(InventoryGui gui,Choice choice) =>
         gui.m_selectedRecipe.Recipe==choice.Recipe&&ReferenceEquals(gui.m_selectedRecipe.ItemData,choice.Item);
+    internal sealed class Material
+    {
+        internal string Name="",Counts="";internal Sprite? Icon;internal bool Missing;
+    }
+    internal static List<Material> Materials(InventoryGui gui)
+    {
+        var result=new List<Material>();
+        foreach(var slot in gui.m_recipeRequirementList)
+        {
+            if(slot==null||!slot.activeSelf)continue;
+            var amount=RestlessUi.Deep<TMP_Text>(slot.transform,"res_amount");
+            var icon=RestlessUi.Deep<Image>(slot.transform,"res_icon");
+            if(amount==null||!amount.gameObject.activeSelf||icon==null||!icon.gameObject.activeSelf)continue;
+            var name=Local(RestlessUi.Deep<TMP_Text>(slot.transform,"res_name")?.text??"");
+            if(name.Length==0){var tip=icon.GetComponent<UITooltip>()??slot.GetComponent<UITooltip>();name=Local(!string.IsNullOrEmpty(tip?.m_topic)?tip!.m_topic:tip?.m_text??"Material");}
+            var counts=amount.text;var parts=CraftingDetails.Plain(counts).Split('/');
+            var missing=parts.Length==2&&int.TryParse(parts[0].Trim(),out var have)&&int.TryParse(parts[1].Trim(),out var need)?have<need:amount.color.r>amount.color.g*1.4f;
+            result.Add(new Material{Name=name,Counts=counts,Icon=icon.sprite,Missing=missing});
+        }
+        return result;
+    }
+    internal static CraftingDetails.Details Details(Choice choice)
+    {
+        var item=choice.Item??choice.Recipe.m_item.m_itemData;
+        var next=item.Clone();next.m_quality=choice.Item!=null?item.m_quality+1:1;
+        return choice.Item==null?CraftingDetails.Read(Local(next.GetTooltip())):CraftingDetails.Read(Local(item.GetTooltip()),Local(next.GetTooltip()));
+    }
     internal static string Requirements(InventoryGui gui)
     {
         var lines=new List<string>();

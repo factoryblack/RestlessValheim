@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using RestlessQoL.Api;
 using RestlessQoL.Core;
 using UnityEngine;
@@ -19,10 +20,20 @@ internal sealed partial class CraftingWindow
         for(var i=0;i<filters.Length;i++){var filter=filters[i];_filters.Add(UiKitApi.Button(_frame.Sheet,filter,new Rect(28+i*84,178,80,32),()=>{_category=filter;Refresh();UiKitApi.SizeReader(_browser,_browser.content.rect.height,true);}));}
         _browser=UiKitApi.Reader(_frame.Sheet,"craft-browser",new Rect(28,222,252,430),76);
         _heading=UiKitWindow.Label(_frame.Sheet,"",27,new Rect(310,132,560,48));RestlessUi.BoundedLabel(_heading,27,22);
-        var portrait=RestlessUi.Graphic(_frame.Sheet,"craft-portrait",Color.white,false);_portrait=portrait.GetComponent<Image>();_portrait.preserveAspect=true;
-        UiKitApi.Place(portrait,new Rect(430,188,240,130));
-        _detail=UiKitApi.Reader(_frame.Sheet,"craft-details",new Rect(310,328,560,322),42);
+        _feature=RestlessUi.Tray(_frame.Sheet,"selected-item-feature");UiKitApi.Surface(_feature);
+        _portraitFrame=RestlessUi.Graphic(_feature.transform,"portrait-frame",Color.white,false);UiKitAssets.Apply(_portraitFrame.GetComponent<Image>(),UiKitAsset.Portrait);
+        _portrait=RestlessUi.Graphic(_feature.transform,"craft-portrait",Color.white,false).GetComponent<Image>();_portrait.preserveAspect=true;
+        _heroMeta=UiKitWindow.Label(_feature.transform,"",22,new Rect());RestlessUi.BoundedLabel(_heroMeta,22,18);
+        _heroNote=UiKitWindow.Label(_feature.transform,"",18,new Rect(),true);
+        _saveButton=UiKitApi.Button(_feature.transform,"Save recipe",new Rect(),()=>{
+            if(_choice==null)return;var name=_choice.Recipe.name;
+            if(!_saved.Remove(name))_saved.Add(name);ModConfig.CraftingSavedRecipes.Value=string.Join("|",_saved.OrderBy(n=>n));_rowStamp="";Refresh();
+        });
+        _sortButton=UiKitApi.Button(_frame.Sheet,"Sort: native",new Rect(),()=>{_sort=(_sort+1)%3;Refresh();UiKitApi.SizeReader(_browser,_browser.content.rect.height,true);});
+        _savedOnlyButton=UiKitApi.Button(_frame.Sheet,"All recipes",new Rect(),()=>{_savedOnly=!_savedOnly;Refresh();UiKitApi.SizeReader(_browser,_browser.content.rect.height,true);});
+        _detail=UiKitApi.Reader(_frame.Sheet,"craft-details",new Rect(310,360,560,292),42);
         _copy=UiKitWindow.Label(_detail.content,"",18,new Rect(0,0,530,100));_copy.supportRichText=true;_copy.alignment=TextAnchor.UpperLeft;_copy.verticalOverflow=VerticalWrapMode.Overflow;
+        _statHeader=UiKitWindow.Label(_detail.content,"",14,new Rect(),true);
         _context=UiKitWindow.Label(_frame.Sheet,"Required materials",22,new Rect(906,132,326,36));
         _requirements=UiKitApi.Reader(_frame.Sheet,"craft-requirements",new Rect(906,180,326,268),50);
         _needs=UiKitWindow.Label(_requirements.content,"",18,new Rect(0,0,302,100));_needs.supportRichText=true;_needs.alignment=TextAnchor.UpperLeft;_needs.verticalOverflow=VerticalWrapMode.Overflow;
@@ -57,10 +68,17 @@ internal sealed partial class CraftingWindow
         var filterWidths=_compact?new[]{44f,108f,50f}:new[]{56f,120f,68f};
         var filterX=28f;
         for(var i=0;i<_filters.Count;i++){UiKitApi.Place(_filters[i].gameObject,new Rect(filterX,178,filterWidths[i],32));filterX+=filterWidths[i]+4;}
-        UiKitApi.ResizeReader(_browser,new Rect(28,222,_compact?210:252,_compact?326:430));
+        UiKitApi.Place(_sortButton.gameObject,new Rect(28,216,_compact?126:148,32));
+        UiKitApi.Place(_savedOnlyButton.gameObject,new Rect(_compact?158:180,216,_compact?80:100,32));
+        UiKitApi.ResizeReader(_browser,new Rect(28,260,_compact?210:252,_compact?288:392));
         UiKitApi.Place(_heading.gameObject,new Rect(_compact?256:310,132,_compact?366:560,48));
-        UiKitApi.Place(_portrait.gameObject,new Rect(_compact?340:430,188,_compact?160:240,_compact?92:130));
-        UiKitApi.ResizeReader(_detail,new Rect(_compact?256:310,_compact?292:328,_compact?366:560,_compact?256:322));
+        UiKitApi.Place(_feature,new Rect(_compact?256:310,186,_compact?366:560,156));
+        UiKitApi.Place(_portraitFrame,new Rect(12,8,142,140));UiKitApi.Place(_portrait.gameObject,new Rect(26,22,114,112));
+        UiKitApi.Place(_heroMeta.gameObject,new Rect(166,12,_compact?184:378,46));
+        UiKitApi.Place(_heroNote.gameObject,new Rect(166,60,_compact?184:378,34));
+        UiKitApi.Place(_saveButton.gameObject,new Rect(166,108,_compact?180:240,34));
+        UiKitApi.ResizeReader(_detail,new Rect(_compact?256:310,354,_compact?366:560,_compact?194:298));
+        _detailStamp="";_materialStamp="";_nextPreview=0;
         UiKitApi.Place(_context.gameObject,new Rect(_compact?638:906,132,_compact?294:326,36));
         UiKitApi.ResizeReader(_requirements,new Rect(_compact?638:906,180,_compact?294:326,_compact?184:268));
         UiKitApi.Place(_reason.gameObject,new Rect(_compact?638:906,_compact?374:462,_compact?294:326,60));

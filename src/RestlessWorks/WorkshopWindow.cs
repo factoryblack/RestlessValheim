@@ -21,6 +21,7 @@ internal sealed partial class WorkshopWindow : MonoBehaviour
     private RectTransform _sheet=null!;
     private RestlessScrollRect _list=null!,_body=null!,_details=null!;
     private readonly List<Card> _choices=new(),_cards=new();
+    private readonly List<UiKitMaterialCard> _materialCards=new();
     private readonly List<Button> _tabs=new();
     private readonly Dictionary<string,Sprite?> _icons=new();
     private GameObject _controls=null!;
@@ -103,6 +104,7 @@ internal sealed partial class WorkshopWindow : MonoBehaviour
                 _controls.SetActive(_tab==0);ResizeReader(_list,28,_tab==0?396:190,252,_tab==0?338:544);
                 _secondary.gameObject.SetActive(false);_action.gameObject.SetActive(true);
                 Place(_hint.gameObject,918,596,324,_tab==1?36:72);
+                if(_tab!=0)foreach(var card in _materialCards)card.Root.SetActive(false);
                 if(_tab==0)PaintProduction();else if(_tab==1)PaintOrders();else if(_tab==2)PaintMachines();else PaintOutput();
                 if(!Control()){_action.interactable=false;_secondary.interactable=false;_hint.text="Board control changed. Reopen it to manage orders.";}
             }

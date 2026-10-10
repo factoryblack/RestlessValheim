@@ -31,6 +31,15 @@ internal sealed partial class CraftingWindow : MonoBehaviour
     private RestlessScrollRect _browser=null!,_detail=null!,_requirements=null!;
     private Text _heading=null!,_copy=null!,_needs=null!,_reason=null!,_bag=null!,_context=null!;
     private Image _portrait=null!;
+    private GameObject _feature=null!,_portraitFrame=null!;
+    private Text _heroMeta=null!,_heroNote=null!,_statHeader=null!;
+    private readonly List<UiKitDetailRow> _attributes=new();
+    private readonly List<UiKitMaterialCard> _materials=new();
+    private string _detailStamp="",_materialStamp="";
+    private Button _sortButton=null!,_savedOnlyButton=null!,_saveButton=null!;
+    private int _sort;
+    private bool _savedOnly;
+    private readonly HashSet<string> _saved=new(StringComparer.Ordinal);
     private Button _action=null!,_cancel=null!,_variant=null!;
     private readonly List<Button> _tabs=new(),_rows=new(),_filters=new();
     private InputField _search=null!;
@@ -73,16 +82,18 @@ internal sealed partial class CraftingWindow : MonoBehaviour
             window._station=Player.m_localPlayer.GetCurrentCraftingStation();
             window._tab=gui.InUpradeTab()?1:0;
             gui.UpdateCraftingPanel(false);
-            window._query="";window._category="All";window._choice=null;window._extension=null;
+            window._choice=null;window._extension=null;
+            window._saved.Clear();foreach(var name in ModConfig.CraftingSavedRecipes.Value.Split('|'))if(name.Length>0)window._saved.Add(name);
             window._rowStamp="";window._bagStamp="";window._paintedTab=-1;window._previewChoice=null;window._nextPreview=0;window._nextStation=0;
-            window._messageUntil=0;window._canvas=Vector2.zero;
+            window._messageUntil=0;window._canvas=Vector2.zero;window._detailStamp="";window._materialStamp="";
             // Resolve stretched canvas bounds before creating/fitting the sheet. Reveal only the final layout.
             Canvas.ForceUpdateCanvases();
             if(!window._built){window.Build();window._built=true;}
-            else{window._search.SetTextWithoutNotify("");window.Fit();}
+            else{window._search.SetTextWithoutNotify(window._query);window.Fit();}
             window.HideNative();window._blocked=true;GUIManager.BlockInput(true);
             LookHints.SetSuppressed(window,true);window.Refresh();
-            UiKitApi.SizeReader(window._browser,window._browser.content.rect.height,true);
+            window._browser.content.anchoredPosition=new Vector2(0,window._scrollPositions[window._tab]);
+            UiKitApi.SizeReader(window._browser,window._browser.content.rect.height);
             UiKitApi.SizeReader(window._detail,window._detail.content.rect.height,true);
             Canvas.ForceUpdateCanvases();
             window._visibility.alpha=1;window._visibility.interactable=true;window._visibility.blocksRaycasts=true;
@@ -94,6 +105,7 @@ internal sealed partial class CraftingWindow : MonoBehaviour
     {
         if(_current==null)return;
         var window=_current;_current=null;_closedFrame=Time.frameCount;
+        if(window._browser!=null)window._scrollPositions[window._tab]=window._browser.content.anchoredPosition.y;
         window.gameObject.SetActive(false);
         if(hideInventory&&window._gui!=null)window._gui.Hide();
     }
@@ -144,7 +156,7 @@ internal sealed partial class CraftingWindow : MonoBehaviour
     {
         if(_gui.m_craftTimer>=0)return;
         _scrollPositions[_tab]=_browser.content.anchoredPosition.y;
-        _tab=tab;_choice=null;_extension=null;_rowStamp="";
+        _tab=tab;_choice=null;_extension=null;_rowStamp="";_nextPreview=0;_detailStamp="";
         if(tab==0)_gui.OnTabCraftPressed();else if(tab==1)_gui.OnTabUpgradePressed();
         Refresh();_browser.content.anchoredPosition=new Vector2(0,_scrollPositions[tab]);
         UiKitApi.SizeReader(_browser,_browser.content.rect.height);
@@ -159,6 +171,9 @@ internal sealed partial class CraftingWindow : MonoBehaviour
             for(var i=0;i<_filters.Count;i++){_filters[i].gameObject.SetActive(_tab!=2);UiKitApi.Tab(_filters[i],_filters[i].GetComponentInChildren<Text>().text==_category);}
             _paintedTab=_tab;_paintedCategory=_category;
         }
+        _sortButton.gameObject.SetActive(_tab!=2);_savedOnlyButton.gameObject.SetActive(_tab!=2);
+        Caption(_sortButton,_sort==0?"Sort: native":_sort==1?"Sort: available":"Sort: name");
+        Caption(_savedOnlyButton,_savedOnly?"Saved only":"All recipes");
         for(var i=0;i<_tabs.Count;i++)_tabs[i].interactable=_gui.m_craftTimer<0;
         if(_tab==2)PaintStations();else PaintRecipes();
         PaintBag();
@@ -168,10 +183,12 @@ internal sealed partial class CraftingWindow : MonoBehaviour
     {
         _context.text="Required materials";
         var all=CraftingBridge.Choices(_gui);
-        var choices=all.Where(c=>c.Name.IndexOf(_query,StringComparison.OrdinalIgnoreCase)>=0&&Category(c)).ToList();
+        var filtered=all.Where(c=>c.Name.IndexOf(_query,StringComparison.OrdinalIgnoreCase)>=0&&Category(c)&&(!_savedOnly||_saved.Contains(c.Recipe.name)));
+        var choices=(_sort==1?filtered.OrderByDescending(c=>c.Available).ThenBy(c=>c.Name):_sort==2?filtered.OrderBy(c=>c.Name):filtered).ToList();
         var nativeChoice=all.FirstOrDefault(c=>CraftingBridge.Selected(_gui,c));
-        if(nativeChoice!=null)_choice=nativeChoice;
-        else if(_choice==null||!all.Any(c=>c.Recipe==_choice.Recipe&&ReferenceEquals(c.Item,_choice.Item)))_choice=choices.FirstOrDefault();
+        if(_gui.m_craftTimer>=0)_choice=nativeChoice??_choice;
+        else _choice=choices.FirstOrDefault(c=>nativeChoice!=null&&c.Recipe==nativeChoice.Recipe&&ReferenceEquals(c.Item,nativeChoice.Item))
+            ??choices.FirstOrDefault(c=>_choice!=null&&c.Recipe==_choice.Recipe&&ReferenceEquals(c.Item,_choice.Item))??choices.FirstOrDefault();
         if(_choice!=null&&!CraftingBridge.Selected(_gui,_choice)&&_gui.m_craftTimer<0)CraftingBridge.Select(_gui,_choice);
         var rowStamp=CraftingBridge.RowsStamp(choices,_choice,_tab,_browser.content.rect.width,_gui.m_craftTimer>=0);
         if(rowStamp!=_rowStamp)
@@ -179,7 +196,7 @@ internal sealed partial class CraftingWindow : MonoBehaviour
         for(var i=0;i<choices.Count;i++)
         {
             var choice=choices[i];var button=Row(i);
-            _rowNames[i].text=choice.Name;_rowStates[i].text=choice.State;_rowIcons[i].sprite=choice.Icon;_rowIcons[i].enabled=choice.Icon!=null;
+            _rowNames[i].text=choice.Name;_rowStates[i].text=(_saved.Contains(choice.Recipe.name)?"Saved · ":"")+choice.State;_rowIcons[i].sprite=choice.Icon;_rowIcons[i].enabled=choice.Icon!=null;
             button.onClick.RemoveAllListeners();button.onClick.AddListener(()=>{if(CraftingBridge.Select(_gui,choice)){_choice=choice;Refresh();UiKitApi.SizeReader(_detail,_detail.content.rect.height,true);}});
             button.interactable=_gui.m_craftTimer<0;
             RestlessUi.PaperControl(button.gameObject,_choice!=null&&choice.Recipe==_choice.Recipe&&ReferenceEquals(choice.Item,_choice.Item)?UiKitApi.Accent:(Color?)null);
@@ -194,21 +211,18 @@ internal sealed partial class CraftingWindow : MonoBehaviour
         {
             _heading.text=choices.Count==0&&all.Count>0?"No matching items":"No available recipes";
             _copy.text=_tab==1?"Your inventory has no equipment eligible for this station's upgrade tab.":"Known recipes appear here when the current station supports them.";
-            _portrait.enabled=false;_needs.text="";_reason.text="Choose a recipe or item";_action.interactable=false;Caption(_action,"Craft");ResizeCopy();return;
+            _previewChoice=null;_nextPreview=0;_saveButton.gameObject.SetActive(false);_portrait.enabled=false;_heroMeta.text="Choose an item";_heroNote.text="";HideDetailRows();PaintMaterials(new List<CraftingBridge.Material>());_needs.text="";_reason.text="Choose a recipe or item";_action.interactable=false;Caption(_action,"Craft");ResizeCopy();return;
         }
-        _heading.text=_choice.Name;_portrait.sprite=_choice.Icon;_portrait.enabled=_choice.Icon!=null;
+        _heading.text=_choice.Name;_portrait.sprite=(_tab==0?_gui.m_recipeIcon?.sprite:null)??_choice.Icon;
+        _portrait.rectTransform.localScale=Vector3.one*(_choice.Category=="Ammo"?1.2f:1f);_portrait.enabled=_choice.Icon!=null;
         if(_previewChoice==null||_previewChoice.Recipe!=_choice.Recipe||!ReferenceEquals(_previewChoice.Item,_choice.Item)||_previewQuality!=(_choice.Item?.m_quality??1)||_previewVariant!=_gui.m_selectedVariant||Time.unscaledTime>=_nextPreview)
         {
-            var preview=CraftingBridge.Preview(_choice);_previewChoice=_choice;_previewQuality=_choice.Item?.m_quality??1;_previewVariant=_gui.m_selectedVariant;_nextPreview=Time.unscaledTime+1f;
-            if(_copy.text!=preview){_copy.text=preview;ResizeCopy();}
+            PaintDetails(CraftingBridge.Details(_choice));_previewChoice=_choice;_previewQuality=_choice.Item?.m_quality??1;_previewVariant=_gui.m_selectedVariant;_nextPreview=Time.unscaledTime+1f;
         }
-        var needs=CraftingBridge.Requirements(_gui);
-        if(_needs.text!=needs)
-        {
-            _needs.text=needs;
-            UiKitApi.Place(_needs.gameObject,new Rect(0,0,_requirements.content.rect.width,Mathf.Max(60,_needs.preferredHeight+16)));
-            UiKitApi.SizeReader(_requirements,_needs.preferredHeight+24);
-        }
+        _heroMeta.text=System.Text.RegularExpressions.Regex.Replace(_choice.Category,"([a-z])([A-Z])","$1 $2");
+        _heroNote.text=_tab==1?"Quality "+_choice.Item!.m_quality+" → "+(_choice.Item.m_quality+1):"Makes "+_choice.Recipe.m_amount+" · Quality 1";
+        Caption(_saveButton,_saved.Contains(_choice.Recipe.name)?"Saved recipe":"Save recipe");_saveButton.gameObject.SetActive(true);
+        PaintMaterials(CraftingBridge.Materials(_gui));
         var selected=CraftingBridge.Selected(_gui,_choice);
         _action.interactable=selected&&_gui.m_craftButton.interactable&&_gui.m_craftTimer<0;
         Caption(_action,_tab==1?"Upgrade to quality "+((_choice.Item?.m_quality??0)+1):"Craft "+_choice.Recipe.m_amount);
@@ -239,7 +253,13 @@ internal sealed partial class CraftingWindow : MonoBehaviour
     {
         var player=Player.m_localPlayer;if(player==null)return;
         var inventory=player.GetInventory();var items=inventory.GetAllItems();
-        _bag.text="Your inventory · "+inventory.GetTotalWeight().ToString("0.0")+" / "+player.GetMaxCarryWeight().ToString("0")+" weight · "+inventory.GetEmptySlots()+" free slots";
+        if(_tab==1){var eligible=CraftingBridge.Choices(_gui).Where(c=>c.Item!=null).Select(c=>c.Item!).ToList();items=items.Where(i=>eligible.Contains(i)).OrderByDescending(i=>i.m_equipped).ToList();}
+        if(_tab==0&&_choice!=null)
+        {
+            var names=new HashSet<string>(_choice.Recipe.m_resources.Where(r=>r.m_resItem!=null).Select(r=>r.m_resItem.m_itemData.m_shared.m_name));
+            items=items.Where(i=>names.Contains(i.m_shared.m_name)).ToList();
+        }
+        _bag.text=(_tab==1?"Upgradeable equipment · ":_tab==0?"Recipe ingredients in your bag · ":"Your inventory · ")+inventory.GetTotalWeight().ToString("0.0")+" / "+player.GetMaxCarryWeight().ToString("0")+" weight · "+inventory.GetEmptySlots()+" free slots";
         var stamp=new StringBuilder();
         for(var i=0;i<Math.Min(items.Count,_slots.Count);i++){var item=items[i];stamp.Append('|').Append(item.GetHashCode()).Append(':').Append(item.m_stack).Append(':').Append(item.m_quality).Append(':').Append(ReferenceEquals(_choice?.Item,item));}
         var bagStamp=stamp.ToString();if(bagStamp==_bagStamp)return;_bagStamp=bagStamp;

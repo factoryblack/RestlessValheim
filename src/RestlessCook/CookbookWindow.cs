@@ -21,7 +21,8 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     private string _stationSelection="";
     private RectTransform _sheet = null!;
     private RestlessScrollRect _recipes = null!, _tree = null!, _details = null!;
-    private readonly List<Card> _recipeCards = new(), _nodes = new(), _requirementCards = new();
+    private readonly List<Card> _recipeCards = new(), _nodes = new();
+    private readonly List<UiKitMaterialCard> _requirementCards=new();
     private readonly List<GameObject> _lines = new();
     private readonly List<Button> _tabs = new();
     private readonly Dictionary<string, Sprite?> _icons = new();
@@ -228,12 +229,11 @@ internal sealed partial class CookbookWindow : MonoBehaviour
             var child = index >= 0 ? _steps[index] : null;
             var onHand = child != null ? child.Available : use.Have;
             var covered = child != null && Covered(child);
-            var row = GetCard(_requirementCards,i,_details.content);
-            Position(row.Root,0,26+i*58,280,54);
-            var count = KitchenStock.Count(onHand, use.Amount);
-            row.Set(Local(use.Name), covered ? "Covered · " + count : count, Icon(use.Item),
-                covered || onHand >= use.Amount ? Tint(KitchenStepState.Prepared) : RestlessUi.Accent,
-                () => { if (index >= 0) Inspect(index); });
+            if(i==_requirementCards.Count)_requirementCards.Add(new UiKitMaterialCard(_details.content));
+            var row=_requirementCards[i];
+            var count=KitchenStock.Count(onHand,use.Amount);
+            row.Set(new Rect(0,26+i*84,280,76),Local(use.Name),count,covered?"Covered by another step":onHand>=use.Amount?"Available / needed":"Missing ingredients",Icon(use.Item),!covered&&onHand<use.Amount,
+                index>=0?(Action)(()=>Inspect(index)):null);
         }
         HideAfter(_requirementCards,rowCount);
         if (s != null)
@@ -249,7 +249,7 @@ internal sealed partial class CookbookWindow : MonoBehaviour
         else b.Append(_tab == 1 ? "Select an order on the left to follow its progress." : "Select a recipe to explore its ingredients.");
         _requirementsLabel.text = rowCount > 0 ? "INGREDIENTS · STOCK / NEEDED" : "";
         _copy.text = b.ToString();
-        var copyY = rowCount > 0 ? 34 + rowCount*58 : 0;
+        var copyY = rowCount > 0 ? 34 + rowCount*84 : 0;
         Position(_copy.gameObject,0,copyY,280,Mathf.Max(60,_copy.preferredHeight));
         Size(_details,copyY+_copy.preferredHeight+16,false);
         var order = _orders.FirstOrDefault(o => o.Id == _order);

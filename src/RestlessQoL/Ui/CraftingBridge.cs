@@ -119,5 +119,31 @@ internal static class CraftingBridge
         if(choice.Item!=null&&!Player.m_localPlayer.GetInventory().GetAllItems().Contains(choice.Item))return false;
         gui.OnCraftPressed();return gui.m_craftTimer>=0;
     }
+    internal static string BlockedReason(InventoryGui gui,Choice choice)
+    {
+        // Native tooltip owns the primary failure, including modded requirement checks.
+        var native=Local(gui.m_craftButton.GetComponent<UITooltip>()?.m_text??"");
+        if(native.Length>0&&native!=Local("$msg_missingrequirement")&&native!=Local("$msg_missingstation"))return native;
+        var station=Player.m_localPlayer?.GetCurrentCraftingStation();
+        var quality=choice.Item==null?1:choice.Item.m_quality+1;
+        var required=station!=null&&station.m_upgrader?1:choice.Recipe.GetRequiredStationLevel(quality);
+        if(choice.Recipe.GetRequiredStation(quality)!=null&&(station==null||station.GetLevel()<required))
+            return "Requires station level "+required+" · current "+(station?.GetLevel()??0);
+        // Alternative-ingredient recipes deliberately show unavailable alternatives.
+        if(!choice.Recipe.m_requireOnlyOneIngredient)
+        {
+            var missing=Materials(gui).Where(m=>m.Missing).Select(m=>m.Name).ToList();
+            if(missing.Count>0)return "Missing: "+string.Join(", ",missing.Take(2))+(missing.Count>2?" +"+(missing.Count-2):"");
+        }
+        if(native.Length>0)return native;
+        return "Craft unavailable · check the station and recipe requirements";
+    }
+    internal static string ResultText(string name,bool upgrade,Dictionary<int,int> before,Dictionary<int,int> after)
+    {
+        var gains=after.Where(p=>p.Value-(before.TryGetValue(p.Key,out var count)?count:0)>0).ToList();
+        var quantity=after.Values.Sum()-before.Values.Sum();
+        return upgrade&&gains.Count>0?"Result: "+Local(name)+" · quality "+gains.Max(p=>p.Key)
+            :!upgrade&&quantity>0?"Crafted "+Local(name)+" × "+quantity:"Craft ended · no item gain";
+    }
     internal static string Local(string text)=>Localization.instance!=null?Localization.instance.Localize(text):text;
 }

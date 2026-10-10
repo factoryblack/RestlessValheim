@@ -70,6 +70,10 @@ public sealed class CraftingInterface : FeatureModule
         private static bool Gamepad()=>!CraftingWindow.IsOpen;
         [HarmonyPrefix,HarmonyPatch(typeof(InventoryGui),nameof(InventoryGui.UpdateRecipeGamepadInput))]
         private static bool RecipeGamepad()=>!CraftingWindow.IsOpen;
+        [HarmonyPrefix,HarmonyPatch(typeof(InventoryGui),nameof(InventoryGui.DoCrafting))]
+        private static void BeforeCraft(InventoryGui __instance,out CraftingWindow.CraftResult? __state)=>__state=CraftingWindow.BeforeCraft(__instance);
+        [HarmonyPostfix,HarmonyPatch(typeof(InventoryGui),nameof(InventoryGui.DoCrafting))]
+        private static void AfterCraft(InventoryGui __instance,CraftingWindow.CraftResult? __state)=>CraftingWindow.AfterCraft(__instance,__state);
         [HarmonyPrefix,HarmonyPatch(typeof(Menu),"Update")]
         private static bool MenuInput()=>!CraftingWindow.BlocksMenu;
         [HarmonyPrefix,HarmonyPatch(typeof(SettingsUi),nameof(SettingsUi.Open))]

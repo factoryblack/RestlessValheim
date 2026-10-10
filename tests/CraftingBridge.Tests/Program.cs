@@ -61,7 +61,7 @@ Check(details.Description=="A hide-breaker."&&details.Attributes.Count==2,"Descr
 Check(!details.Attributes[0].Changed&&details.Attributes[1].Changed,"Upgrade comparisons must highlight only changed native values");
 Check(details.Attributes[1].Current.Contains("27")&&details.Attributes[1].Next!.Contains("31"),"Native current and next stats must be retained");
 var extended=CraftingDetails.Read("Native prose without stat separators", "Native prose\nNew effect: 5");
-Check(extended.Description=="Native prose without stat separators"&&extended.Attributes.Single().Current=="—","Unknown prose and new upgrade attributes must remain visible");
+Check(extended.Description.Contains("Native prose without stat separators")&&extended.Description.Contains("AFTER UPGRADE\nNative prose")&&extended.Attributes.Single().Current=="—","Both current and changed upgrade prose must remain visible");
 Check(CraftingDetails.Plain("<color=orange>27</color>")=="27","Comparison must ignore formatting tags");
 var materialRows=CraftingBridge.Materials(gui);
 Check(materialRows.Count==0,"Card data must obey the same native hidden-slot contract");
@@ -69,10 +69,28 @@ gui.m_recipeRequirementList=new[]{Material("Wood","3/8")};
 Check(CraftingBridge.Materials(gui).Single().Missing,"Shortage cards must use native have/needed counts even between blink frames");
 gui.m_recipeRequirementList=new[]{Material("Wood","8/8")};
 Check(!CraftingBridge.Materials(gui).Single().Missing,"Exact material coverage must not show a shortage");
+gui.m_craftButton.Tip=new UITooltip{m_text="$msg_missingrequirement"};
+gui.m_recipeRequirementList=new[]{Material("Wood","3/8")};
+Check(CraftingBridge.BlockedReason(gui,craft)=="Missing: Wood","Blocked craft must identify the missing material");
+recipe.m_requireOnlyOneIngredient=true;
+Check(CraftingBridge.BlockedReason(gui,craft)=="$msg_missingrequirement","Alternative ingredients must not all be reported as required");
+recipe.m_requireOnlyOneIngredient=false;gui.m_craftButton.Tip.m_text="Inventory full";
+Check(CraftingBridge.BlockedReason(gui,craft)=="Inventory full","Specific native failures must take precedence over material hints");
+gui.m_craftButton.Tip.m_text="$msg_missingrequirement";recipe.Station=new CraftingStation{Level=1};recipe.RequiredLevel=3;player.Station=recipe.Station;
+Check(CraftingBridge.BlockedReason(gui,craft)=="Requires station level 3 · current 1","Station shortage must name required and actual levels");
+recipe.Station.m_upgrader=true;gui.m_recipeRequirementList=Array.Empty<UnityEngine.GameObject>();
+Check(!CraftingBridge.BlockedReason(gui,craft).Contains("level 3"),"Native upgrader stations use level one instead of ordinary recipe level");
+var sameProse=CraftingDetails.Read("Same prose\nDamage: 1","Same prose\nDamage: 2");
+Check(sameProse.Description=="Same prose","Unchanged upgrade descriptions must not be duplicated");
+Check(CraftingBridge.ResultText("Arrow",false,new(){{1,20}},new(){{1,40}})=="Crafted Arrow × 20","Feedback must use actual inventory gain, including stacked outputs");
+Check(CraftingBridge.ResultText("Axe",true,new(){{2,1},{5,1}},new(){{3,1},{5,1}})=="Result: Axe · quality 3","Upgrade feedback must identify the changed copy rather than existing higher-quality equipment");
+Check(CraftingBridge.ResultText("Axe",true,new(){{3,1}},new(){{2,1}})=="Result: Axe · quality 2","Native failed upgrades that reduce quality must not be announced as a quality increase");
+Check(CraftingBridge.ResultText("Arrow",false,new(){{1,20}},new(){{1,20}})=="Craft ended · no item gain","Rejected crafts must never announce success");
 Console.WriteLine($"{checks} production crafting bridge checks passed.");
 
 // Controlled native boundaries; the production bridge above is compiled directly.
-public class Recipe{public string name="recipe";public ItemDrop m_item=new();public int GetInstanceID()=>System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);}
+public class Recipe{public string name="recipe";public ItemDrop m_item=new();public bool m_requireOnlyOneIngredient;public CraftingStation? Station;public int RequiredLevel=1;public int GetRequiredStationLevel(int quality)=>RequiredLevel;public CraftingStation? GetRequiredStation(int quality)=>Station;public int GetInstanceID()=>System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);}
+public class CraftingStation{public bool m_upgrader;public int Level=1;public int GetLevel()=>Level;}
 public class ItemDrop
 {
     public ItemData m_itemData=new();
@@ -98,7 +116,7 @@ public class InventoryGui
 }
 public class Player
 {
-    public static Player? m_localPlayer;public Inventory Inventory=new();public Inventory GetInventory()=>Inventory;
+    public static Player? m_localPlayer;public CraftingStation? Station;public CraftingStation? GetCurrentCraftingStation()=>Station;public Inventory Inventory=new();public Inventory GetInventory()=>Inventory;
 }
 public class Inventory{public List<ItemDrop.ItemData> Items=new();public List<ItemDrop.ItemData> GetAllItems()=>Items;}
 public class Localization{public static Localization? instance;public string Localize(string text)=>text;}
@@ -112,7 +130,7 @@ namespace UnityEngine
 }
 namespace UnityEngine.UI
 {
-    public class Button{public bool interactable=true;}
+    public class Button{public bool interactable=true;public UITooltip? Tip;public T? GetComponent<T>() where T:class=>Tip as T;}
     public class Image{public UnityEngine.Sprite? sprite;public UnityEngine.GameObject gameObject=new(){activeSelf=true};public T? GetComponent<T>() where T:class=>null;}
 }
 namespace TMPro{public class TMP_Text{public UnityEngine.GameObject gameObject=new(){activeSelf=true};public string text="";public UnityEngine.Color color;}}

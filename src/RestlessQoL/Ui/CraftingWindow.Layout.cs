@@ -43,7 +43,8 @@ internal sealed partial class CraftingWindow
             if(count>0&&_gui.m_craftTimer<0){_gui.OnVariantSelected((_gui.m_selectedVariant+1)%count);Refresh();}
         });
         _action=UiKitApi.Button(_frame.Sheet,"Craft",new Rect(906,600,326,48),Act);UiKitApi.ActionSurface(_action.gameObject);
-        _cancel=UiKitApi.Button(_frame.Sheet,"Your full inventory",new Rect(906,660,326,40),()=>{if(_gui.m_craftTimer>=0){_gui.OnCraftCancelPressed();Refresh();}else Close(false);});
+        _cancel=UiKitApi.Button(_frame.Sheet,"Your full inventory",new Rect(906,660,326,40),()=>{if(_gui.m_craftTimer>=0){_gui.OnCraftCancelPressed();Message("Craft cancelled");Refresh();}else Close(false);});
+        _repair=UiKitApi.Button(_frame.Sheet,"Repair equipment",new Rect(),Repair);
         _progress=UiKitApi.Progress(_frame.Sheet);
         _bag=UiKitWindow.Label(_frame.Sheet,"",17,new Rect(28,670,842,34),true);
         for(var i=0;i<10;i++)
@@ -53,6 +54,7 @@ internal sealed partial class CraftingWindow
             UiKitApi.Place(icon,new Rect(8,4,48,42));
             var text=slot.GetComponentInChildren<Text>();UiKitApi.Place(text.gameObject,new Rect(4,45,64,18));text.alignment=TextAnchor.MiddleRight;text.fontSize=14;
             _slots.Add(slot.gameObject);
+            slot.gameObject.AddComponent<RestlessHint>();
         }
         Fit();
     }
@@ -85,6 +87,7 @@ internal sealed partial class CraftingWindow
         UiKitApi.Place(_variant.gameObject,new Rect(_compact?638:906,_compact?442:534,_compact?294:326,34));
         UiKitApi.Place(_action.gameObject,new Rect(_compact?638:906,_compact?496:600,_compact?294:326,48));
         UiKitApi.Place(_cancel.gameObject,new Rect(_compact?638:906,_compact?556:660,_compact?294:326,38));
+        UiKitApi.Place(_repair.gameObject,new Rect(_compact?638:906,_compact?610:718,_compact?294:326,38));
         UiKitApi.Place(_bag.gameObject,new Rect(28,_compact?560:670,_compact?592:842,34));
         for(var i=0;i<_slots.Count;i++)
         {

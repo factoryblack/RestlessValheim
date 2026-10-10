@@ -100,6 +100,9 @@ var craftMethods=new Dictionary<string,string[]>
     ["InventoryGui.SetRecipe"]=new[]{"Void","Int32","Boolean"},
     ["InventoryGui.OnCraftPressed"]=new[]{"Void"},
     ["InventoryGui.OnCraftCancelPressed"]=new[]{"Void"},
+    ["InventoryGui.DoCrafting"]=new[]{"Void","Player"},
+    ["InventoryGui.OnRepairPressed"]=new[]{"Void"},
+    ["InventoryGui.UpdateRepair"]=new[]{"Void"},
     ["InventoryGui.OnTabCraftPressed"]=new[]{"Void"},
     ["InventoryGui.OnTabUpgradePressed"]=new[]{"Void"},
     ["InventoryGui.UpdateGamepad"]=new[]{"Void"},
@@ -121,7 +124,7 @@ foreach(var handle in reader.TypeDefinitions)
     }
 }
 if(foundCraft.Count!=craftMethods.Count)throw new Exception("Native crafting window contracts changed: "+string.Join(", ",craftMethods.Keys.Except(foundCraft)));
-Console.WriteLine("9 native crafting window contracts passed.");
+Console.WriteLine($"{craftMethods.Count} native crafting window contracts passed.");
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";

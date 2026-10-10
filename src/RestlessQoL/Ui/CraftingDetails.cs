@@ -24,6 +24,8 @@ internal static class CraftingDetails
         var result=Parse(current);
         if(next==null)return result;
         var after=Parse(next);var used=new HashSet<int>();
+        if(Plain(result.Description)!=Plain(after.Description)&&after.Description.Length>0)
+            result.Description+="\n\nAFTER UPGRADE\n"+after.Description;
         foreach(var attribute in result.Attributes)
         {
             var index=after.Attributes.FindIndex(a=>a.Name==attribute.Name&&!used.Contains(after.Attributes.IndexOf(a)));

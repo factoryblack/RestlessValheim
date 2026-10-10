@@ -21,7 +21,7 @@ inventory styling switch and does not change host range settings.
 - **Craft:** native known recipes, search and category filters, available/name sorting,
   persistent saved recipes and retained search/scroll, framed item preview,
   ingredient cards with native icons/counts and shortage cues, native eligibility, variant cycling, crafting progress and
-  cancellation. The game owns resource consumption and item creation.
+  cancellation, specific native blocker messages and inventory-based result feedback. Manual repair delegates to the native one-item repair action. The game owns resource consumption and item creation.
 - **Upgrade:** individual owned equipment targets, including separate copies of
   the same item; native attributes compared in current/next rows; exact-target revalidation
   before native execution. Previews clone item data.
@@ -32,7 +32,7 @@ inventory styling switch and does not change host range settings.
   normal game placement. The game checks build-menu membership and placement.
   A build choice does not promise an extra level or list future recipe unlocks.
 - **Inventory:** the first ten items as a compact quick-access strip. Selecting
-  one opens its upgrade entry where eligible. Craft shows the selected recipe’s
+  eligible equipment opens its upgrade entry; ingredients show a temporary native item inspection without changing the recipe. Hover hints name the item and action. Craft shows the selected recipe’s
   ingredients in your bag; Upgrade prioritises eligible equipped items. Full inventory returns to ordinary
   inventory management; the strip does not support dragging or transfers.
 - **Shared presentation:** Crafting, Cookbook and Workshop use one paper window
@@ -71,13 +71,14 @@ losing access, dying, or disabling the feature restores the native presentation.
    Open Cookbook's Kitchen tab, change selected station, search, then return to
    recipes/orders/pantry. Verify stale ingredient cards and quantity controls
    disappear in station view. Exercise Workshop's machines and queues too.
-7. Multiplayer ownership and second-player behaviour remain pending until
+7. Disable automatic repair, damage equipment, and test manual repair at an eligible station. Check blocked station levels, alternative-ingredient recipes and result messages after a craft, cancellation or failed upgrade. Navigate search, filters, sorting, saved recipes and actions with a controller. Confirm changed upgrade prose remains visible.
+8. Multiplayer ownership and second-player behaviour remain pending until
    another player is available. No multiplayer validation is claimed.
 
 ## Verification and rollback
 
-Automated checks pass: ten existing suites, thirty-one production crafting bridge
-checks, nine added native crafting API contracts, five release tooling tests,
+Automated checks pass: ten existing suites, forty-one production crafting bridge
+checks, twelve native crafting API contracts, five release tooling tests,
 seven native mod builds, the external UI kit consumer, documentation/material
 checks and eight package archives. Builds have existing nullable/reference and
 unavailable NuGet audit warnings. In-game visual and interaction acceptance is

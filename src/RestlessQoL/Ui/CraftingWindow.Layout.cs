@@ -22,10 +22,10 @@ internal sealed partial class CraftingWindow
         var portrait=RestlessUi.Graphic(_frame.Sheet,"craft-portrait",Color.white,false);_portrait=portrait.GetComponent<Image>();_portrait.preserveAspect=true;
         UiKitApi.Place(portrait,new Rect(430,188,240,130));
         _detail=UiKitApi.Reader(_frame.Sheet,"craft-details",new Rect(310,328,560,322),42);
-        _copy=UiKitWindow.Label(_detail.content,"",18,new Rect(0,0,530,100));_copy.alignment=TextAnchor.UpperLeft;_copy.verticalOverflow=VerticalWrapMode.Overflow;
+        _copy=UiKitWindow.Label(_detail.content,"",18,new Rect(0,0,530,100));_copy.supportRichText=true;_copy.alignment=TextAnchor.UpperLeft;_copy.verticalOverflow=VerticalWrapMode.Overflow;
         _context=UiKitWindow.Label(_frame.Sheet,"Required materials",22,new Rect(906,132,326,36));
         _requirements=UiKitApi.Reader(_frame.Sheet,"craft-requirements",new Rect(906,180,326,268),50);
-        _needs=UiKitWindow.Label(_requirements.content,"",18,new Rect(0,0,302,100));_needs.alignment=TextAnchor.UpperLeft;_needs.verticalOverflow=VerticalWrapMode.Overflow;
+        _needs=UiKitWindow.Label(_requirements.content,"",18,new Rect(0,0,302,100));_needs.supportRichText=true;_needs.alignment=TextAnchor.UpperLeft;_needs.verticalOverflow=VerticalWrapMode.Overflow;
         _reason=UiKitWindow.Label(_frame.Sheet,"",18,new Rect(906,462,326,64));RestlessUi.BoundedLabel(_reason,18,16);
         _variant=UiKitApi.Button(_frame.Sheet,"Change style",new Rect(906,534,326,36),()=>{
             var item=_choice?.Recipe.m_item.m_itemData;var count=item?.m_shared.m_variants??0;
@@ -54,7 +54,9 @@ internal sealed partial class CraftingWindow
         _frame.Resize(_compact?new Vector2(960,680):new Vector2(1280,800));
         for(var i=0;i<_tabs.Count;i++)UiKitApi.Place(_tabs[i].gameObject,new Rect((_compact?430:650)+i*(_compact?130:144),30,_compact?120:132,38));
         UiKitApi.Place(_search.gameObject,new Rect(28,130,_compact?210:252,40));
-        for(var i=0;i<_filters.Count;i++)UiKitApi.Place(_filters[i].gameObject,new Rect(28+i*(_compact?70:84),178,_compact?66:80,32));
+        var filterWidths=_compact?new[]{44f,108f,50f}:new[]{56f,120f,68f};
+        var filterX=28f;
+        for(var i=0;i<_filters.Count;i++){UiKitApi.Place(_filters[i].gameObject,new Rect(filterX,178,filterWidths[i],32));filterX+=filterWidths[i]+4;}
         UiKitApi.ResizeReader(_browser,new Rect(28,222,_compact?210:252,_compact?326:430));
         UiKitApi.Place(_heading.gameObject,new Rect(_compact?256:310,132,_compact?366:560,48));
         UiKitApi.Place(_portrait.gameObject,new Rect(_compact?340:430,188,_compact?160:240,_compact?92:130));

@@ -213,7 +213,8 @@ internal sealed partial class CraftingWindow : MonoBehaviour
         _action.interactable=selected&&_gui.m_craftButton.interactable&&_gui.m_craftTimer<0;
         Caption(_action,_tab==1?"Upgrade to quality "+((_choice.Item?.m_quality??0)+1):"Craft "+_choice.Recipe.m_amount);
         var requirement=_gui.m_minStationLevelText!=null&&_gui.m_minStationLevelText.gameObject.activeSelf?CraftingBridge.Local(_gui.m_minStationLevelText.text):"";
-        _reason.text=_gui.m_craftTimer>=0?"Crafting in progress":_action.interactable?"Ready · "+requirement:"Requirements missing · "+requirement+"\nCheck materials, station access and inventory space.";
+        if(int.TryParse(RestlessUi.Bare(requirement),out var level))requirement="Requires station level "+level;
+        _reason.text=_gui.m_craftTimer>=0?"Crafting in progress":_action.interactable?(requirement.Length>0?"Ready · "+requirement:"Ready"):"Requirements missing · "+requirement+"\nCheck materials, station access and inventory space.";
     }
     private bool Category(CraftingBridge.Choice choice)=>_category=="All"||(_category=="Equipment"?choice.Recipe.m_item.m_itemData.m_shared.m_maxQuality>1:choice.Recipe.m_item.m_itemData.m_shared.m_maxQuality<=1);
     private void Act()

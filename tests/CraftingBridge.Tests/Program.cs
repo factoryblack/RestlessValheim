@@ -40,6 +40,22 @@ rows[0].State="Requirements missing";
 Check(stamp!=CraftingBridge.RowsStamp(rows,rows[0],0,228,false),"Changed native eligibility must repaint");
 rows=choices;
 Check(CraftingBridge.RowsStamp(rows,rows[0],1,228,false)!=CraftingBridge.RowsStamp(rows,rows[1],1,228,false),"Two copies of the same recipe must preserve distinct selected rows");
+UnityEngine.GameObject Material(string name,string count,bool amountActive=true,bool iconActive=true)
+{
+    var slot=new UnityEngine.GameObject{activeSelf=true};
+    slot.transform.Children["res_name"]=new TMPro.TMP_Text{text=name};
+    slot.transform.Children["res_amount"]=new TMPro.TMP_Text{text=count,gameObject=new UnityEngine.GameObject{activeSelf=amountActive}};
+    slot.transform.Children["res_icon"]=new UnityEngine.UI.Image{gameObject=new UnityEngine.GameObject{activeSelf=iconActive}};
+    return slot;
+}
+gui.m_recipeRequirementList=new[]{Material("Wood","1438/8"),Material("Flint","12/2"),Material("Feathers","1260/2"),Material("Mushroom","25",false,false)};
+var materials=CraftingBridge.Requirements(gui);
+Check(materials.Contains("Wood  1438/8")&&materials.Contains("Feathers  1260/2"),"Live native material counts must be preserved");
+Check(!materials.Contains("Mushroom"),"Inactive native children must exclude a stale pooled material slot");
+gui.m_recipeRequirementList=new[]{Material("Hidden icon","3",true,false)};
+Check(CraftingBridge.Requirements(gui)=="No materials required","Hidden resource icon must exclude its old count");
+gui.m_recipeRequirementList=new[]{Material("Hidden count","3",false,true)};
+Check(CraftingBridge.Requirements(gui)=="No materials required","Hidden resource count must exclude its old name");
 Console.WriteLine($"{checks} production crafting bridge checks passed.");
 
 // Controlled native boundaries; the production bridge above is compiled directly.
@@ -78,13 +94,13 @@ namespace UnityEngine
 {
     public class Sprite{public int GetInstanceID()=>System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);}
     public struct Color{public float r,g;}
-    public class Transform{}
+    public class Transform{public Dictionary<string,object> Children=new();}
     public class GameObject{public bool activeSelf;public Transform transform=new();public T? GetComponent<T>() where T:class=>null;}
 }
 namespace UnityEngine.UI
 {
     public class Button{public bool interactable=true;}
-    public class Image{public T? GetComponent<T>() where T:class=>null;}
+    public class Image{public UnityEngine.GameObject gameObject=new(){activeSelf=true};public T? GetComponent<T>() where T:class=>null;}
 }
-namespace TMPro{public class TMP_Text{public string text="";public UnityEngine.Color color;}}
-namespace RestlessQoL.Core{public static class RestlessUi{public static T? Deep<T>(UnityEngine.Transform transform,string name) where T:class=>null;}}
+namespace TMPro{public class TMP_Text{public UnityEngine.GameObject gameObject=new(){activeSelf=true};public string text="";public UnityEngine.Color color;}}
+namespace RestlessQoL.Core{public static class RestlessUi{public static T? Deep<T>(UnityEngine.Transform transform,string name) where T:class=>transform.Children.TryGetValue(name,out var value)?value as T:null;}}

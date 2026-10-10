@@ -60,6 +60,10 @@ internal static class CraftingBridge
             if(slot==null||!slot.activeSelf)continue;
             var name=RestlessUi.Deep<TMP_Text>(slot.transform,"res_name");
             var amount=RestlessUi.Deep<TMP_Text>(slot.transform,"res_amount");
+            var nativeIcon=RestlessUi.Deep<Image>(slot.transform,"res_icon");
+            // HideRequirement disables these children, leaving the pooled slot itself active.
+            // The inventory dresser hides TMP rendering, so use child activeSelf, not alpha/enabled.
+            if(amount==null||!amount.gameObject.activeSelf||nativeIcon==null||!nativeIcon.gameObject.activeSelf)continue;
             var text=Local(name?.text??"");
             if(text.Length==0)
             {

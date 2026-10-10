@@ -47,7 +47,9 @@ losing access, dying, or disabling the feature restores the native presentation.
 
 1. Open inventory without a station, then Crafting. Search and switch categories.
    Craft an item, watch progress, then cancel another craft. Confirm resources and
-   results agree with native behaviour.
+   results agree with native behaviour. Switch from a recipe with many materials
+   to Flinthead Arrow: only Wood, Flint and Feathers should appear. Descriptions
+   should render colour tags rather than displaying their markup.
 2. Carry two copies of the same equipment at different qualities. Upgrade the
    chosen copy; confirm the other is unchanged and previews consume nothing.
    Test missing resources, full inventory and a maximum-quality item.
@@ -69,7 +71,7 @@ losing access, dying, or disabling the feature restores the native presentation.
 
 ## Verification and rollback
 
-Automated checks pass: ten existing suites, nineteen production crafting bridge
+Automated checks pass: ten existing suites, twenty-three production crafting bridge
 checks, nine added native crafting API contracts, five release tooling tests,
 seven native mod builds, the external UI kit consumer, documentation/material
 checks and eight package archives. Builds have existing nullable/reference and

@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-10-10 — Global Reach profiles, smaller action radii, strict boundaries and reversible station coverage. Automated checks; live 120m acceptance pending.
+# last_audit: 2026-10-10 — Global Reach profiles with even 4–12m harvest steps, smaller action radii, strict boundaries and reversible station coverage. Automated checks; live 120m acceptance pending.
 
 updated: 2026-10-10
 
@@ -53,7 +53,7 @@ items:
     in_mod: done
     bite: 1
     restless: n/a
-    note: "Opt-in host-controlled Small/Standard/Far/Wide/Maximum profiles. Shared storage/production/station reach 15/25/50/80/120m; repair and open-air seal 8/15/25/35/40m; crop/hive harvest 2.5/4/6/7/8m. Custom entries remain intact and restore when disabled. F8 disables dependent sliders and displays effective values, named profiles, scope/origins and exceptions. Pile isolation remains independent throughout browser/craft/automation; spacing and snapping remain personal. Strict centre checks for resource/action searches; station sealing follows native horizontal coverage. Native circles update live and restore upgrade scaling. New policy/geometry/restoration and asynchronous pile-shrink tests pass; live UI, multiplayer and dense-base 120m profiling pending."
+    note: "Opt-in host-controlled Small/Standard/Far/Wide/Maximum profiles. Shared storage/production/station reach 15/25/50/80/120m; repair and open-air seal 8/15/25/35/40m; crop/hive harvest 4/6/8/10/12m. Custom entries remain intact and restore when disabled. F8 disables dependent sliders and displays effective values, named profiles, scope/origins and exceptions. Pile isolation remains independent throughout browser/craft/automation; spacing and snapping remain personal. Strict centre checks for resource/action searches; station sealing follows native horizontal coverage. Native circles update live and restore upgrade scaling. New policy/geometry/restoration and asynchronous pile-shrink tests pass; live UI, multiplayer and dense-base 120m profiling pending."
 
   - id: storage.craft
     name: Craft from nearby chests

@@ -96,7 +96,7 @@ internal static class PlantConfig
                 null, Admin));
         HarvestRange = config.Bind("Harvest", "HarvestRange", 2.5f,
             new ConfigDescription("Bulk-harvest radius for plants and hives.",
-                new AcceptableValueRange<float>(1f, 8f), Admin));
+                new AcceptableValueRange<float>(1f, 12f), Admin));
         Replant = config.Bind("Harvest", "ReplantOnHarvest", true,
             new ConfigDescription("One-shot crops (carrots and the like) replant the picked piece if you can pay for it. Host-locked.",
                 null, Admin));

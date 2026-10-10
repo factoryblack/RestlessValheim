@@ -10,11 +10,11 @@ Open **F8 → Core → Storage or Building**. **Use global reach** is off by def
 
 | Profile | Storage and station use/build | Repair | Sealing outside a station | Crop/hive harvest |
 | --- | --- | --- | --- | --- |
-| Small | 15 m | 8 m | 8 m | 2.5 m |
-| Standard | 25 m | 15 m | 15 m | 4 m |
-| Far | 50 m | 25 m | 25 m | 6 m |
-| Wide | 80 m | 35 m | 35 m | 7 m |
-| Maximum | 120 m | 40 m | 40 m | 8 m |
+| Small | 15 m | 8 m | 8 m | 4 m |
+| Standard | 25 m | 15 m | 15 m | 6 m |
+| Far | 50 m | 25 m | 25 m | 8 m |
+| Wide | 80 m | 35 m | 35 m | 10 m |
+| Maximum | 120 m | 40 m | 40 m | 12 m |
 
 The shared distance controls chest/drawer discovery, supplies, kitchen/workshop machine discovery and non-isolated piles. Crafting, building and Storage search around the player; Cook around its preparation table; Workshop around its board; pets around the animal. Station building uses horizontal distance. Repairs start at the repaired piece, and harvesting starts at the picked crop or hive. Sealing uses the covering station's horizontal build area, falling back to the smaller seal sphere outside it.
 

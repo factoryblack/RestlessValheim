@@ -1068,6 +1068,7 @@ public sealed partial class SettingsUi : FeatureModule
             or KeyCode.Mouse5 or KeyCode.Mouse6;
 
     private static float StepSize(ConfigEntry<float> entry) =>
+        entry.Definition.Section == "Harvest" && entry.Definition.Key == "HarvestRange" ? 0.05f :
         entry.Description.AcceptableValues is AcceptableValueRange<float> range && range.MaxValue - range.MinValue <= 8f
             ? 0.05f
             : 1f;

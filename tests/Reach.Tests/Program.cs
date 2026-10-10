@@ -6,7 +6,7 @@ var checks = 0;
 void Check(bool value, string message) { if (!value) throw new Exception(message); checks++; }
 var shared = new[]{15f,25f,50f,80f,120f};
 var repair = new[]{8f,15f,25f,35f,40f};
-var harvest = new[]{2.5f,4f,6f,7f,8f};
+var harvest = new[]{4f,6f,8f,10f,12f};
 Check(!ReachPolicy.Global && ReachPolicy.ResourceReach == 50 && ReachPolicy.StationReach == 40, "Existing custom distances survive introduction");
 for (var i=0;i<5;i++)
 {

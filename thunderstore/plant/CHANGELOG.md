@@ -4,7 +4,7 @@ Changes are listed newest first. **Unreleased** describes current source changes
 
 ## 0.2.4
 
-- Use the smaller Global Reach harvest set for crops and hives, preserving custom harvest settings underneath. Explain and disable dependent sliders when controlled or inactive.
+- Use evenly spaced Global Reach harvest radii of 4, 6, 8, 10 and 12 m for crops and hives; raise the custom harvest maximum to 12 m, preserving custom harvest settings underneath. Explain and disable dependent sliders when controlled or inactive.
 - Keep spacing and snapping personal; enforce the explicit snap and harvest boundaries. Needs Core 0.3.0.
 
 ## 0.2.3

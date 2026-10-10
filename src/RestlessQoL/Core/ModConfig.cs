@@ -182,7 +182,7 @@ public static class ModConfig
         GlobalReachEnabled = AdminBool(config, "Reach", "Global", false,
             "Use one reach profile for storage, production and stations, with smaller repair, seal and harvest radii. Does not enable disabled features. Off restores saved custom distances. Pile isolation is an explicit exception; crop spacing and snapping stay personal.");
         GlobalReachProfile = config.Bind("Reach", "Profile", 2, new ConfigDescription(
-            "0 Small: 15/8/8/2.5m; 1 Standard: 25/15/15/4m; 2 Far: 50/25/25/6m; 3 Wide: 80/35/35/7m; 4 Maximum: 120/40/40/8m. Shared storage/station, repair, open-air seal, harvest. Only loaded objects; existing permissions and feature switches still apply.",
+            "0 Small: 15/8/8/4m; 1 Standard: 25/15/15/6m; 2 Far: 50/25/25/8m; 3 Wide: 80/35/35/10m; 4 Maximum: 120/40/40/12m. Shared storage/station, repair, open-air seal, harvest. Only loaded objects; existing permissions and feature switches still apply.",
             new AcceptableValueRange<int>(0, 4), Admin));
 
         StorageEnabled = AdminBool(config, "Storage", "Enabled", true,

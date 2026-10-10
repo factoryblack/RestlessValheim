@@ -18,7 +18,7 @@ class ReleaseTools(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         (self.root / 'scripts').mkdir()
-        for name in ['sync-versions.py', 'release-plan.py', 'stage-packages.py']:
+        for name in ['sync-versions.py', 'release-plan.py', 'stage-packages.py', 'install-local.ps1']:
             shutil.copy2(ROOT / 'scripts' / name, self.root / 'scripts' / name)
         shutil.copy2(ROOT / 'versions.yaml', self.root / 'versions.yaml')
         spec = importlib.util.spec_from_file_location('fixture_pins', self.root / 'scripts/sync-versions.py')
@@ -84,6 +84,27 @@ class ReleaseTools(unittest.TestCase):
         (self.root / 'dist/RestlessPlant.dll').unlink()
         error = self.run_script('stage-packages.py', '--install-plan', success=False)
         self.assertIn('Missing package input', error)
+        self.assertFalse((self.root / 'artifacts').exists())
+
+    def test_stale_dll_fails_before_archiving_or_installing(self):
+        shell = shutil.which('pwsh') or shutil.which('powershell')
+        if not shell:
+            self.skipTest('PowerShell unavailable')
+        dll = self.root / 'dist/RestlessCore.dll'
+        dll.unlink()
+        generator = self.root / 'generate-fixture.ps1'
+        generator.write_text("param([string]$Output)\nAdd-Type -TypeDefinition 'using System.Reflection; [assembly: AssemblyVersion(\"0.0.1.0\")] public class OldPlugin {}' -OutputAssembly $Output\n", encoding='utf-8')
+        subprocess.run([shell, '-NoProfile', '-File', str(generator), str(dll)], check=True, capture_output=True)
+        game = self.root / 'game'
+        legacy = game / 'BepInEx/plugins/RestlessQoL/legacy.txt'
+        legacy.parent.mkdir(parents=True)
+        legacy.write_text('preserve me')
+        result = subprocess.run([shell, '-NoProfile', '-File', str(self.root / 'scripts/install-local.ps1'),
+                                 '-ValheimInstall', str(game), '-Python', sys.executable], capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Stale build', result.stderr)
+        self.assertEqual(legacy.read_text(), 'preserve me')
+        self.assertFalse((game / 'BepInEx/plugins/RestlessCore').exists())
         self.assertFalse((self.root / 'artifacts').exists())
 
     def test_unsafe_stage_name_cannot_delete_outside_artifacts(self):

@@ -1,9 +1,9 @@
 using UnityEngine;
 public class Component { public GameObject gameObject = new(); public Transform transform => gameObject.transform; public T? GetComponent<T>() where T:class => gameObject.GetComponent<T>(); }
 public class GameObject { public string name=""; public Transform transform=new(); public Dictionary<Type,object> Components=new(); public T? GetComponent<T>() where T:class => Components.TryGetValue(typeof(T),out var c)?(T)c:null; public T Add<T>(T c) where T:Component {c.gameObject=this;Components[typeof(T)]=c;return c;} }
-public class Piece:Component {public long Creator; public object m_resources=new(); public long GetCreator()=>Creator; public string FreeBuildKey()=>"free";}
+public class Piece:Component {public long Creator; public bool Placed=true; public bool IsPlacedByPlayer()=>Placed; public object m_resources=new(); public long GetCreator()=>Creator; public string FreeBuildKey()=>"free";}
 public class Plant:Component {public GameObject[] m_grownPrefabs=Array.Empty<GameObject>();}
-public class Pickable:Component {public ZNetView m_nview=new(); public float m_respawnTimeMinutes;}
+public class Pickable:Component {public bool PickResult=true;public bool CanBePicked()=>true;public bool Interact(Humanoid p,bool hold,bool alt)=>PickResult; public ZNetView m_nview=new(); public float m_respawnTimeMinutes;}
 public class ZDO {public Dictionary<string,string> Data=new(); public string GetString(string key)=>Data.GetValueOrDefault(key,"");}
 public class ZNetView {public bool Valid=true,Owner=true; public ZDO Data=new(); public bool IsValid()=>Valid; public bool IsOwner()=>Owner;public void ClaimOwnership(){Owner=true;} public ZDO GetZDO()=>Data;}
 public class ZNetScene {public static ZNetScene? instance; public List<GameObject> m_prefabs=new(); public GameObject? GetPrefab(string name)=>m_prefabs.Find(p=>p.name==name);}
@@ -11,23 +11,23 @@ public static class Utils {public static string GetPrefabName(GameObject go)=>go
 public class Humanoid:Component {}
 public class Player:Humanoid {public static Player? m_localPlayer;public long Id;public bool m_noPlacementCost;public bool CanPay=true;public int Paid;public Piece? Planted;public Inventory Bag=new();public Inventory GetInventory()=>Bag;public bool IsDead()=>false;public void Message(MessageHud.MessageType t,string s){}public long GetPlayerID()=>Id;public bool HaveRequirements(Piece p,RequirementMode m)=>CanPay;public void ConsumeResources(object o,int n)=>Paid++;public void PlacePiece(Piece p,Vector3 v,Quaternion q,bool a,bool b)=>Planted=p;public enum RequirementMode{CanBuild}}
 public class ZoneSystem {public static ZoneSystem? instance;public bool GetGlobalKey(string key)=>false;}
-public class PrivateArea {public static List<PrivateArea> m_allAreas=new();public bool Enabled=true,Inside=true;public Piece m_piece=new();public HashSet<long> Permitted=new();public bool IsEnabled()=>Enabled;public bool IsInside(Vector3 p,float r)=>Inside;public bool IsPermitted(long actor)=>Permitted.Contains(actor);}
+public class PrivateArea {public static List<PrivateArea> m_allAreas=new();public bool Enabled=true,Inside=true;public Piece m_piece=new();public HashSet<long> Permitted=new();public bool IsEnabled()=>Enabled;public Func<Vector3,bool>? InsideAt; public bool IsInside(Vector3 p,float r)=>Inside && (InsideAt?.Invoke(p) ?? true);public bool IsPermitted(long actor)=>Permitted.Contains(actor);}
 public class ItemDrop:Component { public ZNetView m_nview=new(); public class SharedData{public string m_name="material";public int m_maxStackSize=50;} public class ItemData{public SharedData m_shared=new();public GameObject? m_dropPrefab;public int m_quality=1,m_variant,m_worldLevel,m_stack=1;public bool m_cheated;public float m_durability;public long m_crafterID;public Dictionary<string,string> m_customData=new();public ItemData Clone()=>(ItemData)MemberwiseClone();}}
 public class Inventory{public List<ItemDrop.ItemData> Items=new();public List<ItemDrop.ItemData> GetAllItems()=>Items;public bool HaveEmptySlot()=>true;public bool AddItem(ItemDrop.ItemData i){Items.Add(i);return true;}public void Changed(bool a,bool b){}}
 public class MessageHud{public enum MessageType{Center}}
 public class PileBox:Component{public static List<PileBox> All=new();public bool Live=true;public int Stored=10;public ItemDrop.ItemData Item=new();public ZNetView View=new();public string GetHoverName()=>"pile";}
 public static class PileConfig{public static Config<bool> Isolate=new(false);public static bool On=true;public static float Nearby=5;}
-public static class ModConfig{public static Config<float> StorageRange=new(20);}
-public static class ReachPolicy{public static float ResourceReach=>ModConfig.StorageRange.Value;}
+public static class ModConfig{public static Config<float> StorageRange=new(20);public static Config<bool> AreaRepairEnabled=new(true);}
+public static class ReachPolicy{public static float ResourceReach=>ModConfig.StorageRange.Value; public static float RepairReach=>40; public static float HarvestReach(float custom)=>custom;}
 public static class Pile{public static bool Delay;public static List<Action> Pending=new();public static int Claims;public static void Write(ZNetView v,int count){var box=PileBox.All.Find(b=>b.View==v);if(box!=null)box.Stored=count;}public static int Count(ZNetView v)=>PileBox.All.Find(b=>b.View==v)?.Stored??0;public static void OwnThen(ZNetView v,Action<ZNetView> act,Action? fail=null){Claims++;if(Delay)Pending.Add(()=>act(v));else act(v);}public static string Title(ItemDrop.ItemData i)=>i.m_shared.m_name;}
 partial class PileHarness{static void Tell(Player p,string s,int n,ItemDrop.ItemData i){}}
 public class Config<T>{public T Value;public Config(T value)=>Value=value;}
-public static class PlantConfig {public static bool On=true;public static Config<bool> Replant=new(true),BulkHarvest=new(false);}
+public static class PlantConfig {public static bool On=true;public static Config<float> HarvestRange=new(4);public static Config<bool> Replant=new(true),BulkHarvest=new(false);}
 partial class PlantHarness {
     static Piece? _remembered;static bool _busy;static ZNetScene? _scene;static float _nextCleanup;
     static readonly Dictionary<string,Piece> Seeds=new(StringComparer.Ordinal);const string SeedKey="RestlessReplant";
     internal static readonly Dictionary<ZDOID,ItemDrop> PickedDrops=new();
-    static bool Ours(Pickable p)=>true;static void Remember(Piece p)=>_remembered=p;static void Bulk(Pickable p,Humanoid h){}
+    static bool Ours(Pickable p)=>true;static void Remember(Piece p)=>_remembered=p;static List<Pickable> BulkPieces=new();internal static void BulkTarget(Pickable p){BulkPieces.Clear();BulkPieces.Add(p);}static IEnumerable<T> Nearby<T>(Vector3 p,float r) where T:Component=>BulkPieces.OfType<T>();
 }
 public enum WorksOrderMode{Make,Keep}
 public class WorksOrder{public int Id,Count,Ready,Collected,Remaining,InProduction,Available;public long PlayerId;public string Output="ore";public WorksOrderMode Mode;}
@@ -81,3 +81,7 @@ namespace UnityEngine {
     public static class Time{public static float unscaledTime;}
     public static class Mathf{public static float Max(float a,float b)=>Math.Max(a,b);public static float Min(float a,float b)=>Math.Min(a,b);public static int Min(int a,int b)=>Math.Min(a,b);public static int RoundToInt(float x)=>(int)MathF.Round(x);}
 }
+
+public class WearNTear:Component {public int Repairs;public bool Throw;public bool Repair(){if(Throw)throw new InvalidOperationException("repair failed");Repairs++;return true;}}
+public static class NearbyQuery {public static List<WearNTear> Pieces=new();public static IEnumerable<T> UniqueInSphere<T>(Vector3 p,float r) where T:Component=>Pieces.OfType<T>();}
+partial class RepairHarness {static bool _busy;}

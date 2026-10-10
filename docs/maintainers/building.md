@@ -42,7 +42,7 @@ DLLs are written to `dist/`. Install complete packages with their shipped assets
 ./scripts/install-local.ps1 -WhatIf
 ```
 
-Both local helpers accept `-ValheimInstall <directory>`. Configure `Environment.props` for the same installation before building. Launch is explicit with `test-local.ps1 -Launch`. Close Valheim and the local server before installing. The installer checks every package input before making changes, backs up replaced files under `artifacts/install-backups/`, and archives the deprecated `RestlessQoL` plugin folder there. It preserves saved configuration. Workshop uses the established `RestlessWorks` installation folder; the public package name is `RestlessWorkshop`.
+Both local helpers accept `-ValheimInstall <directory>`. Configure `Environment.props` for the same installation before building. Launch is explicit with `test-local.ps1 -Launch`. Close Valheim and the local server before installing. The installer checks every package input and rejects DLL versions that differ from the pins before making changes, backs up replaced files under `artifacts/install-backups/`, and archives the deprecated `RestlessQoL` plugin folder there. It preserves saved configuration. Workshop uses the established `RestlessWorks` installation folder; the public package name is `RestlessWorkshop`.
 
 The installer copies the DLL and runtime assets declared in each package TOML. It does not install documentation or remove unknown plugin files. Inspect any older manually installed duplicates before testing.
 

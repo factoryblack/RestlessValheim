@@ -18,12 +18,12 @@ public sealed class AreaRepair : FeatureModule
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Repair))]
-        private static void Repair(WearNTear __instance)
+        private static void Repair(WearNTear __instance, bool __result)
         {
-            if (_busy || !ModConfig.AreaRepairEnabled.Value)
+            if (!__result || _busy || !ModConfig.AreaRepairEnabled.Value)
                 return;
             var player = Player.m_localPlayer;
-            if (player == null)
+            if (player == null || !BuildingAccess.Allows(__instance.GetComponent<Piece>(), player.GetPlayerID()))
                 return;
 
             _busy = true;
@@ -35,7 +35,7 @@ public sealed class AreaRepair : FeatureModule
                     if (other == __instance)
                         continue;
                     var piece = other.GetComponent<Piece>();
-                    if (piece == null || !piece.IsPlacedByPlayer())
+                    if (!BuildingAccess.Allows(piece, player.GetPlayerID()))
                         continue;
                     other.Repair();
                 }
@@ -165,7 +165,7 @@ public sealed class AreaSeal : FeatureModule
         {
             if (!seen.Add(wear.GetInstanceID()))
                 continue;
-            if (!Wooden(wear))
+            if (!Wooden(wear) || !BuildingAccess.Allows(wear.GetComponent<Piece>(), player.GetPlayerID()))
                 continue;
             if (!Owned(wear))
                 continue;

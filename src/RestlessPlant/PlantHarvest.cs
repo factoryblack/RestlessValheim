@@ -295,8 +295,8 @@ internal static class PlantHarvest
                 var rot = other.transform.rotation;
                 var piece = SeedFor(other);
                 var oneShot = other.m_respawnTimeMinutes <= 0f;
-                other.Interact(character, false, false);
-                if (PlantConfig.Replant.Value && oneShot && piece != null)
+                var harvested = other.Interact(character, false, false);
+                if (harvested && PlantConfig.Replant.Value && oneShot && piece != null)
                     Replant(character as Player, pos, rot, piece);
             }
         }

@@ -55,4 +55,30 @@ Check(lots.Count==0&&taken==0&&box.Stored==6,"disabling isolation restores share
 PileConfig.Isolate.Value=true;PileConfig.Nearby=30;box.Stored=10;box.transform.position=new(20);Pile.Delay=true;
 PileHarness.Take(player,pileKey,2,n=>taken=n);PileConfig.Nearby=10;foreach(var action in Pile.Pending)action();
 Check(taken==0&&box.Stored==10,"reach shrink during ownership wait prevents a stale pile withdrawal");Pile.Pending.Clear();Pile.Delay=false;
+
+
+var repairPlayer=new Player{Id=11};Player.m_localPlayer=repairPlayer;
+var source=new GameObject();source.Add(new Piece());var sourceWear=source.Add(new WearNTear());
+var target=new GameObject();target.transform.position=new(1,0,0);target.Add(new Piece());var targetWear=target.Add(new WearNTear());
+NearbyQuery.Pieces.Add(targetWear);
+RepairHarness.Repair(sourceWear,false);Check(targetWear.Repairs==0,"failed native repair does not trigger area repair");
+var buildingWard=new PrivateArea{m_piece=new(){Creator=99},InsideAt=p=>p.x>0};PrivateArea.m_allAreas.Add(buildingWard);
+RepairHarness.Repair(sourceWear,true);Check(targetWear.Repairs==0,"area repair excludes protected neighbouring piece");
+Check(!RestlessQoL.Building.BuildingAccess.Allows(target.GetComponent<Piece>(),11),"sealing and repair share per-piece ward denial");
+buildingWard.Permitted.Add(11);RepairHarness.Repair(sourceWear,true);Check(targetWear.Repairs==1,"area repair includes permitted neighbouring piece");
+Check(RestlessQoL.Building.BuildingAccess.Allows(target.GetComponent<Piece>(),11),"sealing and repair share per-piece ward allowance");
+Check(!RestlessQoL.Building.BuildingAccess.Allows(new Piece{Placed=false},11),"world-generated pieces excluded");
+PrivateArea.m_allAreas.Clear();targetWear.Throw=true;
+try {RepairHarness.Repair(sourceWear,true);}catch(InvalidOperationException){}
+targetWear.Throw=false;RepairHarness.Repair(sourceWear,true);Check(targetWear.Repairs==2,"area repair busy guard released after exception");
+NearbyQuery.Pieces.Clear();Player.m_localPlayer=null;
+
+var bulkPlayer=new Player{Id=11};Player.m_localPlayer=bulkPlayer;ZNetScene.instance=new();
+var bulkSeed=new GameObject{name="auditseed"};bulkSeed.Add(new Piece());ZNetScene.instance.m_prefabs.Add(bulkSeed);
+var bulkCrop=new Pickable{PickResult=false};bulkCrop.m_nview.Data.Data["RestlessReplant"]="auditseed";
+PlantHarness.BulkTarget(bulkCrop);PlantHarness.Bulk(new Pickable(),bulkPlayer);
+Check(bulkPlayer.Paid==0 && bulkPlayer.Planted==null,"failed bulk harvest does not spend replant seeds");
+bulkCrop.PickResult=true;PlantHarness.Bulk(new Pickable(),bulkPlayer);
+Check(bulkPlayer.Paid==1 && bulkPlayer.Planted!=null,"successful bulk harvest replants once");
+Player.m_localPlayer=null;
 Console.WriteLine("Audit regressions passed.");

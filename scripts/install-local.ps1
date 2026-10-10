@@ -22,6 +22,12 @@ foreach ($package in $plan) {
         $destination = [IO.Path]::GetFullPath((Join-Path $pluginRoot $file.target))
         if (-not $destination.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw "Invalid target: $destination" }
         if (-not (Test-Path -LiteralPath $file.source -PathType Leaf)) { throw "Missing source: $($file.source)" }
+        if ([IO.Path]::GetExtension($file.source) -eq '.dll') {
+            $assembly = [Reflection.AssemblyName]::GetAssemblyName($file.source)
+            $expected = [Version]($package.version + '.0')
+            if ($assembly.Version -ne $expected) { throw "Stale build: $($file.source) is $($assembly.Version); expected $expected. Build every plugin before installing." }
+        }
+        if ((Test-Path -LiteralPath $destination) -and -not (Test-Path -LiteralPath $destination -PathType Leaf)) { throw "File target is a directory: $destination" }
         $files += [pscustomobject]@{Source=$file.source; Destination=$destination; Relative=$file.target}
     }
 }

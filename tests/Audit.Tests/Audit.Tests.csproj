@@ -3,6 +3,7 @@
   <ItemGroup>
     <Compile Include="../../src/RestlessQoL/Storage/StorageAccess.cs" Link="StorageAccess.cs" />
     <Compile Include="../../src/RestlessQoL/Storage/ItemKey.cs" Link="ItemKey.cs" />
+    <Compile Include="../../src/RestlessQoL/Building/BuildingAccess.cs" Link="BuildingAccess.cs" />
     <Compile Include="obj/AuditMethods.cs" />
   </ItemGroup>
   <Target Name="ExtractAuditMethods" BeforeTargets="CoreCompile">

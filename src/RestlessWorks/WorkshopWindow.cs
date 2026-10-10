@@ -5,6 +5,7 @@ using System.Text;
 using HarmonyLib;
 using Jotunn.Managers;
 using RestlessQoL.Core;
+using RestlessQoL.Api;
 using RestlessQoL.HudTweaks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,7 @@ internal sealed partial class WorkshopWindow : MonoBehaviour
     private static WorkshopWindow? _current;
     private static int _closedFrame=-1;
     private Piece _board=null!;
+    private UiKitWindow _frame=null!;
     private RectTransform _sheet=null!;
     private RestlessScrollRect _list=null!,_body=null!,_details=null!;
     private readonly List<Card> _choices=new(),_cards=new();
@@ -97,7 +99,7 @@ internal sealed partial class WorkshopWindow : MonoBehaviour
             if(force||key!=_stamp)
             {
                 _stamp=key;
-                for(var i=0;i<_tabs.Count;i++)RestlessUi.PaperControl(_tabs[i].gameObject,i==_tab?RestlessUi.Accent:(Color?)null);
+                for(var i=0;i<_tabs.Count;i++)UiKitApi.Tab(_tabs[i],i==_tab);
                 _controls.SetActive(_tab==0);ResizeReader(_list,28,_tab==0?396:190,252,_tab==0?338:544);
                 _secondary.gameObject.SetActive(false);_action.gameObject.SetActive(true);
                 Place(_hint.gameObject,918,596,324,_tab==1?36:72);

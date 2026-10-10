@@ -16,6 +16,8 @@ requests and recipe planning belong to the expansion, not these controls.
 | Button | `Button` | Shared padding, readable text and interaction states |
 | Search / number input | `Field` | Single-line text; configurable limit; optional integer validation |
 | Tabs | `Tab` | Category strip and selected marker |
+| Window frame | `UiKitWindow` | Paper sheet, title, subtitle, close control, resize and fit; caller owns input/lifetime |
+| Station status | `StationState` | Consistent ready/blocked wording from a caller-supplied blocker |
 | Quality | `Quality` | Diamonds and bounded numeric overflow |
 | Vertical reader | `Reader`, `ResizeReader`, `SizeReader` | Native scrollbar, content gutter, Restless wheel motion |
 | Progress | `Progress` | Pooled completed/running layers; explicit hide/reset |
@@ -23,6 +25,8 @@ requests and recipe planning belong to the expansion, not these controls.
 | Asset contract | `Asset(UiKitAsset)` | Immutable drawing rules, dimensions, content insets and minimum size |
 
 Cooking and Workshop use the public button, field, reader and progress builders.
+The local Crafting test, Cookbook and Workshop share `UiKitWindow`; see the
+[local acceptance guide](crafting-local-test.md) before releasing this change.
 Their recipe, order and machine cards retain domain-specific layouts. A full
 recipe-card schema, rarity presentation and skill-tree widgets are not promised
 by version 1: extract those when their data and interaction contracts are clear.

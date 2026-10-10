@@ -11,19 +11,14 @@ internal sealed partial class CookbookWindow
 {
     private void Build()
     {
-        var paper = RestlessUi.Tray(transform, "Cookbook"); RestlessUi.PaperSurface(paper);
-        paper.GetComponent<Image>().raycastTarget = true;
-        _sheet = RestlessUi.Pin(paper, new Vector2(.5f,.5f), new Vector2(.5f,.5f), Vector2.zero, new Vector2(1240,800));
-        RestlessUi.PaperCorner(paper);
-        Label(_sheet, "Cookbook", 36, 28, 20, 340, 52);
-        Label(_sheet, "Cook the haul. Prepare meals. Share a feast.", 16, 30, 75, 620, 28);
+        _frame = new UiKitWindow(transform,"Cookbook",new Vector2(1240,800),Close);
+        _sheet = _frame.Sheet;
+        _frame.Subtitle.text="Cook the haul. Prepare meals. Share a feast.";
         var names = new[] { "Recipes", "Orders", "Kitchen", "Pantry" };
         for (var i = 0; i < names.Length; i++)
         { var tab = i; _tabs.Add(Button(_sheet, names[i], 570 + i * 124, 34, 114, 38, () => Tab(tab))); }
-        Button(_sheet, "ESC", 1090, 34, 64, 38, Close);
-        Rule(_sheet, 28, 112, 1176, 1);
         var search = Field(_sheet, 28, 132, 252, 40);
-        search.onValueChanged.AddListener(value => { _query = value; if (_tab == 0) { RecipeList(); Refresh(true); Size(_recipes,_recipes.content.rect.height,true); } });
+        search.onValueChanged.AddListener(value => { _query = value; if (_tab == 0) RecipeList(); else if (_tab == 1) OrderList(); Refresh(true); Size(_recipes,_recipes.content.rect.height,true); });
         var categories = new[] { "All", "Feasts", "Meals", "Prep", "Bait", "Meads" };
         for (var i = 0; i < categories.Length; i++)
         {
@@ -38,10 +33,10 @@ internal sealed partial class CookbookWindow
             if (category == _category) RestlessUi.PaperControl(button.gameObject, RestlessUi.Accent);
         }
         _recipes = Reader(_sheet, "recipes", 28, 260, 252, 422, 80);
-        Label(_sheet, "Order quantity", 18, 28, 696, 252, 26);
-        Button(_sheet, "−", 28, 726, 52, 36, () => Quantity(-1));
-        _quantity = Label(_sheet, "1", 22, 88, 726, 132, 36); _quantity.alignment = TextAnchor.MiddleCenter;
-        Button(_sheet, "+", 228, 726, 52, 36, () => Quantity(1));
+        _quantityControls.Add(Label(_sheet, "Order quantity", 18, 28, 696, 252, 26).gameObject);
+        _quantityControls.Add(Button(_sheet, "−", 28, 726, 52, 36, () => Quantity(-1)).gameObject);
+        _quantity = Label(_sheet, "1", 22, 88, 726, 132, 36); _quantity.alignment = TextAnchor.MiddleCenter; _quantityControls.Add(_quantity.gameObject);
+        _quantityControls.Add(Button(_sheet, "+", 228, 726, 52, 36, () => Quantity(1)).gameObject);
         Rule(_sheet, 296, 132, 1, 630);
         _back = Button(_sheet, "‹ Back", 316, 132, 100, 34, () =>
         {
@@ -53,7 +48,7 @@ internal sealed partial class CookbookWindow
         RestlessUi.BoundedLabel(_heading, 24, 19);
         _tree = Reader(_sheet, "recipe-tree", 316, 206, 552, 552, 112);
         Rule(_sheet, 884, 132, 1, 630);
-        Label(_sheet, "SELECTED STEP", 18, 904, 136, 300, 30);
+        _detailTitle=Label(_sheet, "SELECTED STEP", 18, 904, 136, 300, 30);
         _dish = RestlessUi.Graphic(_sheet,"featured-dish",Color.white,false).GetComponent<Image>();
         _dish.preserveAspect = true; Portrait(_dish.gameObject,916,194,68,52);
         _dishFrame = RestlessUi.Picture(_sheet,"dish-frame","cook-portrait",false);
@@ -76,20 +71,14 @@ internal sealed partial class CookbookWindow
         _actionText = _action.GetComponentInChildren<Text>();
         _status = Label(_sheet, "", 16, 316, 766, 888, 26);
         RestlessUi.BoundedLabel(_status, 16, 13);
-        RestlessUi.PaperControl(_tabs[0].gameObject, RestlessUi.Accent); Fit();
+        UiKitApi.Tab(_tabs[0], true); Fit();
     }
     private void Quantity(int delta)
     {
         if (_tab != 0) return;
         _count = Mathf.Clamp(_count + delta, 1, 100); Refresh(true);
     }
-    private void Fit()
-    {
-        var rect = (RectTransform)transform;
-        if (_canvas == rect.rect.size) return;
-        _canvas = rect.rect.size;
-        _sheet.localScale = Vector3.one * Mathf.Min(1, Mathf.Max(.1f, (_canvas.x - 24) / 1240), Mathf.Max(.1f, (_canvas.y - 24) / 800));
-    }
+    private void Fit() => _frame.Fit();
     private void Line(int index, float x, float y, float width, float height)
     {
         if (index == _lines.Count)

@@ -86,6 +86,8 @@ public sealed class KitchenPantryItem
 
 public sealed class KitchenStationInfo
 {
+    public string Id = "";
+    public float Distance;
     public string Name = "";
     public KitchenStationKind Kind;
     public int Free;

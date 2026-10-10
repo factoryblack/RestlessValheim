@@ -83,7 +83,11 @@ internal static partial class KitchenRun
         if (table == null)
             return list;
         foreach (var hit in Scan(table.transform.position, false, View(table)))
+        {
+            hit.Info.Id=hit.View!=null?hit.View.GetInstanceID().ToString():hit.Info.Name+":"+list.Count;
+            hit.Info.Distance=hit.View!=null?Vector3.Distance(hit.View.transform.position,table.transform.position):0;
             list.Add(hit.Info);
+        }
         return list;
     }
 

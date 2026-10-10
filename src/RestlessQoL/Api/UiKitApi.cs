@@ -33,6 +33,8 @@ public static class UiKitApi
     public static float Quality(Transform parent, int quality, float width) => RestlessUi.QualityMarks(parent, quality, width);
     public static void Selectable(Selectable target) => RestlessUi.PaperSelectable(target);
 
+    public static string StationState(string blocker) => string.IsNullOrEmpty(blocker) ? "Ready" : "Blocked · " + blocker;
+
     public static UiKitProgress Progress(Transform parent, string name = "progress-track") => new(parent,name);
 
     public static Button Button(Transform parent, string caption, Rect bounds, Action clicked)
@@ -61,7 +63,7 @@ public static class UiKitApi
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
             label.verticalOverflow = VerticalWrapMode.Truncate;
         }
-        field.placeholder = hint; field.characterLimit = characterLimit;
+        field.placeholder = hint; field.characterLimit = characterLimit; field.caretColor = Accent;
         field.lineType = InputField.LineType.SingleLine;
         if (number) field.contentType = InputField.ContentType.IntegerNumber;
         Selectable(field); return field;

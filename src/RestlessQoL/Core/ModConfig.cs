@@ -70,6 +70,7 @@ public static class ModConfig
     public static ConfigEntry<float> NoticesHold = null!;
     public static ConfigEntry<bool> HotbarEnabled = null!;
     public static ConfigEntry<bool> InventoryScreenEnabled = null!;
+    public static ConfigEntry<bool> CraftingWindowEnabled = null!;
     public static ConfigEntry<bool> TooltipEnabled = null!;
     public static ConfigEntry<bool> SheetEnabled = null!;
     public static ConfigEntry<bool> LedgerEnabled = null!;
@@ -130,6 +131,8 @@ public static class ModConfig
             "Torn-edge squares and Averia key chips on the item hotbar, pinned to the bottom center. Client-local.");
         InventoryScreenEnabled = config.Bind("Hud.Inventory", "Enabled", true,
             "Torn plates and Averia on the Tab inventory. Vanilla grids, drag, and craft stay. Client-local.");
+        CraftingWindowEnabled = config.Bind("Hud.Crafting", "WindowEnabled", false,
+            "Local test: full Craft / Upgrade / Stations window. Stations open it directly; inventory has a Crafting button. Turn off to restore the existing crafting interface. Client-local.");
         TooltipEnabled = config.Bind("Hud.Tooltip", "Enabled", true,
             "Restless item inspect on Tab and chests, with expansion badges and sections. PgUp/PgDn scroll long details. Client-local.");
         SheetEnabled = config.Bind("Hud.Sheet", "Enabled", true,

@@ -7,6 +7,9 @@ public static class Consumer
 {
     public static GameObject Build(Transform parent)
     {
+        var window=new UiKitWindow(parent,"Consumer",new Vector2(900,640),()=>{});
+        window.Fit();window.Resize(new Vector2(920,640));
+        window.Subtitle.text=UiKitApi.StationState("");
         var button = UiKitApi.Button(parent,"Queue",new Rect(0,0,240,42),() => { });
         UiKitApi.ActionSurface(button.gameObject);
         UiKitApi.Tab(button,false);

@@ -5,6 +5,7 @@ using System.Text;
 using HarmonyLib;
 using Jotunn.Managers;
 using RestlessQoL.Core;
+using RestlessQoL.Api;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +17,8 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     private static CookbookWindow? _current;
     private static int _closedFrame = -1;
     private CraftingStation _table = null!;
+    private UiKitWindow _frame=null!;
+    private string _stationSelection="";
     private RectTransform _sheet = null!;
     private RestlessScrollRect _recipes = null!, _tree = null!, _details = null!;
     private readonly List<Card> _recipeCards = new(), _nodes = new(), _requirementCards = new();
@@ -31,6 +34,8 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     private bool _blocked, _confirmCancel;
     private string _category = "Feasts";
     private readonly List<Button> _filters = new();
+    private readonly List<GameObject> _quantityControls=new();
+    private Text _detailTitle=null!;
     private Image _dish = null!;
     private GameObject _dishFrame = null!;
     private Text _dishName = null!, _dishKind = null!, _station = null!, _requirementsLabel = null!;
@@ -118,7 +123,10 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     private void Tab(int tab)
     {
         _detailFocus = -1; _tab = tab; _stamp = ""; _confirmCancel = false;
-        for (var i = 0; i < _tabs.Count; i++) RestlessUi.PaperControl(_tabs[i].gameObject, i == tab ? RestlessUi.Accent : (Color?)null);
+        for (var i = 0; i < _tabs.Count; i++) UiKitApi.Tab(_tabs[i], i == tab);
+        foreach(var filter in _filters)filter.gameObject.SetActive(tab==0);
+        foreach(var control in _quantityControls)control.SetActive(tab==0);
+        _detailTitle.text=tab==2?"STATION DETAILS":"SELECTED STEP";
         if (tab == 0) { _order = 0; RecipeList(); }
         if (tab == 1) OrderList();
         _trail.Clear(); _focus = 0; Refresh(true);
@@ -287,18 +295,33 @@ internal sealed partial class CookbookWindow : MonoBehaviour
     private void PaintStations(bool force)
     {
         HideDish();
-        var stations = Kitchen.Stations(_table);
-        var text = string.Join("\n\n", stations.Select(s => Local(s.Name) + "\n" + ((s.Kind == KitchenStationKind.Cauldron || s.Kind == KitchenStationKind.MeadKettle)
-            ? "Level " + s.Level : s.Free + " free · " + s.Cooking + " cooking · " + s.Ready + " ready")
-            + (s.FuelMax > 0 ? "\nFuel " + s.Fuel + " / " + s.FuelMax : "") + (string.IsNullOrEmpty(s.Block) ? "" : "\n" + s.Block)));
-        if (!force && text == _stamp) return;
-        _stamp = text; _heading.text = "Your kitchen";
-        HideAfter(_nodes, 0); HideAfter(_recipeCards, 0); foreach (var line in _lines) line.SetActive(false);
-        _copy.text = stations.Count == 0 ? "No cooking stations found nearby." : text;
-        Position(_copy.gameObject, 0, 0, 280, Mathf.Max(60, _copy.preferredHeight)); Size(_details, _copy.preferredHeight + 16, false);
-        var c = GetCard(_nodes, 0, _tree.content); Position(c.Root, 80, 24, 380, 112);
-        c.Set("Connected kitchen", stations.Count + " stations nearby", null, RestlessUi.Accent, () => { });
-        _action.gameObject.SetActive(false); _collect.gameObject.SetActive(false); _back.interactable = false;
+        _requirementsLabel.text="";_actionHint.gameObject.SetActive(false);HideAfter(_requirementCards,0);
+        var stations=Kitchen.Stations(_table).Where(s=>Local(s.Name).IndexOf(_query,StringComparison.OrdinalIgnoreCase)>=0).ToList();
+        if(!stations.Any(s=>s.Id==_stationSelection))_stationSelection=stations.FirstOrDefault()?.Id??"";
+        var stamp="stations|"+_stationSelection+"|"+string.Join("|",stations.Select(s=>s.Id+":"+s.Level+":"+s.Free+":"+s.Cooking+":"+s.Ready+":"+s.Fuel+":"+s.Block));
+        if(!force&&stamp==_stamp)return;_stamp=stamp;
+        foreach(var line in _lines)line.SetActive(false);
+        for(var i=0;i<stations.Count;i++)
+        {
+            var station=stations[i];var card=GetCard(_recipeCards,i,_recipes.content);Position(card.Root,0,i*100,228,92);
+            card.Set(Local(station.Name),UiKitApi.StationState(Local(station.Block)),null,string.IsNullOrEmpty(station.Block)?RestlessUi.Accent:RestlessUi.HealthTint,
+                ()=>{_stationSelection=station.Id;PaintStations(true);Size(_details,_details.content.rect.height,true);},selected:station.Id==_stationSelection);
+        }
+        HideAfter(_recipeCards,stations.Count);Size(_recipes,stations.Count*100,false);
+        var selected=stations.FirstOrDefault(s=>s.Id==_stationSelection);_heading.text=selected==null?"No kitchen stations nearby":Local(selected.Name);
+        var hero=GetCard(_nodes,0,_tree.content);Position(hero.Root,24,24,500,128);
+        hero.Set(selected==null?"Your kitchen":Local(selected.Name),selected==null?"Build a cooking station within the table's reach.":UiKitApi.StationState(Local(selected.Block)),null,RestlessUi.Accent,()=>{},featured:true);
+        if(selected!=null)
+        {
+            var rows=new[]{selected.Kind==KitchenStationKind.Cauldron||selected.Kind==KitchenStationKind.MeadKettle?"Station level "+selected.Level:selected.Free+" free slots · "+selected.Cooking+" cooking · "+selected.Ready+" ready",
+                selected.FuelMax>0?"Fuel "+selected.Fuel+" / "+selected.FuelMax:"No fuel required",selected.Distance.ToString("0.0")+" m from preparation table"};
+            for(var i=0;i<rows.Length;i++){var card=GetCard(_nodes,i+1,_tree.content);Position(card.Root,24,176+i*96,500,84);card.Set(rows[i],"",null,RestlessUi.PaperMuted,()=>{});}
+            HideAfter(_nodes,4);Size(_tree,480,false);
+        }
+        else{HideAfter(_nodes,1);Size(_tree,170,false);}
+        _copy.text=selected==null?"No cooking stations found nearby.":Local(selected.Name)+"\n\n"+UiKitApi.StationState(Local(selected.Block))+"\n\n"+(selected.NeedsFire?(selected.FireLit?"Required fire is lit.":"A nearby fire is required."):"No external fire required.")+"\n\nKitchen orders use existing station reservations and native cooking times.";
+        Position(_copy.gameObject,0,0,280,Mathf.Max(60,_copy.preferredHeight));Size(_details,_copy.preferredHeight+16,false);
+        _action.gameObject.SetActive(false);_collect.gameObject.SetActive(false);_back.interactable=false;
     }
     private void Message(string message) { _status.text = message; _messageUntil = Time.unscaledTime + 5f; }
     private static string Local(string text) => Localization.instance == null ? text : Localization.instance.Localize(text);

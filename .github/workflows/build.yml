@@ -103,6 +103,9 @@ jobs:
       - name: Loadout arithmetic regressions
         run: dotnet run --project tests/LoadoutMath.Tests -c Release
 
+      - name: Native crafting selection and execution bridge
+        run: dotnet run --project tests/CraftingBridge.Tests -c Release
+
       - name: Native UI contract
         run: dotnet run --project tests/NativeUi.Tests -c Release
 

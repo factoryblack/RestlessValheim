@@ -18,7 +18,7 @@
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-10-10 — Global Reach profiles with even 4–12m harvest steps, smaller action radii, strict boundaries and reversible station coverage. Follow-up audit checks per-piece building permissions and failed-repair handling. Project cleanup reconciled settings, pile range and dependency notes. Automated checks; live 120m acceptance pending.
+# last_audit: 2026-10-10 — Local crafting-window implementation and shared station/window quality pass; native playtest pending. Previous audit: 2026-10-10 — Global Reach profiles with even 4–12m harvest steps, smaller action radii, strict boundaries and reversible station coverage. Follow-up audit checks per-piece building permissions and failed-repair handling. Project cleanup reconciled settings, pile range and dependency notes. Automated checks; live 120m acceptance pending.
 
 updated: 2026-10-10
 
@@ -312,6 +312,14 @@ items:
     bite: 2
     restless: RandyKnapp-Auga
     note: "Torn-edge squares + Chip keys + 11px wear slit. RestlessUi.DressSlot shared with Tab. TrySpan is the dock for vitals and later extra slots. Playtest."
+
+  - id: ui.crafting_window
+    name: Dedicated crafting and station window
+    decision: dll
+    in_mod: partial
+    bite: 1
+    restless: n/a
+    note: "Opt-in client-local Craft/Upgrade/Stations window using native recipe selection, material counts, actions and progress. Stations open it; inventory has an entry and a return path. Upgrade targets are actual inventory items; previews clone them. Connected extensions follow native GetExtensions; nearby unconnected and known buildable pieces are separate. Compact layout, inventory preview, style cycling, cancel, per-row controller navigation and focus restoration. Cookbook station cards and shared Crafting/Cookbook/Workshop chrome are part of the local test. Single native crafts only; full inventory manages items. Native rendered UI and controller acceptance remain pending. Release candidate is preserved on feature/global-reach-120."
 
   - id: ui.inventory
     name: Restless inventory (Tab)

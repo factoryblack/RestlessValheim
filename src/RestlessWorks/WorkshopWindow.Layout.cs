@@ -11,17 +11,11 @@ internal sealed partial class WorkshopWindow
 {
     private void Build()
     {
-        var paper=RestlessUi.Tray(transform,"Workshop"); RestlessUi.PaperSurface(paper);
-        paper.GetComponent<Image>().raycastTarget=true;
-        _sheet=RestlessUi.Pin(paper,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(1280,800));
-        RestlessUi.PaperCorner(paper);
-        Place(RestlessUi.Picture(_sheet,"workshop-mark","craft-hammer"),26,22,52,62);
-        Label(_sheet,"Workshop",36,92,22,430,50);
-        Label(_sheet,"Set the work. Keep the stores supplied.",17,30,78,530,26);
+        _frame=new UiKitWindow(transform,"Workshop",new Vector2(1280,800),Close);
+        _sheet=_frame.Sheet;_frame.Subtitle.text="Set the work. Keep the stores supplied.";
         var names=new[]{"Production","Orders","Machines","Output"};
         for(var i=0;i<names.Length;i++) { var tab=i; _tabs.Add(Button(_sheet,names[i],590+i*142,34,132,38,()=>SelectTab(tab))); }
-        Button(_sheet,"ESC",1174,34,70,38,Close);
-        Rule(_sheet,28,112,1220,1); Rule(_sheet,298,132,1,602); Rule(_sheet,894,132,1,602);
+        Rule(_sheet,298,132,1,602); Rule(_sheet,894,132,1,602);
         _search=Field(_sheet,"Search…",28,132,252,40,false);
         _search.onValueChanged.AddListener(value=>{_query=value;_stamp="";Refresh(true);Reset(_list);});
         _controls=RestlessUi.Node(_sheet,"production-controls");
@@ -60,8 +54,7 @@ internal sealed partial class WorkshopWindow
         => UiKitApi.ResizeReader(s,new Rect(x,y,w,h));
     private static void Size(RestlessScrollRect s,float height) => UiKitApi.SizeReader(s,height);
     private static void Reset(RestlessScrollRect s){s.CancelWheel();s.content.anchoredPosition=Vector2.zero;}
-    private void Fit()
-    {var size=((RectTransform)transform).rect.size;if(size==_canvas)return;_canvas=size;_sheet.localScale=Vector3.one*Mathf.Min(1,Mathf.Max(.1f,(size.x-24)/1280),Mathf.Max(.1f,(size.y-24)/800));}
+    private void Fit()=>_frame.Fit();
     private static void Caption(Button b,string caption)=>b.GetComponentInChildren<Text>().text=caption;
     private sealed class Card
     {

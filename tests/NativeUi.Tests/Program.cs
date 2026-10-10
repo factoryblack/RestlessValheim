@@ -94,6 +94,34 @@ foreach (var handle in reader.TypeDefinitions)
 }
 if (cookingContracts.Count>0) throw new Exception("Native cooking contracts changed: "+string.Join(", ",cookingContracts.Keys));
 Console.WriteLine("14 native cooking and feast lifecycle contracts passed.");
+// Custom Crafting drives native selection/actions while the native UI is hidden.
+var craftMethods=new Dictionary<string,string[]>
+{
+    ["InventoryGui.SetRecipe"]=new[]{"Void","Int32","Boolean"},
+    ["InventoryGui.OnCraftPressed"]=new[]{"Void"},
+    ["InventoryGui.OnCraftCancelPressed"]=new[]{"Void"},
+    ["InventoryGui.OnTabCraftPressed"]=new[]{"Void"},
+    ["InventoryGui.OnTabUpgradePressed"]=new[]{"Void"},
+    ["InventoryGui.UpdateGamepad"]=new[]{"Void"},
+    ["InventoryGui.UpdateRecipeGamepadInput"]=new[]{"Void"},
+    ["InventoryGui.UpdateRecipe"]=new[]{"Void","Player","Single"},
+    ["Player.SetSelectedPiece"]=new[]{"Boolean","Piece"},
+};
+var foundCraft=new HashSet<string>();
+foreach(var handle in reader.TypeDefinitions)
+{
+    var type=reader.GetTypeDefinition(handle);var name=reader.GetString(type.Name);
+    if(name!="InventoryGui"&&name!="Player")continue;
+    foreach(var mh in type.GetMethods())
+    {
+        var method=reader.GetMethodDefinition(mh);var key=name+"."+reader.GetString(method.Name);
+        if(!craftMethods.TryGetValue(key,out var expected))continue;
+        var signature=method.DecodeSignature(provider,(object?)null);
+        if(signature.ReturnType==expected[0]&&signature.ParameterTypes.SequenceEqual(expected.Skip(1)))foundCraft.Add(key);
+    }
+}
+if(foundCraft.Count!=craftMethods.Count)throw new Exception("Native crafting window contracts changed: "+string.Join(", ",craftMethods.Keys.Except(foundCraft)));
+Console.WriteLine("9 native crafting window contracts passed.");
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";

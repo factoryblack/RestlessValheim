@@ -60,6 +60,7 @@ public class Plugin : BaseUnityPlugin
         new Notices(),
         new Hotbar(),
         new InventoryScreen(),
+        new RestlessQoL.Ui.CraftingInterface(),
         new StatSheet(),
         new ItemTooltip(),
         new ExtraSlots(),

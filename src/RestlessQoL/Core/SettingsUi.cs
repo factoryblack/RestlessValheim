@@ -605,6 +605,7 @@ public sealed partial class SettingsUi : FeatureModule
                 PaintCharacter();
                 break;
             case "interface":
+                Bool("Crafting window (local test)", ModConfig.CraftingWindowEnabled, false);
                 Head("Inventory");
                 Bunch(
                     t => Bool("Restless inventory (Tab)", ModConfig.InventoryScreenEnabled, false, t),

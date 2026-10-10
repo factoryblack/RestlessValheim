@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using RestlessQoL.Core;
+using RestlessQoL.Api;
 using UnityEngine;
 
 namespace RestlessWorks;
@@ -96,7 +97,7 @@ internal sealed partial class WorkshopWindow
         var machine=rows.FirstOrDefault(x=>x.Index==_machine)?.Machine;
         if(machine==null){Empty("No machines in range","Build a kiln, smelter or another supported production machine near the board.");return;}
         var hero=Get(_cards,0,_body.content);Place(hero.Root,0,4,536,148);
-        hero.Set(Local(machine.Name),string.IsNullOrEmpty(machine.Block)?"Machine connected":machine.Block,null,()=>{},true);
+        hero.Set(Local(machine.Name),UiKitApi.StationState(Local(machine.Block)),null,()=>{},true);
         var counts=new[]{machine.Cooking+" inputs queued",machine.Ready+" processed output waiting",machine.Free+" free input slots"};
         for(var i=0;i<counts.Length;i++){var c=Get(_cards,i+1,_body.content);Place(c.Root,0,170+i*112,536,104);c.Set(counts[i],"",null,()=>{});}
         Hide(_cards,4);Size(_body,506);

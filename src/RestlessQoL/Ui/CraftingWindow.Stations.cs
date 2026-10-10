@@ -85,6 +85,7 @@ internal sealed partial class CraftingWindow
         overview.Attributes.Insert(0,new CraftingDetails.Attribute{Name="Station level",Current=_station?.GetLevel().ToString()??"—"});
         overview.Attributes.Insert(1,new CraftingDetails.Attribute{Name="Connected",Current=(_station?.GetExtensions().Count??0).ToString()+" extensions"});
         if(_extension?.Extension!=null)overview.Attributes.Add(new CraftingDetails.Attribute{Name="Connection reach",Current=_extension.Extension.m_maxStationDistance.ToString("0.0")+" m"});
+        if(_extension?.Extension!=null&&_station!=null)overview.Attributes.Add(new CraftingDetails.Attribute{Name="Station distance",Current=Vector3.Distance(_extension.Extension.transform.position,_station.transform.position).ToString("0.0")+" m"});
         PaintDetails(overview);
         var requirements=new List<CraftingBridge.Material>();
         if(_extension?.Piece!=null)foreach(var requirement in _extension.Piece.m_resources)

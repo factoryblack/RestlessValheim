@@ -43,8 +43,16 @@ internal sealed partial class CraftingWindow
             if(count>0&&_gui.m_craftTimer<0){_gui.OnVariantSelected((_gui.m_selectedVariant+1)%count);Refresh();}
         });
         _action=UiKitApi.Button(_frame.Sheet,"Craft",new Rect(906,600,326,48),Act);UiKitApi.ActionSurface(_action.gameObject);
-        _cancel=UiKitApi.Button(_frame.Sheet,"Your full inventory",new Rect(906,660,326,40),()=>{if(_gui.m_craftTimer>=0){_gui.OnCraftCancelPressed();Message("Craft cancelled");Refresh();}else Close(false);});
+        _cancel=UiKitApi.Button(_frame.Sheet,"Your full inventory",new Rect(906,660,326,40),()=>{if(Busy)CancelCraft();else Close(false);});
         _repair=UiKitApi.Button(_frame.Sheet,"Repair equipment",new Rect(),Repair);
+        _less=UiKitApi.Button(_frame.Sheet,"−",new Rect(),()=>Quantity(_quantity-1));
+        _amount=UiKitApi.Field(_frame.Sheet,"Crafts",new Rect());_amount.contentType=InputField.ContentType.IntegerNumber;
+        _amount.onEndEdit.AddListener(value=>{Quantity(int.TryParse(value,out var count)?count:1);_amount.SetTextWithoutNotify(_quantity.ToString());});
+        _more=UiKitApi.Button(_frame.Sheet,"+",new Rect(),()=>Quantity(_quantity+1));
+        _max=UiKitApi.Button(_frame.Sheet,"Max",new Rect(),()=>Quantity(Math.Max(1,_maximum)));
+        _max.gameObject.AddComponent<RestlessHint>().Copy="Up to 99 normal crafts, based on current materials and output space. Each craft rechecks requirements. Cancellation keeps completed items; closing stops the queue. Nearby storage follows your existing settings.";
+        _amount.gameObject.AddComponent<RestlessHint>().Copy="Number of crafts, not output items. Materials and output show the selected total. Equipment upgrades remain one at a time.";
+        _variant.transform.SetParent(_feature.transform,false);
         _progress=UiKitApi.Progress(_frame.Sheet);
         _bag=UiKitWindow.Label(_frame.Sheet,"",17,new Rect(28,670,842,34),true);
         for(var i=0;i<10;i++)
@@ -78,13 +86,19 @@ internal sealed partial class CraftingWindow
         UiKitApi.Place(_portraitFrame,new Rect(12,8,142,140));UiKitApi.Place(_portrait.gameObject,new Rect(26,22,114,112));
         UiKitApi.Place(_heroMeta.gameObject,new Rect(166,12,_compact?184:378,46));
         UiKitApi.Place(_heroNote.gameObject,new Rect(166,60,_compact?184:378,34));
-        UiKitApi.Place(_saveButton.gameObject,new Rect(166,108,_compact?180:240,34));
+        UiKitApi.Place(_saveButton.gameObject,new Rect(166,108,_compact?86:180,34));
+        UiKitApi.Place(_variant.gameObject,new Rect(_compact?256:354,108,_compact?94:190,34));
+        RestlessUi.BoundedLabel(_saveButton.GetComponentInChildren<Text>(),17,13);RestlessUi.BoundedLabel(_variant.GetComponentInChildren<Text>(),17,13);
         UiKitApi.ResizeReader(_detail,new Rect(_compact?256:310,354,_compact?366:560,_compact?194:298));
         _detailStamp="";_materialStamp="";_nextPreview=0;
         UiKitApi.Place(_context.gameObject,new Rect(_compact?638:906,132,_compact?294:326,36));
         UiKitApi.ResizeReader(_requirements,new Rect(_compact?638:906,180,_compact?294:326,_compact?184:268));
         UiKitApi.Place(_reason.gameObject,new Rect(_compact?638:906,_compact?374:462,_compact?294:326,60));
-        UiKitApi.Place(_variant.gameObject,new Rect(_compact?638:906,_compact?442:534,_compact?294:326,34));
+        var quantityX=_compact?638f:906f;var quantityY=_compact?442f:534f;
+        UiKitApi.Place(_less.gameObject,new Rect(quantityX,quantityY,40,34));
+        UiKitApi.Place(_amount.gameObject,new Rect(quantityX+44,quantityY,76,34));
+        UiKitApi.Place(_more.gameObject,new Rect(quantityX+124,quantityY,40,34));
+        UiKitApi.Place(_max.gameObject,new Rect(quantityX+170,quantityY,_compact?124:156,34));
         UiKitApi.Place(_action.gameObject,new Rect(_compact?638:906,_compact?496:600,_compact?294:326,48));
         UiKitApi.Place(_cancel.gameObject,new Rect(_compact?638:906,_compact?556:660,_compact?294:326,38));
         UiKitApi.Place(_repair.gameObject,new Rect(_compact?638:906,_compact?610:718,_compact?294:326,38));

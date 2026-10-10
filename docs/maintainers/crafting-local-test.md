@@ -22,6 +22,7 @@ inventory styling switch and does not change host range settings.
   persistent saved recipes and retained search/scroll, framed item preview,
   ingredient cards with native icons/counts and shortage cues, native eligibility, variant cycling, crafting progress and
   cancellation, specific native blocker messages and inventory-based result feedback. Manual repair delegates to the native one-item repair action. The game owns resource consumption and item creation.
+- **Batch crafting:** a 1–99 craft count field with minus/plus and Max. Native output quantities and total ingredient costs reflect the selected count; upgrades stay single actions. Max checks native requirements (including enabled nearby stock) and current output space. It is conservative: slots freed by consuming ingredients are not counted ahead of time. Each queued craft uses normal native timing and rechecks requirements/capacity. Cancelling or closing stops unfinished work and keeps completed items. Quantity/recipe/style controls lock during the queue; native quantity fields restore on close.
 - **Upgrade:** individual owned equipment targets, including separate copies of
   the same item; native attributes compared in current/next rows; exact-target revalidation
   before native execution. Previews clone item data.
@@ -71,14 +72,15 @@ losing access, dying, or disabling the feature restores the native presentation.
    Open Cookbook's Kitchen tab, change selected station, search, then return to
    recipes/orders/pantry. Verify stale ingredient cards and quantity controls
    disappear in station view. Exercise Workshop's machines and queues too.
-7. Disable automatic repair, damage equipment, and test manual repair at an eligible station. Check blocked station levels, alternative-ingredient recipes and result messages after a craft, cancellation or failed upgrade. Navigate search, filters, sorting, saved recipes and actions with a controller. Confirm changed upgrade prose remains visible.
-8. Multiplayer ownership and second-player behaviour remain pending until
+7. Choose three crafts for an arrow recipe and confirm the output count is three recipe outputs, total costs match, and progress advances one normal craft at a time. Cancel after the first completion; verify only completed output/cost remains. Try Max with partial stacks, full inventory, nearby stock and alternative ingredients. Remove stock midway, close the window, reopen and switch recipes/upgrades: there must be no delayed extra craft or leaked vanilla batch count.
+8. Disable automatic repair, damage equipment, and test manual repair at an eligible station. Check blocked station levels, alternative-ingredient recipes and result messages after a craft, cancellation or failed upgrade. Navigate search, filters, sorting, saved recipes and actions with a controller. Confirm changed upgrade prose remains visible.
+9. Multiplayer ownership and second-player behaviour remain pending until
    another player is available. No multiplayer validation is claimed.
 
 ## Verification and rollback
 
-Automated checks pass: ten existing suites, forty-one production crafting bridge
-checks, twelve native crafting API contracts, five release tooling tests,
+Automated checks pass: ten existing suites, fifty-seven production crafting bridge
+checks, fifteen native crafting API contracts, five release tooling tests,
 seven native mod builds, the external UI kit consumer, documentation/material
 checks and eight package archives. Builds have existing nullable/reference and
 unavailable NuGet audit warnings. In-game visual and interaction acceptance is

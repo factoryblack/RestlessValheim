@@ -108,13 +108,16 @@ var craftMethods=new Dictionary<string,string[]>
     ["InventoryGui.UpdateGamepad"]=new[]{"Void"},
     ["InventoryGui.UpdateRecipeGamepadInput"]=new[]{"Void"},
     ["InventoryGui.UpdateRecipe"]=new[]{"Void","Player","Single"},
+    ["Player.HaveRequirements"]=new[]{"Boolean","Recipe","Boolean","Int32","Int32"},
+    ["Recipe.GetAmount"]=new[]{"Int32","Int32","Int32&","ItemData&","Int32"},
+    ["Inventory.CanAddItem"]=new[]{"Boolean","GameObject","Int32"},
     ["Player.SetSelectedPiece"]=new[]{"Boolean","Piece"},
 };
 var foundCraft=new HashSet<string>();
 foreach(var handle in reader.TypeDefinitions)
 {
     var type=reader.GetTypeDefinition(handle);var name=reader.GetString(type.Name);
-    if(name!="InventoryGui"&&name!="Player")continue;
+    if(name!="InventoryGui"&&name!="Player"&&name!="Recipe"&&name!="Inventory")continue;
     foreach(var mh in type.GetMethods())
     {
         var method=reader.GetMethodDefinition(mh);var key=name+"."+reader.GetString(method.Name);

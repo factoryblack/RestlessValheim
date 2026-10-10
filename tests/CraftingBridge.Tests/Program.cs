@@ -86,14 +86,41 @@ Check(CraftingBridge.ResultText("Arrow",false,new(){{1,20}},new(){{1,40}})=="Cra
 Check(CraftingBridge.ResultText("Axe",true,new(){{2,1},{5,1}},new(){{3,1},{5,1}})=="Result: Axe · quality 3","Upgrade feedback must identify the changed copy rather than existing higher-quality equipment");
 Check(CraftingBridge.ResultText("Axe",true,new(){{3,1}},new(){{2,1}})=="Result: Axe · quality 2","Native failed upgrades that reduce quality must not be announced as a quality increase");
 Check(CraftingBridge.ResultText("Arrow",false,new(){{1,20}},new(){{1,20}})=="Craft ended · no item gain","Rejected crafts must never announce success");
+
+recipe.Station=null;player.Station=null;player.Requirements=true;player.AvailableCrafts=3;player.Inventory.OutputSpace=40;
+Check(CraftingBatch.Maximum(n=>CraftingBridge.CanCraftCount(craft,n))==2,"Max must combine material and actual output-space limits");
+player.Inventory.OutputSpace=0;
+Check(CraftingBatch.Maximum(n=>CraftingBridge.CanCraftCount(craft,n))==0,"A full inventory must yield no batch capacity");
+Check(CraftingBridge.BlockedReason(gui,craft).Contains("inventory space"),"Full-output blocker must be explicit even when native button misses capacity");
+player.Inventory.OutputSpace=9999;player.AvailableCrafts=999;
+Check(CraftingBatch.Maximum(n=>CraftingBridge.CanCraftCount(craft,n))==99,"Max must respect the bounded queue limit");
+Check(CraftingBridge.Output(craft,3)==60,"Craft counts must remain distinct from native output quantities");
+recipe.Station=new CraftingStation{Usable=false};player.Station=recipe.Station;
+Check(!CraftingBridge.CanCraftCount(craft,1),"Unusable stations must reject queued execution");
+recipe.Station=null;player.Station=null;
+gui.m_availableRecipes.Clear();gui.m_availableRecipes.Add(new(recipe,null,true));gui.m_craftTimer=-1;gui.m_multiCraftAmount=17;gui.m_touchMultiCrafting=true;
+Check(CraftingBridge.ExecuteSingle(gui,craft)&&!gui.m_multiCrafting,"Queue execution must use normal native craft timing");
+Check(gui.m_multiCraftAmount==17&&gui.m_touchMultiCrafting,"Scoped single execution must restore preview fields");
+gui.m_craftTimer=-1;player.Inventory.OutputSpace=0;var executions=gui.Executions;
+Check(!CraftingBridge.ExecuteSingle(gui,craft)&&gui.Executions==executions,"Capacity loss must stop without executing a queued craft");
+Check(gui.m_multiCraftAmount==17&&gui.m_touchMultiCrafting,"Rejected crafts must also restore native fields");
+var batch=new CraftingBatch();batch.Start(3);
+Check(batch.Remaining==3&&batch.Complete(true)&&batch.Completed==1&&batch.Remaining==2,"Only confirmed completion advances the queue");
+Check(!batch.Complete(false)&&batch.Completed==1&&!batch.Active,"Failure stops remaining crafts without counting the failed craft");
+batch.Start(2);batch.Complete(true);batch.Cancel();
+Check(batch.Completed==1&&!batch.Active&&!batch.Complete(true)&&batch.Completed==1,"Cancellation keeps completed work and ignores late completion callbacks");
+batch.Start(1);Check(!batch.Complete(true)&&batch.Completed==1,"A single-craft queue ends exactly once");
+batch.Start(999);Check(batch.Total==99,"Queue input must be capped");
+batch.Start(-4);Check(batch.Total==1,"Invalid queue input must be clamped");
+
 Console.WriteLine($"{checks} production crafting bridge checks passed.");
 
 // Controlled native boundaries; the production bridge above is compiled directly.
-public class Recipe{public string name="recipe";public ItemDrop m_item=new();public bool m_requireOnlyOneIngredient;public CraftingStation? Station;public int RequiredLevel=1;public int GetRequiredStationLevel(int quality)=>RequiredLevel;public CraftingStation? GetRequiredStation(int quality)=>Station;public int GetInstanceID()=>System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);}
-public class CraftingStation{public bool m_upgrader;public int Level=1;public int GetLevel()=>Level;}
+public class Recipe{public string name="recipe";public ItemDrop m_item=new();public bool m_requireOnlyOneIngredient;public CraftingStation? Station;public int RequiredLevel=1;public int m_amount=20;public int GetAmount(int quality,out int used,out ItemDrop.ItemData? ingredient,int count){used=count;ingredient=null;return m_amount*count;}public int GetRequiredStationLevel(int quality)=>RequiredLevel;public CraftingStation? GetRequiredStation(int quality)=>Station;public int GetInstanceID()=>System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(this);}
+public class CraftingStation{public bool m_upgrader;public int Level=1;public bool Usable=true;public bool CheckUsable(Player player,bool message)=>Usable;public int GetLevel()=>Level;}
 public class ItemDrop
 {
-    public ItemData m_itemData=new();
+    public UnityEngine.GameObject gameObject=new();public ItemData m_itemData=new();
     public class ItemData
     {
         public Shared m_shared=new();public int m_quality=1;public bool m_equipped;
@@ -107,7 +134,7 @@ public class InventoryGui
 {
     public readonly record struct Pair(Recipe Recipe,ItemDrop.ItemData? ItemData,bool CanCraft);
     public List<Pair> m_availableRecipes=new();public Pair m_selectedRecipe;
-    public float m_craftTimer=-1;public UnityEngine.UI.Button m_craftButton=new();
+    public int m_multiCraftAmount=5;public bool m_touchMultiCrafting,m_multiCrafting;public float m_craftTimer=-1;public UnityEngine.UI.Button m_craftButton=new();
     public UnityEngine.GameObject[] m_recipeRequirementList=Array.Empty<UnityEngine.GameObject>();
     public int SelectedIndex,Revalidations,Executions;public ItemDrop.ItemData? ExecutedItem;
     public void SetRecipe(int index,bool focus){SelectedIndex=index;m_selectedRecipe=m_availableRecipes[index];}
@@ -116,9 +143,11 @@ public class InventoryGui
 }
 public class Player
 {
-    public static Player? m_localPlayer;public CraftingStation? Station;public CraftingStation? GetCurrentCraftingStation()=>Station;public Inventory Inventory=new();public Inventory GetInventory()=>Inventory;
+    public static Player? m_localPlayer;public CraftingStation? Station;public CraftingStation? GetCurrentCraftingStation()=>Station;public bool Requirements=true;public int AvailableCrafts=99;public bool NoCostCheat()=>false;public bool HaveRequirements(Recipe recipe,bool discover,int quality,int amount)=>Requirements&&amount<=AvailableCrafts;public Inventory Inventory=new();public Inventory GetInventory()=>Inventory;
 }
-public class Inventory{public List<ItemDrop.ItemData> Items=new();public List<ItemDrop.ItemData> GetAllItems()=>Items;}
+public enum GlobalKeys{NoCraftCost}
+public class ZoneSystem{public static ZoneSystem? instance;public bool GetGlobalKey(GlobalKeys key)=>false;}
+public class Inventory{public int OutputSpace=9999;public bool CanAddItem(UnityEngine.GameObject item,int count)=>count<=OutputSpace;public List<ItemDrop.ItemData> Items=new();public List<ItemDrop.ItemData> GetAllItems()=>Items;}
 public class Localization{public static Localization? instance;public string Localize(string text)=>text;}
 public class UITooltip{public string m_topic="",m_text="";}
 namespace UnityEngine

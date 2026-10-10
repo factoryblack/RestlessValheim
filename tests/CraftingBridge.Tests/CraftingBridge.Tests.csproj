@@ -1,4 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
-  <ItemGroup><Compile Include="../../src/RestlessQoL/Ui/CraftingBridge.cs" Link="CraftingBridge.cs" /><Compile Include="../../src/RestlessQoL/Ui/CraftingDetails.cs" Link="CraftingDetails.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../../src/RestlessQoL/Ui/CraftingBridge.cs" Link="CraftingBridge.cs" /><Compile Include="../../src/RestlessQoL/Ui/CraftingDetails.cs" Link="CraftingDetails.cs" /><Compile Include="../../src/RestlessQoL/Ui/CraftingBatch.cs" Link="CraftingBatch.cs" /></ItemGroup>
 </Project>

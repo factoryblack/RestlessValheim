@@ -119,11 +119,37 @@ internal static class CraftingBridge
         if(choice.Item!=null&&!Player.m_localPlayer.GetInventory().GetAllItems().Contains(choice.Item))return false;
         gui.OnCraftPressed();return gui.m_craftTimer>=0;
     }
+    internal static int Output(Choice choice,int count)=>choice.Recipe.GetAmount(1,out _,out _,count);
+    internal static bool CanCraftCount(Choice choice,int count)
+    {
+        var player=Player.m_localPlayer;
+        if(player==null||choice.Item!=null||count<1||count>CraftingBatch.Limit)return false;
+        var station=player.GetCurrentCraftingStation();
+        if(choice.Recipe.GetRequiredStation(1)!=null&&(station==null||!station.CheckUsable(player,false)))return false;
+        if(!player.HaveRequirements(choice.Recipe,false,1,count)&&!player.NoCostCheat()&&!(ZoneSystem.instance?.GetGlobalKey(GlobalKeys.NoCraftCost)??false))return false;
+        var output=Output(choice,count);
+        return output>0&&player.GetInventory().CanAddItem(choice.Recipe.m_item.gameObject,output);
+    }
+    internal static bool ExecuteSingle(InventoryGui gui,Choice choice)
+    {
+        var amount=gui.m_multiCraftAmount;var touch=gui.m_touchMultiCrafting;
+        try
+        {
+            gui.m_multiCraftAmount=1;gui.m_touchMultiCrafting=false;
+            if(!Select(gui,choice)||!CanCraftCount(choice,1)||!gui.m_craftButton.interactable)return false;
+            // UpdateRecipe may be patched to show queued costs; execution always uses one native craft.
+            gui.m_multiCraftAmount=1;gui.m_touchMultiCrafting=false;
+            gui.OnCraftPressed();gui.m_multiCrafting=false;
+            return gui.m_craftTimer>=0;
+        }
+        finally{gui.m_multiCraftAmount=amount;gui.m_touchMultiCrafting=touch;}
+    }
     internal static string BlockedReason(InventoryGui gui,Choice choice)
     {
         // Native tooltip owns the primary failure, including modded requirement checks.
         var native=Local(gui.m_craftButton.GetComponent<UITooltip>()?.m_text??"");
         if(native.Length>0&&native!=Local("$msg_missingrequirement")&&native!=Local("$msg_missingstation"))return native;
+        if(choice.Item==null&&Player.m_localPlayer!=null&&!Player.m_localPlayer.GetInventory().CanAddItem(choice.Recipe.m_item.gameObject,Output(choice,Math.Max(1,gui.m_multiCraftAmount))))return "Not enough inventory space for this output";
         var station=Player.m_localPlayer?.GetCurrentCraftingStation();
         var quality=choice.Item==null?1:choice.Item.m_quality+1;
         var required=station!=null&&station.m_upgrader?1:choice.Recipe.GetRequiredStationLevel(quality);

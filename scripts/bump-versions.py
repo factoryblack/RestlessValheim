@@ -216,7 +216,7 @@ def main(argv):
     changed = {name: (pkgs[name]["version"], planned[name]) for name in planned if pkgs[name]["version"] != planned[name]}
     pack_changed = planned_pack != pack_now
     if not changed and not pack_changed:
-        print("versions already match the last published tags", flush=True)
+        print("planned versions already match versions.yaml", flush=True)
         for name in TAG_ORDER:
             if name in planned:
                 print(f"  {name} {planned[name]} ({kinds[name]})", flush=True)
@@ -303,27 +303,6 @@ def main(argv):
             "After a Jötunn or package bump: `python scripts/sync-versions.py`.",
             "A package bump is `python scripts/bump-versions.py core=new cook=fix`. Changelog sentences stay written by hand.",
         )
-        versions = {name: pkgs[name]["version"] for name in TAG_ORDER}
-        versions.update(planned)
-        versions["pack"] = planned_pack
-        lines = []
-        for name in TAG_ORDER + ["pack"]:
-            prefix = "pack-v" if name == "pack" else PACKAGES[name][0]
-            version = versions[name]
-            if tag_exists(prefix, version):
-                continue
-            tag = prefix + version
-            lines.append(f"git tag {tag}")
-            lines.append(f"git push origin {tag}")
-        block = "\n".join(lines)
-        text, count = re.subn(
-            r"```\n(?:git (?:tag|push) [^\n]*\n)+```",
-            "```\n" + block + "\n```",
-            text,
-            count=1,
-        )
-        if count != 1:
-            raise SystemExit("thunderstore/PUBLISH.md is missing its tag block")
         write_text(publish, text, newline)
 
     subprocess.check_call([sys.executable, str(root / "scripts" / "sync-versions.py")], cwd=root)

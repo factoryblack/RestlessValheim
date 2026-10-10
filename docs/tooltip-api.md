@@ -1,5 +1,7 @@
 # Item inspect and expansion contributions
 
+> Historical implementation/review record. Branch names, baselines and installation instructions below describe that pass. Use [current build guidance](maintainers/building.md) and [player guides](player/README.md) for the maintained workflow.
+
 This branch rebuilds the existing inventory/chest item inspect surface. It does not
 implement rarity, set mechanics, a skill tree, or a general screen-registration API.
 The assembly remains `RestlessCore`; its existing namespace is `RestlessQoL`.

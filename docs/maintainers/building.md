@@ -31,7 +31,20 @@ dotnet build src/RestlessStorage/RestlessStorage.csproj -c Release
 dotnet build src/RestlessWorks/RestlessWorks.csproj -c Release
 ```
 
-DLLs are written to `dist/`. Install complete packages with their shipped assets. The local scripts `test-local.ps1` and `install-local.ps1` help install/playtest; check their parameters before use.
+DLLs are written to `dist/`. Install complete packages with their shipped assets. Python 3.11+ is required by the package scripts. Pass `-Python <executable>` when the default interpreter is unavailable.
+
+```powershell
+# Preview installation using existing build outputs; no game files change.
+./scripts/test-local.ps1 -WhatIf
+# Build all seven plugins, stage packages, then install for a local playtest.
+./scripts/test-local.ps1
+# Install already-built packages, or preview just the installer.
+./scripts/install-local.ps1 -WhatIf
+```
+
+Both local helpers accept `-ValheimInstall <directory>`. Configure `Environment.props` for the same installation before building. Launch is explicit with `test-local.ps1 -Launch`. Close Valheim and the local server before installing. The installer checks every package input before making changes, backs up replaced files under `artifacts/install-backups/`, and archives the deprecated `RestlessQoL` plugin folder there. It preserves saved configuration. Workshop uses the established `RestlessWorks` installation folder; the public package name is `RestlessWorkshop`.
+
+The installer copies the DLL and runtime assets declared in each package TOML. It does not install documentation or remove unknown plugin files. Inspect any older manually installed duplicates before testing.
 
 `powershell -File scripts/pack.ps1` builds all registered plugins and stages the package files/assets specified by their TOMLs. Archive names use current manifest versions.
 
@@ -49,6 +62,8 @@ Edit/bump versions through the existing tooling, then run `python scripts/sync-v
 | `drawers-v*` | Drawers |
 | `storage-v*` | Storage |
 | `works-v*` | Works |
+
+`python scripts/release-plan.py` prints pending tag/push commands from `versions.yaml` and local tags without executing them. Refresh local tags before planning a release, and publish only after the required checks and playtests.
 
 A Core tag compiles siblings but **does not republish the pack or expansions**. Publish required dependencies before consumers, then the pack last. Keep Unreleased notes out of a tagged release until assigned to its actual version.
 

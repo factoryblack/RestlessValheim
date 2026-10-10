@@ -1,58 +1,23 @@
-# Build, drop the DLL into the Steam Valheim BepInEx folder, print how to playtest.
-# This Steam install already has BepInEx + Jötunn. Launch Valheim from Steam (not a vanilla shortcut).
+# Build every registered plugin, install complete packages, and print playtest guidance.
+[CmdletBinding()]
 param(
-    [switch]$Launch
+    [switch]$Launch,
+    [switch]$WhatIf,
+    [string]$ValheimInstall = 'C:\Program Files (x86)\Steam\steamapps\common\Valheim',
+    [string]$Python = 'python'
 )
-
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$dotnet = 'C:\Program Files\dotnet\dotnet.exe'
-if (-not (Test-Path $dotnet)) { $dotnet = 'dotnet' }
-
-& $dotnet build (Join-Path $root 'src\RestlessQoL\RestlessQoL.csproj') -c Release
-if ($LASTEXITCODE -ne 0) { throw 'build failed' }
-
-& $dotnet build (Join-Path $root 'src\RestlessCook\RestlessCook.csproj') -c Release
-if ($LASTEXITCODE -ne 0) { throw 'cook build failed' }
-
-& $dotnet build (Join-Path $root 'src\RestlessPiles\RestlessPiles.csproj') -c Release
-if ($LASTEXITCODE -ne 0) { throw 'piles build failed' }
-
-& $dotnet build (Join-Path $root 'src\RestlessPlant\RestlessPlant.csproj') -c Release
-if ($LASTEXITCODE -ne 0) { throw 'plant build failed' }
-
-& (Join-Path $PSScriptRoot 'install-local.ps1')
-
-$valheim = 'C:\Program Files (x86)\Steam\steamapps\common\Valheim'
-$log = Join-Path $valheim 'BepInEx\LogOutput.log'
-Write-Host ''
-Write-Host 'Launch Valheim from Steam (this folder is already BepInEx-patched).'
-Write-Host 'After the main menu, confirm BepInEx\LogOutput.log has:'
-Write-Host '  RestlessCore 0.1.10 loaded'
-Write-Host '  RestlessPiles 0.1.4 loaded'
-Write-Host '  RestlessPlant 0.1.3 loaded'
-Write-Host "  $log"
-Write-Host ''
-Write-Host 'Hotkeys: ` = quick stack, Shift+` = restock'
-Write-Host 'Config after first launch: BepInEx\config\restless.core.cfg  (everything on by default)'
-Write-Host ''
-Write-Host 'Playtest:'
-Write-Host '  1. Chest with wood next to a workbench — craft a hammer without taking the wood'
-Write-Host '  2. ` / Shift+` against a chest that already has that stack'
-Write-Host '  3. Smelter / kiln / cooking station / fermenter with ore or food only in the chest'
-Write-Host '  4. Hammer-repair one piece — nearby player-built pieces should heal'
-Write-Host '  5. Walk further from a workbench than vanilla (20 m)'
-Write-Host '  6. Campfire stays lit with 0 wood'
-Write-Host '  7. Hoe: dig / raise past 8 m (cap is 20)'
-Write-Host '  8. Swim with a weapon out; empty a tombstone (death pin goes); ballista vs a tame'
-Write-Host '  9. Chop trees with an axe (combo should keep); load a crossbow, swap off, swap back'
-Write-Host '  10. Look at a placed stone pile / wood stack: E opens it. Take stack = one bag stack. ` dumps matching items in. Do not rebuild old piles.'
-Write-Host '  11. Cultivator: raspberry / mushroom pieces, [ ] for the planting square, pick a planted bush to bulk-harvest neighbours.'
-Write-Host ''
-Write-Host 'r2modman: install BepInEx + Jotunn from Thunderstore, then Import local'
-Write-Host '  artifacts\Restless-RestlessCore-0.1.10.zip  (run scripts\pack.ps1 first)'
-
-if ($Launch) {
-    Start-Process 'steam://rungameid/892970'
-    Write-Host 'Launched via Steam.'
+if (-not $WhatIf) {
+    & (Join-Path $PSScriptRoot 'pack.ps1') -Python $Python
 }
+& (Join-Path $PSScriptRoot 'install-local.ps1') -ValheimInstall $ValheimInstall -Python $Python -WhatIf:$WhatIf
+Write-Host 'Launch modded through Steam, then check BepInEx\LogOutput.log for the versions printed above.'
+Write-Host 'Archives in artifacts use the current manifest versions; import those when testing with r2modman.'
+Write-Host 'F8 shows saved host settings. Existing custom values stay intact and Global Reach defaults off.'
+Write-Host 'Test crafting/building from chests, quick stack/restock, and station ore/fuel pulls.'
+Write-Host 'Test repair and sealing, then station circles while changing Global Reach and turning it off.'
+Write-Host 'Test crop/hive harvest, replanting, grid rows/columns and personal snapping.'
+Write-Host 'Test pile isolation below and above Core reach, Storage takes, Drawers and workshop orders.'
+Write-Host 'Use docs/maintainers/reliability.md for multiplayer and ownership checks; test 120m on a dense base.'
+if ($Launch -and -not $WhatIf) { Start-Process 'steam://rungameid/892970' }

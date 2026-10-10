@@ -18,3 +18,7 @@ art/cook/mesh/*.fbx
 art/drawers/mesh/*.fbx
 art/storage/mesh/*.fbx
 art/works/mesh/*.fbx
+
+# Generated Python caches
+__pycache__/
+*.py[cod]

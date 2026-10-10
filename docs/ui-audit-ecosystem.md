@@ -1,5 +1,7 @@
 # UI audit fixes and the F8 ecosystem
 
+> Historical implementation/review record. Branch names, baselines and installation instructions below describe that pass. Use [current build guidance](maintainers/building.md) and [player guides](player/README.md) for the maintained workflow.
+
 Source baseline: `a156afa192f778cf994f791f325d336d8a464aa4` (22 September 2026).
 This is an implementation/review note, not a second feature catalogue.
 

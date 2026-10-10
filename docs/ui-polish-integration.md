@@ -1,5 +1,7 @@
 # UI artwork integration
 
+> Historical implementation/review record. Branch names, baselines and installation instructions below describe that pass. Use [current build guidance](maintainers/building.md) and [player guides](player/README.md) for the maintained workflow.
+
 Integrates the artwork from asset PR #6 (commit
 `d919f8bf3cc0e5cf61db08466c25f9d12021d213`) onto main
 `e77056da7878ac73e570c74c646c2e98f86a4ddc`.

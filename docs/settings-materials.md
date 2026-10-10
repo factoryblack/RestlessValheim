@@ -1,5 +1,7 @@
 # Restless Settings material pass
 
+> Historical implementation/review record. Branch names, baselines and installation instructions below describe that pass. Use [current build guidance](maintainers/building.md) and [player guides](player/README.md) for the maintained workflow.
+
 This change builds on `codex/tooltip-foundation` and uses its actual embedded panel,
 chip, rim and ornament textures. No additional generated bitmap is needed for this
 surface: the new control shapes reuse the existing circle and diamond primitives.

@@ -1,84 +1,47 @@
-# Drop the built DLL into the Steam Valheim BepInEx plugins folder used for local testing.
+# Install exactly the plugin files declared by current package TOMLs.
+[CmdletBinding(SupportsShouldProcess)]
+param(
+    [string]$ValheimInstall = 'C:\Program Files (x86)\Steam\steamapps\common\Valheim',
+    [string]$Python = 'python'
+)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$dll = Join-Path $root 'dist\RestlessCore.dll'
-if (-not (Test-Path $dll)) { throw "Build first. Missing $dll" }
-
-$valheimPlugins = 'C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins'
-$old = Join-Path $valheimPlugins 'RestlessQoL'
-if (Test-Path $old) { Remove-Item $old -Recurse -Force }
-
-$plugins = Join-Path $valheimPlugins 'RestlessCore'
-New-Item -ItemType Directory -Force -Path $plugins | Out-Null
-Copy-Item $dll (Join-Path $plugins 'RestlessCore.dll') -Force
-Write-Host "installed $(Join-Path $plugins 'RestlessCore.dll')"
-
-$cookDll = Join-Path $root 'dist\RestlessCook.dll'
-if (Test-Path $cookDll) {
-    $cookPlugins = Join-Path $valheimPlugins 'RestlessCook'
-    New-Item -ItemType Directory -Force -Path $cookPlugins | Out-Null
-    Copy-Item $cookDll (Join-Path $cookPlugins 'RestlessCook.dll') -Force
-    $mesh = Join-Path $cookPlugins 'mesh'
-    New-Item -ItemType Directory -Force -Path $mesh | Out-Null
-    Get-ChildItem (Join-Path $root 'art\cook\runtime') -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Extension -in '.rcm', '.png' } |
-        ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
-    Write-Host "installed $(Join-Path $cookPlugins 'RestlessCook.dll')"
+$pluginRoot = [IO.Path]::GetFullPath((Join-Path $ValheimInstall 'BepInEx\plugins'))
+if (-not (Test-Path -LiteralPath $pluginRoot -PathType Container)) { throw "Missing plugins directory: $pluginRoot" }
+if (-not $WhatIfPreference -and (Get-Process -Name valheim,valheim_server -ErrorAction SilentlyContinue)) {
+    throw 'Close Valheim and the local server before installing.'
 }
-
-$pilesDll = Join-Path $root 'dist\RestlessPiles.dll'
-if (Test-Path $pilesDll) {
-    $pilesPlugins = Join-Path $valheimPlugins 'RestlessPiles'
-    New-Item -ItemType Directory -Force -Path $pilesPlugins | Out-Null
-    Copy-Item $pilesDll (Join-Path $pilesPlugins 'RestlessPiles.dll') -Force
-    Write-Host "installed $(Join-Path $pilesPlugins 'RestlessPiles.dll')"
+$planText = & $Python (Join-Path $PSScriptRoot 'stage-packages.py') --install-plan
+if ($LASTEXITCODE -ne 0) { throw 'Package preflight failed; nothing installed.' }
+$plan = $planText | ConvertFrom-Json
+$prefix = $pluginRoot.TrimEnd('\','/') + [IO.Path]::DirectorySeparatorChar
+$files = @()
+foreach ($package in $plan) {
+    Write-Host "$($package.id) $($package.version)"
+    foreach ($file in $package.files) {
+        $destination = [IO.Path]::GetFullPath((Join-Path $pluginRoot $file.target))
+        if (-not $destination.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw "Invalid target: $destination" }
+        if (-not (Test-Path -LiteralPath $file.source -PathType Leaf)) { throw "Missing source: $($file.source)" }
+        $files += [pscustomobject]@{Source=$file.source; Destination=$destination; Relative=$file.target}
+    }
 }
-
-$plantDll = Join-Path $root 'dist\RestlessPlant.dll'
-if (Test-Path $plantDll) {
-    $plantPlugins = Join-Path $valheimPlugins 'RestlessPlant'
-    New-Item -ItemType Directory -Force -Path $plantPlugins | Out-Null
-    Copy-Item $plantDll (Join-Path $plantPlugins 'RestlessPlant.dll') -Force
-    Write-Host "installed $(Join-Path $plantPlugins 'RestlessPlant.dll')"
+$backupRoot = Join-Path $root ('artifacts\install-backups\' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
+# Archive the deprecated plugin instead of deleting it or leaving duplicate GUIDs.
+$legacy = [IO.Path]::GetFullPath((Join-Path $pluginRoot 'RestlessQoL'))
+if (-not $legacy.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Invalid legacy plugin target' }
+if ((Test-Path -LiteralPath $legacy) -and $PSCmdlet.ShouldProcess($legacy, 'Archive deprecated plugin into the installation backup')) {
+    New-Item -ItemType Directory -Path $backupRoot -Force | Out-Null
+    Move-Item -LiteralPath $legacy -Destination (Join-Path $backupRoot 'RestlessQoL')
 }
-
-$drawersDll = Join-Path $root 'dist\RestlessDrawers.dll'
-if (Test-Path $drawersDll) {
-    $drawersPlugins = Join-Path $valheimPlugins 'RestlessDrawers'
-    New-Item -ItemType Directory -Force -Path $drawersPlugins | Out-Null
-    Copy-Item $drawersDll (Join-Path $drawersPlugins 'RestlessDrawers.dll') -Force
-    $mesh = Join-Path $drawersPlugins 'mesh'
-    New-Item -ItemType Directory -Force -Path $mesh | Out-Null
-    Get-ChildItem (Join-Path $root 'art\drawers\runtime') -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Extension -in '.rcm', '.png' } |
-        ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
-    Write-Host "installed $(Join-Path $drawersPlugins 'RestlessDrawers.dll')"
+foreach ($file in $files) {
+    if (-not $PSCmdlet.ShouldProcess($file.Destination, 'Back up existing file and install packaged file')) { continue }
+    if (Test-Path -LiteralPath $file.Destination -PathType Leaf) {
+        $backup = Join-Path $backupRoot $file.Relative
+        New-Item -ItemType Directory -Path (Split-Path -Parent $backup) -Force | Out-Null
+        Copy-Item -LiteralPath $file.Destination -Destination $backup
+    }
+    New-Item -ItemType Directory -Path (Split-Path -Parent $file.Destination) -Force | Out-Null
+    Copy-Item -LiteralPath $file.Source -Destination $file.Destination -Force
 }
-
-$storageDll = Join-Path $root 'dist\RestlessStorage.dll'
-if (Test-Path $storageDll) {
-    $storagePlugins = Join-Path $valheimPlugins 'RestlessStorage'
-    New-Item -ItemType Directory -Force -Path $storagePlugins | Out-Null
-    Copy-Item $storageDll (Join-Path $storagePlugins 'RestlessStorage.dll') -Force
-    $mesh = Join-Path $storagePlugins 'mesh'
-    New-Item -ItemType Directory -Force -Path $mesh | Out-Null
-    Get-ChildItem (Join-Path $root 'art\storage\runtime') -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Extension -in '.rcm', '.png' } |
-        ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
-    Write-Host "installed $(Join-Path $storagePlugins 'RestlessStorage.dll')"
-}
-
-$worksDll = Join-Path $root 'dist\RestlessWorks.dll'
-if (Test-Path $worksDll) {
-    $worksPlugins = Join-Path $valheimPlugins 'RestlessWorks'
-    New-Item -ItemType Directory -Force -Path $worksPlugins | Out-Null
-    Copy-Item $worksDll (Join-Path $worksPlugins 'RestlessWorks.dll') -Force
-    $mesh = Join-Path $worksPlugins 'mesh'
-    New-Item -ItemType Directory -Force -Path $mesh | Out-Null
-    Get-ChildItem (Join-Path $root 'art\works\runtime') -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Extension -in '.rcm', '.png' } |
-        ForEach-Object { Copy-Item $_.FullName (Join-Path $mesh $_.Name) -Force }
-    Write-Host "installed $(Join-Path $worksPlugins 'RestlessWorks.dll')"
-}
-Write-Host 'Launch Valheim from Steam. This install already has BepInEx + Jotunn.'
-Write-Host 'Extra slots ship in this DLL. No sidecars.'
+Write-Host "Backup location, if files were replaced: $backupRoot"
+Write-Host 'Installation does not change saved config values.'

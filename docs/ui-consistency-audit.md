@@ -1,5 +1,7 @@
 # Restless UI consistency audit — 25 September 2026
 
+> Historical implementation/review record. Branch names, baselines and installation instructions below describe that pass. Use [current build guidance](maintainers/building.md) and [player guides](player/README.md) for the maintained workflow.
+
 Reviewed UI source at main `29b2d6567170524840eafd987693cc95af6b0299`,
 including merged PR #24 and the newer native station-plate suppression.
 Scope: shared kit, settings/expansions, inventory/crafting, tooltips, loadout,

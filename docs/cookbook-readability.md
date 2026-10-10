@@ -1,5 +1,7 @@
 # Cookbook readability pass
 
+> Historical implementation/review record. Branch names, baselines and installation instructions below describe that pass. Use [current build guidance](maintainers/building.md) and [player guides](player/README.md) for the maintained workflow.
+
 Based on main c12208d. Presentation only; cooking allocation, timing, persistence and station behaviour remain on current main.
 
 - Hero expands to 492×152. Ornament scale increases from 1/6 to 1/4.5 while the bottom knot and corners retain their aspect ratios. Text stays inside the frame with room above the bottom ornament.

@@ -34,7 +34,9 @@ inventory styling switch and does not change host range settings.
   inventory management; the strip does not support dragging or transfers.
 - **Shared presentation:** Crafting, Cookbook and Workshop use one paper window
   frame, header, close control, fitting behaviour and selected tab treatment.
-  Crafting has a smaller layout for small canvases. Cookbook's Kitchen tab now
+  Crafting has a smaller layout for small canvases. It resolves layout before
+  reveal, reuses its inactive window on reopen, and only repaints recipe/bag rows
+  when their visible data changes. GUI recreation discards the cached window. Cookbook's Kitchen tab now
   has selectable stations, capacity, fuel, fire, blocker and distance details.
 
 Escape closes the window and inventory. During a craft the secondary action
@@ -55,7 +57,9 @@ losing access, dying, or disabling the feature restores the native presentation.
 4. Use full inventory, reopen Crafting, open a chest, press Escape, open F8,
    toggle the feature off/on, and move out of station reach. Confirm no hidden
    input capture, overlapping windows or unwanted menu opening.
-5. Test a small resolution, a large display, UI scaling, long item names, long
+5. Reopen the same station repeatedly and switch station types. Check for opening
+   resize flicker, pauses and stale rows after Craft/Stations switching.
+   Test a small resolution, a large display, UI scaling, long item names, long
    tooltips, a long recipe list and controller navigation/scrolling.
 6. Open Cookbook's Kitchen tab, change selected station, search, then return to
    recipes/orders/pantry. Verify stale ingredient cards and quantity controls
@@ -65,7 +69,7 @@ losing access, dying, or disabling the feature restores the native presentation.
 
 ## Verification and rollback
 
-Automated checks pass: ten existing suites, twelve production crafting bridge
+Automated checks pass: ten existing suites, nineteen production crafting bridge
 checks, nine added native crafting API contracts, five release tooling tests,
 seven native mod builds, the external UI kit consumer, documentation/material
 checks and eight package archives. Builds have existing nullable/reference and

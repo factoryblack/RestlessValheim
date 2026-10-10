@@ -53,7 +53,7 @@ public sealed class CraftingInterface : FeatureModule
         _craftGroup=null;_addedGroup=false;
         if(_entry!=null){_entry.SetActive(false);Object.Destroy(_entry);}_entry=null;
     }
-    private static void Reset(){CraftingWindow.Close(false);Restore();}
+    private static void Reset(){CraftingWindow.Reset();Restore();}
     [HarmonyPatch]
     private static class Patches
     {

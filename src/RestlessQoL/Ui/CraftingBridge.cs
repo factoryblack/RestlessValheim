@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,6 +31,13 @@ internal static class CraftingBridge
                 State=pair.ItemData!=null ? "Quality "+item.m_quality+(item.m_equipped?" · Equipped":"") : pair.CanCraft?"Materials available":"Requirements missing"});
         }
         return result;
+    }
+    // Only repaint rows when their visible data, selection or layout actually changed.
+    internal static string RowsStamp(IEnumerable<Choice> choices,Choice? selected,int tab,float width,bool running)
+    {
+        var stamp=new StringBuilder().Append(tab).Append('|').Append(width).Append('|').Append(running);
+        foreach(var c in choices)stamp.Append('|').Append(c.Recipe.GetInstanceID()).Append(':').Append(c.Item?.GetHashCode()??0).Append(':').Append(c.Name).Append(':').Append(c.State).Append(':').Append(c.Icon?.GetInstanceID()??0).Append(':').Append(selected!=null&&c.Recipe==selected.Recipe&&ReferenceEquals(c.Item,selected.Item));
+        return stamp.ToString();
     }
     internal static bool Select(InventoryGui gui,Choice choice)
     {

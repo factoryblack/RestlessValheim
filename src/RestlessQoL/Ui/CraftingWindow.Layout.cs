@@ -47,7 +47,8 @@ internal sealed partial class CraftingWindow
     }
     private void Fit()
     {
-        var size=((RectTransform)transform).rect.size;
+        var size=((RectTransform)transform.parent).rect.size;
+        if(size.x<=0||size.y<=0)return;
         if(size==_canvas)return;_canvas=size;
         _compact=size.x<1150||size.y<750;
         _frame.Resize(_compact?new Vector2(960,680):new Vector2(1280,800));
@@ -76,8 +77,10 @@ internal sealed partial class CraftingWindow
     private void ResizeCopy()
     {
         if(_copy==null)return;
-        UiKitApi.Place(_copy.gameObject,new Rect(0,0,_detail.content.rect.width,Mathf.Max(100,_copy.preferredHeight+16)));
-        UiKitApi.SizeReader(_detail,_copy.preferredHeight+24);
+        _copy.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,_detail.content.rect.width);
+        var height=_copy.preferredHeight;
+        UiKitApi.Place(_copy.gameObject,new Rect(0,0,_detail.content.rect.width,Mathf.Max(100,height+16)));
+        UiKitApi.SizeReader(_detail,height+24);
     }
     private Button Row(int index)
     {

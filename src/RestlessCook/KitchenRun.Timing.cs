@@ -36,7 +36,7 @@ internal static partial class KitchenRun
             Station = step.Station, StationId = StationId(station), StationName = station.Info.Name, Level = step.StationLevel, Root = step.Depth == 0, Duration = PreparationDuration(step) };
         foreach (var use in step.Uses)
         {
-            var amount = Math.Max(1, use.Amount / Math.Max(1, CraftsFor(step.Need, OutputAmount(step))));
+            var amount = InputCost(step, use);
             work.Inputs.TryGetValue(use.Item, out var old); work.Inputs[use.Item] = old + amount;
         }
         ledger.Work.Add(work);

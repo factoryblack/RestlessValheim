@@ -123,6 +123,7 @@ jobs:
         run: |
           dotnet run --project tests/KitchenRouting.Tests -c Release
           dotnet run --project tests/KitchenMachines.Tests -c Release
+          dotnet run --project tests/KitchenScheduling.Tests -c Release
       - name: Set tooltip regressions
         run: dotnet run --project tests/TooltipSetBlock.Tests -c Release
 

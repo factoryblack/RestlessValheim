@@ -18,7 +18,7 @@ namespace RestlessCook
     internal class Conversion { internal float m_cookTime; }
     internal enum KitchenStationKind { None,Cauldron,PrepTable,Rack,Oven,MeadKettle }
     internal enum KitchenStepState { Prepared,Ready,Queued,Cooking,Missing,Blocked }
-    internal class KitchenUse { internal string Item=""; internal int Amount; }
+    internal class KitchenUse { internal string Item=""; internal int Amount,UnitAmount; }
     internal class KitchenStep
     {
         internal string Output="",Note="",ActiveStation=""; internal int StationLevel=1,Depth,Need,Have,Cooking,OutputCount=1;
@@ -84,7 +84,12 @@ namespace RestlessCook
             var legacy=ReadWork(old); Check(legacy!=null && legacy.StationId=="","Old jobs must remain readable");
             ledger.Work.Clear();ledger.Work.Add(legacy!); AdvanceWork(table,hits,ledger,1);
             Check(ledger.Work[0].StationId==other.Id && ledger.Work[0].Elapsed==1,"Old jobs must bind once when resumed");
-            Console.WriteLine("14 timed-job lifecycle regressions passed");
+            ledger.Work.Clear(); step.Need=20; step.Uses[0]=new KitchenUse{Item="Raw",Amount=30,UnitAmount=2};
+            StartWork(ledger,order,step,other);
+            Check(ledger.Work[0].Inputs["Raw"]==2,"A reduced remaining ingredient total must preserve the paid per-craft recipe cost");
+            var partial=ReadWork(WorkLine(ledger.Work[0]).TrimEnd('\n').Split('\t'));
+            Check(partial!=null&&partial.Inputs["Raw"]==2,"Reload and cancellation receipts must retain the original cost of a partial-batch craft");
+            Console.WriteLine("16 timed-job lifecycle regressions passed");
         }
     }
 }

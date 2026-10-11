@@ -34,6 +34,7 @@ internal static partial class KitchenRun
 
     private sealed class Ledger
     {
+        public int NextOrder;
         public readonly Dictionary<string, int> Pantry = new(StringComparer.Ordinal);
         public readonly List<KitchenOrder> Orders = new();
         public readonly List<Work> Work = new();
@@ -351,51 +352,7 @@ internal static partial class KitchenRun
         RecoverTaps(table, hits, ledger);
         CollectFinished(table, hits, ledger);
         Fuel(hits, ledger, origin, table.GetComponent<Piece>()?.GetCreator() ?? 0L);
-        var crafts = 0;
-        var loads = 0;
-        // Each order plans against the same actor and range used for payment.
-        var cooking = OnStations(origin, hits);
-        IncludeWork(ledger, cooking);
-        foreach (var order in ledger.Orders)
-        {
-            var outstanding = Outstanding(order);
-            if (outstanding < 1)
-                continue;
-            var shared = Stock(origin, order.PlayerId, ledger);
-            var steps = Expand(order.Feast, outstanding, 0, "", shared);
-            Assign(table, steps, shared, cooking, order.PlayerId, order.Ready, hits);
-            for (var i = steps.Count - 1; i >= 0; i--)
-            {
-                var step = steps[i];
-                if (step.State != KitchenStepState.Ready && step.State != KitchenStepState.Queued)
-                    continue;
-                if (step.Station == KitchenStationKind.Rack || step.Station == KitchenStationKind.Oven || step.Station == KitchenStationKind.Fermenter)
-                {
-                    if (loads >= LoadsPerTick)
-                        continue;
-                    if (Load(hits, step, ledger, origin, order.PlayerId))
-                        loads++;
-                    continue;
-                }
-
-                if (step.Station != KitchenStationKind.Cauldron && step.Station != KitchenStationKind.PrepTable && step.Station != KitchenStationKind.MeadKettle)
-                    continue;
-                if (crafts >= CraftsPerTick)
-                    continue;
-                var station = PreparationStation(hits, step, ledger);
-                if (station == null)
-                    continue;
-                if (!PullOne(step, ledger, origin, order.PlayerId))
-                    continue;
-                if (!Pay(step, ledger))
-                    continue;
-                StartWork(ledger, order, step, station);
-
-                crafts++;
-            }
-
-            Deliver(order, ledger);
-        }
+        Schedule(table, hits, ledger, origin);
 
         ledger.Orders.RemoveAll(order => order.Collected >= order.Count && order.Ready <= 0);
         Write(view, ledger);
@@ -407,123 +364,6 @@ internal static partial class KitchenRun
         if (row.IsFeast && row.IsAdd && !row.Prefab.EndsWith("_Material", StringComparison.Ordinal))
             return row.Prefab + "_Material";
         return row.Prefab;
-    }
-
-    private static void Assign(CraftingStation table, List<KitchenStep> steps, Dictionary<string, int> free, Dictionary<string, int> cooking, long? playerId, int completedForOrder = 0, List<Hit>? hits = null)
-    {
-        hits ??= Scan(table.transform.position, false, View(table));
-        var covered = new bool[steps.Count];
-        for (var i = 0; i < steps.Count; i++)
-        {
-            var step = steps[i];
-            if (step.ParentIndex >= 0 && step.ParentIndex < covered.Length && covered[step.ParentIndex])
-            {
-                covered[i] = true;
-                free.TryGetValue(step.Output, out var already);
-                step.Available = Math.Max(0, already);
-                step.Have = step.Need;
-                step.Cooking = 0;
-                step.State = KitchenStepState.Prepared;
-                step.Note = "Prepared";
-                continue;
-            }
-
-            free.TryGetValue(step.Output, out var stock);
-            var portion = KitchenStock.Split(stock, step.Need, i == 0, completedForOrder);
-            var have = portion.Allocated;
-            step.Have = have;
-            step.Available = portion.OnHand;
-            free[step.Output] = Math.Max(0, stock - have);
-            cooking.TryGetValue(step.Output, out var onFire);
-            var still = step.Need - have;
-            step.Cooking = Math.Min(onFire, Math.Max(0, still));
-            cooking[step.Output] = onFire - step.Cooking;
-            if (step.Have >= step.Need)
-            {
-                covered[i] = true;
-                step.State = KitchenStepState.Prepared;
-                step.Note = "Prepared";
-                continue;
-            }
-
-            if (step.Have + step.Cooking >= step.Need)
-            {
-                covered[i] = true;
-                step.State = KitchenStepState.Cooking;
-                step.Note = step.Cooking + " cooking";
-            }
-        }
-
-        for (var i = steps.Count - 1; i >= 0; i--)
-        {
-            if (covered[i])
-                continue;
-            var step = steps[i];
-            if (step.Uses.Count == 0)
-            {
-                step.State = KitchenStepState.Missing;
-                step.Note = "Missing " + step.Name;
-                continue;
-            }
-
-            var crafts = CraftsFor(step.Need - step.Have - step.Cooking, OutputAmount(step));
-            var inputs = true;
-            string? missing = null;
-            foreach (var use in step.Uses)
-            {
-                var want = use.Amount * crafts / Math.Max(1, CraftsFor(step.Need, OutputAmount(step)));
-                if (want < 1)
-                    want = use.Amount;
-                free.TryGetValue(use.Item, out var got);
-                var incoming = Incoming(steps, use.Item);
-                use.Have = got + incoming;
-                if (got + incoming < want)
-                {
-                    inputs = false;
-                    missing = use.Name;
-                }
-                else
-                    free[use.Item] = Math.Max(0, got - Math.Max(0, want - incoming));
-            }
-
-            if (!inputs)
-            {
-                step.State = KitchenStepState.Missing;
-                step.Note = string.IsNullOrEmpty(missing) ? "Missing ingredients" : "Waiting for " + missing;
-                continue;
-            }
-
-            var block = BlockReason(table, hits, step);
-            if (!string.IsNullOrEmpty(block))
-            {
-                step.State = KitchenStepState.Blocked;
-                step.Note = block;
-                continue;
-            }
-
-            step.State = playerId.HasValue ? KitchenStepState.Queued : KitchenStepState.Ready;
-            step.Note = step.State == KitchenStepState.Ready ? "Ingredients available" : "Queued";
-        }
-    }
-
-    private static int Incoming(List<KitchenStep> steps, string item)
-    {
-        var n = 0;
-        foreach (var step in steps)
-        {
-        if (step.Output != item)
-            continue;
-        if (step.Have >= step.Need)
-        {
-            n += step.Have;
-            continue;
-        }
-
-        if (step.State == KitchenStepState.Cooking || step.State == KitchenStepState.Queued || step.State == KitchenStepState.Ready)
-            n += Math.Max(0, step.Need - step.Have);
-        }
-
-        return n;
     }
 
     private static Dictionary<string, int> Stock(Vector3 origin, long playerId, Ledger ledger)
@@ -716,70 +556,6 @@ internal static partial class KitchenRun
             if (hit.Oven.GetFuel() < 1f && SpendFuel(hit.Oven.m_fuelItem, ledger, origin, playerId))
                 hit.Oven.SetFuel(Math.Min(hit.Oven.m_maxFuel, hit.Oven.GetFuel() + 1f));
         }
-    }
-
-    private static bool Load(List<Hit> hits, KitchenStep step, Ledger ledger, Vector3 origin, long playerId)
-    {
-        Products.TryGetValue(step.Output, out var conversion);
-        var raw = conversion != null ? conversion.From : step.Uses.Count > 0 ? step.Uses[0].Item : "";
-        if (string.IsNullOrEmpty(raw))
-            return false;
-        if (!ledger.Pantry.TryGetValue(raw, out var held) || held < 1)
-        {
-            PullInto(ledger, raw, 1, origin, playerId);
-            if (!ledger.Pantry.TryGetValue(raw, out held) || held < 1)
-                return false;
-        }
-
-        foreach (var hit in hits)
-        {
-            if (hit.Info.Kind != step.Station || !Accepts(hit, step.Output) || hit.View == null || !hit.View.IsOwner()) continue;
-            if (!TryLoadRaw(hit, raw, ledger)) continue;
-            return true;
-        }
-
-        return false;
-    }
-
-    private static bool PullOne(KitchenStep step, Ledger ledger, Vector3 origin, long playerId)
-    {
-        var crafts = 1;
-        foreach (var use in step.Uses)
-        {
-            var one = Math.Max(1, use.Amount / Math.Max(1, CraftsFor(step.Need, OutputAmount(step))));
-            var want = one * crafts;
-            ledger.Pantry.TryGetValue(use.Item, out var have);
-            if (have >= want)
-                continue;
-            PullInto(ledger, use.Item, want - have, origin, playerId);
-            ledger.Pantry.TryGetValue(use.Item, out have);
-            if (have < want)
-                return false;
-        }
-
-        return true;
-    }
-
-    private static bool Pay(KitchenStep step, Ledger ledger)
-    {
-        var crafts = 1;
-        foreach (var use in step.Uses)
-        {
-            var one = Math.Max(1, use.Amount / Math.Max(1, CraftsFor(step.Need, OutputAmount(step))));
-            ledger.Pantry.TryGetValue(use.Item, out var have);
-            if (have < one * crafts)
-                return false;
-        }
-
-        foreach (var use in step.Uses)
-        {
-            var one = Math.Max(1, use.Amount / Math.Max(1, CraftsFor(step.Need, OutputAmount(step))));
-            ledger.Pantry[use.Item] = ledger.Pantry[use.Item] - one;
-            if (ledger.Pantry[use.Item] <= 0)
-                ledger.Pantry.Remove(use.Item);
-        }
-
-        return true;
     }
 
     private static void PullInto(Ledger ledger, string prefab, int count, Vector3 origin, long playerId)
@@ -1244,6 +1020,8 @@ internal static partial class KitchenRun
             if (line.Length < 2)
                 continue;
             var parts = line.Split('\t');
+            if (parts[0] == "S" && parts.Length >= 2 && int.TryParse(parts[1], out var next) && next >= 0)
+            { ledger.NextOrder = next; continue; }
             if (parts[0] == "T") { var tap = ReadTap(parts); if (tap != null) ledger.Taps.Add(tap); continue; }
             if (parts[0] == "W") { var work = ReadWork(parts); if (work != null) ledger.Work.Add(work); continue; }
             if (parts[0] == "P" && parts.Length >= 3 && int.TryParse(parts[2], out var count) && count > 0)
@@ -1273,6 +1051,7 @@ internal static partial class KitchenRun
     private static void Write(ZNetView view, Ledger ledger)
     {
         var text = new StringBuilder();
+        if (ledger.Orders.Count > 0) text.Append("S\t").Append(ledger.NextOrder).Append('\n');
         foreach (var pair in ledger.Pantry)
         {
             if (pair.Value > 0)

@@ -28,11 +28,15 @@ public sealed class UiKitMaterialCard
         var colours=_button.colors;colours.disabledColor=Color.white;_button.colors=colours;
         _button.targetGraphic.raycastTarget=clicked!=null;
         _icon.sprite=icon;_icon.enabled=icon!=null;
-        UiKitApi.Place(_icon.gameObject,new Rect(10,14,44,44));
+        var hasState=!string.IsNullOrEmpty(state);
+        var iconSize=Mathf.Min(44,bounds.height-16);
+        UiKitApi.Place(_icon.gameObject,new Rect(10,(bounds.height-iconSize)/2,iconSize,iconSize));
         var left=icon!=null?66f:14f;var width=bounds.width-left-12;
-        UiKitApi.Place(_name.gameObject,new Rect(left,5,width,25));
-        UiKitApi.Place(_counts.gameObject,new Rect(left,30,width,23));
-        UiKitApi.Place(_state.gameObject,new Rect(left,53,width,18));
+        var compactState=hasState&&bounds.height<76;
+        UiKitApi.Place(_name.gameObject,new Rect(left,compactState?3:hasState?5:8,width,compactState?22:24));
+        UiKitApi.Place(_counts.gameObject,new Rect(left,compactState?25:hasState?30:32,width,compactState?20:23));
+        UiKitApi.Place(_state.gameObject,new Rect(left,compactState?45:bounds.height-23,width,compactState?16:18));
+        _state.gameObject.SetActive(hasState);
         _name.text=name;_counts.text=counts;_counts.color=missing?RestlessUi.HealthTint:UiKitApi.Accent;
         _state.text=state;_state.color=missing?RestlessUi.HealthTint:UiKitApi.Muted;
     }

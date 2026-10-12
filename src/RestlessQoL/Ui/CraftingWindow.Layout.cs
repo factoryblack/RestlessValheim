@@ -11,7 +11,7 @@ internal sealed partial class CraftingWindow
 {
     private void Build()
     {
-        _frame=new UiKitWindow(transform,"Crafting",new Vector2(1280,800),()=>Close(true));
+        _frame=new UiKitWindow(transform,"Crafting",new Vector2(1280,720),()=>Close(true));
         var names=new[]{"Craft","Upgrade","Stations"};
         for(var i=0;i<names.Length;i++){var tab=i;_tabs.Add(_frame.Tab(names[i],new Rect(650+i*144,30,132,38),()=>SelectTab(tab)));}
         _search=UiKitApi.Field(_frame.Sheet,"Search…",new Rect(28,130,252,40));
@@ -50,6 +50,7 @@ internal sealed partial class CraftingWindow
         _amount.onEndEdit.AddListener(value=>{Quantity(int.TryParse(value,out var count)?count:1);_amount.SetTextWithoutNotify(_quantity.ToString());});
         _more=UiKitApi.Button(_frame.Sheet,"+",new Rect(),()=>Quantity(_quantity+1));
         _max=UiKitApi.Button(_frame.Sheet,"Max",new Rect(),()=>Quantity(Math.Max(1,_maximum)));
+        _batchLabel=UiKitWindow.Label(_frame.Sheet,"Batches",13,new Rect(),true);
         _max.gameObject.AddComponent<RestlessHint>().Copy="Up to 99 normal crafts, based on current materials and output space. Each craft rechecks requirements. Cancellation keeps completed items; closing stops the queue. Nearby storage follows your existing settings.";
         _amount.gameObject.AddComponent<RestlessHint>().Copy="Number of crafts, not output items. Materials and output show the selected total. Equipment upgrades remain one at a time.";
         _variant.transform.SetParent(_feature.transform,false);
@@ -72,7 +73,7 @@ internal sealed partial class CraftingWindow
         if(size.x<=0||size.y<=0)return;
         if(size==_canvas)return;_canvas=size;
         _compact=size.x<1150||size.y<750;
-        _frame.Resize(_compact?new Vector2(960,680):new Vector2(1280,800));
+        _frame.Resize(_compact?new Vector2(960,680):new Vector2(1280,720));
         for(var i=0;i<_tabs.Count;i++)UiKitApi.Place(_tabs[i].gameObject,new Rect((_compact?430:650)+i*(_compact?130:144),30,_compact?120:132,38));
         UiKitApi.Place(_search.gameObject,new Rect(28,130,_compact?210:252,40));
         var filterWidths=_compact?new[]{44f,108f,50f}:new[]{56f,120f,68f};
@@ -80,32 +81,33 @@ internal sealed partial class CraftingWindow
         for(var i=0;i<_filters.Count;i++){UiKitApi.Place(_filters[i].gameObject,new Rect(filterX,178,filterWidths[i],32));filterX+=filterWidths[i]+4;}
         UiKitApi.Place(_sortButton.gameObject,new Rect(28,216,_compact?126:148,32));
         UiKitApi.Place(_savedOnlyButton.gameObject,new Rect(_compact?158:180,216,_compact?80:100,32));
-        UiKitApi.ResizeReader(_browser,new Rect(28,260,_compact?210:252,_compact?288:392));
+        UiKitApi.ResizeReader(_browser,new Rect(28,260,_compact?210:252,288));
         UiKitApi.Place(_heading.gameObject,new Rect(_compact?256:310,132,_compact?366:560,48));
-        UiKitApi.Place(_feature,new Rect(_compact?256:310,186,_compact?366:560,156));
-        UiKitApi.Place(_portraitFrame,new Rect(12,8,142,140));UiKitApi.Place(_portrait.gameObject,new Rect(26,22,114,112));
-        UiKitApi.Place(_heroMeta.gameObject,new Rect(166,12,_compact?184:378,46));
-        UiKitApi.Place(_heroNote.gameObject,new Rect(166,60,_compact?184:378,34));
-        UiKitApi.Place(_saveButton.gameObject,new Rect(166,108,_compact?86:180,34));
-        UiKitApi.Place(_variant.gameObject,new Rect(_compact?256:354,108,_compact?94:190,34));
+        UiKitApi.Place(_feature,new Rect(_compact?256:310,186,_compact?366:560,132));
+        UiKitApi.Place(_portraitFrame,new Rect(12,8,118,116));UiKitApi.Place(_portrait.gameObject,new Rect(28,24,86,84));
+        UiKitApi.Place(_heroMeta.gameObject,new Rect(146,10,_compact?204:398,32));
+        UiKitApi.Place(_heroNote.gameObject,new Rect(146,46,_compact?204:398,28));
+        UiKitApi.Place(_saveButton.gameObject,new Rect(146,86,_compact?96:180,32));
+        UiKitApi.Place(_variant.gameObject,new Rect(_compact?248:338,86,_compact?102:206,32));
         RestlessUi.BoundedLabel(_saveButton.GetComponentInChildren<Text>(),17,13);RestlessUi.BoundedLabel(_variant.GetComponentInChildren<Text>(),17,13);
-        UiKitApi.ResizeReader(_detail,new Rect(_compact?256:310,354,_compact?366:560,_compact?194:298));
+        UiKitApi.ResizeReader(_detail,new Rect(_compact?256:310,330,_compact?366:560,218));
         _detailStamp="";_materialStamp="";_nextPreview=0;
         UiKitApi.Place(_context.gameObject,new Rect(_compact?638:906,132,_compact?294:326,36));
-        UiKitApi.ResizeReader(_requirements,new Rect(_compact?638:906,180,_compact?294:326,_compact?184:268));
-        UiKitApi.Place(_reason.gameObject,new Rect(_compact?638:906,_compact?374:462,_compact?294:326,60));
-        var quantityX=_compact?638f:906f;var quantityY=_compact?442f:534f;
+        UiKitApi.ResizeReader(_requirements,new Rect(_compact?638:906,180,_compact?294:326,_compact?184:240));
+        UiKitApi.Place(_reason.gameObject,new Rect(_compact?638:906,_compact?374:432,_compact?294:326,_compact?42:40));
+        var quantityX=_compact?638f:906f;var quantityY=_compact?442f:496f;
+        UiKitApi.Place(_batchLabel.gameObject,new Rect(quantityX,quantityY-22,_compact?294:326,18));
         UiKitApi.Place(_less.gameObject,new Rect(quantityX,quantityY,40,34));
         UiKitApi.Place(_amount.gameObject,new Rect(quantityX+44,quantityY,76,34));
         UiKitApi.Place(_more.gameObject,new Rect(quantityX+124,quantityY,40,34));
         UiKitApi.Place(_max.gameObject,new Rect(quantityX+170,quantityY,_compact?124:156,34));
-        UiKitApi.Place(_action.gameObject,new Rect(_compact?638:906,_compact?496:600,_compact?294:326,48));
-        UiKitApi.Place(_cancel.gameObject,new Rect(_compact?638:906,_compact?556:660,_compact?294:326,38));
-        UiKitApi.Place(_repair.gameObject,new Rect(_compact?638:906,_compact?610:718,_compact?294:326,38));
-        UiKitApi.Place(_bag.gameObject,new Rect(28,_compact?560:670,_compact?592:842,34));
+        UiKitApi.Place(_action.gameObject,new Rect(_compact?638:906,_compact?496:548,_compact?294:326,48));
+        UiKitApi.Place(_cancel.gameObject,new Rect(_compact?638:906,_compact?556:608,_compact?294:326,38));
+        UiKitApi.Place(_repair.gameObject,new Rect(_compact?638:906,_compact?610:658,_compact?294:326,38));
+        UiKitApi.Place(_bag.gameObject,new Rect(28,_compact?560:566,_compact?592:842,32));
         for(var i=0;i<_slots.Count;i++)
         {
-            UiKitApi.Place(_slots[i],new Rect(28+i*(_compact?58:82),_compact?610:718,_compact?54:72,_compact?58:64));
+            UiKitApi.Place(_slots[i],new Rect(28+i*(_compact?58:82),_compact?610:614,_compact?54:72,_compact?58:64));
             UiKitApi.Place(_slots[i].transform.Find("icon").gameObject,new Rect(8,4,_compact?38:48,_compact?36:42));
             UiKitApi.Place(_slots[i].GetComponentInChildren<Text>().gameObject,new Rect(4,_compact?39:45,_compact?46:64,18));
         }

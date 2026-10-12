@@ -24,7 +24,7 @@ internal sealed partial class CraftingWindow
         for(var i=0;i<details.Attributes.Count;i++)
         {
             if(i==_attributes.Count)_attributes.Add(new UiKitDetailRow(_detail.content));
-            var a=details.Attributes[i];var height=_compact&&compare?76:58;
+            var a=details.Attributes[i];var height=_compact&&compare?64:42;
             var measured=_attributes[i].Set(new Rect(0,y,_detail.content.rect.width,height),a.Name,a.Current,a.Next,a.Changed);y+=measured+6;
         }
         for(var i=details.Attributes.Count;i<_attributes.Count;i++)_attributes[i].Root.SetActive(false);
@@ -38,9 +38,9 @@ internal sealed partial class CraftingWindow
         for(var i=0;i<materials.Count;i++)
         {
             if(i==_materials.Count)_materials.Add(new UiKitMaterialCard(_requirements.content));
-            var m=materials[i];_materials[i].Set(new Rect(0,i*84,_requirements.content.rect.width,76),m.Name,m.Counts,m.Missing?"Missing materials":_tab==2?"Build cost":m.Counts.Contains("/")?"Available / needed":"Required amount",m.Icon,m.Missing);
+            var m=materials[i];_materials[i].Set(new Rect(0,i*72,_requirements.content.rect.width,64),m.Name,m.Counts,m.Missing?"Missing materials":_tab==2?"Build cost":"",m.Icon,m.Missing);
         }
         for(var i=materials.Count;i<_materials.Count;i++)_materials[i].Root.SetActive(false);
-        UiKitApi.SizeReader(_requirements,materials.Count*84);
+        UiKitApi.SizeReader(_requirements,materials.Count*72);
     }
 }

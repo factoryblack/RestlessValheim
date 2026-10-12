@@ -222,7 +222,7 @@ internal sealed partial class CraftingWindow : MonoBehaviour
         }
         PaintQuantity();
         _heading.text=_choice.Name;_portrait.sprite=(_tab==0?_gui.m_recipeIcon?.sprite:null)??_choice.Icon;
-        _portrait.rectTransform.localScale=Vector3.one*(_choice.Category=="Ammo"?1.2f:1f);_portrait.enabled=_choice.Icon!=null;
+        _portrait.rectTransform.localScale=Vector3.one;_portrait.enabled=_portrait.sprite!=null;
         if(_previewChoice==null||_previewChoice.Recipe!=_choice.Recipe||!ReferenceEquals(_previewChoice.Item,_choice.Item)||_previewQuality!=(_choice.Item?.m_quality??1)||_previewVariant!=_gui.m_selectedVariant||Time.unscaledTime>=_nextPreview)
         {
             PaintDetails(_tab==0?CraftingDetails.Read(CraftingBridge.Local(_gui.m_recipeDecription.text)):CraftingBridge.Details(_choice));_previewChoice=_choice;_previewQuality=_choice.Item?.m_quality??1;_previewVariant=_gui.m_selectedVariant;_nextPreview=Time.unscaledTime+1f;
@@ -235,7 +235,7 @@ internal sealed partial class CraftingWindow : MonoBehaviour
         _action.interactable=selected&&_gui.m_craftButton.interactable&&!Busy&&(_tab!=0||_quantity<=_maximum);
         if(_tab!=0)Caption(_action,_tab==1?"Upgrade to quality "+((_choice.Item?.m_quality??0)+1):"Craft "+_choice.Recipe.m_amount);
         var requirement=_gui.m_minStationLevelIcon!=null&&_gui.m_minStationLevelIcon.gameObject.activeSelf&&_gui.m_minStationLevelText!=null?CraftingBridge.Local(_gui.m_minStationLevelText.text):"";
-        if(int.TryParse(RestlessUi.Bare(requirement),out var level))requirement="Station level "+level;
+        if(int.TryParse(RestlessUi.Bare(requirement),out var level))requirement="Requires "+(_station!=null?CraftingBridge.Local(_station.m_name):"station")+" level "+level;
         _reason.text=Busy?(_batch.Active?"Batch · "+_batch.Completed+" / "+_batch.Total+" crafts completed":"Crafting in progress"):_action.interactable?(requirement.Length>0?"Ready · "+requirement:"Ready"):CraftingBridge.BlockedReason(_gui,_choice);
     }
     private bool Category(CraftingBridge.Choice choice)=>_category=="All"||(_category=="Equipment"?choice.Recipe.m_item.m_itemData.m_shared.m_maxQuality>1:choice.Recipe.m_item.m_itemData.m_shared.m_maxQuality<=1);
@@ -263,12 +263,16 @@ internal sealed partial class CraftingWindow : MonoBehaviour
         var player=Player.m_localPlayer;if(player==null)return;
         var inventory=player.GetInventory();var items=inventory.GetAllItems();
         if(_tab==1){var eligible=CraftingBridge.Choices(_gui).Where(c=>c.Item!=null).Select(c=>c.Item!).ToList();items=items.Where(i=>eligible.Contains(i)).OrderByDescending(i=>i.m_equipped).ToList();}
+        var showingIngredients=false;
         if(_tab==0&&_choice!=null)
         {
             var names=new HashSet<string>(_choice.Recipe.m_resources.Where(r=>r.m_resItem!=null).Select(r=>r.m_resItem.m_itemData.m_shared.m_name));
-            items=items.Where(i=>names.Contains(i.m_shared.m_name)).ToList();
+            var ingredients=items.Where(i=>names.Contains(i.m_shared.m_name)).ToList();
+            // Chest-only recipes should not leave the entire footer vacant.
+            // Keep useful bag inspection shortcuts and label that fallback.
+            if(ingredients.Count>0){items=ingredients;showingIngredients=true;}
         }
-        _bag.text=(_tab==1?"Upgradeable equipment · ":_tab==0?"Recipe ingredients in your bag · ":"Your inventory · ")+inventory.GetTotalWeight().ToString("0.0")+" / "+player.GetMaxCarryWeight().ToString("0")+" weight · "+inventory.GetEmptySlots()+" free slots";
+        _bag.text=(_tab==1?"Upgradeable equipment · ":showingIngredients?"Recipe ingredients in your bag · ":"Your inventory · ")+inventory.GetTotalWeight().ToString("0.0")+" / "+player.GetMaxCarryWeight().ToString("0")+" weight · "+inventory.GetEmptySlots()+" free slots";
         var stamp=new StringBuilder().Append(_tab);
         for(var i=0;i<Math.Min(items.Count,_slots.Count);i++){var item=items[i];stamp.Append('|').Append(item.GetHashCode()).Append(':').Append(item.m_stack).Append(':').Append(item.m_quality).Append(':').Append(ReferenceEquals(_choice?.Item,item));}
         var bagStamp=stamp.ToString();if(bagStamp==_bagStamp)return;_bagStamp=bagStamp;

@@ -18,6 +18,7 @@ internal sealed partial class CraftingWindow
     private float _nextMaximum;
     private Button _less=null!,_more=null!,_max=null!;
     private InputField _amount=null!;
+    private Text _batchLabel=null!;
     private bool Busy=>_batch.Active||_gui.m_craftTimer>=0;
     private int PreviewQuantity=>_tab==0?(_batch.Active?_batch.Remaining:_quantity):1;
     private void OwnQuantity()
@@ -45,6 +46,7 @@ internal sealed partial class CraftingWindow
     private void PaintQuantity()
     {
         var visible=_tab==0&&_choice!=null;
+        _batchLabel.gameObject.SetActive(visible);
         foreach(var control in new Selectable[]{_less,_amount,_more,_max})control.gameObject.SetActive(visible);
         if(!visible)return;
         if(_quantityRecipe!=_choice!.Recipe&&!Busy){_quantityRecipe=_choice.Recipe;_quantity=1;_nextMaximum=0;PreparePreview(_gui);_gui.UpdateRecipe(Player.m_localPlayer,0);}
@@ -56,9 +58,9 @@ internal sealed partial class CraftingWindow
         if(!_amount.isFocused)_amount.SetTextWithoutNotify((_batch.Active?_batch.Remaining:_quantity).ToString());
         _amount.interactable=!Busy;_less.interactable=!Busy&&_quantity>1;
         _more.interactable=!Busy&&_quantity<CraftingBatch.Limit;_max.interactable=!Busy&&_maximum>0;
-        Caption(_max,"Max "+_maximum);
-        _context.text="Materials · "+PreviewQuantity+" craft"+(PreviewQuantity==1?"":"s");
-        _heroNote.text="Makes "+CraftingBridge.Output(_choice,PreviewQuantity)+" · "+PreviewQuantity+" craft"+(PreviewQuantity==1?"":"s");
+        Caption(_max,"Max: "+_maximum);
+        _context.text="Materials for "+PreviewQuantity+" batch"+(PreviewQuantity==1?"":"es");
+        _heroNote.text="Produces "+CraftingBridge.Output(_choice,PreviewQuantity)+" item"+(CraftingBridge.Output(_choice,PreviewQuantity)==1?"":"s");
         Caption(_action,"Craft "+CraftingBridge.Output(_choice,PreviewQuantity));
     }
     private void StartBatch()

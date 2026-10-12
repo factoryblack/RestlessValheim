@@ -4,6 +4,8 @@ Changes are listed newest first. **Unreleased** describes current source changes
 
 ## 0.1.6
 
+- Use shared ingredient cards and consistent station/window presentation for Workshop orders.
+
 - Use Core Global Reach for workshop supplies and machine discovery; exclude machines whose centres lie outside the radius. Needs Core 0.3.0.
 
 ## 0.1.5

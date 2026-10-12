@@ -4,6 +4,10 @@ Changes are listed newest first. **Unreleased** describes current source changes
 
 ## 0.5.4
 
+- Fix kitchen orders waiting for an entire batch when prepared pies or hare dishes can already enter a cooking station. Count prepared and in-flight ingredients together and reduce remaining upstream demand.
+- Spread loads across compatible available ovens/racks. Use up to four native loads and three preparation jobs per tick, prioritise prepared food, and rotate competing orders without changing native recipe costs, batch yields or cooking timers.
+- Improve shared ingredient cards and station presentation. Add scheduler regressions for partial pies, hare dependencies, bread/mead yields, competing orders and bounded loading. Addresses issue #44; reporter retesting remains welcome.
+
 - Use Core Global Reach for kitchen supplies and machine discovery; exclude machines whose centres lie outside the radius. Needs Core 0.3.0.
 
 ## 0.5.3

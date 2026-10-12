@@ -19,4 +19,5 @@ groups = {
 body = 'using System; using System.Collections.Generic; using UnityEngine; using RestlessQoL.Storage; using RestlessQoL.Building;\n'
 for name, (path, signatures) in groups.items():
     body += f'partial class {name} {{\n' + '\n'.join(method(path,s) for s in signatures) + '\n}\n'
+body += 'partial class CookHarness {\n' + method('src/RestlessCook/KitchenRun.Scheduling.cs', 'private static void Schedule(').replace('List<Hit>', 'List<int>') + '\n}\n'
 dest=Path(__file__).parent/'obj/AuditMethods.cs'; dest.parent.mkdir(exist_ok=True); dest.write_text(body)

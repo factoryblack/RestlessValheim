@@ -4,6 +4,11 @@ Changes are listed newest first. **Unreleased** describes current source changes
 
 ## 0.3.0
 
+- Add an opt-in crafting window with Craft, Upgrade and Stations views, saved recipes, search/sorting, material cards, item attributes and native repair controls. Enable it in F8; disabling restores the existing crafting panel.
+- Queue 1–99 normal crafting batches with total costs/output and a material/space-aware Max. Each craft uses native timing and rechecks requirements; cancel or close stops remaining work and keeps completed items. Upgrades remain single actions.
+- Stabilise opening layout and reuse unchanged controls. Tighten spacing, fit long item portraits, clarify batch and required-station labels, and retain inventory shortcuts for chest-supplied recipes.
+- Share ingredient cards and station/window presentation across Crafting, Cookbook and Workshop. Native game and controller acceptance remains under ongoing playtest.
+
 - Check ward access for every repaired/sealed piece; failed native repairs no longer trigger nearby repairs.
 
 - Add opt-in Global Reach profiles: storage and stations share up to 120 m, with smaller repair, seal and crop/hive harvest sets. Preserve custom settings and feature switches.

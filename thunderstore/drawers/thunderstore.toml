@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Restless"
 name = "RestlessDrawers"
-versionNumber = "0.2.0"
+versionNumber = "0.2.1"
 description = "Build modular storage walls with visible contents and the same capacity and unlocks as matching vanilla chests."
 websiteUrl = "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/drawers.md"
 containsNsfwContent = false

@@ -43,6 +43,12 @@ Ground-item routing uses matching player-built chests and ignores world loot che
 
 With Piles installed, resource piles participate in supported storage actions. See [Piles](piles.md) for priority and range rules. Drawers behave as containers; Storage adds a browser.
 
+## Crafting window
+
+Enable the optional **Crafting window** in F8 to use the Craft, Upgrade and Stations views. Search/filter recipes, save favourites, inspect material counts and compare upgrades. Stations shows connected extensions, nearby extensions and known build options. Manual repair uses the game's normal repair action.
+
+For ordinary crafting, **Batches** selects 1–99 crafts; the materials and produced-item total follow that selection. **Max** checks current materials and output space, including nearby storage enabled by your settings. Each queued craft uses normal timing and checks requirements again. Cancel or close stops the remaining queue and keeps completed items. Equipment upgrades remain one at a time. The full-inventory button returns to normal inventory management. Disabling the window restores the existing panel.
+
 ## Equipment and inventory
 
 Dedicated worn slots sit beside the main bag. Three quick slots have default **Z / X / C** bindings. Extra slots have their own gravestone handling.

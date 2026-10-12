@@ -4,7 +4,9 @@ Changes are listed newest first. Unreleased notes are not assigned to a tagged p
 
 ## 0.1.34
 
-- Update Core to 0.3.0, Cook to 0.5.4, Workshop to 0.1.6, Piles to 0.2.3, Plant to 0.2.4 and Storage to 0.2.3; Drawers remains 0.2.0.
+- Include the opt-in crafting window and batch crafting, shared window polish, and the partial-batch/uneven-station kitchen fixes for issue #44.
+
+- Update Core to 0.3.0, Cook to 0.5.4, Workshop to 0.1.6, Piles to 0.2.3, Plant to 0.2.4 and Storage to 0.2.3 and Drawers to 0.2.1.
 - Add opt-in Global Reach with shared storage/station distances through 120 m and smaller repair/seal/harvest sets. Existing custom settings remain intact.
 
 ## 0.1.33

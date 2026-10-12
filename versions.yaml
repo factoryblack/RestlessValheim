@@ -45,7 +45,7 @@ packages:
     thunderstore_dir: "thunderstore/plant"
     needs_core: true
   drawers:
-    version: "0.2.0"
+    version: "0.2.1"
     guid: "restless.drawers"
     thunderstore: "RestlessDrawers"
     plugin: "src/RestlessDrawers/Plugin.cs"

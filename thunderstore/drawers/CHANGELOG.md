@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.1
+
+- Update the Core dependency to 0.3.0 for this ecosystem release. Cabinet recipes, dimensions, capacity and saved items remain unchanged.
+
 ## 0.2.0
 
 - Cabinets are about 95 cm on each side, overlap their neighbours by a centimetre, and snap from the eight corners of a 94 cm cell so they fit under a one-metre floor.

@@ -51,10 +51,10 @@ public class KitchenStep{public KitchenStepState State=KitchenStepState.Ready;pu
 public class KitchenOrder{public int Count=1,Collected,Ready;public long PlayerId;public string Feast="food";}
 public class CraftingStation:Component {public ZNetView View=new();}
 partial class CookHarness {
-    internal class Ledger{public List<KitchenOrder> Orders=new();public List<int> Work=new(),Taps=new();}
+    internal class Ledger{public int NextOrder;public List<KitchenOrder> Orders=new();public List<int> Work=new(),Taps=new();}
     internal static Ledger Current=new();internal static List<long> Planned=new(),Paid=new();const int LoadsPerTick=4,CraftsPerTick=4;
     static ZNetView View(CraftingStation t)=>t.View;static Ledger Read(ZNetView v)=>Current;static void Write(ZNetView v,Ledger l){}
-    static int Outstanding(KitchenOrder o)=>o.Count-o.Collected;static void Deliver(KitchenOrder o,Ledger l){}
+    static int Outstanding(KitchenOrder o)=>o.Count-o.Collected-o.Ready;static void Deliver(KitchenOrder o,Ledger l){}
     static void EnsureConversions(){}static List<int> Scan(Vector3 o,bool b,ZNetView v)=>new();
     static void AdvanceWork(CraftingStation t,List<int> h,Ledger l,float e){}static void RecoverTaps(CraftingStation t,List<int> h,Ledger l){}static void CollectFinished(CraftingStation t,List<int> h,Ledger l){}
     static void Fuel(List<int> h,Ledger l,Vector3 o,long a){}
@@ -65,7 +65,7 @@ partial class CookHarness {
     static bool Load(List<int>h,KitchenStep s,Ledger l,Vector3 o,long a){Paid.Add(a);return true;}
     static object PreparationStation(List<int>h,KitchenStep s,Ledger l)=>new();
     static bool PullOne(KitchenStep s,Ledger l,Vector3 o,long a){Paid.Add(a);return true;}
-    static bool Pay(KitchenStep s,Ledger l)=>true;static void StartWork(Ledger l,KitchenOrder o,KitchenStep s,object station){}
+    static bool Pay(KitchenStep s,Ledger l)=>true;static void StartWork(Ledger l,KitchenOrder o,KitchenStep s,object station){o.Ready++;}
 }
 namespace RestlessQoL.Storage {
     public static class ProductionLease{public static void SetActive(ZNetView v,bool b){}}

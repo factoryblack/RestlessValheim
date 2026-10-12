@@ -1,6 +1,6 @@
 {
   "name": "RestlessDrawers",
-  "version_number": "0.2.0",
+  "version_number": "0.2.1",
   "website_url": "https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/drawers.md",
   "description": "Build modular storage walls with visible contents and the same capacity and unlocks as matching vanilla chests.",
   "dependencies": [

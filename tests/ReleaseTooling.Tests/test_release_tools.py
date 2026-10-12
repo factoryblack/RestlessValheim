@@ -99,8 +99,14 @@ class ReleaseTools(unittest.TestCase):
         legacy = game / 'BepInEx/plugins/RestlessQoL/legacy.txt'
         legacy.parent.mkdir(parents=True)
         legacy.write_text('preserve me')
-        result = subprocess.run([shell, '-NoProfile', '-File', str(self.root / 'scripts/install-local.ps1'),
-                                 '-ValheimInstall', str(game), '-Python', sys.executable], capture_output=True, text=True)
+        # The fixture is a separate fake installation. A user's real running
+        # game must not short-circuit its stale-build preflight regression.
+        def quoted(value):
+            return "'" + str(value).replace("'", "''") + "'"
+        invoke = ("function Get-Process { param($Name, $ErrorAction) }; & "
+                  + quoted(self.root / 'scripts/install-local.ps1')
+                  + ' -ValheimInstall ' + quoted(game) + ' -Python ' + quoted(sys.executable))
+        result = subprocess.run([shell, '-NoProfile', '-Command', invoke], capture_output=True, text=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('Stale build', result.stderr)
         self.assertEqual(legacy.read_text(), 'preserve me')

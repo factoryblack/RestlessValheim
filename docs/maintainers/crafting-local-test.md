@@ -1,8 +1,10 @@
 # Crafting window local test
 
-Branch: `feature/crafting-window-local`. This is a local acceptance build, with
-the existing version pins. Do not publish its package archives. The prior release
-candidate remains on `feature/global-reach-120` in the original source checkout.
+The implementation from feature/crafting-window-local is included in the
+user-authorised Core 0.3.0 release. This document retains the local acceptance
+and rollback checklist; automated checks do not certify rendered/controller or
+multiplayer acceptance. The older candidate in the original source checkout is
+preserved separately. Release archives are rebuilt from the shipping revision.
 
 ## Open it
 

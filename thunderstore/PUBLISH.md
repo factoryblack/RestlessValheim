@@ -20,9 +20,9 @@ Documentation merges do not update an existing Thunderstore release automaticall
 
 ## This drop
 
-Core 0.3.0 introduces opt-in Global Reach through 120 m, with smaller repair/seal/harvest sets, effective-value controls and reversible native station coverage. Cook 0.5.4, Workshop 0.1.6, Piles 0.2.3, Plant 0.2.4 and Storage 0.2.3 consume the shared policy; their plugin dependencies require Core 0.3.0. Drawers remains 0.2.0. Pack 0.1.34 pins the updated set.
+Core 0.3.0 introduces opt-in Global Reach through 120 m, with smaller repair/seal/harvest sets, effective-value controls and reversible native station coverage. Cook 0.5.4, Workshop 0.1.6, Piles 0.2.3, Plant 0.2.4 and Storage 0.2.3 consume the shared policy; their plugin dependencies require Core 0.3.0. Drawers 0.2.1 updates its Core dependency. Pack 0.1.34 pins the updated set.
 
-Publish Core first, then the five updated addons, then the pack after every dependency is publicly available. One tag per push. This change is prepared for review; no new release has been published. Global Reach stays off on upgrade. Automated profile, boundary, native restoration and pile range-change regressions run in CI. Live settings UI, multiplayer and dense-base performance at 120 m remain pending. Jötunn stays 2.30.2.
+Publish Core first, then the six addons, then the pack after every dependency is publicly available. One tag per push. The user authorised publication of the complete drop on 2026-10-12, including the optional crafting window, batch queue, shared window polish and issue 44 kitchen scheduler fixes. Global Reach stays off on upgrade. Automated profile, boundary, native restoration and pile range-change regressions run in CI. Live settings UI, multiplayer and dense-base performance at 120 m remain pending. Jötunn stays 2.30.2.
 
 ## Pending tag order
 

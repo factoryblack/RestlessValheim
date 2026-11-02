@@ -73,6 +73,8 @@ var cookingContracts = new Dictionary<string,string[]>
     ["CookingStation.RPC_AddItem"] = new[]{"Void","Int64","String","Boolean"},
     ["CookingStation.GetFreeSlot"] = new[]{"Int32"},
     ["CookingStation.GetSlot"] = new[]{"Void","Int32","String&","Single&","Status&","Boolean&"},
+    ["CookingStation.SetSlot"] = new[]{"Void","Int32","String","Single","Status","Boolean","Int64"},
+    ["CookingStation.SetSlotVisual"] = new[]{"Void","Int32","String","Boolean","Status"},
     ["Fermenter.RPC_AddItem"] = new[]{"Void","Int64","Int32","Boolean"},
     ["Fermenter.GetContent"] = new[]{"Int32"},
     ["Fermenter.GetFermentationTime"] = new[]{"Double"},
@@ -93,7 +95,42 @@ foreach (var handle in reader.TypeDefinitions)
     }
 }
 if (cookingContracts.Count>0) throw new Exception("Native cooking contracts changed: "+string.Join(", ",cookingContracts.Keys));
-Console.WriteLine("14 native cooking and feast lifecycle contracts passed.");
+Console.WriteLine("16 native cooking and feast lifecycle contracts passed.");
+// Optional binary check catches packages compiled against the removed overload,
+// even when recompiling unchanged C# would bind a new optional parameter.
+var cookDll = Environment.GetEnvironmentVariable("RESTLESS_COOK_DLL");
+if (!string.IsNullOrEmpty(cookDll))
+{
+    using var cookStream = File.OpenRead(cookDll);
+    using var cookPe = new PEReader(cookStream);
+    var cookReader = cookPe.GetMetadataReader();
+    var nativeRackMethods = new HashSet<string>();
+    foreach (var th in reader.TypeDefinitions)
+    {
+        var type = reader.GetTypeDefinition(th);
+        if (reader.GetString(type.Name) != "CookingStation") continue;
+        foreach (var mh in type.GetMethods())
+        {
+            var method = reader.GetMethodDefinition(mh);
+            var sig = method.DecodeSignature(provider, (object?)null);
+            nativeRackMethods.Add(reader.GetString(method.Name) + ":" + sig.ReturnType + "(" + string.Join(",", sig.ParameterTypes) + ")");
+        }
+    }
+    var checkedMethods = 0;
+    foreach (var mh in cookReader.MemberReferences)
+    {
+        var method = cookReader.GetMemberReference(mh);
+        if (method.GetKind() != MemberReferenceKind.Method || method.Parent.Kind != HandleKind.TypeReference) continue;
+        var type = cookReader.GetTypeReference((TypeReferenceHandle)method.Parent);
+        if (cookReader.GetString(type.Name) != "CookingStation") continue;
+        var sig = method.DecodeMethodSignature(provider, (object?)null);
+        var key = cookReader.GetString(method.Name) + ":" + sig.ReturnType + "(" + string.Join(",", sig.ParameterTypes) + ")";
+        if (!nativeRackMethods.Contains(key)) throw new Exception("Cook binary references missing native CookingStation method: " + key);
+        checkedMethods++;
+    }
+    if (checkedMethods == 0) throw new Exception("Cook binary has no CookingStation method references to validate.");
+    Console.WriteLine($"{checkedMethods} Cook binary cooking-station method references resolve.");
+}
 // Custom Crafting drives native selection/actions while the native UI is hidden.
 var craftMethods=new Dictionary<string,string[]>
 {

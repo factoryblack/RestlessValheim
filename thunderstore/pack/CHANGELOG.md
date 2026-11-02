@@ -2,6 +2,10 @@
 
 Changes are listed newest first. Unreleased notes are not assigned to a tagged package yet.
 
+## 0.1.35
+
+- Prepare the Cook 0.5.5 cooking-station compatibility fix. This pack version is not released with the Cook-only patch.
+
 ## 0.1.34
 
 - Include the opt-in crafting window and batch crafting, shared window polish, and the partial-batch/uneven-station kitchen fixes for issue #44.

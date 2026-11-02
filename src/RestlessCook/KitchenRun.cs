@@ -511,21 +511,8 @@ internal static partial class KitchenRun
         foreach (var hit in hits)
         {
             var rack = hit.Rack;
-            if (rack != null && rack.m_nview != null && rack.m_nview.IsOwner())
-            {
-                for (var i = 0; i < rack.m_slots.Length; i++)
-                {
-                    rack.GetSlot(i, out var name, out _, out var status, out _);
-                    if (status != CookingStation.Status.Done || string.IsNullOrEmpty(name))
-                        continue;
-                    var product = Clean(name);
-                    if (!Wanted(ledger, product))
-                        continue;
-                    CreditFinished(ledger, product, 1);
-                    rack.SetSlot(i, "", 0f, CookingStation.Status.NotDone, false);
-                    rack.SetSlotVisual(i, "", false, CookingStation.Status.NotDone);
-                }
-            }
+            if (rack != null)
+                CollectRack(rack, ledger);
 
             var fermenter = hit.Fermenter;
             if (fermenter != null && fermenter.m_nview.IsOwner() && fermenter.GetStatus() == Fermenter.Status.Ready

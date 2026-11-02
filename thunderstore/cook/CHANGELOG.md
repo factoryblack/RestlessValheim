@@ -2,6 +2,10 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.5.5
+
+- Fix cooking-station collection compatibility with Valheim 1.0.21 (#47). Automated checks passed; not yet tested in-game.
+
 ## 0.5.4
 
 - Fix kitchen orders waiting for an entire batch when prepared pies or hare dishes can already enter a cooking station. Count prepared and in-flight ingredients together and reduce remaining upstream demand.

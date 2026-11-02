@@ -2,25 +2,25 @@
 # One row per behaviour. This is the only list.
 #
 # decision:
-#   dll      — belongs in RestlessCore.dll
-#   loader   — BepInEx / Jötunn (required to load, not QoL)
-#   sidecar  — optional separate mod; only if we still want that product
-#   vanilla  — Valheim 1.0 already covers it
-#   skip     — will not ship (not QoL, deprecated, or a different game)
+#   dll      â€” belongs in RestlessCore.dll
+#   loader   â€” BepInEx / JÃ¶tunn (required to load, not QoL)
+#   sidecar  â€” optional separate mod; only if we still want that product
+#   vanilla  â€” Valheim 1.0 already covers it
+#   skip     â€” will not ship (not QoL, deprecated, or a different game)
 # in_mod:
-#   n/a     — not a DLL feature
-#   none    — decided, no code
-#   stub    — module exists, does nothing useful
-#   partial — real patch, known holes or never launched
-#   done    — patch looks complete. Playtest status lives in the note (not this field).
-# bite: 1 papercuts | 2 more of the same | 3 candidate only — not a promised backlog
+#   n/a     â€” not a DLL feature
+#   none    â€” decided, no code
+#   stub    â€” module exists, does nothing useful
+#   partial â€” real patch, known holes or never launched
+#   done    â€” patch looks complete. Playtest status lives in the note (not this field).
+# bite: 1 papercuts | 2 more of the same | 3 candidate only â€” not a promised backlog
 #
 # Do not install AzuCraftyBoxes, AzuAutoStore, AzuAreaRepair, AzuWorkbenchTweaks,
 # ValheimPlus, BetterUI, or MinimalUI beside this plugin.
 #
-# last_audit: 2026-10-12 — Crafting spacing, portrait fit and batch labels polished; rendered game acceptance pending. Issue 44 incremental kitchen scheduling, balanced native loading and bounded competing-order rotation; production regressions pass, live kitchen acceptance pending. Previous audit: 2026-10-10 — Local crafting-window, batch queue and shared station/window quality pass; native playtest pending. Previous audit: 2026-10-10 — Global Reach profiles with even 4–12m harvest steps, smaller action radii, strict boundaries and reversible station coverage. Follow-up audit checks per-piece building permissions and failed-repair handling. Project cleanup reconciled settings, pile range and dependency notes. Automated checks; live 120m acceptance pending.
+# last_audit: 2026-11-03 - Local controller issue 45 candidate; navigation/action and native API checks pass; physical controller and Unity acceptance pending. Previous audit: 2026-10-12 â€” Crafting spacing, portrait fit and batch labels polished; rendered game acceptance pending. Issue 44 incremental kitchen scheduling, balanced native loading and bounded competing-order rotation; production regressions pass, live kitchen acceptance pending. Previous audit: 2026-10-10 â€” Local crafting-window, batch queue and shared station/window quality pass; native playtest pending. Previous audit: 2026-10-10 â€” Global Reach profiles with even 4â€“12m harvest steps, smaller action radii, strict boundaries and reversible station coverage. Follow-up audit checks per-piece building permissions and failed-repair handling. Project cleanup reconciled settings, pile range and dependency notes. Automated checks; live 120m acceptance pending.
 
-updated: 2026-10-12
+updated: 2026-11-03
 
 items:
   # --- loader ---
@@ -32,7 +32,7 @@ items:
     note: "Required to load anything. Pin 5.4.2351 (24 Sep 2026)."
 
   - id: loader.jotunn
-    name: Jötunn
+    name: JÃ¶tunn
     decision: loader
     in_mod: n/a
     restless: ValheimModding-Jotunn
@@ -43,7 +43,7 @@ items:
     decision: dll
     in_mod: done
     bite: 1
-    restless: (Jötunn SynchronizationMode + IsAdminOnly)
+    restless: (JÃ¶tunn SynchronizationMode + IsAdminOnly)
     note: "Gameplay toggles sync from the server. Hotkeys (` / Shift+`) stay client-local. Untested on a dedicated host."
 
   # --- bite 1, in the DLL ---
@@ -61,7 +61,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Recipe rows show have/need (bag plus spendable chest stock; LeaveOne is reserved per chest in both the have-count and the pull). A 1-cost ingredient no longer stays craftable after the last spendable unit is gone. HaveRequirements only flips true for chest stock when the current bench already meets GetRequiredStationLevel — a too-low forge used to allow upgrades. A synchronous spend claims the chest and removes the items before they count as paid. It does not treat a predicted remote pull as payment. Playtest two players crafting the last stack."
+    note: "Clients count every nearby chest. Spend is local if this peer already owns the ZDO, else RestlessPull to the current owner (same routing as vanilla stack/take-all). Quality/world-level follow CountItems. Recipe rows show have/need (bag plus spendable chest stock; LeaveOne is reserved per chest in both the have-count and the pull). A 1-cost ingredient no longer stays craftable after the last spendable unit is gone. HaveRequirements only flips true for chest stock when the current bench already meets GetRequiredStationLevel â€” a too-low forge used to allow upgrades. A synchronous spend claims the chest and removes the items before they count as paid. It does not treat a predicted remote pull as payment. Playtest two players crafting the last stack."
 
   - id: storage.build
     name: Build from nearby chests
@@ -69,7 +69,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Same confirmed chest spend as storage.craft, including LeaveOne reservation in the have-count. Ghosts still skipped. Chest stock never flips RequirementMode.IsKnown (hammer and feast discovery stay vanilla). Chest materials do not satisfy a missing crafting station — a stonecutter piece still needs a stonecutter in range, which is also what removal checks. Playtest a joining client placing a piece from closed chests."
+    note: "Same confirmed chest spend as storage.craft, including LeaveOne reservation in the have-count. Ghosts still skipped. Chest stock never flips RequirementMode.IsKnown (hammer and feast discovery stay vanilla). Chest materials do not satisfy a missing crafting station â€” a stonecutter piece still needs a stonecutter in range, which is also what removal checks. Playtest a joining client placing a piece from closed chests."
 
   - id: storage.quickstack
     name: Quick stack (`)
@@ -77,7 +77,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuAutoStore
-    note: "Match-only, and only into chests a player placed. Crypts and other world loot are skipped, same as vacuum. Local write if we own the chest, else RestlessPush and only then shrink the bag. Skips hotbar row 0, extras, and locks. No sort/trash."
+    note: "Issue 45 update adds right-stick-click nearby stacking while the player inventory is active without a chest, drag or modal; open chests retain native Stack All. Existing item, ward and slot protections remain. Controller/Unity acceptance pending. Match-only, and only into chests a player placed. Crypts and other world loot are skipped, same as vacuum. Local write if we own the chest, else RestlessPush and only then shrink the bag. Skips hotbar row 0, extras, and locks. No sort/trash."
 
   - id: storage.restock
     name: Restock (Shift+`)
@@ -93,7 +93,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuCraftyBoxes
-    note: "Smelter/kiln + cooking + fermenter. Chest pull uses RestlessPull when this peer is not the ZDO owner. Clone comes from the chest row when possible. EnsureDropPrefab fills m_dropPrefab from the conversion or ObjectDB — OnAddOre/CookItem/AddItem read the prefab name and NRE when it is missing (bag clones included). Consume is the RemoveOneItem postfix."
+    note: "Smelter/kiln + cooking + fermenter. Chest pull uses RestlessPull when this peer is not the ZDO owner. Clone comes from the chest row when possible. EnsureDropPrefab fills m_dropPrefab from the conversion or ObjectDB â€” OnAddOre/CookItem/AddItem read the prefab name and NRE when it is missing (bag clones included). Consume is the RemoveOneItem postfix."
 
   - id: building.area_repair
     name: Area repair
@@ -125,7 +125,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-DeathPinRemoval
-    note: "OnTakeAllSuccess + EasyFitInInventory → Minimap.RemovePin(pos, 1 m). A death that leaves no tomb with loot also drops the pin, so an empty bag does not keep a marker. Not playtested yet (next pass)."
+    note: "OnTakeAllSuccess + EasyFitInInventory â†’ Minimap.RemovePin(pos, 1 m). A death that leaves no tomb with loot also drops the pin, so an empty bag does not keep a marker. Not playtested yet (next pass)."
 
   - id: player.swim_wield
     name: Keep tools equipped while swimming
@@ -133,7 +133,7 @@ items:
     in_mod: done
     bite: 1
     restless: blacks7ar-WieldEquipmentWhileSwimming
-    note: "Playtested 10 Sep: works. Wield only — not VikingsDoSwim diving."
+    note: "Playtested 10 Sep: works. Wield only â€” not VikingsDoSwim diving."
 
   - id: player.friendly_fire
     name: No friendly fire on tames
@@ -141,7 +141,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-ImFRIENDLY_DAMMIT
-    note: "Turret ignores tames. Character.RPC_Damage skips tame↔tame and tame→player. Players can still kill their own tames, including with the butcher knife. Player PvP stays vanilla. Playtest."
+    note: "Turret ignores tames. Character.RPC_Damage skips tameâ†”tame and tameâ†’player. Players can still kill their own tames, including with the butcher knife. Player PvP stays vanilla. Playtest."
 
   - id: player.axe_combo
     name: Axe combo while chopping
@@ -149,7 +149,7 @@ items:
     in_mod: done
     bite: 1
     restless: blacks7ar-AxeComboWhenChoppingTree
-    note: "Playtested 10 Sep: works. Axes + Tree reset → None."
+    note: "Playtested 10 Sep: works. Axes + Tree reset â†’ None."
 
   - id: player.crossbow
     name: Keep crossbow loaded on unequip
@@ -173,7 +173,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-AzuMiscPatches / Grantapher-ValheimPlus
-    note: "ObjectDB shared m_maxStackSize × F8 slider (default 2, 1–10). Remembers vanilla so the slider cannot compound. Max 1 (gear, trophies) stays 1. Existing piles do not split; they can merge further. Host value syncs to clients (F8 no longer says they must match). Weight multiplier is still misc.azu_leftovers. Playtest."
+    note: "ObjectDB shared m_maxStackSize Ã— F8 slider (default 2, 1â€“10). Remembers vanilla so the slider cannot compound. Max 1 (gear, trophies) stays 1. Existing piles do not split; they can merge further. Host value syncs to clients (F8 no longer says they must match). Weight multiplier is still misc.azu_leftovers. Playtest."
 
   - id: inventory.honest
     name: Clear cheat marks
@@ -213,7 +213,7 @@ items:
     in_mod: done
     bite: 1
     restless: Smoothbrain-Network / Somni-BetterNetworking_Valheim
-    note: "Do not install those sidecars or ValheimPlus. ZDOMan.SendZDOs window 10240→32768 (second ldc.i4 is a branch target — transpiler must keep labels). Steam SendRateMax 150 KB/s→512 KB/s after RegisterGlobalCallbacks, not Awake. Host-locked F8 toggle. Playtest on listen-host."
+    note: "Do not install those sidecars or ValheimPlus. ZDOMan.SendZDOs window 10240â†’32768 (second ldc.i4 is a branch target â€” transpiler must keep labels). Steam SendRateMax 150 KB/sâ†’512 KB/s after RegisterGlobalCallbacks, not Awake. Host-locked F8 toggle. Playtest on listen-host."
 
   # --- bite 2 ---
   - id: storage.pet_pantry
@@ -255,7 +255,7 @@ items:
     in_mod: none
     bite: 3
     restless: Azumatt-Recycle_N_Reclaim
-    note: "Candidate, not promised. Recipe inversion + a UI tab — large. Recycle 1.4.1 is 19 Aug 2026. Do not sidecar their DLL."
+    note: "Candidate, not promised. Recipe inversion + a UI tab â€” large. Recycle 1.4.1 is 19 Aug 2026. Do not sidecar their DLL."
 
   - id: map.player_dots
     name: Always-visible player map dots
@@ -287,7 +287,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "HUD minimap (not M). Shared MapStudio (disable source). Recapture when UV/size/player moves or every 0.2s — not a camera blit every frame. Pins on the torn view. Biome bar: title left, day/time when Hud.Minimap.Clock, m_windMarker right always. Helm wind ring left of map while steering (buffs took below). Slides off with Tab (HudTuck). Playtest."
+    note: "HUD minimap (not M). Shared MapStudio (disable source). Recapture when UV/size/player moves or every 0.2s â€” not a camera blit every frame. Pins on the torn view. Biome bar: title left, day/time when Hud.Minimap.Clock, m_windMarker right always. Helm wind ring left of map while steering (buffs took below). Slides off with Tab (HudTuck). Playtest."
 
   - id: ui.map
     name: Restless large map
@@ -303,7 +303,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Every MessageHud.ShowMessage overload + leftover queue → one HudRow.Notice drawer. QueueUnlockMsg (first item / recipe) folds into the same drawer; vanilla unlock cards stay hidden. Biome-found stays vanilla. Playtest."
+    note: "Every MessageHud.ShowMessage overload + leftover queue â†’ one HudRow.Notice drawer. QueueUnlockMsg (first item / recipe) folds into the same drawer; vanilla unlock cards stay hidden. Biome-found stays vanilla. Playtest."
 
   - id: ui.hotbar
     name: Restless item hotbar
@@ -311,7 +311,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Torn-edge squares + Chip keys + 11px wear slit. RestlessUi.DressSlot shared with Tab. TrySpan is the dock for vitals and later extra slots. Playtest."
+    note: "Issue 45 update restores controller selection independently of equipped-item tint, including empty slots. Not yet tested in-game. Torn-edge squares + Chip keys + 11px wear slit. RestlessUi.DressSlot shared with Tab. TrySpan is the dock for vitals and later extra slots. Playtest."
 
   - id: ui.crafting_window
     name: Dedicated crafting and station window
@@ -319,7 +319,7 @@ items:
     in_mod: partial
     bite: 1
     restless: n/a
-    note: "Opt-in client-local Craft/Upgrade/Stations window using native recipe selection, material counts, actions and progress. Stations open it; inventory has an entry and a return path. Upgrade targets are actual inventory items; previews clone them. Connected extensions follow native GetExtensions; nearby unconnected and known buildable pieces are separate. Compact layout, inventory preview, style cycling, cancel, per-row controller navigation and focus restoration. Opening fits before reveal; cached windows and change-driven row painting reduce repeated layout work. Opening stability and performance remain under local playtest. Visual pass adds a framed selected-item feature, native attribute rows with current/next comparisons, shared icon/count ingredient cards across Crafting/Cookbook/Workshop, station overview and grouped connections, personal saved recipes, availability/name sorting and retained search/scroll. Craft inventory shortcuts show recipe ingredients; Upgrade prioritises eligible equipped items. Tooltip and shortage text use rich text; material display excludes native-hidden pooled children; category filters have measured space and station-level readiness is explicit. Spacing pass reduces the full window to 720px high, fits long portraits without enlargement, compacts attributes and ingredient cards, aligns footer/actions, and labels batch totals and required station levels clearly. Shared material cards accommodate shorter rows while preserving shortage labels. Cookbook station cards and shared Crafting/Cookbook/Workshop chrome are part of the local test. Interaction pass restores native manual repair, specific blocker messages, inventory-based result feedback, ingredient inspection and hover hints, refreshed controller routes and changed upgrade prose. Batch pass adds 1–99 queued normal crafts with a count field, minus/plus and Max from native requirements/output-space checks. Costs and output mirror selected totals; each craft revalidates; cancel/close stops unfinished work, preserves completed output and restores native quantity fields. Recipe/style/quantity controls lock during execution. Station details include measured distance. Full inventory manages items. Native rendered UI and controller acceptance remain pending. Release candidate is preserved on feature/global-reach-120."
+    note: "Opt-in client-local Craft/Upgrade/Stations window using native recipe selection, material counts, actions and progress. Stations open it; inventory has an entry and a return path. Upgrade targets are actual inventory items; previews clone them. Connected extensions follow native GetExtensions; nearby unconnected and known buildable pieces are separate. Compact layout, inventory preview, style cycling, cancel, per-row controller navigation and focus restoration. Opening fits before reveal; cached windows and change-driven row painting reduce repeated layout work. Opening stability and performance remain under local playtest. Visual pass adds a framed selected-item feature, native attribute rows with current/next comparisons, shared icon/count ingredient cards across Crafting/Cookbook/Workshop, station overview and grouped connections, personal saved recipes, availability/name sorting and retained search/scroll. Craft inventory shortcuts show recipe ingredients; Upgrade prioritises eligible equipped items. Tooltip and shortage text use rich text; material display excludes native-hidden pooled children; category filters have measured space and station-level readiness is explicit. Spacing pass reduces the full window to 720px high, fits long portraits without enlargement, compacts attributes and ingredient cards, aligns footer/actions, and labels batch totals and required station levels clearly. Shared material cards accommodate shorter rows while preserving shortage labels. Cookbook station cards and shared Crafting/Cookbook/Workshop chrome are part of the local test. Interaction pass restores native manual repair, specific blocker messages, inventory-based result feedback, ingredient inspection and hover hints, refreshed controller routes and changed upgrade prose. Batch pass adds 1â€“99 queued normal crafts with a count field, minus/plus and Max from native requirements/output-space checks. Costs and output mirror selected totals; each craft revalidates; cancel/close stops unfinished work, preserves completed output and restores native quantity fields. Recipe/style/quantity controls lock during execution. Station details include measured distance. Full inventory manages items. Native rendered UI and controller acceptance remain pending. Release candidate is preserved on feature/global-reach-120."
 
   - id: ui.inventory
     name: Restless inventory (Tab)
@@ -327,7 +327,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "27 Sep: compendium mirror follows content; overflow requirements scroll independently with native parent restoration; bounded crafting titles and narrow tooltip scaling. Playtest pending. Crafting sheet corner enlarged from 76 to 96 UI units. Consistency audit and implementation status recorded in docs/ui-consistency-audit.md; native list scrolling remains a follow-up. Native station-level plate stays hidden behind the socket. Corrected selected-recipe decoding for native RecipeDataPair; station/category/preview now share cached typed-field access, with an assembly contract check in CI. Station requirements share material sockets, with native station icon, level and unmet-state hint. Shared reader wheel motion supports fractional input and short easing. In-game validation pending. Containment follow-up: sheet-anchored corner, full-height material sockets, bounded counts, selected-tab colour and recipe-driven requirement visibility. Unity screenshot validation pending. Screenshot composition pass: fixed native envelope, one opaque craft sheet, quiet rows/insets, aligned header and upgrade controls, packed material footer with explicit station text and text-safe count lanes. Category beside recipe identity; see docs/crafting-composition.md. Unity playtest pending. Crafting art pass adds a native-station corner, leather craft/upgrade tabs, a small selected-recipe clasp and material sockets with count ledges. Shared helpers; native controls and vanilla scrolling preserved. See docs/crafting-art-pass.md; Unity playtest pending. Audit pass: reversible native graphic/TMP/renderer/active/CanvasGroup state; dedicated split/variant dialog material pass preserving native inputs and selection. Crafting consumes TooltipApi badges/sections with result-item previews and revision invalidation. See docs/ui-audit-ecosystem.md; compile/runtime checks pending. Idle Tab frames skip paper refresh; stamp still covers stacks, recipes, nearby-storage counts and overlay selection. Compendium/trophies/achievements adopt shared collection shells and card typography; dedicated compendium readers have measured padding, native progress/status copy is preserved and live collection text triggers refresh. See docs/collection-screens.md; compile/playtest pending. Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting uses inventory charcoal paper. Place() was painting RowTint over that face every Sync while PaperSurface early-out left the stone black; skip that retint once paperAccent is on, keep the face cream, and use InventorySurface on the craft body. Amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay — darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
+    note: "Issue 45 update reads controller focus from the active native grid and displays native button bindings on the visible chips. Native chest transfer actions are retained. Controller/Unity acceptance pending. 27 Sep: compendium mirror follows content; overflow requirements scroll independently with native parent restoration; bounded crafting titles and narrow tooltip scaling. Playtest pending. Crafting sheet corner enlarged from 76 to 96 UI units. Consistency audit and implementation status recorded in docs/ui-consistency-audit.md; native list scrolling remains a follow-up. Native station-level plate stays hidden behind the socket. Corrected selected-recipe decoding for native RecipeDataPair; station/category/preview now share cached typed-field access, with an assembly contract check in CI. Station requirements share material sockets, with native station icon, level and unmet-state hint. Shared reader wheel motion supports fractional input and short easing. In-game validation pending. Containment follow-up: sheet-anchored corner, full-height material sockets, bounded counts, selected-tab colour and recipe-driven requirement visibility. Unity screenshot validation pending. Screenshot composition pass: fixed native envelope, one opaque craft sheet, quiet rows/insets, aligned header and upgrade controls, packed material footer with explicit station text and text-safe count lanes. Category beside recipe identity; see docs/crafting-composition.md. Unity playtest pending. Crafting art pass adds a native-station corner, leather craft/upgrade tabs, a small selected-recipe clasp and material sockets with count ledges. Shared helpers; native controls and vanilla scrolling preserved. See docs/crafting-art-pass.md; Unity playtest pending. Audit pass: reversible native graphic/TMP/renderer/active/CanvasGroup state; dedicated split/variant dialog material pass preserving native inputs and selection. Crafting consumes TooltipApi badges/sections with result-item previews and revision invalidation. See docs/ui-audit-ecosystem.md; compile/runtime checks pending. Idle Tab frames skip paper refresh; stamp still covers stacks, recipes, nearby-storage counts and overlay selection. Compendium/trophies/achievements adopt shared collection shells and card typography; dedicated compendium readers have measured padding, native progress/status copy is preserved and live collection text triggers refresh. See docs/collection-screens.md; compile/playtest pending. Skills dialog adopts shared paper frame/rows, clearer level and bonus labels, restored bar colours and live text/list refresh; see docs/character-skills.md. Container frame now follows real grid/control bounds, with live occupied/total slots, shared Take All/Stack controls and carry-weight artwork. Compact labels share bounded sizing; see docs/ui-consistency-containers.md. Inventory adopts the recessed slot, six empty-equipment silhouettes, narrow durability and quiet hover/focus/equipped states; fitted paper backing with plain hotbar/equipment seams preserves cell coordinates and capacity. Lock remains the top-right diamond. Live quick binds sit clear of counts; weight uses the shared mask. See docs/inventory-integration.md; compile and in-game checks pending. Tab dresser. Forged kit adds 19 runtime assets, category-adjacent quality gems, direct scrolling in an owned inset craft viewport, station medallion/hover and shared navigation/action treatments; see docs/forged-kit.md. Next in-game test pending. First screenshot follow-up adds explicit tooltip quality diamonds, structured craft stats, stale requirement-count cleanup, compact station icons, quieter material rims and capsule Settings switches; see docs/ui-playtest-refinements.md. Crafting uses inventory charcoal paper. Place() was painting RowTint over that face every Sync while PaperSurface early-out left the stone black; skip that retint once paperAccent is on, keep the face cream, and use InventorySurface on the craft body. Amber selected recipes, live requirement counts/shortage colours and reversible button feedback; includes Settings/tooltip foundations. Compile and Unity playtest pending; see docs/crafting-materials.md. Overlay screens (Texts / Skills / Trophies / Achievements) get their own QuietOverlay â€” darken, wood, panel-back, scroll tracks gone; Mask images ghosted so clipping stays. Compendium rows follow the lore prefab, not SkillElement. Stamp includes the open overlay so picking a text re-dresses. Repair hammer: Hide large leftover plates (do not Ghost a full-size Image). Leftover chrome is playtest. Item inspect is ui.tooltip."
 
   - id: ui.tooltip
     name: Restless item tooltip
@@ -367,7 +367,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Piece name/icon above the bar. HudMeter.Piece under that plate when the hammer hovers a WearNTear (vanilla m_pieceHealthBar stays hidden unless Hud.Debug.PieceHealth). Hide vanilla helper plates on m_buildHud — not a CanvasGroup on that root. Chest place input is NearbyStorage. Playtest."
+    note: "Piece name/icon above the bar. HudMeter.Piece under that plate when the hammer hovers a WearNTear (vanilla m_pieceHealthBar stays hidden unless Hud.Debug.PieceHealth). Hide vanilla helper plates on m_buildHud â€” not a CanvasGroup on that root. Chest place input is NearbyStorage. Playtest."
 
   - id: ui.build
     name: Restless hammer menu
@@ -375,7 +375,7 @@ items:
     in_mod: partial
     bite: 2
     restless: RandyKnapp-Auga
-    note: "Requirement count and label colours refresh even when count text is unchanged. BuildUIV2 paper controls and compact measured detail card (width matches the piece grid, height 128–280) docked 16 below it. Costs take just over half the card (48/52) in two columns. Grid+card sit on the hotbar clearance, not the top of the HUD. Idle frames skip a full re-dress; hover/category/search and live resource counts still refresh. Live native requirement data, shortage colours and independent overflow scrolling retained. Native detail backgrounds suppressed; original state restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md."
+    note: "Requirement count and label colours refresh even when count text is unchanged. BuildUIV2 paper controls and compact measured detail card (width matches the piece grid, height 128â€“280) docked 16 below it. Costs take just over half the card (48/52) in two columns. Grid+card sit on the hotbar clearance, not the top of the HUD. Idle frames skip a full re-dress; hover/category/search and live resource counts still refresh. Live native requirement data, shortage colours and independent overflow scrolling retained. Native detail backgrounds suppressed; original state restored on close. Vanilla scrollbar art with 10-unit tracks. See docs/build-menu-materials.md."
 
   - id: ui.hints
     name: Action hints
@@ -391,7 +391,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-Auga
-    note: "One Hud.UpdateCrosshair dresser. Title + binds on a single torn Strip. Guardian ItemStands use SetStory (name, wrapped m_tooltip, duration, Activate). $KEY_Use as E no longer eats Eikthyr. Hidden on M and Tab only — still dresses while placing. Chest ghost input is NearbyStorage, not this. Chest hover strips EMPTY. Station remaining time (fermenter / smelter / kiln / cook / hive) is a muted extra line, F8 Hud.Look.StationTime. Playtest."
+    note: "One Hud.UpdateCrosshair dresser. Title + binds on a single torn Strip. Guardian ItemStands use SetStory (name, wrapped m_tooltip, duration, Activate). $KEY_Use as E no longer eats Eikthyr. Hidden on M and Tab only â€” still dresses while placing. Chest ghost input is NearbyStorage, not this. Chest hover strips EMPTY. Station remaining time (fermenter / smelter / kiln / cook / hive) is a muted extra line, F8 Hud.Look.StationTime. Playtest."
 
   - id: ui.overhaul
     name: Restless inventory / HUD overhaul
@@ -407,7 +407,7 @@ items:
     in_mod: partial
     bite: 2
     restless: (vanilla PlayerStats)
-    note: "Character page reads the lifetime record (player stats index 0). Journey adds run. Survival adds the day streak, longest streak, and comfort. Craft adds pieces built, trees, ore, crops, fish, and tames. Records shows tallest build and highest world height built. Hunts list every recorded enemy. F8 Character tab is view-only. Extras bag on player.m_customData for later modules. Not a skill tree — no bonuses, XP, or unlocks."
+    note: "Character page reads the lifetime record (player stats index 0). Journey adds run. Survival adds the day streak, longest streak, and comfort. Craft adds pieces built, trees, ore, crops, fish, and tames. Records shows tallest build and highest world height built. Hunts list every recorded enemy. F8 Character tab is view-only. Extras bag on player.m_customData for later modules. Not a skill tree â€” no bonuses, XP, or unlocks."
 
   - id: misc.azu_leftovers
     name: Cherry-picks from AzuMiscPatches
@@ -423,7 +423,7 @@ items:
     in_mod: done
     bite: 2
     restless: (vanilla has no inventory MMB lock)
-    note: "Player bag only. Persists on the character. Vanilla Stack, quick stack, restock, and background kitchen and workshop pulls skip locked cells. Hotbar, equipment and quick slots are skipped by those automatic pulls too. No bag sort exists — do not invent one. Cream diamond top-right. F8 toggle."
+    note: "Player bag only. Persists on the character. Vanilla Stack, quick stack, restock, and background kitchen and workshop pulls skip locked cells. Hotbar, equipment and quick slots are skipped by those automatic pulls too. No bag sort exists â€” do not invent one. Cream diamond top-right. F8 toggle."
 
   - id: inventory.equipment_slots
     name: Dedicated armor / quick slots
@@ -431,7 +431,7 @@ items:
     in_mod: done
     bite: 2
     restless: RandyKnapp-EquipmentAndQuickSlots
-    note: "Do not install the sidecar. Hidden rows, relocated worn + Z/X/C. Player.Load / Seat / Wear only on the owned local player — a friend joining used to reset the static height and shuffle extras. FinishDrag deletes leftover only if it is the same instance (not m_shared). WearExtras skipped while m_craftTimer >= 0. Death: extras into a second tomb. Ctrl/Move and Drop skip UnseatWorn so vanilla can take the item — AddItem clones, which used to zero the original stack and make DropItem spawn a second copy on the ground after parking one on hotbar row 0. Unequip parks in the bag, not the hotbar, and skips locks. HUD Z/X/C keep the hotbar held grow; taps fire while sprinting/moving (BepInEx IsDown blocks any extra key). They stay quiet while the map pin name, chat, console, or another text field has focus. DoCrafting AddItem that targets an extra cell is rewritten to a bag slot so upgrade/craft from a quick slot does not leave the unequipped piece in Z/X/C. Playtest upgrade + a joining client."
+    note: "Issue 45 update traverses visible equipment/quick-slot columns without changing saved item coordinates or entering hidden cells. Native action callbacks and panel handoff retained; controller/Unity acceptance pending. Do not install the sidecar. Hidden rows, relocated worn + Z/X/C. Player.Load / Seat / Wear only on the owned local player â€” a friend joining used to reset the static height and shuffle extras. FinishDrag deletes leftover only if it is the same instance (not m_shared). WearExtras skipped while m_craftTimer >= 0. Death: extras into a second tomb. Ctrl/Move and Drop skip UnseatWorn so vanilla can take the item â€” AddItem clones, which used to zero the original stack and make DropItem spawn a second copy on the ground after parking one on hotbar row 0. Unequip parks in the bag, not the hotbar, and skips locks. HUD Z/X/C keep the hotbar held grow; taps fire while sprinting/moving (BepInEx IsDown blocks any extra key). They stay quiet while the map pin name, chat, console, or another text field has focus. DoCrafting AddItem that targets an extra cell is rewritten to a bag slot so upgrade/craft from a quick slot does not leave the unequipped piece in Z/X/C. Playtest upgrade + a joining client."
 
   - id: tooling.config_manager
     name: In-game settings panel
@@ -439,7 +439,7 @@ items:
     in_mod: done
     bite: 1
     restless: Azumatt-Azus_UnOfficial_ConfigManager
-    note: "Plant (21) and Piles (3: enable, isolate range, pile range) existing settings now render directly on module pages via disposable RegisterSettings sections. Piles follow Core Search range unless isolated; the pile range slider stays hidden until Isolate is on. Shared switches/sliders/key capture, event-driven value refresh, independent addon host locks, personal controls and startup restart labels; Cook, Workshop and Storage have local interface toggles; Drawers has no configurable settings. See docs/expansion-settings.md. F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows Jötunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
+    note: "Plant (21) and Piles (3: enable, isolate range, pile range) existing settings now render directly on module pages via disposable RegisterSettings sections. Piles follow Core Search range unless isolated; the pile range slider stays hidden until Isolate is on. Shared switches/sliders/key capture, event-driven value refresh, independent addon host locks, personal controls and startup restart labels; Cook, Workshop and Storage have local interface toggles; Drawers has no configurable settings. See docs/expansion-settings.md. F8 / pause Restless uses an ecosystem overview, scrollable Core/expansion rail, package icons and per-mod pages. HUD split from Screens & slots; original configuration bindings and host checks preserved. Cards show the live BepInEx version against versions.yaml (Core also shows JÃ¶tunn). Thunderstore links only; no installer or remote requests. Disposable SettingsPageApi supports module-owned settings actions after F8 releases input. Catalogue refresh on open, no per-frame plugin scans. See docs/ui-audit-ecosystem.md."
 
   # --- vanilla 1.0 ---
   - id: inventory.extra_rows
@@ -518,7 +518,7 @@ items:
     decision: skip
     in_mod: n/a
     restless: KGvalheim-ItemDrawers / BROHEIM_CYBRP-ItemDrawers
-    note: "Do not install those. RestlessDrawers is drawers.chests — chest-equivalent furniture, not a mega-stack drawer."
+    note: "Do not install those. RestlessDrawers is drawers.chests â€” chest-equivalent furniture, not a mega-stack drawer."
 
   - id: storage.network
     name: Storage network
@@ -534,7 +534,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessDrawers
-    note: "RestlessDrawers 0.2.1. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Each cabinet, legs included, is 95cm (bottom on the piece origin) with vanilla snap points on the eight corners of a 94cm cell, so neighbours overlap by 1cm, a corner can catch a floor, yaw stays the player's, and one cabinet fits between floors a metre apart. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Surface map is Meshy metal (red) and flipped roughness (alpha) on that shader, so bands can catch light. Hammer icons have the black plate removed. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
+    note: "Issue 45 update removes the unnecessary Core dependency. Standalone assembly and metadata verified; live standalone loading remains untested. RestlessDrawers 0.2.2. Wood / personal / reinforced / black metal clone the matching vanilla chest (slots, recipe, privacy, station). One Container per cabinet; fronts show the four most abundant stacks. Each cabinet, legs included, is 95cm (bottom on the piece origin) with vanilla snap points on the eight corners of a 94cm cell, so neighbours overlap by 1cm, a corner can catch a floor, yaw stays the player's, and one cabinet fits between floors a metre apart. WearNTear support is skipped (furniture, not studs) and leftover chest AABBs are destroyed so sides do not sit on a phantom grid box. Any tier, same yaw. Lit shader is the chest body, not snow/stack. Surface map is Meshy metal (red) and flipped roughness (alpha) on that shader, so bands can catch light. Hammer icons have the black plate removed. Nearby storage already sees any Container. Not extra capacity. F8 links the Thunderstore page."
 
   - id: cook.meals
     name: Restless cooking
@@ -542,7 +542,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessCook
-    note: "RestlessCook 0.5.5. Local issue 44 fix starts feasible partial batches, accounts for prepared plus in-flight ingredients, reduces upstream demand, and balances compatible machine loads. Each tick remains bounded to four native loads and three preparation jobs. Orders rotate their first turn across ticks, and prepared dishes take priority over new ingredient production. Native recipe costs and yields are retained, including two-dough and six-mead batches. Production scheduler regressions cover partial pies, hare dependencies, machine balance, shared inputs and overproduction; live game acceptance remains pending. Original feast support colliders survive visual refresh and reload; deliberately disabled colliders and missing-model fallback are preserved. Kitchen collection obtains ownership before reading its ledger. Build/regression checks cover the fixes; in-game physics, save/reload and multiplayer acceptance are pending. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook, with portraits, filters, a selected dish, and a progress track for each step. Ingredient lines show the full amount on hand, so extra stock reads 8/6 instead of stopping at 6/6. Chests this player can open count in full, including the last item and a chest this client does not own. Leave one does not reserve kitchen ingredients. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. A rack or oven meal ordered on its own is marked ready when that item finishes, and that stack stays reserved so another order cannot spend it. Background pulls skip locked cells, the hotbar and quick slots. Looking at the Cookbook does not take over nearby racks or ovens. A lit cauldron in range cooks at that dish's station level; the player does not have to stand in the cauldron's use bubble. A cauldron job pauses when its fire is out or the station is unusable, and resumes without paying again. Destroying the table drops the pantry and unpaid inputs. Cauldron and preparation crafts take their crafting time and return the ingredients if cancelled. A dish already in the bag does not fill a new order. Resource piles in the search range count as stock and can be pulled into an order. Kilns, smelters and the other production machines are no longer on this roster; the stone oven stays. Baked food is prepared raw, then one item enters a real oven and finishes on the native timer. Mead bases use the kettle, then a real fermenter. Each preparation job stays on the station it started at. Oven output is collected only from a food oven this kitchen is running. Native recipes expand into their real ingredients. The kitchen also prepares vanilla cauldron, preparation-table and mead-kettle recipes it does not already replace, including fishing bait. A raw fish plate takes any one fish. Prep is dough, the uncooked dishes, and the sideboards. Bait is its own filter. Mead-kettle recipes, including barley wine base, are meads. The featured card uses the cooking portrait and a status diamond. The finished feast is handed to the player who ordered it, and that part of the order is done. A placed feast is a piece, so ground vacuum leaves the board where it was set. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core 0.3.0. Custom Deep North dishes are not written yet. Not in the Core DLL. Multiplayer ownership is still unverified. The full chest count shipped in Cook 0.3.2. Station levels for that graph now match the live recipes. Each order plans and pays as its creator; another peer’s bag and inaccessible stores are excluded. Nearby bag stock must be within the controller range. Actor selection has regression coverage; live handoff remains pending."
+    note: "RestlessCook 0.5.5. Local issue 44 fix starts feasible partial batches, accounts for prepared plus in-flight ingredients, reduces upstream demand, and balances compatible machine loads. Each tick remains bounded to four native loads and three preparation jobs. Orders rotate their first turn across ticks, and prepared dishes take priority over new ingredient production. Native recipe costs and yields are retained, including two-dough and six-mead batches. Production scheduler regressions cover partial pies, hare dependencies, machine balance, shared inputs and overproduction; live game acceptance remains pending. Original feast support colliders survive visual refresh and reload; deliberately disabled colliders and missing-model fallback are preserved. Kitchen collection obtains ownership before reading its ledger. Build/regression checks cover the fixes; in-game physics, save/reload and multiplayer acceptance are pending. Meals, sideboards, and feasts from Meadows through Ashlands. The food preparation table opens the Cookbook, with portraits, filters, a selected dish, and a progress track for each step. Ingredient lines show the full amount on hand, so extra stock reads 8/6 instead of stopping at 6/6. Chests this player can open count in full, including the last item and a chest this client does not own. Leave one does not reserve kitchen ingredients. Orders pull stock, load nearby racks and ovens, collect finished food before it burns, and assemble the next recipe into a pantry on the table. A rack or oven meal ordered on its own is marked ready when that item finishes, and that stack stays reserved so another order cannot spend it. Background pulls skip locked cells, the hotbar and quick slots. Looking at the Cookbook does not take over nearby racks or ovens. A lit cauldron in range cooks at that dish's station level; the player does not have to stand in the cauldron's use bubble. A cauldron job pauses when its fire is out or the station is unusable, and resumes without paying again. Destroying the table drops the pantry and unpaid inputs. Cauldron and preparation crafts take their crafting time and return the ingredients if cancelled. A dish already in the bag does not fill a new order. Resource piles in the search range count as stock and can be pulled into an order. Kilns, smelters and the other production machines are no longer on this roster; the stone oven stays. Baked food is prepared raw, then one item enters a real oven and finishes on the native timer. Mead bases use the kettle, then a real fermenter. Each preparation job stays on the station it started at. Oven output is collected only from a food oven this kitchen is running. Native recipes expand into their real ingredients. The kitchen also prepares vanilla cauldron, preparation-table and mead-kettle recipes it does not already replace, including fishing bait. A raw fish plate takes any one fish. Prep is dough, the uncooked dishes, and the sideboards. Bait is its own filter. Mead-kettle recipes, including barley wine base, are meads. The featured card uses the cooking portrait and a status diamond. The finished feast is handed to the player who ordered it, and that part of the order is done. A placed feast is a piece, so ground vacuum leaves the board where it was set. Cancelled food stays in the pantry and can be listed and taken. Cauldron level, fuel, fire and station capacity still apply. Local F8 toggle. Needs Core 0.3.0. Custom Deep North dishes are not written yet. Not in the Core DLL. Multiplayer ownership is still unverified. The full chest count shipped in Cook 0.3.2. Station levels for that graph now match the live recipes. Each order plans and pays as its creator; another peerâ€™s bag and inaccessible stores are excluded. Nearby bag stock must be within the controller range. Actor selection has regression coverage; live handoff remains pending."
 
   - id: works.board
     name: Work-order board
@@ -550,7 +550,7 @@ items:
     in_mod: partial
     bite: 2
     restless: Restless-RestlessWorkshop
-    note: "RestlessWorkshop 0.1.6. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. A machine that already holds ore keeps receiving its own fuel until that queue finishes, even when the order needs no more ore. Background pulls skip locked cells, the hotbar and quick slots. Place, cancel, collect and take refuse a caller who does not own the board. Destroying the board drops its pantry. A finished unit drops at the machine. A Make order counts that drop and then stops. A smelter or blast furnace is fed the coal that bar burns, from the bag, chests and piles, including the last item in a chest. Leave one does not hold that ore or fuel back. An iron order takes iron scraps. Iron ore is used only when no scraps are on hand. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Included in the Restless Valheim pack. Needs Core 0.3.0. Each order uses its creator for stock, input payments and queued-machine refuelling; the controller owner’s unrelated bag cannot fund it. Local bags must be in range. Actor selection has regression coverage; live handoff remains pending."
+    note: "RestlessWorkshop 0.1.6. A wall-mounted work-order board, built at a workbench, coordinates kilns, smelters and the other production machines nearby. The placed mesh is the Unity export at twice the authored size. Make produces a finite amount. Keep refills until usable stock, after reservations, reaches the target, and ore already in a machine counts so several furnaces do not each start the same shortage. A machine that already holds ore keeps receiving its own fuel until that queue finishes, even when the order needs no more ore. Background pulls skip locked cells, the hotbar and quick slots. Place, cancel, collect and take refuse a caller who does not own the board. Destroying the board drops its pantry. A finished unit drops at the machine. A Make order counts that drop and then stops. A smelter or blast furnace is fed the coal that bar burns, from the bag, chests and piles, including the last item in a chest. Leave one does not hold that ore or fuel back. An iron order takes iron scraps. Iron ore is used only when no scraps are on hand. The workshop window lists the orders. The stone oven stays with cooking. Forge and workbench crafts are not board recipes. No designated output chest yet. The hammer icon has the grey plate knocked out. Not playtested. Included in the Restless Valheim pack. Needs Core 0.3.0. Each order uses its creator for stock, input payments and queued-machine refuelling; the controller ownerâ€™s unrelated bag cannot fund it. Local bags must be in range. Actor selection has regression coverage; live handoff remains pending."
 
   - id: piles.stacks
     name: Uncapped resource piles
@@ -558,7 +558,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPiles
-    note: "RestlessPiles 0.2.3. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. The storage browser lists them using the effective pile radius, and a take from the table claims the pile. A split stack thrown back keeps the thrown count if the world item reloads as 0 or 1. Craft, vacuum and quick-stack still follow Core Search range unless Isolate pile range is on; the F8 slider hides until then. The preparation table counts those piles and pulls them into an order. Needs Core 0.3.0. Not a chest. All current pile search and mutation paths enforce the acting player’s ward permissions, including a recheck after delayed ownership. Browser takes, listing, crafting and automation share the isolated pile radius when enabled; otherwise they inherit Core reach. Automated blocked/allowed/revoked access, range and conservation checks pass; live networking remains pending."
+    note: "RestlessPiles 0.2.3. Vanilla wood stacks and stone piles hold what you dump. Take stack, quick-stack, vacuum, and station pull. The storage browser lists them using the effective pile radius, and a take from the table claims the pile. A split stack thrown back keeps the thrown count if the world item reloads as 0 or 1. Craft, vacuum and quick-stack still follow Core Search range unless Isolate pile range is on; the F8 slider hides until then. The preparation table counts those piles and pulls them into an order. Needs Core 0.3.0. Not a chest. All current pile search and mutation paths enforce the acting playerâ€™s ward permissions, including a recheck after delayed ownership. Browser takes, listing, crafting and automation share the isolated pile radius when enabled; otherwise they inherit Core reach. Automated blocked/allowed/revoked access, range and conservation checks pass; live networking remains pending."
 
   - id: plant.forage
     name: Cultivator forage and bushes
@@ -566,7 +566,7 @@ items:
     in_mod: done
     bite: 2
     restless: Restless-RestlessPlant
-    note: "RestlessPlant 0.2.4. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Harvest range picks every ripe player-grown crop in range, not only the same kind, and searches that radius instead of every loaded pickable. A wide grid stamps crops only; the till tool stays one patch. Spacing follows the crop's grow radius unless minimum spacing is set (the old 2m default was cleared). Each extra cell is checked again, so an oversized grid plants only the cells that can grow, including cultivated ground, and paints the rest red. A failed grow check logs once and still puts the ghost back. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The search uses piece, piece_nonsolid, and item, including triggers. It does not use Plant.m_pieceMask, which stays empty until a vine looks for a wall, so that usually only happens for the host. Ivy and ashvine use the game's own plant check before the seed is spent. A failed check leaves the seed in the bag. Every player shows the owner's healthy or wilted sapling. Grid spacing uses the vine's own climb radius. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest uses the smaller Global Reach set when enabled; its saved custom radius is retained. Snap remains personal and respects its explicit radius. A grid cell past the centre pays for itself, so one seed cannot fill the rectangle. Area harvest includes ripe carrots, turnips, onions, barley and flax, and a grown crop keeps the planter's mark. A bird's nest that still uses the beehive script keeps the nest lines and feathers, and does not pull nearby hives. A single feather on the ground was added again for the player standing there, because it merged into a stack they already held and the drop had not yet been removed for the host. Clearing a plant's biome for grow-anywhere no longer sticks on the placed copy, which was showing only the planter "Can't grow in this environment". A picked mushroom shrinks to a sprout and grows back to full size. Cultivator remove destroys a planted crop, including mushrooms, because those pickables used to sit on the item layer the remove ray misses. On a bush only the berries do that; the bush stays full size. Extra saplings are beech, pine, fir, birch, and oak. Needs Core. Replant resolves the grown crop’s original sapling via saved identity or the vanilla growth-prefab map, including older fields. Preview renderer/collider arrays are cached. Pickup history removes vanished drops and resets on world change. Failed nearby harvests do not spend replant seeds. Automated crop cost, harvest failure, forage exclusion and lifecycle checks pass; live planting remains pending."
+    note: "RestlessPlant 0.2.4. Berry bushes and forage on the cultivator, grid planting, and bulk harvest. Harvest range picks every ripe player-grown crop in range, not only the same kind, and searches that radius instead of every loaded pickable. A wide grid stamps crops only; the till tool stays one patch. Spacing follows the crop's grow radius unless minimum spacing is set (the old 2m default was cleared). Each extra cell is checked again, so an oversized grid plants only the cells that can grow, including cultivated ground, and paints the rest red. A failed grow check logs once and still puts the ghost back. Snap-to-field aligns to the nearby crop or pickable, not the location parent. The search uses piece, piece_nonsolid, and item, including triggers. It does not use Plant.m_pieceMask, which stays empty until a vine looks for a wall, so that usually only happens for the host. Ivy and ashvine use the game's own plant check before the seed is spent. A failed check leaves the seed in the bag. Every player shows the owner's healthy or wilted sapling. Grid spacing uses the vine's own climb radius. The F8 page has the existing planting, harvest, grid, and personal controls. Harvest uses the smaller Global Reach set when enabled; its saved custom radius is retained. Snap remains personal and respects its explicit radius. A grid cell past the centre pays for itself, so one seed cannot fill the rectangle. Area harvest includes ripe carrots, turnips, onions, barley and flax, and a grown crop keeps the planter's mark. A bird's nest that still uses the beehive script keeps the nest lines and feathers, and does not pull nearby hives. A single feather on the ground was added again for the player standing there, because it merged into a stack they already held and the drop had not yet been removed for the host. Clearing a plant's biome for grow-anywhere no longer sticks on the placed copy, which was showing only the planter "Can't grow in this environment". A picked mushroom shrinks to a sprout and grows back to full size. Cultivator remove destroys a planted crop, including mushrooms, because those pickables used to sit on the item layer the remove ray misses. On a bush only the berries do that; the bush stays full size. Extra saplings are beech, pine, fir, birch, and oak. Needs Core. Replant resolves the grown cropâ€™s original sapling via saved identity or the vanilla growth-prefab map, including older fields. Preview renderer/collider arrays are cached. Pickup history removes vanished drops and resets on world change. Failed nearby harvests do not spend replant seeds. Automated crop cost, harvest failure, forage exclusion and lifecycle checks pass; live planting remains pending."
 
   - id: skip.collectors
     name: Crystal / feather / guck / tar collectors
@@ -594,7 +594,7 @@ items:
     decision: skip
     in_mod: n/a
     restless: BetterUI_ForeverMaintained / Azumatt-Minimal_UI / RandyKnapp-Auga / Grantapher-ValheimPlus_Grantapher_Temporary
-    note: "Patch the same inventory/build/HUD surfaces as us. Auga last TS upload 1.3.11 (Nov 2023); PR 243 (Apr 2026) is a Unity 6 compile resurrection, not a 1.0 port. V+ 10.0.2 is 1.0-day but a kitchen sink — do not mix."
+    note: "Patch the same inventory/build/HUD surfaces as us. Auga last TS upload 1.3.11 (Nov 2023); PR 243 (Apr 2026) is a Unity 6 compile resurrection, not a 1.0 port. V+ 10.0.2 is 1.0-day but a kitchen sink â€” do not mix."
 
   - id: skip.admin
     name: Server Devcommands
@@ -643,7 +643,7 @@ items:
     decision: skip
     in_mod: n/a
     restless: Smoothbrain-SteadyRegeneration / Digitalroot-Max_Dungeon_Rooms / Azumatt-MaxPlayerCount
-    note: "Balance or world-gen. Max Dungeon Rooms did ship a 1.0-day bump — still not QoL. Vanilla dedicated cap is still 1–10."
+    note: "Balance or world-gen. Max Dungeon Rooms did ship a 1.0-day bump â€” still not QoL. Vanilla dedicated cap is still 1â€“10."
 
   - id: skip.dive
     name: Underwater diving

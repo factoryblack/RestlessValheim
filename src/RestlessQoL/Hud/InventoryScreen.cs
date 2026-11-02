@@ -98,6 +98,7 @@ public sealed partial class InventoryScreen : FeatureModule
         {
             RestlessUi.HudTuck.Tick();
             RestlessUi.HudTuck.Map();
+            ControllerStack(__instance);
 
             if (!ModConfig.InventoryScreenEnabled.Value)
             {
@@ -255,7 +256,7 @@ public sealed partial class InventoryScreen : FeatureModule
     // when a stack, wear, lock, tab, recipe, or readout actually changed.
     private static bool NeedsSync(InventoryGui gui)
     {
-        var stamp = Stamp(gui);
+        var stamp = Stamp(gui) * 31 + (ZInput.IsGamepadActive() ? 1 : 0);
         if (stamp == _syncStamp)
             return false;
         _syncStamp = stamp;
@@ -1290,7 +1291,7 @@ public sealed partial class InventoryScreen : FeatureModule
             var holdReady = chipSize ?? (ready != null && ready.rect.width > 8f && ready.rect.height > 8f
                 ? ready.rect.size
                 : (Vector2?)null);
-            Ours.Add(RestlessUi.ChipButton(button, RestlessUi.ButtonCopy(button, fallback), lit, holdReady));
+            Ours.Add(RestlessUi.ChipButton(button, ControllerCaption(button, fallback), lit, holdReady));
             return;
         }
 
@@ -1339,7 +1340,7 @@ public sealed partial class InventoryScreen : FeatureModule
         foreach (var tmp in button.GetComponentsInChildren<TMP_Text>(true))
             SilenceTmp(tmp);
 
-        var title = RestlessUi.ButtonCopy(button, fallback);
+        var title = ControllerCaption(button, fallback);
         Ours.Add(RestlessUi.ChipButton(button, title, lit, hold));
     }
 

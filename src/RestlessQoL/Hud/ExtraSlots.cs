@@ -15,7 +15,7 @@ namespace RestlessQoL.HudTweaks;
 // Worn + Z/X/C live in two hidden rows on the player inventory (same pattern
 // as EquipmentAndQuickSlots). UpdateGui relocates those real cells into a well
 // to the right of the bag. HUD quick slots match hotbar 1–8 size.
-public sealed class ExtraSlots : FeatureModule
+public sealed partial class ExtraSlots : FeatureModule
 {
     public override string Id => "inventory.equipment_slots";
     public override bool Enabled => true;
@@ -348,6 +348,10 @@ public sealed class ExtraSlots : FeatureModule
     [HarmonyPatch]
     private static class Patches
     {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.UpdateGamepad))]
+        private static bool ControllerGrid(InventoryGrid __instance) => UpdateControllerGrid(__instance);
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(InventoryGrid), nameof(InventoryGrid.UpdateInventory))]
         private static void BeforeInv(InventoryGrid __instance)
@@ -1234,6 +1238,7 @@ public sealed class ExtraSlots : FeatureModule
                 }
             }
 
+            RestlessUi.Rim(plate, RestlessUi.Selected, !material && ControllerUi.Focused(element));
             HideFoodMarkers(go, element.m_icon);
             var tag = i < EquipCount
                 ? WornName[Mathf.Clamp(i / 2, 0, 2), Mathf.Clamp(i % 2, 0, 1)]

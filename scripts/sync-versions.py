@@ -124,6 +124,8 @@ def stamp_plugin(pkg, planned):
 
 def stamp_toml(path: Path, version, deps, planned):
     text = path.read_text(encoding="utf-8")
+    if "Restless-RestlessCore" not in deps:
+        text = re.sub(r'^Restless-RestlessCore = ".*"\n?', '', text, flags=re.M)
     text, _ = sub(text, r'versionNumber = ".*"', f'versionNumber = "{version}"', count=1)
     for key, ver in deps.items():
         line = f'{key} = "{ver}"'
@@ -143,6 +145,8 @@ def stamp_manifest(path: Path, name, version, deps, planned):
     data["name"] = name
     data["version_number"] = version
     listed = data.get("dependencies") or []
+    if "Restless-RestlessCore" not in deps:
+        listed = [entry for entry in listed if not entry.startswith("Restless-RestlessCore-")]
     for key, ver in deps.items():
         prefix = key + "-"
         entry = f"{key}-{ver}"

@@ -165,6 +165,82 @@ foreach(var handle in reader.TypeDefinitions)
 }
 if(foundCraft.Count!=craftMethods.Count)throw new Exception("Native crafting window contracts changed: "+string.Join(", ",craftMethods.Keys.Except(foundCraft)));
 Console.WriteLine($"{craftMethods.Count} native crafting window contracts passed.");
+var controllerMethods = new Dictionary<string,string[]>
+{
+    ["HotkeyBar.UpdateIcons"] = new[]{"Void","Player"},
+    ["InventoryGrid.UpdateGamepad"] = new[]{"Void"},
+    ["InventoryGrid.SetGamepadSelection"] = new[]{"Void","Vector2i"},
+    ["InventoryGrid.GetGamepadSelectedItem"] = new[]{"ItemData"},
+    ["InventoryGrid.GetGamepadSelectedElement"] = new[]{"RectTransform"},
+    ["InventoryGrid.get_SelectionGridPosition"] = new[]{"Vector2i"},
+    ["InventoryGui.IsContainerOpen"] = new[]{"Boolean"},
+    ["InventoryGui.OnStackAll"] = new[]{"Void"},
+    ["ZInput.IsExclusiveGamepadActive"] = new[]{"Boolean"},
+    ["ZInput.GetButtonDown"] = new[]{"Boolean","String"},
+    ["ZInput.GetButton"] = new[]{"Boolean","String"}
+};
+var controllerFields = new Dictionary<string,string>
+{
+    ["HotkeyBar.m_selected"] = "Int32",
+    ["InventoryGrid.m_uiGroup"] = "UIGroupHandler",
+    ["InventoryGrid.m_selected"] = "Vector2i",
+    ["InventoryGrid.jumpToNextContainer"] = "Boolean",
+    ["UIGamePad.m_zinputKey"] = "String"
+};
+var controllerOwners = new HashSet<string>{"HotkeyBar","InventoryGrid","InventoryGui","InventoryElement","UIGamePad","UIGroupHandler","ZInput"};
+var controllerDefinitions = new HashSet<string>();
+foreach(var assembly in new[]{"assembly_valheim.dll","assembly_utils.dll","assembly_guiutils.dll"})
+{
+    using var inputStream=File.OpenRead(Path.Combine(Environment.GetEnvironmentVariable("VHINSTALL")!,"Valheim_Data/Managed",assembly));
+    using var inputPe=new PEReader(inputStream);var inputReader=inputPe.GetMetadataReader();
+    foreach(var th in inputReader.TypeDefinitions)
+    {
+    var type=inputReader.GetTypeDefinition(th);var typeName=inputReader.GetString(type.Name);
+    foreach(var mh in type.GetMethods())
+    {
+        var method=inputReader.GetMethodDefinition(mh);var key=typeName+"."+inputReader.GetString(method.Name);
+        var sig=method.DecodeSignature(provider,(object?)null);
+        if(controllerOwners.Contains(typeName))controllerDefinitions.Add(key+":"+sig.ReturnType+"("+string.Join(",",sig.ParameterTypes)+")");
+        if(!controllerMethods.TryGetValue(key,out var expected))continue;
+        if(sig.ReturnType==expected[0]&&sig.ParameterTypes.SequenceEqual(expected.Skip(1)))controllerMethods.Remove(key);
+    }
+    foreach(var fh in type.GetFields())
+    {
+        var field=inputReader.GetFieldDefinition(fh);var key=typeName+"."+inputReader.GetString(field.Name);
+        if(controllerOwners.Contains(typeName))controllerDefinitions.Add(key+":"+field.DecodeSignature(provider,(object?)null));
+        if(controllerFields.TryGetValue(key,out var expected)&&field.DecodeSignature(provider,(object?)null)==expected)controllerFields.Remove(key);
+    }
+    }
+}
+if(controllerMethods.Count+controllerFields.Count>0)throw new Exception("Controller native contracts changed: "+string.Join(", ",controllerMethods.Keys.Concat(controllerFields.Keys)));
+Console.WriteLine("16 native controller API contracts passed.");
+var coreDll=Environment.GetEnvironmentVariable("RESTLESS_CORE_DLL");
+if(!string.IsNullOrEmpty(coreDll))
+{
+    using var coreStream=File.OpenRead(coreDll);using var corePe=new PEReader(coreStream);
+    var coreReader=corePe.GetMetadataReader();var checkedReferences=0;
+    foreach(var rh in coreReader.MemberReferences)
+    {
+        var member=coreReader.GetMemberReference(rh);
+        if(member.Parent.Kind!=HandleKind.TypeReference)continue;
+        var type=coreReader.GetTypeReference((TypeReferenceHandle)member.Parent);
+        var owner=coreReader.GetString(type.Name);if(!controllerOwners.Contains(owner))continue;
+        var key=owner+"."+coreReader.GetString(member.Name)+":";
+        if(member.GetKind()==MemberReferenceKind.Method)
+        {
+            var sig=member.DecodeMethodSignature(provider,(object?)null);
+            key+=sig.ReturnType+"("+string.Join(",",sig.ParameterTypes)+")";
+        }
+        else key+=member.DecodeFieldSignature(provider,(object?)null);
+        if(!controllerDefinitions.Contains(key))throw new Exception("Core binary references missing native controller member: "+key);
+        checkedReferences++;
+    }
+    if(checkedReferences==0)throw new Exception("No Core controller member references validated.");
+    var names=coreReader.TypeDefinitions.Select(h=>coreReader.GetString(coreReader.GetTypeDefinition(h).Name)).ToHashSet();
+    if(!names.Contains("ControllerNavigation")||!names.Contains("ControllerUi"))throw new Exception("Core binary lacks controller fixes.");
+    Console.WriteLine($"{checkedReferences} Core binary controller member references resolve; controller implementations present.");
+}
+
 sealed class Types : ISignatureTypeProvider<string, object?>
 {
     public string GetArrayType(string t, ArrayShape s) => t + "[]";

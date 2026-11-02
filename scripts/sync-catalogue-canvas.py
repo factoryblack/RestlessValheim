@@ -2,6 +2,7 @@
 # Source of truth is the yaml. Do not edit the canvas rows by hand.
 from pathlib import Path
 import json
+import argparse
 
 root = Path(__file__).resolve().parents[1]
 text = (root / "catalogue.yaml").read_text(encoding="utf-8")
@@ -244,7 +245,10 @@ export default function RestlessQolCatalogue() {
 }
 '''
 
-dest = Path.home() / ".cursor/projects/c-Users-jules-source-repos-RestlessQoL/canvases/restlessqol-1.0-matrix.canvas.tsx"
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", type=Path)
+args = parser.parse_args()
+dest = args.output or Path.home() / ".cursor/projects/c-Users-jules-source-repos-RestlessQoL/canvases/restlessqol-1.0-matrix.canvas.tsx"
 dest.parent.mkdir(parents=True, exist_ok=True)
 dest.write_text(tsx, encoding="utf-8")
 print(f"wrote {dest} ({len(items)} rows)")

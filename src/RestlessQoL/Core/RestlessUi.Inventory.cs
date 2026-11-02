@@ -138,7 +138,10 @@ internal sealed class RestlessInventorySlot : MonoBehaviour, IPointerEnterHandle
         var focus = selected != null && Cell != null
             && (selected == Cell || selected.transform.IsChildOf(Cell.transform));
         var native = Cell != null ? Cell.GetComponent<InventoryElement>() : null;
-        focus |= native != null && native.m_selected != null && native.m_selected.activeSelf;
+        if (ZInput.IsExclusiveGamepadActive())
+            focus = RestlessQoL.HudTweaks.ControllerUi.Focused(native);
+        else
+            focus |= native != null && native.m_selected != null && native.m_selected.activeSelf;
         if (_focus != null) _focus.SetActive(_hover || focus);
         if (_equipped != null) _equipped.SetActive(Equipped);
     }

@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.2
+
+- Remove the unnecessary Core dependency. The ordinary Drawers package now requires only BepInExPack and Jötunn; Core integrations remain optional.
+- Cabinet recipes, dimensions, contents and native container controls are unchanged. Automated assembly and package checks passed; standalone loading has not been tested in-game.
+
 ## 0.2.1
 
 - Update the Core dependency to 0.3.0 for this ecosystem release. Cabinet recipes, dimensions, capacity and saved items remain unchanged.

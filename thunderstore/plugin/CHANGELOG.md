@@ -2,6 +2,13 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.3.1
+
+- Restore controller selection feedback on the hotbar, including empty slots. Keep the controller cursor separate from equipped-item indicators.
+- Navigate the visible bag, equipment and extra quick-slot columns without changing saved item coordinates. Keep native use, transfer, split and drop actions and panel switching.
+- Show the native chest button bindings. Right-stick click in the player inventory stacks nearby when no chest, drag, typing field or dialog is active. Existing storage permissions and item protections apply.
+- Keep existing per-feature settings and restoration behaviour. Automated checks passed; physical controller use, rendered layouts and multiplayer acceptance have not been tested in-game. Addresses #45.
+
 ## 0.3.0
 
 - Add an opt-in crafting window with Craft, Upgrade and Stations views, saved recipes, search/sorting, material cards, item attributes and native repair controls. Enable it in F8; disabling restores the existing crafting panel.

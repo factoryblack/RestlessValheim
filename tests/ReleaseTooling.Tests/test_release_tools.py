@@ -86,6 +86,32 @@ class ReleaseTools(unittest.TestCase):
         self.assertIn('Missing package input', error)
         self.assertFalse((self.root / 'artifacts').exists())
 
+    def test_optional_core_removes_stale_dependency_without_removing_third_parties(self):
+        spec = importlib.util.spec_from_file_location('optional_core', self.root / 'scripts/sync-versions.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        folder = self.root / 'thunderstore/drawers'
+        manifest = folder / 'manifest.json'
+        data = json.loads(manifest.read_text())
+        data['dependencies'] += ['Restless-RestlessCore-0.0.1', 'Example-OtherMod-1.2.3']
+        manifest.write_text(json.dumps(data))
+        toml = folder / 'thunderstore.toml'
+        text = toml.read_text()
+        text = text.replace('[package.dependencies]\n', '[package.dependencies]\nRestless-RestlessCore = "0.0.1"\nExample-OtherMod = "1.2.3"\n')
+        toml.write_text(text)
+        pins = module.load_pins()
+        package = dict(pins['packages']['drawers'], needs_core=False)
+        dependencies = module.package_deps(pins, package)
+        planned = {}
+        module.stamp_toml(toml, package['version'], dependencies, planned)
+        module.stamp_manifest(manifest, package['thunderstore'], package['version'], dependencies, planned)
+        module.apply(planned)
+        self.assertNotIn('Restless-RestlessCore', tomllib.loads(toml.read_text())['package']['dependencies'])
+        self.assertFalse(any(d.startswith('Restless-RestlessCore-') for d in json.loads(manifest.read_text())['dependencies']))
+        self.assertIn('Example-OtherMod-1.2.3', json.loads(manifest.read_text())['dependencies'])
+        self.assertIn('Example-OtherMod', tomllib.loads(toml.read_text())['package']['dependencies'])
+        self.assertIn('Restless-RestlessCore', module.package_deps(pins, dict(package, needs_core=True)))
+
     def test_stale_dll_fails_before_archiving_or_installing(self):
         shell = shutil.which('pwsh') or shutil.which('powershell')
         if not shell:

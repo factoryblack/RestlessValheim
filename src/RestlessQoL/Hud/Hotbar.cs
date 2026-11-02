@@ -254,7 +254,7 @@ public sealed class Hotbar : FeatureModule
         {
             try
             {
-                Slot(elements[i]!, i);
+                Slot(bar, elements[i]!, i);
             }
             catch (System.Exception e)
             {
@@ -335,7 +335,7 @@ public sealed class Hotbar : FeatureModule
         }
     }
 
-    private static void Slot(object element, int index)
+    private static void Slot(HotkeyBar bar, object element, int index)
     {
         var go = GoOf(element);
         if (go == null)
@@ -348,6 +348,10 @@ public sealed class Hotbar : FeatureModule
         var plate = RestlessUi.DressSlot(go, icon, lit, item, Hidden, false, SlotLock.Held(new Vector2i(index, 0)));
         if (!Ours.Contains(plate))
             Ours.Add(plate);
+        // Controller focus is distinct from the equipped-item tint, and must
+        // remain visible on an empty slot too. Native selection chrome is hidden.
+        RestlessUi.Rim(plate, RestlessUi.Selected,
+            ZInput.IsGamepadActive() && bar.m_selected == index);
 
         var key = go.transform.Find("RestlessKey");
         if (key == null)

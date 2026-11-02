@@ -2,9 +2,9 @@
 
 **Choose a mod, learn the first useful action, then look up the details when you need them.**
 
-[Install and update](install.md) Â· [Troubleshoot a problem](troubleshooting.md) Â· [Thunderstore collection](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/)
+[Install and update](install.md) · [Troubleshoot a problem](troubleshooting.md) · [Thunderstore collection](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/)
 
-> (screenshot coming) â€” F8 ecosystem overview with the installed Restless modules.
+> (screenshot coming) — F8 ecosystem overview with the installed Restless modules.
 
 | Start here | What you will learn |
 | --- | --- |
@@ -18,7 +18,7 @@
 | [Storage](storage.md) | The Storekeeper's Table, combined totals and withdrawal |
 | [Workshop](works.md) | Make versus Keep, production status, reservations and collection |
 
-Core is the shared foundation for most expansions. Drawers can also be installed without Core. Expansions can be installed individually. The pack installs Core, Cook, Plant, Piles, Drawers, Storage and Workshop together.
+Core is the required shared foundation for every expansion. For Drawers with otherwise vanilla gameplay and UI, set `[Core] OptionalFeatures = false` in `restless.core.cfg` and restart. Expansions can be installed individually. The pack installs Core, Cook, Plant, Piles, Drawers, Storage and Workshop together.
 
 These guides follow current main. Host settings can change the defaults described here. Screenshots are being refreshed; their placeholders identify the views being prepared.
 

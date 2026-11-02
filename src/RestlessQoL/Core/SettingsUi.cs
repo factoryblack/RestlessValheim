@@ -14,6 +14,10 @@ public sealed partial class SettingsUi : FeatureModule
 {
     public override string Id => "ui.settings";
     public override bool Enabled => true;
+    public override bool IsFoundation => true;
+    // F8 remains a shared, explicitly invoked service. Foundation mode does not
+    // install the pause-menu button or any native menu patch.
+    protected override Type[] PatchTypes => CoreFeatures.OptionalEnabled ? base.PatchTypes : Type.EmptyTypes;
     public override bool TickInMenus => true;
 
     internal static bool IsOpen { get; private set; }
@@ -57,7 +61,9 @@ public sealed partial class SettingsUi : FeatureModule
         var list = new List<(string, string)>(AllTabs.Length);
         foreach (var tab in AllTabs)
         {
-            if (tab.Id == "character" && (ModConfig.LedgerEnabled == null || !ModConfig.LedgerEnabled.Value))
+            if (!CoreFeatures.OptionalEnabled && tab.Id != "ecosystem")
+                continue;
+            if (tab.Id == "character" && (!CoreFeatures.OptionalEnabled || ModConfig.LedgerEnabled == null || !ModConfig.LedgerEnabled.Value))
                 continue;
             list.Add(tab);
         }
@@ -538,6 +544,8 @@ public sealed partial class SettingsUi : FeatureModule
         var locked = !CanEditGameplay();
         var tabs = CurrentTabs();
         var id = _tab >= 0 && _tab < tabs.Count ? tabs[_tab].Id : "hud";
+        Head(CoreFeatures.OptionalEnabled ? "Core features active" : "Core foundation only");
+        Bool("Core optional features (restart required)", ModConfig.OptionalFeatures, false);
         switch (id)
         {
             case "storage":

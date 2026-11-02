@@ -13,6 +13,7 @@ public sealed class Ledger : FeatureModule
 {
     public override string Id => "player.ledger";
     public override bool Enabled => true;
+    public override bool IsFoundation => true;
     public override bool TickInMenus => true;
 
     public const string ExtraKey = "restless.ledger.extra";

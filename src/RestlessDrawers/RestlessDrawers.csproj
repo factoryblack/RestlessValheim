@@ -6,7 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>RestlessDrawers</AssemblyName>
     <RootNamespace>RestlessDrawers</RootNamespace>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\..\dist\</OutputPath>
     <DebugType>embedded</DebugType>
@@ -20,5 +20,11 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Assets\*.png" LogicalName="RestlessDrawers.Assets.%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RestlessQoL\RestlessQoL.csproj">
+      <Private>false</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 </Project>

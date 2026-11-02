@@ -8,9 +8,9 @@ Item actions use the native controls: A selects, left trigger plus A splits, rig
 
 With a chest open, left-stick click takes all and right-stick click stacks matching items. The visible button labels show their current game bindings. Without a chest open, right-stick click in the player inventory stacks nearby using the normal quick-stack protections. Nearby stacking is disabled while dragging, typing or using a dialog, and when storage or quick stacking is disabled.
 
-Drawers can run with BepInExPack and JÃ¶tunn without Core. Optional Core enables its additional nearby-storage and UI features.
+Drawers can run with BepInExPack and Jötunn without Core. Optional Core enables its additional nearby-storage and UI features.
 
-Automated checks cover the controller logic and native API contracts. Physical controller use, rendered focus/labels, resolution changes, standalone loading and multiplayer transfers have not been tested in-game.
+Automated checks cover the controller logic and native API contracts. Physical controller use, rendered focus/labels, resolution changes, Core foundation mode and multiplayer transfers have not been tested in-game.
 
 ## Native interface choices
 

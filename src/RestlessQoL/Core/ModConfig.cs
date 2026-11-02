@@ -12,6 +12,7 @@ public static class ModConfig
     private static readonly ConfigurationManagerAttributes Admin = new() { IsAdminOnly = true };
 
     public static ConfigEntry<bool> LockConfiguration = null!;
+    public static ConfigEntry<bool> OptionalFeatures = null!;
 
     public static ConfigEntry<bool> StorageEnabled = null!;
     public static ConfigEntry<float> StorageRange = null!;
@@ -96,6 +97,9 @@ public static class ModConfig
 
     public static void Bind(ConfigFile config)
     {
+        OptionalFeatures = config.Bind("Core", "OptionalFeatures", true,
+            "Enable Core gameplay and interface features. False keeps only shared addon services and F8 settings; native HUD, inventory and menus stay unchanged. Restart required. Set on each client and server; addon features have their own settings. Existing feature preferences are preserved.");
+        CoreFeatures.Configure(OptionalFeatures.Value);
         SettingsHotkey = config.Bind("Client", "SettingsShortcut",
             new KeyboardShortcut(KeyCode.F8),
             "Open Restless settings. Client-local. Pause menu also has a Restless button.");
@@ -272,6 +276,10 @@ public static class ModConfig
 
     internal static void ApplyJotunnDebug()
     {
+        // Foundation mode must not change another plugin's settings, even when
+        // old Core debug preferences remain enabled in the file.
+        if (!CoreFeatures.OptionalEnabled)
+            return;
         SetJotunn("DebugInfo", "Enabled", JotunnDebug?.Value ?? false);
         SetJotunn("HoverInfo", "Enabled", PieceHealthEnabled?.Value ?? false);
     }

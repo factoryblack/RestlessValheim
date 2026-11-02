@@ -40,7 +40,7 @@ public sealed class SlotLock : FeatureModule
     }
 
     public static bool Held(Vector2i pos) =>
-        ModConfig.SlotLockEnabled.Value && Locks.Contains(Pack(pos));
+        CoreFeatures.OptionalEnabled && ModConfig.SlotLockEnabled.Value && Locks.Contains(Pack(pos));
 
     public static bool Held(ItemDrop.ItemData? item) =>
         item != null && Held(item.m_gridPos);

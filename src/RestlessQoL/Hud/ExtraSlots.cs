@@ -123,7 +123,22 @@ public sealed partial class ExtraSlots : FeatureModule
         UseHotkeys(player);
     }
 
-    internal static bool HoldsPlayerStats => ModConfig.ExtraSlotsEnabled.Value;
+    internal static bool HoldsPlayerStats => CoreFeatures.OptionalEnabled && ModConfig.ExtraSlotsEnabled.Value;
+
+    internal static void BeginRecovery(Player player)
+    {
+        if (!IsOwnedPlayer(player)) return;
+        _visibleHeight = -1;
+        Grow(player.GetInventory(), player);
+    }
+
+    internal static void FinishRecovery(Player player)
+    {
+        if (!IsOwnedPlayer(player)) return;
+        PullLegacy(player);
+        Shrink(player);
+        player.m_customData.Remove(HeightKey);
+    }
 
     internal static bool IsExtraCell(Vector2i pos) =>
         _visibleHeight >= 0 && pos.y >= _visibleHeight;
@@ -231,7 +246,7 @@ public sealed partial class ExtraSlots : FeatureModule
 
     private static bool TryAddVisible(Inventory inv, ItemDrop.ItemData item)
     {
-        for (var y = 1; y < _visibleHeight; y++)
+        for (var y = CoreFeatures.OptionalEnabled ? 1 : 0; y < _visibleHeight; y++)
         {
             for (var x = 0; x < inv.GetWidth(); x++)
             {

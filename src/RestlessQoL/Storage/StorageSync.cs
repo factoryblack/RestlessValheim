@@ -13,6 +13,7 @@ public sealed class StorageSync : FeatureModule
 {
     public override string Id => "storage.sync";
     public override bool Enabled => true;
+    public override bool IsFoundation => true;
 
     private const string PullRpc = "RestlessPullV2";
     private const string PushRpc = "RestlessPushV2";

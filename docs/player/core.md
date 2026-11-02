@@ -2,6 +2,25 @@
 
 Core brings everyday Valheim work and its interface into one configurable system.
 
+## Keep vanilla gameplay and UI
+
+Set the following in `BepInEx/config/restless.core.cfg` while the game is closed, then start the game:
+
+```ini
+[Core]
+OptionalFeatures = false
+```
+
+This startup mode skips every optional Core module: no HUD/inventory/map/menu replacements, equipment or quick slots, slot locks, crafting/stacking automation, item/stat/terrain/fire/network tweaks or Core debug configuration writes. It overrides saved feature switches without erasing them. Set it on each client and server. Other mods and addons keep their own features.
+
+Core stays installed as the shared foundation. F8 still deliberately opens settings and addon pages, but no Restless pause-menu button is added. Shared APIs, permission-checked transfer services and ledger access remain available to addons. Drawers needs no extra switch; install only Core + Drawers and their required dependencies for that combination. This is still a modded installation; loader/network compatibility requirements remain.
+
+You can also change **Core optional features (restart required)** in F8 and restart. Switching it back on restores your saved per-feature preferences. When switching off with existing extra-slot items, Core migrates those items into the normal bag during character loading; if the bag is full, overflow drops at the player. Empty extra slots before switching when possible. Existing enlarged stacks and past world changes are not reversed by disabling future features.
+
+Automated checks cover module loading, patch/tick suppression and package contracts. In-game visual/controller parity, character migration and multiplayer remain unverified.
+
+[Maintainer configuration matrix](../maintainers/core-foundation.md)
+
 > (screenshot coming) — HUD, food/status column and populated hotbar.
 
 ## Global Reach

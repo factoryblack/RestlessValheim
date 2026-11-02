@@ -10,6 +10,9 @@ public abstract class FeatureModule
 {
     public abstract string Id { get; }
     public abstract bool Enabled { get; }
+    // Shared services are explicitly opted in; new features are optional by default.
+    public virtual bool IsFoundation => false;
+    public bool IsLoaded { get; private set; }
     protected Harmony? Harmony { get; private set; }
 
     // Nested type named Patches is picked up automatically. Override only for extras.
@@ -24,13 +27,14 @@ public abstract class FeatureModule
 
     public void TryLoad()
     {
-        if (!Enabled)
+        if (IsLoaded || !CoreFeatures.ShouldLoad(IsFoundation, Enabled))
         {
             Plugin.Log.LogInfo($"{Id}: disabled");
             return;
         }
 
         Harmony = new Harmony($"restless.core.{Id}");
+        IsLoaded = true;
         var failed = false;
         foreach (var type in PatchTypes)
             failed |= !ApplyEach(type);
@@ -50,6 +54,14 @@ public abstract class FeatureModule
 
     public virtual void Tick()
     {
+    }
+
+    public void TickConfigured()
+    {
+        // Preserve existing live per-feature toggles in normal mode.
+        // Foundation mode ticks only its registered shared services.
+        if (IsLoaded || CoreFeatures.OptionalEnabled)
+            Tick();
     }
 
     public virtual bool TickInMenus => false;

@@ -2,6 +2,11 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.2.3
+
+- Restore RestlessCore 0.3.2 as the required shared foundation. Use Core's `[Core] OptionalFeatures = false` setting and restart for Drawers with otherwise vanilla HUD, inventory and gameplay.
+- Keep cabinet runtime behaviour, assets, recipes and capacity unchanged. No separate variant or copied Core infrastructure. Automated package checks pass; the combination has not been tested in-game.
+
 ## 0.2.2
 
 - Remove the unnecessary Core dependency. The ordinary Drawers package now requires only BepInExPack and Jötunn; Core integrations remain optional.

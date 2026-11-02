@@ -3,12 +3,12 @@
 ## Install with a mod manager
 
 1. Select Valheim in **r2modman** or the **Thunderstore App** and create a profile.
-2. Install [Restless Valheim](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/) for the collection, or [RestlessCore](https://thunderstore.io/c/valheim/p/Restless/RestlessCore/) plus individual expansions. Drawers can also be installed on its own.
-3. Let the manager install BepInExPack, JÃ¶tunn and Core where the chosen package requires it.
+2. Install [Restless Valheim](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/) for the collection, or [RestlessCore](https://thunderstore.io/c/valheim/p/Restless/RestlessCore/) plus individual expansions.
+3. Let the manager install BepInExPack, Jötunn and Core.
 4. Start the game using the manager's modded launch option.
 5. Open **F8** or **Restless** in the pause menu to check settings.
 
-The pack includes Core, Cook, Plant, Piles, Drawers, Storage and Workshop. Cook, Plant, Piles, Storage and Workshop require Core. Drawers does not. Expansions do not require every other expansion.
+The pack includes Core, Cook, Plant, Piles, Drawers, Storage and Workshop. Every expansion, including Drawers, requires Core. Expansions do not require every other expansion.
 
 The old RestlessValheim and RestlessQOL listings are deprecated. They are not the current collection.
 
@@ -26,7 +26,7 @@ Adding an expansion can add items or build pieces to a world. Removing it does n
 
 ## Manual installation
 
-Install the required BepInExPack and JÃ¶tunn versions listed on the package page. Extract each complete package into its own folder under `BepInEx/plugins`. Keep shipped mesh and texture files with their plugin; copying only a DLL can leave custom models missing.
+Install the required BepInExPack and Jötunn versions listed on the package page. Extract each complete package into its own folder under `BepInEx/plugins`. Keep shipped mesh and texture files with their plugin; copying only a DLL can leave custom models missing.
 
 A mod manager handles this layout for you.
 
@@ -36,5 +36,9 @@ Core overlaps storage automation, inventory-slot and HUD mods. Avoid installing 
 
 If something behaves unexpectedly, reproduce it in a clean Restless profile and attach the original profile's mod list to your report.
 
-[Back to guides](README.md) Â· [Troubleshooting](troubleshooting.md)
+[Back to guides](README.md) · [Troubleshooting](troubleshooting.md)
 
+
+## Core foundation with vanilla presentation
+
+For Core + Drawers with vanilla HUD, inventory and gameplay, set `[Core] OptionalFeatures = false` in `BepInEx/config/restless.core.cfg` and restart. Keep Drawers installed; no other Core switches need changing. Apply this on each client and server. Core's shared addon services remain available; other installed addons keep their own features.

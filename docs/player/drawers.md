@@ -2,7 +2,7 @@
 
 Build modular storage furniture with the capacity and progression of familiar chests.
 
-> (screenshot coming) â€” A mixed-tier drawer wall with populated item fronts.
+> (screenshot coming) — A mixed-tier drawer wall with populated item fronts.
 
 ## Choose a cabinet
 
@@ -31,11 +31,13 @@ Drawers do not provide structural support for a building. Their furniture suppor
 
 ## Settings and updates
 
-Drawers requires BepInExPack and Jötunn. Core is optional. Without Core, the native inventory and HUD remain in use.
+Drawers requires BepInExPack, Jötunn and RestlessCore 0.3.2 or newer.
 
-When Core is installed, the F8 Drawers page identifies the loaded module and links its package page. There are no drawer-specific gameplay sliders.
+For Core + Drawers with vanilla HUD, inventory and gameplay, set `[Core] OptionalFeatures = false` in `BepInEx/config/restless.core.cfg` and restart. Keep Drawers installed; no other Core switches need changing. Apply this on each client and server. Core's shared addon services remain available; other installed addons keep their own features.
+
+The F8 Drawers page identifies the loaded module and links its package page. There are no drawer-specific gameplay sliders.
 
 Recent main changes adjust cabinet dimensions and snapping. Compare the changelog and the installed release before expecting identical placement behaviour in an older build. The versioned history below the current package notes remains the reference for older releases.
 
-[Install](install.md) Â· [Troubleshoot](troubleshooting.md) Â· [All guides](README.md)
+[Install](install.md) · [Troubleshoot](troubleshooting.md) · [All guides](README.md)
 

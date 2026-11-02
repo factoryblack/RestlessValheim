@@ -53,3 +53,7 @@ Needs **BepInExPack 5.4.2351** and **Jötunn 2.30.2**. Use matching released plu
 [Player guide](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/core.md) · [Installation](https://github.com/factoryblack/RestlessValheim/blob/main/docs/player/install.md) · [Changelog](https://github.com/factoryblack/RestlessValheim/blob/main/thunderstore/plugin/CHANGELOG.md) · [Report a problem](https://github.com/factoryblack/RestlessValheim/issues/new/choose)
 
 [Explore the Restless collection](https://thunderstore.io/c/valheim/p/Restless/Restless_Valheim/).
+
+## Vanilla Core foundation
+
+For Core + Drawers with vanilla HUD, inventory and gameplay, set `[Core] OptionalFeatures = false` in `BepInEx/config/restless.core.cfg` and restart. Keep Drawers installed; no other Core switches need changing. Apply this on each client and server. Core's shared addon services remain available; other installed addons keep their own features. Use **Core optional features (restart required)** in F8 or edit the config while the game is closed. This preserves your saved per-feature preferences. Existing extra-slot items migrate to the ordinary bag, dropping overflow if full; empty extra slots before switching when possible. Past world changes and existing enlarged stacks are not undone. In-game migration and visual parity remain unverified.

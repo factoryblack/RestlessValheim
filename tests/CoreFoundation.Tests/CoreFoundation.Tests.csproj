@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../src/RestlessQoL/Core/CoreFeatures.cs" Link="CoreFeatures.cs" />
+    <Compile Include="../../src/RestlessQoL/Core/FeatureModule.cs" Link="FeatureModule.cs" />
+    <Compile Include="../../src/RestlessQoL/Hud/InventoryRecovery.cs" Link="InventoryRecovery.cs" />
+  </ItemGroup>
+</Project>

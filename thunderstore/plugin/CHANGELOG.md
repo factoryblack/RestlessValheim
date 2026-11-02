@@ -2,6 +2,12 @@
 
 Changes are listed newest first. **Unreleased** describes current source changes that are not assigned to a new tagged release yet.
 
+## 0.3.2
+
+- Add `[Core] OptionalFeatures = false` (restart required): keep shared addon services while skipping every optional Core module, its patches, subscriptions and ticks. Preserve existing feature defaults/preferences and the controller fixes.
+- Keep native HUD, inventory, map and pause menu in foundation mode, with F8 settings available explicitly. Do not write Jötunn debug settings in this mode.
+- Recover saved extra-slot items into the ordinary bag on character load, dropping overflow if full. Automated checks pass; in-game visual parity, migration, controller and multiplayer acceptance remain unverified.
+
 ## 0.3.1
 
 - Restore controller selection feedback on the hotbar, including empty slots. Keep the controller cursor separate from equipped-item indicators.

@@ -28,6 +28,7 @@ public class Plugin : BaseUnityPlugin
     private readonly FeatureModule[] _modules =
     {
         new StorageSync(),
+        new InventoryRecovery(),
         new CraftFromStorage(),
         new BuildFromStorage(),
         new QuickStack(),
@@ -77,7 +78,8 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Log = Logger;
         ModConfig.Bind(Config);
-        Kit.Warm();
+        if (CoreFeatures.OptionalEnabled)
+            Kit.Warm(); // Shared UI assets remain available lazily to addons.
 
         foreach (var module in _modules)
             module.TryLoad();
@@ -94,7 +96,7 @@ public class Plugin : BaseUnityPlugin
             foreach (var module in _modules)
             {
                 if (module is SettingsUi)
-                    module.Tick();
+                    module.TickConfigured();
             }
             return;
         }
@@ -106,7 +108,7 @@ public class Plugin : BaseUnityPlugin
         {
             if (menu && !module.TickInMenus)
                 continue;
-            module.Tick();
+            module.TickConfigured();
         }
     }
 }

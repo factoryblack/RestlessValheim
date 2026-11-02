@@ -14,7 +14,7 @@ jotunn: "2.30.2"
 
 packages:
   core:
-    version: "0.3.1"
+    version: "0.3.2"
     guid: "restless.core"
     thunderstore: "RestlessCore"
     plugin: "src/RestlessQoL/Plugin.cs"
@@ -45,13 +45,13 @@ packages:
     thunderstore_dir: "thunderstore/plant"
     needs_core: true
   drawers:
-    version: "0.2.2"
+    version: "0.2.3"
     guid: "restless.drawers"
     thunderstore: "RestlessDrawers"
     plugin: "src/RestlessDrawers/Plugin.cs"
     csproj: "src/RestlessDrawers/RestlessDrawers.csproj"
     thunderstore_dir: "thunderstore/drawers"
-    needs_core: false
+    needs_core: true
   storage:
     version: "0.2.3"
     guid: "restless.storage"

@@ -8,12 +8,13 @@ namespace RestlessDrawers;
 
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 [BepInDependency(Main.ModGuid, BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency("restless.core", "0.3.2")]
 [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.Minor)]
 public class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "restless.drawers";
     public const string PluginName = "RestlessDrawers";
-    public const string PluginVersion = "0.2.2";
+    public const string PluginVersion = "0.2.3";
 
     internal static Plugin Instance { get; private set; } = null!;
     internal static ManualLogSource Log { get; private set; } = null!;
